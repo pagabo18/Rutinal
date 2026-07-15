@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/hb_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:id="@+id/hb_header_wrap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="4dp">
+        <TextView
+            android:id="@+id/hb_header"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Hábitos de hoy"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#0A0A0A" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E5E5E7"
+        android:layout_marginBottom="2dp" />
+
+    <!-- 4 filas idénticas -->
+    <LinearLayout android:id="@+id/hb_row0"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical" android:paddingTop="6dp" android:paddingBottom="6dp">
+        <View android:id="@+id/hb_dot0" android:layout_width="6dp" android:layout_height="6dp" android:background="#52525B" />
+        <TextView android:id="@+id/hb_name0" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:layout_marginStart="10dp" android:textSize="13sp"
+            android:textColor="#0A0A0A" android:maxLines="1" android:ellipsize="end" />
+        <ImageView android:id="@+id/hb_check0" android:layout_width="22dp" android:layout_height="22dp"
+            android:src="@drawable/ic_check_off" android:contentDescription="Marcar" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/hb_row1"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical" android:paddingTop="6dp" android:paddingBottom="6dp">
+        <View android:id="@+id/hb_dot1" android:layout_width="6dp" android:layout_height="6dp" android:background="#52525B" />
+        <TextView android:id="@+id/hb_name1" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:layout_marginStart="10dp" android:textSize="13sp"
+            android:textColor="#0A0A0A" android:maxLines="1" android:ellipsize="end" />
+        <ImageView android:id="@+id/hb_check1" android:layout_width="22dp" android:layout_height="22dp"
+            android:src="@drawable/ic_check_off" android:contentDescription="Marcar" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/hb_row2"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical" android:paddingTop="6dp" android:paddingBottom="6dp">
+        <View android:id="@+id/hb_dot2" android:layout_width="6dp" android:layout_height="6dp" android:background="#52525B" />
+        <TextView android:id="@+id/hb_name2" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:layout_marginStart="10dp" android:textSize="13sp"
+            android:textColor="#0A0A0A" android:maxLines="1" android:ellipsize="end" />
+        <ImageView android:id="@+id/hb_check2" android:layout_width="22dp" android:layout_height="22dp"
+            android:src="@drawable/ic_check_off" android:contentDescription="Marcar" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/hb_row3"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical" android:paddingTop="6dp" android:paddingBottom="6dp">
+        <View android:id="@+id/hb_dot3" android:layout_width="6dp" android:layout_height="6dp" android:background="#52525B" />
+        <TextView android:id="@+id/hb_name3" android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:layout_marginStart="10dp" android:textSize="13sp"
+            android:textColor="#0A0A0A" android:maxLines="1" android:ellipsize="end" />
+        <ImageView android:id="@+id/hb_check3" android:layout_width="22dp" android:layout_height="22dp"
+            android:src="@drawable/ic_check_off" android:contentDescription="Marcar" />
+    </LinearLayout>
+</LinearLayout>

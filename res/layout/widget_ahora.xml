@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ah_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:background="@drawable/widget_bg"
+    android:padding="12dp">
+
+    <View
+        android:id="@+id/ah_accent"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:background="#8E8E93" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="4dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/ah_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#0A0A0A"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text="Sin bloque activo" />
+
+        <TextView
+            android:id="@+id/ah_meta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="#71717A"
+            android:layout_marginTop="2dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text="—" />
+
+        <ProgressBar
+            android:id="@+id/ah_progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="6dp"
+            android:max="100"
+            android:progress="0" />
+
+        <!-- Este View no se muestra pero permite setBackgroundColor sin advertencias -->
+        <View
+            android:id="@+id/ah_bar_fill"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#8E8E93" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/ah_time"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="#0A0A0A"
+        android:paddingStart="8dp"
+        android:paddingEnd="4dp"
+        android:text="—" />
+</LinearLayout>

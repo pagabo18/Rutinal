@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Organízame</string>
+    <string name="widget_ahora_label">Organízame · Ahora</string>
+    <string name="widget_ahora_desc">Bloque activo con progreso.</string>
+    <string name="widget_proximos_label">Organízame · Próximos</string>
+    <string name="widget_proximos_desc">Los siguientes bloques del día.</string>
+    <string name="widget_habitos_label">Organízame · Hábitos</string>
+    <string name="widget_habitos_desc">Marca hábitos sin abrir la app.</string>
+</resources>
