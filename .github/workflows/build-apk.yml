@@ -5,7 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
   release:
-    types: [created]
+    types: [created, published, edited]
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -28,19 +31,30 @@ jobs:
       - name: Build APK
         run: |
           export ANDROID_HOME="$ANDROID_SDK_ROOT"
-          # build.sh usa /home/user/android-sdk; lo redirigimos
           sed -i "s|/home/user/android-sdk|$ANDROID_SDK_ROOT|g" build.sh
           sed -i "s|/usr/lib/jvm/java-17-openjdk-amd64|$JAVA_HOME|g" build.sh
           sed -i "s|PROJECT_DIR=/home/user/workspace/organizame|PROJECT_DIR=$PWD|g" build.sh
           chmod +x build.sh
           ./build.sh
 
-      - name: Upload APK artifact
+      - name: Upload APK artifact (Actions)
         uses: actions/upload-artifact@v4
         with:
           name: Organizame-apk
           path: build/Organizame.apk
 
+      # Publica "latest" en cada push a main con el APK más reciente
+      - name: Update latest pre-release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Última build · ${{ github.sha }}"
+          body: "Compilado automáticamente desde `main` (commit ${{ github.sha }})."
+          prerelease: true
+          files: build/Organizame.apk
+
+      # Adjunta el APK a cualquier release creado manualmente (v5.0, v5.1, etc.)
       - name: Attach APK to release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
