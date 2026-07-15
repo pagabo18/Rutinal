@@ -518,6 +518,32 @@
   .edit-row-del:active { background: rgba(185, 28, 28, 0.08); color: var(--danger); }
   .edit-row-del .icon { width: 16px; height: 16px; }
 
+  /* Drag handle + drag states */
+  .drag-handle {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 32px; margin-right: 4px; margin-left: -4px;
+    color: var(--muted); cursor: grab;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    flex-shrink: 0; border-radius: 6px;
+  }
+  .drag-handle:hover { background: var(--surface-2); color: var(--text); }
+  .drag-handle:active { cursor: grabbing; }
+  .drag-handle .icon { width: 18px; height: 18px; }
+  .edit-row.dragging {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    opacity: 0.95;
+    transform: scale(1.02);
+    transition: transform 0.12s ease;
+  }
+  .drag-placeholder {
+    background: var(--surface-2);
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    margin: 6px 0;
+    opacity: 0.6;
+  }
+  body.dragging-active { cursor: grabbing; }
+
   .edit-week {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -2444,13 +2470,18 @@ function renderEditHabits() {
     cont.innerHTML = '<div class="empty">Sin hábitos aún</div>';
     return;
   }
-  habits.forEach(h => {
+  habits.forEach((h, idx) => {
     const cat = CATS.find(c => c.id === h.cat);
     const row = document.createElement('div');
-    row.className = 'edit-row';
+    row.className = 'edit-row draggable';
+    row.dataset.id = h.id;
+    row.dataset.idx = String(idx);
     if (cat) row.style.borderLeftColor = cat.color;
     const catBadge = cat ? ` · <span style="color:${cat.color}; font-weight:600;">${cat.label}</span>` : '';
     row.innerHTML = `
+      <div class="drag-handle" title="Arrastrar para reordenar" aria-label="Arrastrar">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+      </div>
       <div class="edit-row-body">
         <div class="edit-row-label">${h.name}</div>
         <div class="edit-row-meta">${h.meta || 'Sin detalle'}${catBadge}</div>
@@ -2461,6 +2492,7 @@ function renderEditHabits() {
     `;
     row.addEventListener('click', (e) => {
       if (e.target.closest('.edit-row-del')) return;
+      if (e.target.closest('.drag-handle')) return;
       openHabitSheet(h);
     });
     row.querySelector('.edit-row-del').addEventListener('click', (e) => {
@@ -2470,6 +2502,102 @@ function renderEditHabits() {
       renderEditHabits();
     });
     cont.appendChild(row);
+  });
+  enableHabitDrag(cont);
+}
+
+// ---------- Drag & drop de hábitos (mouse + touch) ----------
+function enableHabitDrag(container) {
+  let dragEl = null;
+  let placeholder = null;
+  let startY = 0;
+  let offsetY = 0;
+  let pointerId = null;
+
+  container.querySelectorAll('.drag-handle').forEach(handle => {
+    handle.addEventListener('pointerdown', (e) => {
+      // Solo botón primario del ratón; en touch siempre entra
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      const row = handle.closest('.edit-row');
+      if (!row) return;
+      e.preventDefault();
+      pointerId = e.pointerId;
+      dragEl = row;
+      startY = e.clientY;
+      const rect = row.getBoundingClientRect();
+      offsetY = e.clientY - rect.top;
+
+      // Placeholder que reserva el espacio
+      placeholder = document.createElement('div');
+      placeholder.className = 'drag-placeholder';
+      placeholder.style.height = rect.height + 'px';
+      row.parentNode.insertBefore(placeholder, row);
+
+      // Flotante
+      row.classList.add('dragging');
+      row.style.width = rect.width + 'px';
+      row.style.left = rect.left + 'px';
+      row.style.top = rect.top + 'px';
+      row.style.position = 'fixed';
+      row.style.zIndex = '9999';
+      row.style.pointerEvents = 'none';
+
+      document.body.classList.add('dragging-active');
+      try { handle.setPointerCapture(e.pointerId); } catch(err) {}
+
+      const onMove = (ev) => {
+        if (ev.pointerId !== pointerId || !dragEl) return;
+        dragEl.style.top = (ev.clientY - offsetY) + 'px';
+
+        // ¿Sobre qué fila estamos?
+        const rows = [...container.querySelectorAll('.edit-row:not(.dragging)')];
+        let inserted = false;
+        for (const r of rows) {
+          const rr = r.getBoundingClientRect();
+          if (ev.clientY < rr.top + rr.height / 2) {
+            container.insertBefore(placeholder, r);
+            inserted = true;
+            break;
+          }
+        }
+        if (!inserted) container.appendChild(placeholder);
+      };
+
+      const onUp = (ev) => {
+        if (ev.pointerId !== pointerId) return;
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        document.removeEventListener('pointercancel', onUp);
+        document.body.classList.remove('dragging-active');
+
+        if (!dragEl) return;
+        // Devolver a flujo normal en la posición del placeholder
+        placeholder.parentNode.insertBefore(dragEl, placeholder);
+        placeholder.remove();
+        dragEl.classList.remove('dragging');
+        dragEl.style.cssText = '';
+
+        // Nuevo orden por id
+        const newOrder = [...container.querySelectorAll('.edit-row')].map(r => r.dataset.id);
+        const cur = loadHabits();
+        const map = new Map(cur.map(h => [h.id, h]));
+        const reordered = newOrder.map(id => map.get(id)).filter(Boolean);
+        // Anexa cualquier huérfano por si acaso
+        cur.forEach(h => { if (!newOrder.includes(h.id)) reordered.push(h); });
+        saveHabits(reordered);
+
+        dragEl = null; placeholder = null; pointerId = null;
+
+        // Refresca vistas dependientes
+        renderEditHabits();
+        if (document.getElementById('tab-hoy').classList.contains('active')) renderHoy();
+        if (document.getElementById('tab-habitos').classList.contains('active')) renderHabitos();
+      };
+
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
+    });
   });
 }
 document.getElementById('edit-add-habit').addEventListener('click', () => openHabitSheet());
