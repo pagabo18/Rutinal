@@ -141,21 +141,105 @@
     padding-bottom: calc(72px + env(safe-area-inset-bottom));
     min-height: 100vh;
   }
-  /* En tablet/desktop, centrar el layout como si fuera móvil */
-  @media (min-width: 640px) {
-    header, main { max-width: 520px; margin-left: auto; margin-right: auto; }
+  /* Tablet mediana (Fold parcial, iPad mini): centro más ancho, bottom nav */
+  @media (min-width: 640px) and (max-width: 1023px) {
+    header, main { max-width: 640px; margin-left: auto; margin-right: auto; }
     nav {
       left: 50%; right: auto;
       transform: translateX(-50%);
-      width: 100%; max-width: 520px;
+      width: 100%; max-width: 640px;
     }
-    .fab { right: max(20px, calc(50vw - 260px + 20px)); }
+    .fab { right: max(20px, calc(50vw - 320px + 20px)); }
     .sheet {
       left: 50%; right: auto;
-      max-width: 520px; width: 100%;
+      max-width: 640px; width: 100%;
       transform: translate(-50%, 100%);
     }
     .sheet.show { transform: translate(-50%, 0); }
+  }
+
+  /* Tablet grande / Fold 7 desplegado / desktop: sidebar lateral + contenido ancho */
+  @media (min-width: 1024px) {
+    body {
+      padding-bottom: 0;
+      padding-left: 240px; /* espacio para sidebar */
+    }
+    header {
+      max-width: 1100px;
+      margin-left: auto; margin-right: auto;
+      padding-top: 24px; padding-bottom: 16px;
+    }
+    main {
+      max-width: 1100px;
+      margin-left: auto; margin-right: auto;
+      padding: 0 32px 40px;
+    }
+    /* Nav pasa a sidebar lateral izquierdo */
+    nav {
+      top: 0; bottom: 0; left: 0; right: auto;
+      width: 240px; height: 100vh;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      padding: 24px 12px;
+      gap: 4px;
+      border-top: none;
+      border-right: 1px solid var(--border);
+    }
+    nav::before {
+      content: "Organízame";
+      display: block;
+      font-size: 18px; font-weight: 700; letter-spacing: -0.02em;
+      padding: 8px 16px 20px;
+      color: var(--text);
+    }
+    nav button {
+      flex: 0 0 auto !important;
+      flex-direction: row !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      gap: 12px !important;
+      padding: 10px 16px !important;
+      font-size: 14px !important;
+      border-radius: 10px !important;
+      text-align: left;
+      width: 100%;
+      min-height: 44px;
+    }
+    nav button .icon { width: 20px !important; height: 20px !important; flex-shrink: 0; }
+    nav button.active {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+    nav button:hover:not(.active) {
+      background: var(--surface-2);
+    }
+    .fab {
+      right: max(24px, calc((100vw - 240px - 1100px) / 2 + 24px));
+      bottom: 24px;
+    }
+    /* Sheets/modales más cómodos en desktop */
+    .sheet {
+      left: 50%;
+      right: auto;
+      max-width: 560px;
+      width: 100%;
+      transform: translate(-50%, 100%);
+      border-radius: 20px;
+      bottom: 5vh;
+      max-height: 85vh;
+    }
+    .sheet.show { transform: translate(-50%, 0); }
+  }
+
+  /* Fold 7 desplegado exacto (~2100dp) y monitores: grid de 2 columnas en Hoy */
+  @media (min-width: 1280px) {
+    #tab-hoy.two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
   }
 
   /* ---------- HEADER ---------- */
@@ -723,6 +807,25 @@
   .cal-cell.selected .cal-dot { background: var(--bg); }
   .cal-cell .impr-mark { position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--impr); }
   .cal-cell.selected .impr-mark { background: var(--bg); }
+  .cal-cell .diary-mark { position: absolute; top: 4px; left: 4px; width: 5px; height: 5px; border-radius: 50%; background: #2563EB; }
+  .cal-cell.selected .diary-mark { background: #fff; }
+
+  /* Diario */
+  .diary-section { margin-bottom: 20px; }
+  .diary-section-title { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .diary-section-count { background: var(--surface-2); color: var(--text-2); font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+  .diary-text { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; font-family: inherit; font-size: 15px; line-height: 1.5; color: var(--text); resize: vertical; min-height: 100px; }
+  .diary-text:focus { outline: none; border-color: var(--text-3); }
+  .diary-item { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--text-3); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .diary-item.done { opacity: 0.75; }
+  .diary-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .diary-item-time { font-size: 11px; font-weight: 600; color: var(--text-3); font-variant-numeric: tabular-nums; min-width: 88px; }
+  .diary-item-label { font-size: 14px; font-weight: 500; color: var(--text); flex: 1; }
+  .diary-item-check { width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--surface-2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: var(--text); }
+  .diary-item.done .diary-item-check { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .diary-note { width: 100%; background: transparent; border: none; padding: 0; font-family: inherit; font-size: 13px; line-height: 1.4; color: var(--text-2); resize: none; overflow: hidden; }
+  .diary-note:focus { outline: none; color: var(--text); }
+  .diary-note::placeholder { color: var(--text-3); }
 
   .cal-detail {
     margin-top: 14px; background: var(--surface);
@@ -1490,6 +1593,22 @@ const saveImprs = l => S.set('imprevistos', l);
 const imprsForDate = k => loadImprs().filter(i => i.date === k);
 const imprHours = i => Math.max(0, timeToMin(i.end) - timeToMin(i.start)) / 60;
 
+// ---------- Diario ----------
+const loadDiary = () => S.get('diary', {});
+const saveDiary = d => S.set('diary', d);
+function getDiaryDay(k) {
+  const d = loadDiary();
+  return d[k] || { text: '', blocks: {}, habits: {} };
+}
+function setDiaryDay(k, day) {
+  const d = loadDiary();
+  const hasContent = (day.text && day.text.trim())
+    || Object.values(day.blocks || {}).some(v => v && v.trim())
+    || Object.values(day.habits || {}).some(v => v && v.trim());
+  if (hasContent) d[k] = day; else delete d[k];
+  saveDiary(d);
+}
+
 // ============================================================
 // UI: TABS
 // ============================================================
@@ -2167,7 +2286,8 @@ function renderCal() {
       dots += '</div>';
     }
     const hasImpr = imprsForDate(k).length > 0;
-    c.innerHTML = `${hasImpr ? '<div class="impr-mark"></div>' : ''}<div>${d}</div>${dots}`;
+    const hasDiary = !!(loadDiary()[k]);
+    c.innerHTML = `${hasImpr ? '<div class="impr-mark"></div>' : ''}${hasDiary ? '<div class="diary-mark" title="Diario"></div>' : ''}<div>${d}</div>${dots}`;
     c.addEventListener('click', () => { calSel = k; renderCal(); });
     grid.appendChild(c);
   }
@@ -2193,6 +2313,11 @@ function renderCal() {
     </div>`;
   }).join('');
   const dt = document.getElementById('cal-detail');
+  const diary = getDiaryDay(calSel);
+  const hasDiary = diary.text || Object.keys(diary.blocks).length || Object.keys(diary.habits).length;
+  const diaryPreview = hasDiary
+    ? `<div style="margin-top:10px;padding:10px 12px;background:var(--surface-2);border-radius:10px;font-size:13px;color:var(--text-2);line-height:1.4;">${(diary.text || '').slice(0, 200)}${(diary.text || '').length > 200 ? '…' : ''}${(!diary.text && (Object.keys(diary.blocks).length || Object.keys(diary.habits).length)) ? '<em style="color:var(--text-3);">Notas por bloques/hábitos guardadas.</em>' : ''}</div>`
+    : '';
   dt.innerHTML = `<div class="cal-detail">
     <div class="cal-detail-title">
       ${dNames[sel.getDay()]} ${sel.getDate()}
@@ -2200,7 +2325,14 @@ function renderCal() {
     </div>
     ${rows || '<div class="empty" style="padding:8px 0;">Sin hábitos</div>'}
     ${imprRows ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);"><div style="font-size:10px;color:var(--impr);font-weight:600;letter-spacing:0.05em;margin-bottom:6px;">IMPREVISTOS</div>${imprRows}</div>` : ''}
+    ${diaryPreview}
+    <button class="btn-secondary" id="open-diary-btn" style="margin-top:12px;width:100%;">
+      <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;margin-right:6px;vertical-align:-3px;"><path d="M4 4h16v16H4z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+      ${hasDiary ? 'Ver / editar diario' : 'Escribir en el diario'}
+    </button>
   </div>`;
+  const dbtn = document.getElementById('open-diary-btn');
+  if (dbtn) dbtn.addEventListener('click', () => openDiarySheet(calSel));
 }
 document.getElementById('cal-prev').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth()-1); renderCal(); });
 document.getElementById('cal-next').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth()+1); renderCal(); });
@@ -3035,6 +3167,115 @@ function openHabitSheet(habit) {
 }
 
 // ---------- IMPR SHEET ----------
+// ---------- DIARY SHEET ----------
+function openDiarySheet(dateKey) {
+  const k = dateKey || keyDate();
+  const d = parseKey(k);
+  const day = getDiaryDay(k);
+  const habits = loadHabits();
+  const log = habitLog();
+  const doneHabits = habits.filter(h => log[k] && log[k][h.id]);
+  const blocks = scheduleForDate(d);
+  const imprs = imprsForDate(k);
+  const dNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const title = `${dNames[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+
+  const esc = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // Bloques del día ordenados por hora
+  const allBlocks = [
+    ...blocks.map(b => ({ id: 'b_' + b.id, label: b.label, cat: b.cat, start: b.start, end: b.end, isImpr: false })),
+    ...imprs.map(i => ({ id: 'i_' + i.id, label: i.what, cat: 'impr', start: i.start, end: i.end, isImpr: true }))
+  ].sort((a, b) => (a.start || '').localeCompare(b.start || ''));
+
+  const blockRows = allBlocks.length ? allBlocks.map(b => {
+    const cat = b.isImpr ? null : CATS.find(c => c.id === b.cat);
+    const color = b.isImpr ? '#C2410C' : (cat ? cat.color : '#52525B');
+    const note = day.blocks[b.id] || '';
+    return `<div class="diary-item" style="border-left-color:${color};">
+      <div class="diary-item-head">
+        <div class="diary-item-time">${b.start} – ${b.end}</div>
+        <div class="diary-item-label">${esc(b.label)}</div>
+      </div>
+      <textarea class="diary-note" data-kind="block" data-id="${b.id}" rows="1" placeholder="Nota (opcional)">${esc(note)}</textarea>
+    </div>`;
+  }).join('') : '<div class="empty" style="padding:8px 0;">Sin bloques ese día</div>';
+
+  const habitRows = habits.length ? habits.map(h => {
+    const cat = CATS.find(c => c.id === h.cat);
+    const color = cat ? cat.color : '#52525B';
+    const done = !!(log[k] && log[k][h.id]);
+    const note = day.habits[h.id] || '';
+    return `<div class="diary-item${done ? ' done' : ''}" style="border-left-color:${color};">
+      <div class="diary-item-head">
+        <div class="diary-item-check" data-hid="${h.id}">
+          ${done ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+        </div>
+        <div class="diary-item-label">${esc(h.name)}</div>
+      </div>
+      <textarea class="diary-note" data-kind="habit" data-id="${h.id}" rows="1" placeholder="Nota (opcional)">${esc(note)}</textarea>
+    </div>`;
+  }).join('') : '<div class="empty" style="padding:8px 0;">Sin hábitos</div>';
+
+  const html = `
+    <div class="diary-section">
+      <div class="diary-section-title">Notas del día</div>
+      <textarea id="diary-text" class="diary-text" rows="5" placeholder="¿Cómo estuvo tu día? Qué aprendiste, cómo te sentiste…">${esc(day.text)}</textarea>
+    </div>
+    <div class="diary-section">
+      <div class="diary-section-title">Bloques <span class="diary-section-count">${allBlocks.length}</span></div>
+      ${blockRows}
+    </div>
+    <div class="diary-section">
+      <div class="diary-section-title">Hábitos <span class="diary-section-count">${doneHabits.length}/${habits.length}</span></div>
+      ${habitRows}
+    </div>
+  `;
+
+  openSheet('Diario · ' + title, html, () => {
+    const newDay = { text: '', blocks: {}, habits: {} };
+    const sb = document.getElementById('sheet-body');
+    newDay.text = sb.querySelector('#diary-text').value.trim();
+    sb.querySelectorAll('.diary-note').forEach(t => {
+      const val = t.value.trim();
+      if (!val) return;
+      if (t.dataset.kind === 'block') newDay.blocks[t.dataset.id] = val;
+      else newDay.habits[t.dataset.id] = val;
+    });
+    setDiaryDay(k, newDay);
+    closeSheet();
+    // Refrescar vistas visibles
+    if (document.getElementById('tab-cal').classList.contains('active')) renderCal();
+    if (document.getElementById('tab-hoy').classList.contains('active')) renderHoy();
+  });
+
+  // Auto-crecer los textareas de notas
+  setTimeout(() => {
+    const sb = document.getElementById('sheet-body');
+    const autoGrow = (t) => { t.style.height = 'auto'; t.style.height = Math.max(32, t.scrollHeight) + 'px'; };
+    sb.querySelectorAll('.diary-note').forEach(t => {
+      autoGrow(t);
+      t.addEventListener('input', () => autoGrow(t));
+    });
+    // Marcar/desmarcar hábito directo desde el diario
+    sb.querySelectorAll('.diary-item-check').forEach(c => {
+      c.addEventListener('click', () => {
+        const hid = c.dataset.hid;
+        const l = habitLog();
+        if (!l[k]) l[k] = {};
+        l[k][hid] = !l[k][hid];
+        if (!l[k][hid]) delete l[k][hid];
+        setHabitLog(l);
+        // Actualizar visualmente sin cerrar
+        const item = c.closest('.diary-item');
+        item.classList.toggle('done', !!l[k][hid]);
+        c.innerHTML = l[k][hid] ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : '';
+      });
+    });
+  }, 30);
+}
+
 function openImprSheet(existing) {
   const isNew = !existing;
   const now = new Date();
