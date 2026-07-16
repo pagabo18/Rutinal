@@ -23,7 +23,8 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
         String start = intent.getStringExtra(NotificationScheduler.EXTRA_START);
         String end = intent.getStringExtra(NotificationScheduler.EXTRA_END);
         String color = intent.getStringExtra(NotificationScheduler.EXTRA_COLOR);
-        boolean isPre = intent.getBooleanExtra(NotificationScheduler.EXTRA_IS_PRE, false);
+        String kind = intent.getStringExtra(NotificationScheduler.EXTRA_KIND);
+        if (kind == null) kind = "start";
         int notifId = intent.getIntExtra(NotificationScheduler.EXTRA_NOTIF_ID, 0);
 
         if (label == null) label = "Bloque";
@@ -35,12 +36,21 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
 
         String title;
         String body;
-        if (isPre) {
-            title = "En 5 min: " + label;
-            body = start + " – " + end;
-        } else {
-            title = "Empieza ahora: " + label;
-            body = "Bloque de " + start + " a " + end;
+        boolean showActions = true;
+        switch (kind) {
+            case "pre":
+                title = "En 5 min: " + label;
+                body = start + " – " + end;
+                break;
+            case "end":
+                title = "Termina: " + label;
+                body = "Terminó tu bloque (" + start + " – " + end + ")";
+                showActions = false;
+                break;
+            default: // start
+                title = "Empieza ahora: " + label;
+                body = "Bloque de " + start + " a " + end;
+                break;
         }
 
         // Acción: Listo → descarta esta notificación
@@ -78,15 +88,17 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
          .setContentIntent(openPI)
          .setCategory(Notification.CATEGORY_REMINDER);
 
-        // Iconos vectoriales para acciones
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            android.graphics.drawable.Icon iconOk = android.graphics.drawable.Icon.createWithResource(ctx, R.drawable.ic_notif_check);
-            android.graphics.drawable.Icon iconZz = android.graphics.drawable.Icon.createWithResource(ctx, R.drawable.ic_notif_snooze);
-            b.addAction(new Notification.Action.Builder(iconOk, "Listo", listoPI).build());
-            b.addAction(new Notification.Action.Builder(iconZz, "Posponer 10 min", snzPI).build());
-        } else {
-            b.addAction(R.drawable.ic_notif_check, "Listo", listoPI);
-            b.addAction(R.drawable.ic_notif_snooze, "Posponer 10 min", snzPI);
+        // Iconos vectoriales para acciones (solo pre/start)
+        if (showActions) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                android.graphics.drawable.Icon iconOk = android.graphics.drawable.Icon.createWithResource(ctx, R.drawable.ic_notif_check);
+                android.graphics.drawable.Icon iconZz = android.graphics.drawable.Icon.createWithResource(ctx, R.drawable.ic_notif_snooze);
+                b.addAction(new Notification.Action.Builder(iconOk, "Listo", listoPI).build());
+                b.addAction(new Notification.Action.Builder(iconZz, "Posponer 10 min", snzPI).build());
+            } else {
+                b.addAction(R.drawable.ic_notif_check, "Listo", listoPI);
+                b.addAction(R.drawable.ic_notif_snooze, "Posponer 10 min", snzPI);
+            }
         }
         b.setVisibility(Notification.VISIBILITY_PUBLIC);
 

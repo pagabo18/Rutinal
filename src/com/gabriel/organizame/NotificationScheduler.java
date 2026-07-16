@@ -10,48 +10,55 @@ import android.content.SharedPreferences;
 import android.os.Build;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.List;
 
 /**
- * Programa notificaciones al inicio de cada bloque (y 5 min antes)
- * usando AlarmManager.setExactAndAllowWhileIdle.
- *
- * Estrategia:
- *   - Se llama scheduleAll() cuando cambian bloques o al abrir la app.
- *   - Cancela todos los pending intents anteriores (guardados por id) y reprograma.
- *   - Guardamos la lista de ids programados en SharedPreferences para poder cancelarlos.
+ * Programa notificaciones de bloques (pre / inicio / fin) y de Pomodoro.
  */
 public class NotificationScheduler {
     public static final String CHANNEL_ID = "bloques";
     public static final String CHANNEL_NAME = "Bloques";
+    public static final String CHANNEL_POMO_ID = "pomodoro";
+    public static final String CHANNEL_POMO_NAME = "Pomodoro";
 
     static final String PREFS_ALARMS = "organizame_alarms";
     static final String K_ACTIVE_IDS = "active_ids";
+    static final String K_POMO_ID = "pomo_id";
 
     public static final String EXTRA_LABEL = "label";
     public static final String EXTRA_START = "start";
     public static final String EXTRA_END = "end";
     public static final String EXTRA_COLOR = "color";
     public static final String EXTRA_CAT = "cat";
-    public static final String EXTRA_IS_PRE = "is_pre"; // aviso 5 min antes
+    public static final String EXTRA_KIND = "kind"; // "pre" | "start" | "end"
     public static final String EXTRA_NOTIF_ID = "notif_id";
     public static final String EXTRA_BLOCK_KEY = "block_key";
+
+    public static final String EXTRA_POMO_PHASE = "pomo_phase"; // focus | short | long
+    public static final String EXTRA_POMO_NEXT = "pomo_next";
+    public static final String EXTRA_POMO_CYCLE = "pomo_cycle";
 
     public static void ensureChannel(Context ctx) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
-        if (nm.getNotificationChannel(CHANNEL_ID) != null) return;
-        NotificationChannel ch = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
-        ch.setDescription("Avisos al iniciar y antes de cada bloque.");
-        ch.enableVibration(true);
-        nm.createNotificationChannel(ch);
+        if (nm.getNotificationChannel(CHANNEL_ID) == null) {
+            NotificationChannel ch = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+            ch.setDescription("Avisos al iniciar, terminar y antes de cada bloque.");
+            ch.enableVibration(true);
+            nm.createNotificationChannel(ch);
+        }
+        if (nm.getNotificationChannel(CHANNEL_POMO_ID) == null) {
+            NotificationChannel ch = new NotificationChannel(CHANNEL_POMO_ID, CHANNEL_POMO_NAME, NotificationManager.IMPORTANCE_HIGH);
+            ch.setDescription("Avisos de Pomodoro al terminar cada fase.");
+            ch.enableVibration(true);
+            nm.createNotificationChannel(ch);
+        }
     }
 
-    /** Cancela alarmas previas y programa todas las de hoy. Llamado desde el bridge JS. */
+    /** Cancela alarmas previas y programa todas las de hoy. */
     public static void scheduleAll(Context ctx) {
         ensureChannel(ctx);
         cancelAll(ctx);
@@ -65,19 +72,26 @@ public class NotificationScheduler {
 
         for (DataHelper.Block b : blocks) {
             long startMs = todayMillisAt(b.startMin);
+            long endMs = todayMillisAt(b.endMin);
             String blockKey = b.startStr + "-" + b.endStr + "-" + b.label + (b.isImprevisto ? "-i" : "");
 
             // Aviso 5 min antes
             long preMs = startMs - 5 * 60_000L;
             if (preMs > now) {
-                int id = notifId(blockKey, true);
-                schedule(am, ctx, preMs, buildIntent(ctx, b, true, id, blockKey), id);
+                int id = notifId(blockKey, "pre");
+                schedule(am, ctx, preMs, buildIntent(ctx, b, "pre", id, blockKey), id);
                 active.put(id);
             }
             // Aviso al iniciar
             if (startMs > now) {
-                int id = notifId(blockKey, false);
-                schedule(am, ctx, startMs, buildIntent(ctx, b, false, id, blockKey), id);
+                int id = notifId(blockKey, "start");
+                schedule(am, ctx, startMs, buildIntent(ctx, b, "start", id, blockKey), id);
+                active.put(id);
+            }
+            // Aviso al terminar
+            if (endMs > now) {
+                int id = notifId(blockKey, "end");
+                schedule(am, ctx, endMs, buildIntent(ctx, b, "end", id, blockKey), id);
                 active.put(id);
             }
         }
@@ -105,6 +119,48 @@ public class NotificationScheduler {
         sp.edit().remove(K_ACTIVE_IDS).apply();
     }
 
+    // ----- Pomodoro -----
+
+    public static void schedulePomo(Context ctx, String phase, String nextPhase, int cycle, long endMs) {
+        ensureChannel(ctx);
+        cancelPomo(ctx);
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        if (endMs <= System.currentTimeMillis()) return;
+
+        int id = 0x50000000 | ((int) (endMs / 1000) & 0x0FFFFFFF);
+        Intent i = new Intent(ctx, PomoNotificationReceiver.class);
+        i.setAction("com.gabriel.organizame.POMO_ALARM");
+        i.setData(android.net.Uri.parse("organizame://pomo/" + id));
+        i.putExtra(EXTRA_POMO_PHASE, phase);
+        i.putExtra(EXTRA_POMO_NEXT, nextPhase);
+        i.putExtra(EXTRA_POMO_CYCLE, cycle);
+        i.putExtra(EXTRA_NOTIF_ID, id);
+        schedule(am, ctx, endMs, i, id);
+
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        sp.edit().putInt(K_POMO_ID, id).apply();
+    }
+
+    public static void cancelPomo(Context ctx) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        int id = sp.getInt(K_POMO_ID, 0);
+        if (id == 0) return;
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        Intent i = new Intent(ctx, PomoNotificationReceiver.class);
+        i.setAction("com.gabriel.organizame.POMO_ALARM");
+        i.setData(android.net.Uri.parse("organizame://pomo/" + id));
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, id, i, piFlags(true));
+        if (pi != null) am.cancel(pi);
+        // Descartar cualquier notificación pomodoro visible
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) nm.cancel(id);
+        sp.edit().remove(K_POMO_ID).apply();
+    }
+
+    // ----- helpers -----
+
     private static void schedule(AlarmManager am, Context ctx, long when, Intent intent, int requestCode) {
         PendingIntent pi = PendingIntent.getBroadcast(ctx, requestCode, intent, piFlags(false));
         try {
@@ -124,7 +180,7 @@ public class NotificationScheduler {
         }
     }
 
-    private static Intent buildIntent(Context ctx, DataHelper.Block b, boolean isPre, int id, String key) {
+    private static Intent buildIntent(Context ctx, DataHelper.Block b, String kind, int id, String key) {
         Intent i = new Intent(ctx, BlockNotificationReceiver.class);
         i.setAction("com.gabriel.organizame.BLOCK_ALARM");
         i.setData(android.net.Uri.parse("organizame://alarm/" + id));
@@ -133,7 +189,7 @@ public class NotificationScheduler {
         i.putExtra(EXTRA_END, b.endStr);
         i.putExtra(EXTRA_COLOR, b.color);
         i.putExtra(EXTRA_CAT, b.cat);
-        i.putExtra(EXTRA_IS_PRE, isPre);
+        i.putExtra(EXTRA_KIND, kind);
         i.putExtra(EXTRA_NOTIF_ID, id);
         i.putExtra(EXTRA_BLOCK_KEY, key);
         return i;
@@ -155,8 +211,14 @@ public class NotificationScheduler {
         return c.getTimeInMillis();
     }
 
-    private static int notifId(String key, boolean isPre) {
-        int h = key.hashCode() & 0x7FFFFFFF;
-        return isPre ? (h | 0x40000000) : (h & ~0x40000000);
+    private static int notifId(String key, String kind) {
+        int h = key.hashCode() & 0x0FFFFFFF;
+        int tag;
+        switch (kind) {
+            case "pre": tag = 0x10000000; break;
+            case "end": tag = 0x20000000; break;
+            default:    tag = 0x30000000; break; // start
+        }
+        return h | tag;
     }
 }

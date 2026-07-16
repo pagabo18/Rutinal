@@ -37,6 +37,18 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public void schedulePomoAlarm(String phase, String nextPhase, int cycle, double endMs) {
+        try {
+            NotificationScheduler.schedulePomo(ctx, phase, nextPhase, cycle, (long) endMs);
+        } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public void cancelPomoAlarm() {
+        try { NotificationScheduler.cancelPomo(ctx); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
     public boolean canScheduleExactAlarms() {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return true;
         android.app.AlarmManager am = (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);

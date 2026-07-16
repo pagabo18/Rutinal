@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gabriel.organizame"
-    android:versionCode="17"
-    android:versionName="17.0">
+    android:versionCode="18"
+    android:versionName="18.0">
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
 
@@ -86,6 +86,15 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.gabriel.organizame.BLOCK_ALARM" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Notificaciones Pomodoro -->
+        <receiver
+            android:name=".PomoNotificationReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.gabriel.organizame.POMO_ALARM" />
             </intent-filter>
         </receiver>
 

@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="17.0">
+<meta name="app-version" content="18.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1201,7 +1201,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v17.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v18.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -3868,6 +3868,21 @@ function pomoPhaseLabel(p) {
 function pomoPhaseMs(p) {
   return (p === 'focus' ? POMO.focus : (p === 'short' ? POMO.short : POMO.long)) * 60 * 1000;
 }
+function pomoPredictedNextPhase(cur, cycle) {
+  if (cur === 'focus') return (cycle >= POMO.cycles) ? 'long' : 'short';
+  return 'focus';
+}
+function pomoAndroidSchedule() {
+  try {
+    if (window.Android && Android.schedulePomoAlarm && pomoState.running && pomoState.endMs) {
+      const next = pomoPredictedNextPhase(pomoState.phase, pomoState.cycle);
+      Android.schedulePomoAlarm(pomoState.phase, next, pomoState.cycle, pomoState.endMs);
+    }
+  } catch(e) {}
+}
+function pomoAndroidCancel() {
+  try { if (window.Android && Android.cancelPomoAlarm) Android.cancelPomoAlarm(); } catch(e) {}
+}
 function pomoBeep() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3909,6 +3924,7 @@ function pomoTick() {
     pomoState.remainingMs = rem;
     if (rem <= 0) {
       pomoBeep();
+      pomoAndroidCancel();
       pomoNextPhase();
       renderPomo();
       return;
@@ -3982,6 +3998,7 @@ document.getElementById('pomo-toggle').addEventListener('click', () => {
   }
   S.set('pomo_state', pomoState);
   if (navigator.vibrate) navigator.vibrate(15);
+  if (pomoState.running) pomoAndroidSchedule(); else pomoAndroidCancel();
   renderPomoDisplay();
 });
 document.getElementById('pomo-reset').addEventListener('click', () => {
@@ -3990,11 +4007,13 @@ document.getElementById('pomo-reset').addEventListener('click', () => {
   pomoState.startedAt = null;
   pomoState.remainingMs = pomoPhaseMs(pomoState.phase);
   S.set('pomo_state', pomoState);
+  pomoAndroidCancel();
   renderPomoDisplay();
 });
 document.getElementById('pomo-skip').addEventListener('click', () => {
   if (!confirm('¿Saltar la fase actual?')) return;
   pomoNextPhase();
+  pomoAndroidCancel();
   renderPomo();
 });
 document.querySelectorAll('.pomo-num-btn').forEach(btn => {
