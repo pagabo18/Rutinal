@@ -64,6 +64,33 @@ public class MainActivity extends Activity {
         NotificationScheduler.scheduleAll(this);
     }
 
+    public void requestCalendarPermission() {
+        if (checkSelfPermission("android.permission.READ_CALENDAR") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{"android.permission.READ_CALENDAR"}, 102);
+        } else {
+            notifyWebPermission(true);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 102) {
+            boolean granted = grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
+            notifyWebPermission(granted);
+        }
+    }
+
+    private void notifyWebPermission(boolean granted) {
+        try {
+            if (webView != null) {
+                webView.evaluateJavascript(
+                    "window.dispatchEvent(new CustomEvent('gcalPermission', {detail:{granted:" + granted + "}}))",
+                    null);
+            }
+        } catch (Exception ignored) {}
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {

@@ -63,6 +63,36 @@ public class WebAppInterface {
         try { NotificationScheduler.setHydrationTimes(ctx, timesJson); } catch (Exception ignored) {}
     }
 
+    // ----- Google Calendar (solo lectura) -----
+
+    @JavascriptInterface
+    public boolean hasCalendarPermission() {
+        try { return GCalHelper.hasPermission(ctx); } catch (Exception e) { return false; }
+    }
+
+    @JavascriptInterface
+    public void requestCalendarPermission() {
+        try {
+            if (ctx instanceof MainActivity) {
+                ((MainActivity) ctx).runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                        ((MainActivity) ctx).requestCalendarPermission();
+                    }
+                });
+            }
+        } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public String listCalendars() {
+        try { return GCalHelper.listCalendars(ctx); } catch (Exception e) { return "[]"; }
+    }
+
+    @JavascriptInterface
+    public String getGCalEvents(String dateKey, String calIdsCsv) {
+        try { return GCalHelper.getEventsForDate(ctx, dateKey, calIdsCsv); } catch (Exception e) { return "[]"; }
+    }
+
     @JavascriptInterface
     public boolean canScheduleExactAlarms() {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return true;
