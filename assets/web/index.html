@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="15.0">
+<meta name="app-version" content="16.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -605,9 +605,32 @@
   .day-card.impr { background: var(--impr-bg); border-color: var(--impr-bd); border-left-color: var(--impr); }
   .day-card.active { box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left-width: 5px; }
   .day-card.past { opacity: 0.55; }
-  .day-card.past .day-card-label { color: var(--text-2); }
+  .day-card.past .day-card-label { color: var(--text-2); text-decoration: line-through; text-decoration-thickness: 1.5px; }
   .day-card.affected { opacity: 0.45; }
   .day-card.affected .day-card-label { text-decoration: line-through; }
+  .day-card.done .day-card-label {
+    text-decoration: line-through; text-decoration-thickness: 2px;
+    color: var(--text-3);
+  }
+  .day-card.done .day-card-meta { text-decoration: line-through; opacity: 0.8; }
+  .day-card.done { opacity: 0.7; }
+  .day-card-check {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--text-4);
+    background: transparent; cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 10px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .day-card-check svg { width: 14px; height: 14px; opacity: 0; stroke: #fff; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .day-card.done .day-card-check { background: var(--text-2); border-color: var(--text-2); }
+  .day-card.done .day-card-check svg { opacity: 1; }
+  .day-card.gym.done .day-card-check { background: var(--gym); border-color: var(--gym); }
+  .day-card.trabajo.done .day-card-check { background: var(--trabajo); border-color: var(--trabajo); }
+  .day-card.hobby.done .day-card-check { background: var(--hobby); border-color: var(--hobby); }
+  .day-card.pareja.done .day-card-check { background: var(--pareja); border-color: var(--pareja); }
+  .day-card.personal.done .day-card-check { background: var(--personal); border-color: var(--personal); }
+  .day-card.impr.done .day-card-check { background: var(--impr); border-color: var(--impr); }
   .day-card.expanded { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
   .day-card-main {
     display: flex; align-items: center; gap: 12px;
@@ -1201,7 +1224,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v15.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v16.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1806,6 +1829,21 @@ const saveImprs = l => S.set('imprevistos', l);
 const imprsForDate = k => loadImprs().filter(i => i.date === k);
 const imprHours = i => Math.max(0, timeToMin(i.end) - timeToMin(i.start)) / 60;
 
+// ---------- Tareas terminadas por día ----------
+const loadDoneBlocks = () => S.get('done_blocks', {});
+function isBlockDone(dateKey, blockId) {
+  const d = loadDoneBlocks();
+  return !!(d[dateKey] && d[dateKey][blockId]);
+}
+function toggleBlockDone(dateKey, blockId) {
+  const d = loadDoneBlocks();
+  if (!d[dateKey]) d[dateKey] = {};
+  if (d[dateKey][blockId]) delete d[dateKey][blockId];
+  else d[dateKey][blockId] = true;
+  if (Object.keys(d[dateKey]).length === 0) delete d[dateKey];
+  S.set('done_blocks', d);
+}
+
 // ---------- Diario ----------
 const loadDiary = () => S.get('diary', {});
 const saveDiary = d => S.set('diary', d);
@@ -1946,15 +1984,20 @@ function renderHoy() {
     const isActive = nm >= s && nm < e;
     const isPast = nm >= e;
     const isAffected = !isImpr && affected.has(b.id);
+    const isDone = isBlockDone(todayKey, b.id);
     const durTxt = fmtDur(e - s);
     const catLabel = isImpr ? 'Imprevisto' : (b.cat || 'personal');
     const card = document.createElement('div');
     card.className = 'day-card ' + b.cat
       + (isActive ? ' active' : '')
       + (isPast ? ' past' : '')
-      + (isAffected ? ' affected' : '');
+      + (isAffected ? ' affected' : '')
+      + (isDone ? ' done' : '');
     card.innerHTML = `
       <div class="day-card-main">
+        <button class="day-card-check" title="Marcar como terminado" aria-label="Marcar como terminado">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
         <div class="day-card-time">
           <div class="day-card-hhmm">${b.start}</div>
           <div class="day-card-dur">${durTxt}</div>
@@ -1967,6 +2010,12 @@ function renderHoy() {
           <svg class="icon" viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg>
         </div>
       </div>`;
+    card.querySelector('.day-card-check').addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      toggleBlockDone(todayKey, b.id);
+      if (navigator.vibrate) navigator.vibrate(12);
+      renderHoy();
+    });
     card.addEventListener('click', () => isImpr ? openImprSheet(b) : openBlockSheet(b, kind));
     listWrap.appendChild(card);
   });
