@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="22.1">
+<meta name="app-version" content="23.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1040,8 +1040,22 @@
   .cal-cell.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
   .cal-cell.future { color: var(--text-4); }
   .cal-dots { display: flex; gap: 2px; margin-top: 3px; }
-  .cal-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--success); }
-  .cal-cell.selected .cal-dot { background: var(--bg); }
+  .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--success); }
+  .cal-cell.selected .cal-dot { outline: 1px solid var(--bg); }
+  .cal-detail-block {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 10px;
+    background: var(--surface-2); margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .cal-detail-block-dot { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+  .cal-detail-block-time { color: var(--text-3); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .cal-detail-block-label { flex: 1; }
+  .cal-detail-section-title {
+    font-size: 10px; color: var(--text-3);
+    font-weight: 600; letter-spacing: 0.05em;
+    margin: 12px 0 6px 0; text-transform: uppercase;
+  }
   .cal-cell .impr-mark { position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--impr); }
   .cal-cell.selected .impr-mark { background: var(--bg); }
   .cal-cell .diary-mark { position: absolute; top: 4px; left: 4px; width: 5px; height: 5px; border-radius: 50%; background: #2563EB; }
@@ -1317,7 +1331,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v22.1 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v23.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -2810,6 +2824,7 @@ function renderCal() {
 
   const habits = loadHabits();
   const log = habitLog();
+  const scs = loadSchedules();
   const y = calMonth.getFullYear(), m = calMonth.getMonth();
   const first = new Date(y, m, 1);
   const days = new Date(y, m+1, 0).getDate();
@@ -2829,13 +2844,19 @@ function renderCal() {
     const k = keyDate(dObj);
     const c = document.createElement('div');
     c.className = 'cal-cell' + (k === todayKey ? ' today' : '') + (k === calSel ? ' selected' : '') + (dObj > todayObj ? ' future' : '');
-    let done = 0;
-    if (log[k]) habits.forEach(h => { if (log[k][h.id]) done++; });
+    // Dots = categorías únicas de bloques de ese día
+    const kind = scheduleKindForDate(dObj);
+    const blocks = scs[kind] || [];
+    const uniqCats = [];
+    blocks.forEach(b => { if (!uniqCats.includes(b.cat)) uniqCats.push(b.cat); });
     let dots = '';
-    if (done > 0) {
-      const n = Math.min(done, 3);
+    if (uniqCats.length > 0) {
       dots = '<div class="cal-dots">';
-      for (let i = 0; i < n; i++) dots += '<div class="cal-dot"></div>';
+      uniqCats.slice(0, 4).forEach(catId => {
+        const cat = CATS.find(x => x.id === catId);
+        const color = cat ? cat.color : '#6b7280';
+        dots += `<div class="cal-dot" style="background:${color}"></div>`;
+      });
       dots += '</div>';
     }
     const hasImpr = imprsForDate(k).length > 0;
@@ -2848,6 +2869,19 @@ function renderCal() {
   // Detalle
   const dNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const sel = parseKey(calSel);
+  const kind = scheduleKindForDate(sel);
+  const blocks = (scs[kind] || []).slice().sort((a,b) => a.start.localeCompare(b.start));
+
+  const blocksHtml = blocks.map(b => {
+    const cat = CATS.find(c => c.id === b.cat);
+    const color = cat ? cat.color : '#6b7280';
+    const catLbl = cat ? cat.label : '';
+    return `<div class="cal-detail-block">
+      <div class="cal-detail-block-dot" style="background:${color}"></div>
+      <div class="cal-detail-block-label">${b.label}<div class="cal-detail-block-time">${b.start} – ${b.end} · ${catLbl}</div></div>
+    </div>`;
+  }).join('');
+
   let doneC = 0;
   const rows = habits.map(h => {
     const dn = log[calSel] && log[calSel][h.id];
@@ -2876,16 +2910,26 @@ function renderCal() {
       ${dNames[sel.getDay()]} ${sel.getDate()}
       <span class="cal-detail-count">${doneC}/${habits.length}</span>
     </div>
+    ${blocks.length ? `<div class="cal-detail-section-title">Bloques del día</div>${blocksHtml}` : ''}
+    <div class="cal-detail-section-title">Hábitos</div>
     ${rows || '<div class="empty" style="padding:8px 0;">Sin hábitos</div>'}
-    ${imprRows ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);"><div style="font-size:10px;color:var(--impr);font-weight:600;letter-spacing:0.05em;margin-bottom:6px;">IMPREVISTOS</div>${imprRows}</div>` : ''}
+    ${imprRows ? `<div class="cal-detail-section-title" style="color:var(--impr);">Imprevistos</div>${imprRows}` : ''}
     ${diaryPreview}
-    <button class="btn-secondary" id="open-diary-btn" style="margin-top:12px;width:100%;">
-      <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;margin-right:6px;vertical-align:-3px;"><path d="M4 4h16v16H4z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
-      ${hasDiary ? 'Ver / editar diario' : 'Escribir en el diario'}
-    </button>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn-secondary" id="open-diary-btn" style="flex:1;">
+        <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;margin-right:6px;vertical-align:-3px;"><path d="M4 4h16v16H4z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+        ${hasDiary ? 'Diario' : 'Escribir diario'}
+      </button>
+      <button class="btn-secondary" id="cal-goto-day" style="flex:1;">Ver en Día</button>
+    </div>
   </div>`;
   const dbtn = document.getElementById('open-diary-btn');
   if (dbtn) dbtn.addEventListener('click', () => openDiarySheet(calSel));
+  const gbtn = document.getElementById('cal-goto-day');
+  if (gbtn) gbtn.addEventListener('click', () => {
+    dayView = parseKey(calSel);
+    document.querySelector('nav button[data-tab="dia"]').click();
+  });
 }
 document.getElementById('open-diary-history-btn').addEventListener('click', openDiaryHistorySheet);
 document.getElementById('cal-prev').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth()-1); renderCal(); });
