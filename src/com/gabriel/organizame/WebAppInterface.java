@@ -59,6 +59,11 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public void setHydrationReminders(String timesJson) {
+        try { NotificationScheduler.setHydrationTimes(ctx, timesJson); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
     public boolean canScheduleExactAlarms() {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return true;
         android.app.AlarmManager am = (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);

@@ -32,6 +32,9 @@ public class NotificationScheduler {
     static final String K_ACTIVE_IDS = "active_ids";
     static final String K_POMO_ID = "pomo_id";
     static final String K_HABIT_TIME = "habit_reminder_hhmm"; // "HH:mm" o vacío
+    static final String K_HYD_TIMES = "hydration_times"; // JSON array de "HH:mm"
+    // Rango de IDs para alarmas de hidratación (máx 20)
+    public static final int HYD_ALARM_ID_BASE = 0x60001000;
     static final String K_DND_AUTO = "dnd_auto";
     static final String K_DND_PREV_FILTER = "dnd_prev_filter";
     public static final int HABIT_ALARM_ID = 0x60000001;
@@ -194,6 +197,74 @@ public class NotificationScheduler {
         i.setData(android.net.Uri.parse("organizame://habit/" + HABIT_ALARM_ID));
         PendingIntent pi = PendingIntent.getBroadcast(ctx, HABIT_ALARM_ID, i, piFlags(true));
         if (pi != null) am.cancel(pi);
+    }
+
+    // ----- Recordatorios de hidratación -----
+
+    /** Guarda la lista de horas y programa todas. timesJson = JSON array de "HH:mm". Vacío o "[]" cancela. */
+    public static void setHydrationTimes(Context ctx, String timesJson) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        if (timesJson == null || timesJson.isEmpty() || "[]".equals(timesJson.trim())) {
+            sp.edit().remove(K_HYD_TIMES).apply();
+            cancelHydrationReminders(ctx);
+            return;
+        }
+        sp.edit().putString(K_HYD_TIMES, timesJson).apply();
+        scheduleHydrationReminders(ctx);
+    }
+
+    public static String getHydrationTimes(Context ctx) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        return sp.getString(K_HYD_TIMES, "");
+    }
+
+    public static void scheduleHydrationReminders(Context ctx) {
+        ensureHabitChannel(ctx);
+        cancelHydrationReminders(ctx);
+        String json = getHydrationTimes(ctx);
+        if (json == null || json.isEmpty()) return;
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        try {
+            JSONArray arr = new JSONArray(json);
+            int max = Math.min(arr.length(), 20);
+            long now = System.currentTimeMillis();
+            for (int idx = 0; idx < max; idx++) {
+                String hhmm = arr.optString(idx, "");
+                int colon = hhmm.indexOf(':');
+                if (colon < 0) continue;
+                int hh, mm;
+                try {
+                    hh = Integer.parseInt(hhmm.substring(0, colon));
+                    mm = Integer.parseInt(hhmm.substring(colon + 1));
+                } catch (Exception e) { continue; }
+                Calendar target = Calendar.getInstance();
+                target.set(Calendar.HOUR_OF_DAY, hh);
+                target.set(Calendar.MINUTE, mm);
+                target.set(Calendar.SECOND, 0);
+                target.set(Calendar.MILLISECOND, 0);
+                if (target.getTimeInMillis() <= now) target.add(Calendar.DAY_OF_YEAR, 1);
+                int id = HYD_ALARM_ID_BASE + idx;
+                Intent i = new Intent(ctx, HydrationReminderReceiver.class);
+                i.setAction("com.gabriel.organizame.HYDRATION_REMINDER");
+                i.setData(android.net.Uri.parse("organizame://hydration/" + id));
+                i.putExtra("slot", idx);
+                schedule(am, ctx, target.getTimeInMillis(), i, id);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    public static void cancelHydrationReminders(Context ctx) {
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        for (int idx = 0; idx < 20; idx++) {
+            int id = HYD_ALARM_ID_BASE + idx;
+            Intent i = new Intent(ctx, HydrationReminderReceiver.class);
+            i.setAction("com.gabriel.organizame.HYDRATION_REMINDER");
+            i.setData(android.net.Uri.parse("organizame://hydration/" + id));
+            PendingIntent pi = PendingIntent.getBroadcast(ctx, id, i, piFlags(true));
+            if (pi != null) am.cancel(pi);
+        }
     }
 
     /** Cancela alarmas previas y programa todas las de hoy. */

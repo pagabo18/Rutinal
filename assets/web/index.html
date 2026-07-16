@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="28.0">
+<meta name="app-version" content="29.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1352,7 +1352,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v28.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v29.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1432,6 +1432,26 @@
 
   <!-- HÁBITOS -->
   <section id="tab-habitos">
+    <div id="hydration-card" class="habit-card" style="margin-bottom:16px;padding:14px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:10px;background:#0EA5E922;display:flex;align-items:center;justify-content:center;font-size:20px;">💧</div>
+          <div>
+            <div style="font-weight:600;font-size:15px;">Hidratación</div>
+            <div id="hyd-sub" style="font-size:12px;color:var(--text-3);">0 de 8 vasos</div>
+          </div>
+        </div>
+        <div id="hyd-pct" style="font-size:14px;font-weight:600;color:#0EA5E9;">0%</div>
+      </div>
+      <div style="height:6px;background:var(--surface-3, var(--border));border-radius:999px;overflow:hidden;margin-bottom:12px;">
+        <div id="hyd-bar" style="height:100%;width:0%;background:#0EA5E9;transition:width .3s;"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <button id="hyd-minus" class="btn-secondary" style="padding:8px 14px;font-size:16px;min-width:44px;">−</button>
+        <div id="hyd-count" style="font-size:22px;font-weight:600;color:var(--text-1);">0</div>
+        <button id="hyd-plus" style="flex:1;padding:10px 14px;background:#0EA5E9;color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">+ 1 vaso</button>
+      </div>
+    </div>
     <h2>Hoy <span class="h2-btn" id="add-habit">+ Nuevo</span></h2>
     <div id="habits-list"></div>
     <h2>Estadísticas</h2>
@@ -1599,10 +1619,6 @@
 
     <div id="edit-blocks" class="edit-panel">
       <h2>Bloques <span class="h2-btn" id="edit-add-block">+ Nuevo</span></h2>
-      <div id="today-schedule-chip" style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;font-size:11px;color:var(--text-2);margin-bottom:12px;letter-spacing:0.02em;">
-        <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>
-        <span id="today-schedule-lbl">Hoy: Entre semana</span>
-      </div>
       <div id="edit-blocks-list"></div>
     </div>
 
@@ -1659,6 +1675,36 @@
           <span id="weekend-silent-lbl" style="font-size:14px; color:var(--text-2);">Notificaciones normales sab/dom</span>
         </label>
         <div id="weekend-status" style="font-size:12px; color:var(--text-3); margin-top:8px;"></div>
+      </div>
+      <div class="setting">
+        <div class="setting-label">Hidratación</div>
+        <div style="font-size:13px; color:var(--text-3); margin-bottom:10px; line-height:1.4;">Meta diaria de agua y recordatorios opcionales. Las notificaciones son suaves (sin sonido).</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+            Meta (vasos)
+            <input type="number" id="hyd-goal" min="1" max="20" class="field-input" value="8">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+            ml por vaso (opcional)
+            <input type="number" id="hyd-ml" min="50" max="1000" step="25" class="field-input" placeholder="250">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+            Desde
+            <input type="time" id="hyd-from" class="field-input" value="08:00">
+          </label>
+          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+            Hasta
+            <input type="time" id="hyd-to" class="field-input" value="22:00">
+          </label>
+          <label style="grid-column:1/-1;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+            Recordatorios al día (0 = sin recordatorios)
+            <input type="number" id="hyd-count" min="0" max="20" class="field-input" value="0">
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-secondary" id="hyd-save" style="padding:8px 14px;">Guardar</button>
+        </div>
+        <div id="hyd-status" style="font-size:12px; color:var(--text-3); margin-top:8px;"></div>
       </div>
       <div class="setting" id="dnd-setting" style="display:none;">
         <div class="setting-label">No Molestar automático</div>
@@ -2755,7 +2801,96 @@ function calcStreak(id) {
   }
   return s;
 }
+// ============================================================
+// HIDRATACIÓN
+// ============================================================
+function hydSettings() {
+  const def = { goal: 8, mlPerGlass: 0, from: '08:00', to: '22:00', count: 0 };
+  const v = S.get('hydration_settings', null);
+  return v ? Object.assign({}, def, v) : def;
+}
+function hydLog() { return S.get('hydration_log', {}); }
+function hydToday() {
+  const log = hydLog();
+  return log[keyDate()] || 0;
+}
+function hydSetToday(n) {
+  const log = hydLog();
+  const k = keyDate();
+  if (n <= 0) delete log[k]; else log[k] = n;
+  S.set('hydration_log', log);
+}
+function renderHydration() {
+  const s = hydSettings();
+  const cur = hydToday();
+  const pct = s.goal > 0 ? Math.min(100, Math.round(cur * 100 / s.goal)) : 0;
+  const countEl = document.getElementById('hyd-count');
+  const subEl = document.getElementById('hyd-sub');
+  const pctEl = document.getElementById('hyd-pct');
+  const barEl = document.getElementById('hyd-bar');
+  if (!countEl) return;
+  countEl.textContent = cur;
+  let subTxt = cur + ' de ' + s.goal + ' vasos';
+  if (s.mlPerGlass > 0) subTxt += ' · ' + (cur * s.mlPerGlass) + ' ml';
+  subEl.textContent = subTxt;
+  pctEl.textContent = pct + '%';
+  barEl.style.width = pct + '%';
+}
+function bindHydrationOnce() {
+  const plus = document.getElementById('hyd-plus');
+  const minus = document.getElementById('hyd-minus');
+  if (plus && !plus.dataset.bound) {
+    plus.dataset.bound = '1';
+    plus.addEventListener('click', () => {
+      hydSetToday(hydToday() + 1);
+      renderHydration();
+      try { if (window.Android && window.Android.refreshAllWidgets) window.Android.refreshAllWidgets(); } catch(e){}
+    });
+  }
+  if (minus && !minus.dataset.bound) {
+    minus.dataset.bound = '1';
+    minus.addEventListener('click', () => {
+      hydSetToday(Math.max(0, hydToday() - 1));
+      renderHydration();
+    });
+  }
+}
+function hhmmToMin(s) {
+  if (!s || !s.includes(':')) return 0;
+  const [h, m] = s.split(':').map(x => parseInt(x) || 0);
+  return h * 60 + m;
+}
+function minToHHMM(mm) {
+  const h = Math.floor(mm / 60), m = mm % 60;
+  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+}
+function hydComputeTimes() {
+  // Devuelve lista "HH:MM" espaciados uniformemente en la ventana
+  const s = hydSettings();
+  if (!s.count || s.count < 1) return [];
+  const a = hhmmToMin(s.from);
+  const b = hhmmToMin(s.to);
+  if (b <= a) return [];
+  const out = [];
+  if (s.count === 1) {
+    out.push(minToHHMM(Math.round((a + b) / 2)));
+  } else {
+    const step = (b - a) / (s.count - 1);
+    for (let i = 0; i < s.count; i++) out.push(minToHHMM(Math.round(a + step * i)));
+  }
+  return out;
+}
+function hydSyncReminders() {
+  try {
+    if (window.Android && window.Android.setHydrationReminders) {
+      window.Android.setHydrationReminders(JSON.stringify(hydComputeTimes()));
+    }
+  } catch (e) {}
+}
+
 function renderHabitos() {
+  renderHydration();
+  bindHydrationOnce();
   const habits = loadHabits();
   const log = habitLog();
   const k = keyDate();
@@ -3307,6 +3442,26 @@ function renderAjustes() {
   } else {
     hbox.style.display = 'none';
   }
+  // Hidratación
+  try {
+    const hs = hydSettings();
+    const gEl = document.getElementById('hyd-goal');
+    const mEl = document.getElementById('hyd-ml');
+    const fEl = document.getElementById('hyd-from');
+    const tEl = document.getElementById('hyd-to');
+    const cEl = document.getElementById('hyd-count');
+    const stEl = document.getElementById('hyd-status');
+    if (gEl) gEl.value = hs.goal;
+    if (mEl) mEl.value = hs.mlPerGlass > 0 ? hs.mlPerGlass : '';
+    if (fEl) fEl.value = hs.from;
+    if (tEl) tEl.value = hs.to;
+    if (cEl) cEl.value = hs.count;
+    if (stEl) {
+      const times = hydComputeTimes();
+      if (!times.length) stEl.textContent = 'Sin recordatorios activos.';
+      else stEl.textContent = times.length + ' recordatorio(s): ' + times.join(' · ');
+    }
+  } catch (e) {}
   // Modo Fin de Semana
   try {
     const wsSilent = !!S.get('weekend_silent', false);
@@ -3335,6 +3490,26 @@ function renderAjustes() {
   }
 }
 function bindAjustesOnce() {
+  // Hidratación: guardar
+  const hydSaveBtn = document.getElementById('hyd-save');
+  if (hydSaveBtn) {
+    hydSaveBtn.addEventListener('click', () => {
+      const goal = Math.max(1, Math.min(20, parseInt(document.getElementById('hyd-goal').value) || 8));
+      const mlPerGlass = Math.max(0, Math.min(1000, parseInt(document.getElementById('hyd-ml').value) || 0));
+      const from = document.getElementById('hyd-from').value || '08:00';
+      const to = document.getElementById('hyd-to').value || '22:00';
+      const count = Math.max(0, Math.min(20, parseInt(document.getElementById('hyd-count').value) || 0));
+      S.set('hydration_settings', { goal, mlPerGlass, from, to, count });
+      hydSyncReminders();
+      const stEl = document.getElementById('hyd-status');
+      if (stEl) {
+        const times = hydComputeTimes();
+        if (!times.length) stEl.textContent = 'Guardado. Sin recordatorios activos.';
+        else stEl.textContent = 'Guardado. ' + times.length + ' recordatorio(s): ' + times.join(' · ');
+      }
+      renderHydration();
+    });
+  }
   // Toggle Modo Fin de Semana (silencio)
   const wsTog = document.getElementById('weekend-silent-toggle');
   if (wsTog) {
@@ -3756,13 +3931,6 @@ function daysLabel(b) {
   return '';
 }
 function renderEditBlocks() {
-  // Chip: qué horario aplica hoy
-  try {
-    const k = scheduleKindForDate();
-    const lbl = k === 'weekday' ? 'Entre semana (Lun–Vie)' : (k === 'saturday' ? 'Sábado' : 'Domingo');
-    const el = document.getElementById('today-schedule-lbl');
-    if (el) el.textContent = 'Hoy: ' + lbl;
-  } catch (e) {}
   // Unificar todos los bloques de los 3 baldes por id, quedandonos con el primero
   const scs = loadSchedules();
   const seen = new Set();
