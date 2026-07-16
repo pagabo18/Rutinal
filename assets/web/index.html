@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="27.0">
+<meta name="app-version" content="27.1">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1352,7 +1352,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v27.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v27.1 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1512,7 +1512,7 @@
       <div class="pomo-cycle" id="pomo-cycle">Ciclo 1 de 4</div>
       <div class="pomo-track"><div class="pomo-fill" id="pomo-fill" style="width:0"></div></div>
       <div class="pomo-actions">
-        <button class="btn-secondary" id="pomo-reset" title="Reiniciar">
+        <button class="btn-secondary" id="pomo-reset" title="Reiniciar fase">
           <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
         </button>
         <button class="btn-primary" id="pomo-toggle">Iniciar</button>
@@ -1520,6 +1520,7 @@
           <svg class="icon" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
         </button>
       </div>
+      <button class="btn-ghost" id="pomo-reset-cycles" style="margin-top:14px;font-size:12px;color:var(--text-3);background:none;border:none;padding:6px 10px;cursor:pointer;letter-spacing:0.02em;">↻ Reiniciar ciclos</button>
     </div>
 
     <div class="pomo-settings">
@@ -5054,6 +5055,18 @@ document.getElementById('pomo-reset').addEventListener('click', () => {
   S.set('pomo_state', pomoState);
   pomoAndroidCancel();
   renderPomoDisplay();
+});
+document.getElementById('pomo-reset-cycles').addEventListener('click', () => {
+  if (!confirm('¿Reiniciar los ciclos? Volverás al ciclo 1, fase de enfoque.')) return;
+  pomoState.running = false;
+  pomoState.endMs = null;
+  pomoState.startedAt = null;
+  pomoState.phase = 'focus';
+  pomoState.cycle = 1;
+  pomoState.remainingMs = pomoPhaseMs('focus');
+  S.set('pomo_state', pomoState);
+  pomoAndroidCancel();
+  renderPomo();
 });
 document.getElementById('pomo-skip').addEventListener('click', () => {
   if (!confirm('¿Saltar la fase actual?')) return;
