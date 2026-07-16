@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="14.0">
+<meta name="app-version" content="15.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -291,7 +291,13 @@
     margin-bottom: 6px;
     position: relative;
     transition: border-color 0.2s, background 0.2s;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "info timer" "track track";
+    column-gap: 16px;
+    align-items: center;
   }
+  .now-info { grid-area: info; min-width: 0; }
   .now .cat-tag {
     font-size: 10px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.08em;
@@ -301,21 +307,98 @@
   .now-title {
     font-size: 20px; font-weight: 600; margin-top: 6px; letter-spacing: -0.02em;
     display: flex; align-items: center; gap: 10px;
+    overflow-wrap: anywhere;
   }
   .now-meta { font-size: 13px; color: var(--text-2); margin-top: 4px; font-variant-numeric: tabular-nums; }
   .now-timer {
-    margin-top: 14px;
-    font-size: 48px; font-weight: 700; letter-spacing: -0.03em;
+    grid-area: timer;
+    font-size: 42px; font-weight: 700; letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums; line-height: 1;
     color: var(--text);
-    display: flex; align-items: baseline; gap: 8px;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+    text-align: right;
   }
-  .now-timer .lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-left: 2px; }
+  .now-timer .val { display: block; }
+  .now-timer .lbl { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
   .now-timer.warn { color: var(--warn); }
   .now-timer.crit { color: var(--danger); animation: pulse 1s ease-in-out infinite; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
-  .now-track { height: 5px; background: var(--surface-2); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+  .now-track { grid-area: track; height: 5px; background: var(--surface-2); border-radius: 3px; margin-top: 12px; overflow: hidden; }
   .now-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
+  @media (max-width: 380px) { .now-timer { font-size: 34px; } }
+
+  /* ---------- POMODORO ---------- */
+  .pomo-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 28px 20px 24px; margin-bottom: 20px;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .pomo-card.focus { border-color: var(--accent); }
+  .pomo-card.short { border-color: #10B981; }
+  .pomo-card.long  { border-color: #3B82F6; }
+  .pomo-phase {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--text-3); margin-bottom: 12px;
+  }
+  .pomo-card.focus .pomo-phase { color: var(--accent); }
+  .pomo-card.short .pomo-phase { color: #10B981; }
+  .pomo-card.long  .pomo-phase { color: #3B82F6; }
+  .pomo-timer {
+    font-size: 88px; font-weight: 700; letter-spacing: -0.04em; line-height: 1;
+    font-variant-numeric: tabular-nums; color: var(--text); margin: 4px 0 10px;
+  }
+  .pomo-timer.crit { color: var(--danger); animation: pulse 1s ease-in-out infinite; }
+  .pomo-cycle { font-size: 13px; color: var(--text-2); margin-bottom: 18px; font-variant-numeric: tabular-nums; }
+  .pomo-track { height: 6px; background: var(--surface-2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+  .pomo-fill { height: 100%; background: var(--accent); transition: width 0.3s ease; border-radius: 4px; }
+  .pomo-card.short .pomo-fill { background: #10B981; }
+  .pomo-card.long  .pomo-fill { background: #3B82F6; }
+  .pomo-actions { display: flex; gap: 10px; justify-content: center; align-items: center; }
+  .pomo-actions .btn-primary {
+    flex: 0 1 160px; padding: 14px 24px; font-size: 15px; font-weight: 600;
+    border-radius: 999px;
+  }
+  .pomo-actions .btn-secondary {
+    width: 44px; height: 44px; padding: 0; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pomo-actions .btn-secondary .icon { width: 18px; height: 18px; }
+  @media (max-width: 380px) { .pomo-timer { font-size: 68px; } }
+
+  .pomo-settings {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 4px 16px; margin-bottom: 20px;
+  }
+  .pomo-set-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .pomo-set-row:last-child { border-bottom: 0; }
+  .pomo-set-lbl { font-size: 14px; color: var(--text); }
+  .pomo-set-ctrl { display: flex; align-items: center; gap: 10px; }
+  .pomo-num-btn {
+    width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text); font-size: 16px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-family: inherit; padding: 0;
+  }
+  .pomo-num-btn:active { background: var(--surface); }
+  .pomo-set-val {
+    min-width: 28px; text-align: center; font-size: 17px; font-weight: 700;
+    font-variant-numeric: tabular-nums; color: var(--text);
+  }
+  .pomo-set-unit { font-size: 12px; color: var(--text-3); margin-left: 2px; }
+
+  .pomo-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-bottom: 20px;
+  }
+  .pomo-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 8px; text-align: center;
+  }
+  .pomo-stat-val { font-size: 26px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1; }
+  .pomo-stat-lbl { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; font-weight: 600; }
   .now-empty {
     background: var(--surface); border: 1px dashed var(--border);
     border-radius: 14px; padding: 20px; text-align: center;
@@ -1118,7 +1201,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v14.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v15.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1229,6 +1312,81 @@
     <div id="plan-list"></div>
   </section>
 
+  <!-- POMODORO -->
+  <section id="tab-pomo">
+    <h1 class="h-title" style="margin-bottom:4px;">Pomodoro</h1>
+    <div style="color:var(--text-3); font-size:13px; margin-bottom:16px;">Método de foco por intervalos</div>
+
+    <div class="pomo-card">
+      <div class="pomo-phase" id="pomo-phase">Enfoque</div>
+      <div class="pomo-timer" id="pomo-timer">25:00</div>
+      <div class="pomo-cycle" id="pomo-cycle">Ciclo 1 de 4</div>
+      <div class="pomo-track"><div class="pomo-fill" id="pomo-fill" style="width:0"></div></div>
+      <div class="pomo-actions">
+        <button class="btn-secondary" id="pomo-reset" title="Reiniciar">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </button>
+        <button class="btn-primary" id="pomo-toggle">Iniciar</button>
+        <button class="btn-secondary" id="pomo-skip" title="Saltar">
+          <svg class="icon" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="pomo-settings">
+      <div class="pomo-set-row">
+        <div class="pomo-set-lbl">Enfoque</div>
+        <div class="pomo-set-ctrl">
+          <button class="pomo-num-btn" data-k="focus" data-d="-1">−</button>
+          <span class="pomo-set-val" id="pomo-set-focus">25</span>
+          <button class="pomo-num-btn" data-k="focus" data-d="1">+</button>
+          <span class="pomo-set-unit">min</span>
+        </div>
+      </div>
+      <div class="pomo-set-row">
+        <div class="pomo-set-lbl">Descanso corto</div>
+        <div class="pomo-set-ctrl">
+          <button class="pomo-num-btn" data-k="short" data-d="-1">−</button>
+          <span class="pomo-set-val" id="pomo-set-short">5</span>
+          <button class="pomo-num-btn" data-k="short" data-d="1">+</button>
+          <span class="pomo-set-unit">min</span>
+        </div>
+      </div>
+      <div class="pomo-set-row">
+        <div class="pomo-set-lbl">Descanso largo</div>
+        <div class="pomo-set-ctrl">
+          <button class="pomo-num-btn" data-k="long" data-d="-1">−</button>
+          <span class="pomo-set-val" id="pomo-set-long">15</span>
+          <button class="pomo-num-btn" data-k="long" data-d="1">+</button>
+          <span class="pomo-set-unit">min</span>
+        </div>
+      </div>
+      <div class="pomo-set-row">
+        <div class="pomo-set-lbl">Ciclos por ronda</div>
+        <div class="pomo-set-ctrl">
+          <button class="pomo-num-btn" data-k="cycles" data-d="-1">−</button>
+          <span class="pomo-set-val" id="pomo-set-cycles">4</span>
+          <button class="pomo-num-btn" data-k="cycles" data-d="1">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pomo-stats">
+      <div class="pomo-stat">
+        <div class="pomo-stat-val" id="pomo-stat-today">0</div>
+        <div class="pomo-stat-lbl">Hoy</div>
+      </div>
+      <div class="pomo-stat">
+        <div class="pomo-stat-val" id="pomo-stat-week">0</div>
+        <div class="pomo-stat-lbl">Esta semana</div>
+      </div>
+      <div class="pomo-stat">
+        <div class="pomo-stat-val" id="pomo-stat-total">0</div>
+        <div class="pomo-stat-lbl">Total</div>
+      </div>
+    </div>
+  </section>
+
   <!-- EDITAR -->
   <section id="tab-editar">
     <h1 class="h-title" style="margin-bottom:4px;">Editar</h1>
@@ -1319,6 +1477,10 @@
   <button data-tab="habitos">
     <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
     Hábitos
+  </button>
+  <button data-tab="pomo">
+    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 3h6"/></svg>
+    Pomo
   </button>
   <button data-tab="dia">
     <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
@@ -1736,10 +1898,12 @@ function renderHoy() {
     const startMs = _todayAtMin(s), endMs = _todayAtMin(e);
     wrap.innerHTML = `
       <div class="now" ${nowStyle(color)}>
-        <div class="now-label">Ahora</div>
-        <div class="now-title">${isImpr ? '⚠ ' : ''}${active.label}</div>
-        <div class="now-meta">${active.start} – ${active.end}</div>
-        ${catLabel ? `<div class="cat-tag" style="color:${color}">${catLabel}</div>` : ''}
+        <div class="now-info">
+          <div class="now-label">Ahora</div>
+          <div class="now-title">${isImpr ? '⚠ ' : ''}${active.label}</div>
+          <div class="now-meta">${active.start} – ${active.end}</div>
+          ${catLabel ? `<div class="cat-tag" style="color:${color}">${catLabel}</div>` : ''}
+        </div>
         <div class="now-timer" id="now-timer" data-mode="remaining" data-start="${startMs}" data-end="${endMs}">
           <span class="val">--:--</span><span class="lbl">restante</span>
         </div>
@@ -1756,10 +1920,12 @@ function renderHoy() {
       const startMs = _todayAtMin(timeToMin(next.start));
       wrap.innerHTML = `
         <div class="now" ${nowStyle(color)}>
-          <div class="now-label">A continuación</div>
-          <div class="now-title">${next.label}</div>
-          <div class="now-meta">Empieza a las ${next.start}</div>
-          ${catLabel ? `<div class="cat-tag" style="color:${color}">${catLabel}</div>` : ''}
+          <div class="now-info">
+            <div class="now-label">A continuación</div>
+            <div class="now-title">${next.label}</div>
+            <div class="now-meta">Empieza a las ${next.start}</div>
+            ${catLabel ? `<div class="cat-tag" style="color:${color}">${catLabel}</div>` : ''}
+          </div>
           <div class="now-timer" id="now-timer" data-mode="countdown" data-start="${startMs}">
             <span class="val">--:--</span><span class="lbl">para empezar</span>
           </div>
@@ -3676,7 +3842,182 @@ function updateNowTimer() {
 setInterval(() => {
   const active = document.querySelector('nav button.active').dataset.tab;
   if (active === 'hoy') updateNowTimer();
+  if (active === 'pomo') pomoTick();
 }, 1000);
+
+// ============================================================
+// POMODORO
+// ============================================================
+const POMO_DEFAULTS = { focus: 25, short: 5, long: 15, cycles: 4 };
+let POMO = Object.assign({}, POMO_DEFAULTS, S.get('pomo_settings', {}));
+let pomoState = S.get('pomo_state', null);
+// pomoState: { phase: 'focus'|'short'|'long', cycle: 1..N, running: bool, endMs: number|null, remainingMs: number, startedAt: number|null }
+if (!pomoState) {
+  pomoState = { phase: 'focus', cycle: 1, running: false, endMs: null, remainingMs: POMO.focus * 60 * 1000, startedAt: null };
+  S.set('pomo_state', pomoState);
+}
+function pomoSavedSessions() { return S.get('pomo_sessions', []); }
+function pomoLogSession() {
+  const arr = pomoSavedSessions();
+  arr.push({ ts: Date.now(), phase: 'focus', minutes: POMO.focus });
+  S.set('pomo_sessions', arr);
+}
+function pomoPhaseLabel(p) {
+  return p === 'focus' ? 'Enfoque' : (p === 'short' ? 'Descanso corto' : 'Descanso largo');
+}
+function pomoPhaseMs(p) {
+  return (p === 'focus' ? POMO.focus : (p === 'short' ? POMO.short : POMO.long)) * 60 * 1000;
+}
+function pomoBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = 880;
+    o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+    o.start(); o.stop(ctx.currentTime + 0.95);
+  } catch(e) {}
+  if (navigator.vibrate) navigator.vibrate([120, 80, 120]);
+}
+function pomoNextPhase() {
+  if (pomoState.phase === 'focus') {
+    pomoLogSession();
+    if (pomoState.cycle >= POMO.cycles) {
+      pomoState.phase = 'long';
+      pomoState.cycle = 1;
+    } else {
+      pomoState.phase = 'short';
+    }
+  } else if (pomoState.phase === 'short') {
+    pomoState.phase = 'focus';
+    pomoState.cycle += 1;
+  } else { // long
+    pomoState.phase = 'focus';
+    pomoState.cycle = 1;
+  }
+  pomoState.remainingMs = pomoPhaseMs(pomoState.phase);
+  pomoState.running = false;
+  pomoState.endMs = null;
+  pomoState.startedAt = null;
+  S.set('pomo_state', pomoState);
+}
+function pomoTick() {
+  if (pomoState.running && pomoState.endMs) {
+    const rem = pomoState.endMs - Date.now();
+    pomoState.remainingMs = rem;
+    if (rem <= 0) {
+      pomoBeep();
+      pomoNextPhase();
+      renderPomo();
+      return;
+    }
+  }
+  renderPomoDisplay();
+}
+function renderPomoDisplay() {
+  const card = document.querySelector('.pomo-card');
+  if (!card) return;
+  card.classList.remove('focus', 'short', 'long');
+  card.classList.add(pomoState.phase);
+  document.getElementById('pomo-phase').textContent = pomoPhaseLabel(pomoState.phase);
+  const mm = Math.max(0, Math.floor(pomoState.remainingMs / 60000));
+  const ss = Math.max(0, Math.floor((pomoState.remainingMs % 60000) / 1000));
+  const pad = n => String(n).padStart(2, '0');
+  const timerEl = document.getElementById('pomo-timer');
+  timerEl.textContent = `${pad(mm)}:${pad(ss)}`;
+  timerEl.classList.toggle('crit', pomoState.remainingMs <= 10000 && pomoState.running);
+  document.getElementById('pomo-cycle').textContent =
+    pomoState.phase === 'focus'
+      ? `Ciclo ${pomoState.cycle} de ${POMO.cycles}`
+      : (pomoState.phase === 'long' ? 'Descanso largo · ronda completa' : `Ciclo ${pomoState.cycle} de ${POMO.cycles} · descanso`);
+  const total = pomoPhaseMs(pomoState.phase);
+  const pct = Math.max(0, Math.min(100, ((total - pomoState.remainingMs) / total) * 100));
+  document.getElementById('pomo-fill').style.width = pct + '%';
+  document.getElementById('pomo-toggle').textContent = pomoState.running ? 'Pausar' : (pomoState.remainingMs < total ? 'Continuar' : 'Iniciar');
+}
+function renderPomoStats() {
+  const arr = pomoSavedSessions();
+  const now = new Date();
+  const startOfDay = new Date(now); startOfDay.setHours(0,0,0,0);
+  const startOfWeek = new Date(startOfDay);
+  const dow = (startOfDay.getDay() + 6) % 7; // Lun = 0
+  startOfWeek.setDate(startOfDay.getDate() - dow);
+  let today = 0, week = 0;
+  arr.forEach(s => {
+    if (s.phase !== 'focus') return;
+    if (s.ts >= startOfDay.getTime()) today++;
+    if (s.ts >= startOfWeek.getTime()) week++;
+  });
+  document.getElementById('pomo-stat-today').textContent = today;
+  document.getElementById('pomo-stat-week').textContent = week;
+  document.getElementById('pomo-stat-total').textContent = arr.filter(s => s.phase === 'focus').length;
+}
+function renderPomoSettings() {
+  document.getElementById('pomo-set-focus').textContent = POMO.focus;
+  document.getElementById('pomo-set-short').textContent = POMO.short;
+  document.getElementById('pomo-set-long').textContent = POMO.long;
+  document.getElementById('pomo-set-cycles').textContent = POMO.cycles;
+}
+function renderPomo() {
+  renderPomoSettings();
+  renderPomoDisplay();
+  renderPomoStats();
+}
+tabRenderers.pomo = renderPomo;
+
+// Listeners Pomodoro
+document.getElementById('pomo-toggle').addEventListener('click', () => {
+  if (pomoState.running) {
+    // Pausar
+    pomoState.remainingMs = Math.max(0, pomoState.endMs - Date.now());
+    pomoState.running = false;
+    pomoState.endMs = null;
+  } else {
+    // Iniciar / continuar
+    pomoState.endMs = Date.now() + pomoState.remainingMs;
+    pomoState.running = true;
+    if (!pomoState.startedAt) pomoState.startedAt = Date.now();
+  }
+  S.set('pomo_state', pomoState);
+  if (navigator.vibrate) navigator.vibrate(15);
+  renderPomoDisplay();
+});
+document.getElementById('pomo-reset').addEventListener('click', () => {
+  pomoState.running = false;
+  pomoState.endMs = null;
+  pomoState.startedAt = null;
+  pomoState.remainingMs = pomoPhaseMs(pomoState.phase);
+  S.set('pomo_state', pomoState);
+  renderPomoDisplay();
+});
+document.getElementById('pomo-skip').addEventListener('click', () => {
+  if (!confirm('¿Saltar la fase actual?')) return;
+  pomoNextPhase();
+  renderPomo();
+});
+document.querySelectorAll('.pomo-num-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const k = btn.dataset.k;
+    const d = parseInt(btn.dataset.d, 10);
+    const limits = { focus: [1, 90], short: [1, 30], long: [1, 60], cycles: [2, 10] };
+    const [min, max] = limits[k];
+    POMO[k] = Math.max(min, Math.min(max, POMO[k] + d));
+    S.set('pomo_settings', POMO);
+    // Si no está corriendo y estamos en la fase afectada, refrescar el tiempo
+    if (!pomoState.running) {
+      const affected = (k === 'focus' && pomoState.phase === 'focus')
+                     || (k === 'short' && pomoState.phase === 'short')
+                     || (k === 'long' && pomoState.phase === 'long');
+      if (affected) {
+        pomoState.remainingMs = pomoPhaseMs(pomoState.phase);
+        S.set('pomo_state', pomoState);
+      }
+    }
+    renderPomo();
+  });
+});
 
 setInterval(() => {
   renderClock();
