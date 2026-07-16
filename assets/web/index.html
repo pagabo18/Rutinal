@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="27.2">
+<meta name="app-version" content="27.3">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1352,7 +1352,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v27.2 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v27.3 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1512,18 +1512,15 @@
       <div class="pomo-cycle" id="pomo-cycle">Ciclo 1 de 4</div>
       <div class="pomo-track"><div class="pomo-fill" id="pomo-fill" style="width:0"></div></div>
       <div class="pomo-actions">
-        <button class="btn-secondary" id="pomo-reset" title="Reiniciar fase">
-          <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        <button class="btn-secondary" id="pomo-prev" title="Fase anterior" aria-label="Fase anterior">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <button class="btn-primary" id="pomo-toggle">Iniciar</button>
-        <button class="btn-secondary" id="pomo-skip" title="Saltar">
-          <svg class="icon" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        <button class="btn-secondary" id="pomo-next" title="Fase siguiente" aria-label="Fase siguiente">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;">
-        <button class="btn-ghost" id="pomo-back-focus" style="font-size:12px;color:var(--text-3);background:none;border:none;padding:6px 10px;cursor:pointer;letter-spacing:0.02em;">← Volver al enfoque</button>
-        <button class="btn-ghost" id="pomo-reset-cycles" style="font-size:12px;color:var(--text-3);background:none;border:none;padding:6px 10px;cursor:pointer;letter-spacing:0.02em;">↻ Reiniciar ciclos</button>
-      </div>
+      <button class="btn-ghost" id="pomo-reset-cycles" style="margin-top:14px;font-size:12px;color:var(--text-3);background:none;border:none;padding:6px 10px;cursor:pointer;letter-spacing:0.02em;">↻ Reiniciar ciclos</button>
     </div>
 
     <div class="pomo-settings">
@@ -4911,6 +4908,36 @@ function pomoNextPhase() {
   pomoState.startedAt = null;
   S.set('pomo_state', pomoState);
 }
+function pomoPrevPhase() {
+  // Invierso de pomoNextPhase
+  if (pomoState.phase === 'focus') {
+    // De enfoque → descanso anterior
+    if (pomoState.cycle > 1) {
+      pomoState.phase = 'short';
+      pomoState.cycle -= 1;
+    } else {
+      // Ciclo 1 en enfoque: no hay atrás (se queda igual)
+      pomoState.remainingMs = pomoPhaseMs('focus');
+      pomoState.running = false;
+      pomoState.endMs = null;
+      pomoState.startedAt = null;
+      S.set('pomo_state', pomoState);
+      return;
+    }
+  } else if (pomoState.phase === 'short') {
+    // De descanso corto → enfoque del mismo ciclo
+    pomoState.phase = 'focus';
+  } else { // long
+    // De descanso largo → enfoque del último ciclo
+    pomoState.phase = 'focus';
+    pomoState.cycle = POMO.cycles;
+  }
+  pomoState.remainingMs = pomoPhaseMs(pomoState.phase);
+  pomoState.running = false;
+  pomoState.endMs = null;
+  pomoState.startedAt = null;
+  S.set('pomo_state', pomoState);
+}
 function pomoTick() {
   if (pomoState.running && pomoState.endMs) {
     const rem = pomoState.endMs - Date.now();
@@ -5050,26 +5077,14 @@ document.getElementById('pomo-toggle').addEventListener('click', () => {
   if (pomoState.running) pomoAndroidSchedule(); else pomoAndroidCancel();
   renderPomoDisplay();
 });
-document.getElementById('pomo-reset').addEventListener('click', () => {
-  pomoState.running = false;
-  pomoState.endMs = null;
-  pomoState.startedAt = null;
-  pomoState.remainingMs = pomoPhaseMs(pomoState.phase);
-  S.set('pomo_state', pomoState);
+
+document.getElementById('pomo-prev').addEventListener('click', () => {
+  pomoPrevPhase();
   pomoAndroidCancel();
-  renderPomoDisplay();
+  renderPomo();
 });
-document.getElementById('pomo-back-focus').addEventListener('click', () => {
-  // Regresa a la fase de enfoque del ciclo actual (útil si estás en descanso y quieres re-hacer el enfoque)
-  pomoState.running = false;
-  pomoState.endMs = null;
-  pomoState.startedAt = null;
-  pomoState.phase = 'focus';
-  // Si estamos en descanso largo, significa que ya se completó el último ciclo, volvemos a ese
-  // Si estamos en descanso corto, ya se completó el ciclo actual, volvemos a él
-  // Si ya estamos en enfoque, se queda igual
-  pomoState.remainingMs = pomoPhaseMs('focus');
-  S.set('pomo_state', pomoState);
+document.getElementById('pomo-next').addEventListener('click', () => {
+  pomoNextPhase();
   pomoAndroidCancel();
   renderPomo();
 });
@@ -5082,12 +5097,6 @@ document.getElementById('pomo-reset-cycles').addEventListener('click', () => {
   pomoState.cycle = 1;
   pomoState.remainingMs = pomoPhaseMs('focus');
   S.set('pomo_state', pomoState);
-  pomoAndroidCancel();
-  renderPomo();
-});
-document.getElementById('pomo-skip').addEventListener('click', () => {
-  if (!confirm('¿Saltar la fase actual?')) return;
-  pomoNextPhase();
   pomoAndroidCancel();
   renderPomo();
 });
