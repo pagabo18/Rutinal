@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="22.0">
+<meta name="app-version" content="22.1">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1317,7 +1317,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v22.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v22.1 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -2253,11 +2253,6 @@ function renderDiaList(container, events, affected, isToday, kind) {
 }
 
 function renderDiaHours(container, events, affected, isToday, list, dayImprs) {
-  const hint = document.createElement('div');
-  hint.className = 'drag-hint';
-  hint.textContent = 'Mantén presionado un bloque para moverlo';
-  container.appendChild(hint);
-
   const tl = document.createElement('div');
   tl.className = 'timeline';
   tl.style.position = 'relative';
@@ -2340,11 +2335,7 @@ function renderDiaHours(container, events, affected, isToday, list, dayImprs) {
       <div class="tl-label">${isImpr ? '⚠ ' : ''}${ev.label}</div>
       <div class="tl-time">${ev.start} – ${ev.end} · ${durTxt}</div>
       <div class="tl-cat">${catLabel}</div>`;
-    if (!isImpr) enableTimelineDrag(el, ev, kind, minH, HOUR_H, overlay, tl);
-    el.addEventListener('click', (e) => {
-      if (el.dataset.wasDragging === '1') { el.dataset.wasDragging = '0'; return; }
-      isImpr ? openImprSheet(ev) : openBlockSheet(ev, kind);
-    });
+    el.addEventListener('click', () => isImpr ? openImprSheet(ev) : openBlockSheet(ev, kind));
     overlay.appendChild(el);
   });
 
@@ -2356,8 +2347,8 @@ function renderDiaHours(container, events, affected, isToday, list, dayImprs) {
   }
 }
 
-// ---------- Drag & drop de bloques en timeline por horas ----------
-function enableTimelineDrag(el, ev, kind, minH, HOUR_H, overlay, tl) {
+// ---------- (Drag & drop retirado por preferencia del usuario) ----------
+function enableTimelineDrag_DISABLED(el, ev, kind, minH, HOUR_H, overlay, tl) {
   const SNAP = 15; // minutos
   const LONG_PRESS = 400; // ms
   const DUR = timeToMin(ev.end) - timeToMin(ev.start);
