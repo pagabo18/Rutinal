@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="20.0">
+<meta name="app-version" content="21.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -418,6 +418,61 @@
   .cat-bar-track { height: 10px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
   .cat-bar-fill { height: 100%; border-radius: 5px; transition: width 0.3s; }
   .cat-bar-val { font-size: 12px; color: var(--text-3); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ---------- BUSCADOR GLOBAL ---------- */
+  .search-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-2); border-radius: 999px;
+    padding: 6px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; margin-right: 8px;
+  }
+  .search-btn:hover { background: var(--surface-2); }
+  .search-btn svg { width: 14px; height: 14px; }
+  .search-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+    z-index: 10000; display: none; flex-direction: column; padding: 12vh 16px 0;
+  }
+  .search-overlay.active { display: flex; }
+  .search-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    max-width: 640px; width: 100%; margin: 0 auto;
+  }
+  .search-box svg { width: 18px; height: 18px; color: var(--text-3); flex-shrink: 0; }
+  .search-box input {
+    flex: 1; border: 0; background: transparent; outline: none;
+    color: var(--text); font-size: 16px; padding: 6px 0;
+  }
+  .search-close {
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text-2); cursor: pointer; padding: 4px 10px; font-size: 12px;
+  }
+  .search-results {
+    max-width: 640px; width: 100%; margin: 10px auto 0;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    overflow: hidden; max-height: 60vh; overflow-y: auto;
+  }
+  .search-section {
+    padding: 4px 0;
+  }
+  .search-section-title {
+    font-size: 10px; text-transform: uppercase; color: var(--text-3); letter-spacing: 0.08em; font-weight: 600;
+    padding: 8px 14px 4px;
+  }
+  .search-result {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer; border-top: 1px solid var(--border);
+  }
+  .search-result:hover { background: var(--surface-2); }
+  .search-result-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .search-result-main { flex: 1; min-width: 0; }
+  .search-result-title { font-size: 14px; color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .search-result-sub { font-size: 12px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+  .search-empty {
+    text-align: center; color: var(--text-3); font-size: 13px; padding: 22px;
+  }
+  mark.search-hi { background: var(--accent, #2563EB); color: white; padding: 0 2px; border-radius: 2px; }
 
   /* Botón iniciar Pomo desde la tarjeta Ahora */
   .now-pomo-btn {
@@ -1231,14 +1286,29 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v20.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v21.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
     <div class="h-date" id="today-date">—</div>
   </div>
-  <div class="h-time" id="today-time">—</div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <button class="search-btn" id="open-search" aria-label="Buscar" title="Buscar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Buscar
+    </button>
+    <div class="h-time" id="today-time">—</div>
+  </div>
 </header>
+
+<div class="search-overlay" id="search-overlay">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search-input" type="search" placeholder="Buscar bloques, hábitos, imprevistos, categorías…" autocomplete="off">
+    <button class="search-close" id="search-close">Cerrar</button>
+  </div>
+  <div class="search-results" id="search-results"></div>
+</div>
 
 <main>
   <!-- HOY -->
@@ -2928,6 +2998,213 @@ function bindAjustesOnce() {
   });
 })();
 bindAjustesOnce();
+
+// ---------- BUSCADOR GLOBAL ----------
+(function(){
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  const results = document.getElementById('search-results');
+  const btnOpen = document.getElementById('open-search');
+  const btnClose = document.getElementById('search-close');
+  if (!overlay || !input || !results) return;
+
+  const DAY_LBL = { weekday: 'L-V', saturday: 'Sáb', sunday: 'Dom' };
+
+  function norm(s) {
+    return (s || '').toString().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function highlight(text, q) {
+    const t = String(text || '');
+    if (!q) return escapeHtml(t);
+    const nText = norm(t);
+    const nQ = norm(q);
+    const idx = nText.indexOf(nQ);
+    if (idx < 0) return escapeHtml(t);
+    const before = t.slice(0, idx);
+    const match = t.slice(idx, idx + q.length);
+    const after = t.slice(idx + q.length);
+    return escapeHtml(before) + '<mark class="search-hi">' + escapeHtml(match) + '</mark>' + escapeHtml(after);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function open() {
+    overlay.classList.add('active');
+    input.value = '';
+    render('');
+    setTimeout(() => input.focus(), 40);
+  }
+
+  function close() {
+    overlay.classList.remove('active');
+  }
+
+  function render(qRaw) {
+    const q = qRaw.trim();
+    const nq = norm(q);
+    if (!q) {
+      results.innerHTML = '<div class="search-empty">Escribe para buscar por nombre, detalle, hora o categoría.</div>';
+      return;
+    }
+
+    const blocks = [];
+    const scs = loadSchedules();
+    ['weekday','saturday','sunday'].forEach(k => {
+      (scs[k] || []).forEach(b => {
+        const cat = CATS.find(c => c.id === b.cat);
+        const hay = [b.label, cat ? cat.label : '', b.start, b.end].map(norm).join(' | ');
+        if (hay.includes(nq)) blocks.push({ b, kind: k, cat });
+      });
+    });
+
+    const habits = [];
+    (loadHabits() || []).forEach(h => {
+      const cat = CATS.find(c => c.id === h.cat);
+      const hay = [h.name, h.meta, cat ? cat.label : ''].map(norm).join(' | ');
+      if (hay.includes(nq)) habits.push({ h, cat });
+    });
+
+    const imprs = [];
+    (loadImprs() || []).forEach(ev => {
+      const hay = [ev.label, ev.date, ev.start, ev.end].map(norm).join(' | ');
+      if (hay.includes(nq)) imprs.push(ev);
+    });
+
+    const cats = [];
+    (CATS || []).forEach(c => {
+      const hay = [c.label, c.id].map(norm).join(' | ');
+      if (hay.includes(nq)) cats.push(c);
+    });
+
+    const total = blocks.length + habits.length + imprs.length + cats.length;
+    if (total === 0) {
+      results.innerHTML = '<div class="search-empty">Sin resultados para “' + escapeHtml(q) + '”.</div>';
+      return;
+    }
+
+    let html = '';
+
+    if (blocks.length) {
+      html += '<div class="search-section"><div class="search-section-title">Bloques · ' + blocks.length + '</div>';
+      blocks.slice(0, 20).forEach((r, i) => {
+        const color = r.cat ? r.cat.color : '#6b7280';
+        const catLbl = r.cat ? r.cat.label : '';
+        html += `<div class="search-result" data-t="block" data-i="${i}">
+          <div class="search-result-dot" style="background:${color}"></div>
+          <div class="search-result-main">
+            <div class="search-result-title">${highlight(r.b.label, q)}</div>
+            <div class="search-result-sub">${r.b.start} – ${r.b.end} · ${DAY_LBL[r.kind]} · ${escapeHtml(catLbl)}</div>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    if (habits.length) {
+      html += '<div class="search-section"><div class="search-section-title">Hábitos · ' + habits.length + '</div>';
+      habits.slice(0, 20).forEach((r, i) => {
+        const color = r.cat ? r.cat.color : '#6b7280';
+        const catLbl = r.cat ? r.cat.label : '';
+        html += `<div class="search-result" data-t="habit" data-i="${i}">
+          <div class="search-result-dot" style="background:${color}"></div>
+          <div class="search-result-main">
+            <div class="search-result-title">${highlight(r.h.name, q)}</div>
+            <div class="search-result-sub">${escapeHtml(r.h.meta || '')}${r.h.meta && catLbl ? ' · ' : ''}${escapeHtml(catLbl)}</div>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    if (imprs.length) {
+      html += '<div class="search-section"><div class="search-section-title">Imprevistos · ' + imprs.length + '</div>';
+      imprs.slice(0, 20).forEach((ev, i) => {
+        html += `<div class="search-result" data-t="impr" data-i="${i}">
+          <div class="search-result-dot" style="background:#C2410C"></div>
+          <div class="search-result-main">
+            <div class="search-result-title">⚠ ${highlight(ev.label, q)}</div>
+            <div class="search-result-sub">${ev.date} · ${ev.start} – ${ev.end}</div>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    if (cats.length) {
+      html += '<div class="search-section"><div class="search-section-title">Categorías · ' + cats.length + '</div>';
+      cats.slice(0, 20).forEach((c, i) => {
+        html += `<div class="search-result" data-t="cat" data-i="${i}">
+          <div class="search-result-dot" style="background:${c.color}"></div>
+          <div class="search-result-main">
+            <div class="search-result-title">${highlight(c.label, q)}</div>
+            <div class="search-result-sub">Categoría</div>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    results.innerHTML = html;
+
+    // Bind clicks
+    results.querySelectorAll('.search-result').forEach(el => {
+      const t = el.dataset.t;
+      const i = parseInt(el.dataset.i, 10);
+      el.addEventListener('click', () => {
+        close();
+        if (t === 'block') {
+          const r = blocks[i];
+          if (r) openBlockSheet(r.b, r.kind);
+        } else if (t === 'habit') {
+          const r = habits[i];
+          if (r) openHabitSheet(r.h);
+        } else if (t === 'impr') {
+          const ev = imprs[i];
+          if (ev && typeof openImprSheet === 'function') openImprSheet(ev);
+        } else if (t === 'cat') {
+          const c = cats[i];
+          // Ir a Editar > Categorías
+          document.querySelector('nav button[data-tab="editar"]').click();
+          editSection = 'cats';
+          if (typeof renderEditar === 'function') renderEditar();
+          setTimeout(() => {
+            const row = document.querySelector(`[data-cat-id="${c.id}"]`);
+            if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 150);
+        }
+      });
+    });
+  }
+
+  let debounceT = null;
+  input.addEventListener('input', () => {
+    if (debounceT) clearTimeout(debounceT);
+    debounceT = setTimeout(() => render(input.value), 80);
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close();
+    if (e.key === 'Enter') {
+      const first = results.querySelector('.search-result');
+      if (first) first.click();
+    }
+  });
+
+  btnOpen.addEventListener('click', open);
+  btnClose.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  // Atajo: /
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && !overlay.classList.contains('active')) {
+      const tag = (document.activeElement && document.activeElement.tagName) || '';
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA') { e.preventDefault(); open(); }
+    }
+  });
+})();
 
 function renderEditar() {
   document.querySelectorAll('#edit-mode .chip').forEach(c => {
