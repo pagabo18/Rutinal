@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="24.3">
+<meta name="app-version" content="24.4">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1338,7 +1338,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.3 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.4 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -2875,6 +2875,7 @@ function renderCal() {
   const blocks = (scs[kind] || []).slice().sort((a,b) => a.start.localeCompare(b.start));
 
   const diaryForBlocks = getDiaryDay(calSel);
+  const esc = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const blocksHtml = blocks.map(b => {
     const cat = CATS.find(c => c.id === b.cat);
     const color = cat ? cat.color : '#6b7280';
