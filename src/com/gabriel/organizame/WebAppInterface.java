@@ -49,6 +49,16 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public void setHabitReminder(String hhmm) {
+        try { NotificationScheduler.setHabitReminderTime(ctx, hhmm); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public String getHabitReminder() {
+        try { return NotificationScheduler.getHabitReminderTime(ctx); } catch (Exception ignored) { return ""; }
+    }
+
+    @JavascriptInterface
     public boolean canScheduleExactAlarms() {
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return true;
         android.app.AlarmManager am = (android.app.AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);

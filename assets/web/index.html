@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="18.0">
+<meta name="app-version" content="19.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -399,6 +399,36 @@
   }
   .pomo-stat-val { font-size: 26px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1; }
   .pomo-stat-lbl { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; font-weight: 600; }
+
+  /* ---------- BAR CHARTS (Pomodoro semanal, Tiempo por categoría) ---------- */
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 14px 10px; margin-bottom: 14px;
+  }
+  .chart-title { font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 12px; }
+  .bar-week { display: flex; align-items: flex-end; gap: 6px; height: 90px; margin-bottom: 6px; }
+  .bar-week-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
+  .bar-week-fill { width: 100%; background: var(--accent); border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; }
+  .bar-week-fill.today { background: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow, rgba(37,99,235,0.2)); }
+  .bar-week-lbl { font-size: 10px; color: var(--text-3); text-transform: uppercase; font-weight: 600; letter-spacing: 0.04em; }
+  .bar-week-num { font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .cat-bars { display: flex; flex-direction: column; gap: 10px; }
+  .cat-bar-row { display: grid; grid-template-columns: 90px 1fr 60px; align-items: center; gap: 10px; }
+  .cat-bar-lbl { font-size: 12px; color: var(--text-2); font-weight: 600; }
+  .cat-bar-track { height: 10px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+  .cat-bar-fill { height: 100%; border-radius: 5px; transition: width 0.3s; }
+  .cat-bar-val { font-size: 12px; color: var(--text-3); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Botón iniciar Pomo desde la tarjeta Ahora */
+  .now-pomo-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--text-2); font-size: 12px; font-weight: 600;
+    border-radius: 999px; padding: 6px 12px; cursor: pointer;
+    margin-top: 8px;
+  }
+  .now-pomo-btn:hover { background: var(--surface-3); }
+  .now-pomo-btn svg { width: 12px; height: 12px; }
   .now-empty {
     background: var(--surface); border: 1px dashed var(--border);
     border-radius: 14px; padding: 20px; text-align: center;
@@ -1201,7 +1231,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v18.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v19.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1254,6 +1284,11 @@
     </div>
     <div class="week-grid" id="week-grid"></div>
     <h2>Toca un día para ver detalle</h2>
+
+    <div class="chart-card" id="week-cat-card" style="margin-top:20px;">
+      <div class="chart-title">Tiempo por categoría</div>
+      <div class="cat-bars" id="week-cat-bars"></div>
+    </div>
   </section>
 
   <!-- HÁBITOS -->
@@ -1385,6 +1420,12 @@
         <div class="pomo-stat-lbl">Total</div>
       </div>
     </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Últimos 7 días</div>
+      <div class="bar-week" id="pomo-bar-week"></div>
+      <div style="display:flex; gap:6px;" id="pomo-bar-labels"></div>
+    </div>
   </section>
 
   <!-- EDITAR -->
@@ -1440,6 +1481,16 @@
         <div class="setting-label">Notificaciones</div>
         <div id="notif-status" style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;"></div>
         <button class="btn-secondary" id="btn-exact-alarm" style="display:none;">Permitir alarmas exactas</button>
+      </div>
+      <div class="setting" id="habit-reminder-setting" style="display:none;">
+        <div class="setting-label">Recordatorio de hábitos</div>
+        <div style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;">Aviso suave (sin sonido) a la hora que elijas. Solo aparece si aún quedan hábitos por hacer.</div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="time" id="habit-reminder-time" class="field-input" style="flex:1; max-width:140px;">
+          <button class="btn-secondary" id="habit-reminder-save">Guardar</button>
+          <button class="btn-secondary" id="habit-reminder-clear" style="padding:8px 12px;">Quitar</button>
+        </div>
+        <div id="habit-reminder-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
       </div>
       <div class="setting">
         <div class="setting-label">Datos</div>
@@ -2264,6 +2315,44 @@ function renderSemana() {
       grid.appendChild(cell);
     });
   });
+
+  // Tiempo por categoría (min totales de la semana)
+  const catTotals = {};
+  CATS.forEach(c => { catTotals[c.id] = 0; });
+  dayDates.forEach(d => {
+    const kind = scheduleKindForDate(d);
+    const blocks = loadSchedules()[kind] || [];
+    blocks.forEach(b => {
+      if (!b.start || !b.end) return;
+      const dur = timeToMin(b.end) - timeToMin(b.start);
+      if (dur <= 0) return;
+      if (catTotals[b.cat] == null) catTotals[b.cat] = 0;
+      catTotals[b.cat] += dur;
+    });
+  });
+  const bars = document.getElementById('week-cat-bars');
+  if (bars) {
+    bars.innerHTML = '';
+    const sorted = CATS.map(c => ({ ...c, total: catTotals[c.id] || 0 }))
+      .filter(c => c.total > 0)
+      .sort((a,b) => b.total - a.total);
+    if (sorted.length === 0) {
+      bars.innerHTML = '<div style="color:var(--text-3); font-size:13px; text-align:center; padding:8px;">Sin bloques esta semana.</div>';
+    } else {
+      const maxT = Math.max(1, ...sorted.map(c => c.total));
+      sorted.forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'cat-bar-row';
+        const pct = (c.total / maxT) * 100;
+        row.innerHTML = `
+          <div class="cat-bar-lbl" style="color:${c.color}">${c.label}</div>
+          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%; background:${c.color};"></div></div>
+          <div class="cat-bar-val">${fmtDur(c.total)}</div>
+        `;
+        bars.appendChild(row);
+      });
+    }
+  }
 }
 document.getElementById('wk-prev').addEventListener('click', () => { weekOffset--; renderSemana(); });
 document.getElementById('wk-next').addEventListener('click', () => { weekOffset++; renderSemana(); });
@@ -2658,6 +2747,19 @@ function renderAjustes() {
   } else {
     box.style.display = 'none';
   }
+  // Recordatorio de hábitos
+  const hbox = document.getElementById('habit-reminder-setting');
+  const hin = document.getElementById('habit-reminder-time');
+  const hst = document.getElementById('habit-reminder-status');
+  if (typeof window.Android !== 'undefined' && window.Android.getHabitReminder) {
+    hbox.style.display = '';
+    let cur = '';
+    try { cur = window.Android.getHabitReminder() || ''; } catch(e) {}
+    hin.value = cur;
+    hst.textContent = cur ? `Activo a las ${cur} cada día.` : 'Sin recordatorio.';
+  } else {
+    hbox.style.display = 'none';
+  }
   // Estado de widgets
   const wbox = document.getElementById('widget-setting');
   const wst = document.getElementById('widget-status');
@@ -2723,6 +2825,22 @@ function bindAjustesOnce() {
     if (!confirm('Confirmar de nuevo: se perderán bloques, hábitos, historial, imprevistos y ajustes.')) return;
     S.allKeys().forEach(k => { if (k !== 'theme') S.del(k); });
     location.reload();
+  });
+  const hSave = document.getElementById('habit-reminder-save');
+  const hClear = document.getElementById('habit-reminder-clear');
+  const hIn = document.getElementById('habit-reminder-time');
+  const hSt = document.getElementById('habit-reminder-status');
+  if (hSave) hSave.addEventListener('click', () => {
+    const v = (hIn.value || '').trim();
+    if (!v) { alert('Elige una hora.'); return; }
+    try { window.Android && window.Android.setHabitReminder && window.Android.setHabitReminder(v); } catch(e) {}
+    hSt.textContent = `Activo a las ${v} cada día.`;
+    if (navigator.vibrate) navigator.vibrate(15);
+  });
+  if (hClear) hClear.addEventListener('click', () => {
+    try { window.Android && window.Android.setHabitReminder && window.Android.setHabitReminder(''); } catch(e) {}
+    hIn.value = '';
+    hSt.textContent = 'Sin recordatorio.';
   });
 }
 // Botón permiso alarma exacta
@@ -3400,7 +3518,7 @@ function openBlockSheet(block, kind) {
       </label>
       <input class="field-input" id="f-once-date" type="date" value="${defaultOnceDate}" style="margin-top:8px;${isOnce?'':'display:none;'}">
     </div>
-    ${!isNew ? '<button class="btn-danger" id="f-del">Eliminar</button>' : ''}
+    ${!isNew ? '<div style="display:flex; gap:8px; margin-top:12px;"><button class="btn-secondary" id="f-share" style="flex:1;">Compartir</button><button class="btn-danger" id="f-del" style="flex:1;">Eliminar</button></div>' : ''}
   `;
   openSheet(isNew ? 'Nuevo bloque' : 'Editar bloque', html, () => {
     const label = document.getElementById('f-label').value.trim();
@@ -3462,6 +3580,17 @@ function openBlockSheet(block, kind) {
     if (document.getElementById('tab-dia').classList.contains('active')) renderDia();
     if (document.getElementById('tab-semana').classList.contains('active')) renderSemana();
     if (document.getElementById('tab-editar').classList.contains('active')) renderEditar();
+  });
+  const shareBtn = document.getElementById('f-share');
+  if (shareBtn) shareBtn.addEventListener('click', async () => {
+    const cat = CATS.find(c => c.id === b.cat);
+    const catLbl = cat ? cat.label : (b.cat || '');
+    const dur = fmtDur(timeToMin(b.end) - timeToMin(b.start));
+    const text = `${b.label}\n${b.start} – ${b.end} (${dur})${catLbl?`\nCategoría: ${catLbl}`:''}`;
+    try {
+      if (navigator.share) { await navigator.share({ text, title: b.label }); }
+      else { await navigator.clipboard.writeText(text); alert('Copiado al portapapeles.'); }
+    } catch(e) {}
   });
 }
 
@@ -3969,6 +4098,41 @@ function renderPomoStats() {
   document.getElementById('pomo-stat-today').textContent = today;
   document.getElementById('pomo-stat-week').textContent = week;
   document.getElementById('pomo-stat-total').textContent = arr.filter(s => s.phase === 'focus').length;
+
+  // Barras de últimos 7 días
+  const bars = document.getElementById('pomo-bar-week');
+  const labelsEl = document.getElementById('pomo-bar-labels');
+  if (!bars || !labelsEl) return;
+  const daysAgo = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(startOfDay); d.setDate(startOfDay.getDate() - i);
+    daysAgo.push(d);
+  }
+  const counts = daysAgo.map(d => {
+    const start = d.getTime();
+    const end = start + 86400000;
+    return arr.filter(s => s.phase === 'focus' && s.ts >= start && s.ts < end).length;
+  });
+  const maxC = Math.max(1, ...counts);
+  const dayNames = ['D','L','M','X','J','V','S'];
+  bars.innerHTML = '';
+  labelsEl.innerHTML = '';
+  daysAgo.forEach((d, i) => {
+    const isTod = keyDate(d) === keyDate();
+    const col = document.createElement('div');
+    col.className = 'bar-week-col';
+    const pct = (counts[i] / maxC) * 100;
+    col.innerHTML = `
+      <div class="bar-week-num">${counts[i] || ''}</div>
+      <div class="bar-week-fill${isTod?' today':''}" style="height:${Math.max(2, pct)}%;"></div>
+    `;
+    bars.appendChild(col);
+    const lbl = document.createElement('div');
+    lbl.className = 'bar-week-lbl';
+    lbl.style.flex = '1'; lbl.style.textAlign = 'center';
+    lbl.textContent = dayNames[d.getDay()];
+    labelsEl.appendChild(lbl);
+  });
 }
 function renderPomoSettings() {
   document.getElementById('pomo-set-focus').textContent = POMO.focus;

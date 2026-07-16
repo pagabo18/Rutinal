@@ -22,10 +22,14 @@ public class NotificationScheduler {
     public static final String CHANNEL_NAME = "Bloques";
     public static final String CHANNEL_POMO_ID = "pomodoro";
     public static final String CHANNEL_POMO_NAME = "Pomodoro";
+    public static final String CHANNEL_HABITS_ID = "habits_reminder";
+    public static final String CHANNEL_HABITS_NAME = "Recordatorio de hábitos";
 
     static final String PREFS_ALARMS = "organizame_alarms";
     static final String K_ACTIVE_IDS = "active_ids";
     static final String K_POMO_ID = "pomo_id";
+    static final String K_HABIT_TIME = "habit_reminder_hhmm"; // "HH:mm" o vacío
+    public static final int HABIT_ALARM_ID = 0x60000001;
 
     public static final String EXTRA_LABEL = "label";
     public static final String EXTRA_START = "start";
@@ -56,6 +60,79 @@ public class NotificationScheduler {
             ch.enableVibration(true);
             nm.createNotificationChannel(ch);
         }
+        ensureHabitChannel(ctx);
+    }
+
+    public static void ensureHabitChannel(Context ctx) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm == null) return;
+        if (nm.getNotificationChannel(CHANNEL_HABITS_ID) != null) return;
+        NotificationChannel ch = new NotificationChannel(CHANNEL_HABITS_ID, CHANNEL_HABITS_NAME, NotificationManager.IMPORTANCE_LOW);
+        ch.setDescription("Recordatorio diario suave de hábitos. Sin sonido ni vibración.");
+        ch.enableVibration(false);
+        ch.setSound(null, null);
+        ch.setShowBadge(false);
+        nm.createNotificationChannel(ch);
+    }
+
+    // ----- Recordatorio de hábitos -----
+
+    /** Guarda la hora y programa la próxima. hhmm vacío o null cancela. */
+    public static void setHabitReminderTime(Context ctx, String hhmm) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        if (hhmm == null || hhmm.isEmpty()) {
+            sp.edit().remove(K_HABIT_TIME).apply();
+            cancelHabitReminder(ctx);
+        } else {
+            sp.edit().putString(K_HABIT_TIME, hhmm).apply();
+            scheduleHabitReminder(ctx);
+        }
+    }
+
+    public static String getHabitReminderTime(Context ctx) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        return sp.getString(K_HABIT_TIME, "");
+    }
+
+    public static void scheduleHabitReminder(Context ctx) {
+        ensureHabitChannel(ctx);
+        String hhmm = getHabitReminderTime(ctx);
+        if (hhmm == null || hhmm.isEmpty()) return;
+        int colon = hhmm.indexOf(':');
+        if (colon < 0) return;
+        int hh, mm;
+        try {
+            hh = Integer.parseInt(hhmm.substring(0, colon));
+            mm = Integer.parseInt(hhmm.substring(colon + 1));
+        } catch (Exception e) { return; }
+
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+
+        Calendar target = Calendar.getInstance();
+        target.set(Calendar.HOUR_OF_DAY, hh);
+        target.set(Calendar.MINUTE, mm);
+        target.set(Calendar.SECOND, 0);
+        target.set(Calendar.MILLISECOND, 0);
+        if (target.getTimeInMillis() <= System.currentTimeMillis()) {
+            target.add(Calendar.DAY_OF_YEAR, 1);
+        }
+
+        Intent i = new Intent(ctx, HabitReminderReceiver.class);
+        i.setAction("com.gabriel.organizame.HABIT_REMINDER");
+        i.setData(android.net.Uri.parse("organizame://habit/" + HABIT_ALARM_ID));
+        schedule(am, ctx, target.getTimeInMillis(), i, HABIT_ALARM_ID);
+    }
+
+    public static void cancelHabitReminder(Context ctx) {
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        Intent i = new Intent(ctx, HabitReminderReceiver.class);
+        i.setAction("com.gabriel.organizame.HABIT_REMINDER");
+        i.setData(android.net.Uri.parse("organizame://habit/" + HABIT_ALARM_ID));
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, HABIT_ALARM_ID, i, piFlags(true));
+        if (pi != null) am.cancel(pi);
     }
 
     /** Cancela alarmas previas y programa todas las de hoy. */
