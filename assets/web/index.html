@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="21.0">
+<meta name="app-version" content="22.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -418,6 +418,37 @@
   .cat-bar-track { height: 10px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
   .cat-bar-fill { height: 100%; border-radius: 5px; transition: width 0.3s; }
   .cat-bar-val { font-size: 12px; color: var(--text-3); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ---------- DRAG BLOQUES EN VISTA POR HORAS ---------- */
+  .tl-event.dragging {
+    opacity: 0.9;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    z-index: 20; cursor: grabbing;
+    transform: scale(1.02);
+    transition: none;
+  }
+  .tl-event.drag-ready { cursor: grab; }
+  .tl-drag-ghost {
+    position: absolute; left: 6px; right: 6px;
+    background: rgba(37,99,235,0.15);
+    border: 2px dashed var(--accent, #2563EB);
+    border-radius: 8px; pointer-events: none;
+    z-index: 5;
+  }
+  .tl-drag-time {
+    position: absolute; background: var(--surface);
+    color: var(--text); font-size: 11px; font-weight: 700;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 3px 7px; pointer-events: none; z-index: 30;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  .drag-hint {
+    background: var(--surface-2); color: var(--text-3);
+    font-size: 11px; text-align: center; padding: 6px 10px;
+    border-radius: 8px; margin-bottom: 8px;
+    border: 1px dashed var(--border);
+  }
 
   /* ---------- BUSCADOR GLOBAL ---------- */
   .search-btn {
@@ -1286,7 +1317,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v21.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v22.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -2222,6 +2253,11 @@ function renderDiaList(container, events, affected, isToday, kind) {
 }
 
 function renderDiaHours(container, events, affected, isToday, list, dayImprs) {
+  const hint = document.createElement('div');
+  hint.className = 'drag-hint';
+  hint.textContent = 'Mantén presionado un bloque para moverlo';
+  container.appendChild(hint);
+
   const tl = document.createElement('div');
   tl.className = 'timeline';
   tl.style.position = 'relative';
@@ -2304,7 +2340,11 @@ function renderDiaHours(container, events, affected, isToday, list, dayImprs) {
       <div class="tl-label">${isImpr ? '⚠ ' : ''}${ev.label}</div>
       <div class="tl-time">${ev.start} – ${ev.end} · ${durTxt}</div>
       <div class="tl-cat">${catLabel}</div>`;
-    el.addEventListener('click', () => isImpr ? openImprSheet(ev) : openBlockSheet(ev, kind));
+    if (!isImpr) enableTimelineDrag(el, ev, kind, minH, HOUR_H, overlay, tl);
+    el.addEventListener('click', (e) => {
+      if (el.dataset.wasDragging === '1') { el.dataset.wasDragging = '0'; return; }
+      isImpr ? openImprSheet(ev) : openBlockSheet(ev, kind);
+    });
     overlay.appendChild(el);
   });
 
@@ -2314,6 +2354,124 @@ function renderDiaHours(container, events, affected, isToday, list, dayImprs) {
     nowLine.style.top = (((nm/60) - minH) * HOUR_H) + 'px';
     tl.appendChild(nowLine);
   }
+}
+
+// ---------- Drag & drop de bloques en timeline por horas ----------
+function enableTimelineDrag(el, ev, kind, minH, HOUR_H, overlay, tl) {
+  const SNAP = 15; // minutos
+  const LONG_PRESS = 400; // ms
+  const DUR = timeToMin(ev.end) - timeToMin(ev.start);
+  let pressTimer = null;
+  let dragging = false;
+  let startY = 0, startTop = 0;
+  let currentTop = 0;
+  let currentStart = timeToMin(ev.start);
+  let ghost = null, timeTag = null;
+
+  function pxPerMin() { return HOUR_H / 60; }
+
+  function startDrag(clientY) {
+    dragging = true;
+    el.dataset.wasDragging = '1';
+    el.classList.add('dragging');
+    startY = clientY;
+    startTop = parseFloat(el.style.top) || 0;
+    currentTop = startTop;
+    ghost = document.createElement('div');
+    ghost.className = 'tl-drag-ghost';
+    ghost.style.top = startTop + 'px';
+    ghost.style.height = el.style.height;
+    overlay.appendChild(ghost);
+    timeTag = document.createElement('div');
+    timeTag.className = 'tl-drag-time';
+    overlay.appendChild(timeTag);
+    updateTag(currentStart);
+    if (navigator.vibrate) navigator.vibrate(20);
+  }
+
+  function updateTag(startMin) {
+    if (!timeTag) return;
+    const endMin = startMin + DUR;
+    timeTag.textContent = fmtHM(startMin) + ' – ' + fmtHM(endMin);
+    timeTag.style.top = (currentTop - 24) + 'px';
+    timeTag.style.left = '8px';
+  }
+
+  function fmtHM(min) {
+    const m = ((min % 1440) + 1440) % 1440;
+    return pad(Math.floor(m/60)) + ':' + pad(m % 60);
+  }
+
+  function onMove(clientY) {
+    if (!dragging) return;
+    const dy = clientY - startY;
+    let newTop = startTop + dy;
+    // Snap a 15 min
+    const minutesFromMinH = newTop / pxPerMin();
+    let snappedMin = Math.round(minutesFromMinH / SNAP) * SNAP;
+    // Recalcular startMin absoluto
+    let newStart = minH * 60 + snappedMin;
+    // Clamps: no menor que 0, no mayor que 24*60 - DUR
+    if (newStart < 0) newStart = 0;
+    if (newStart + DUR > 24 * 60) newStart = 24 * 60 - DUR;
+    currentStart = newStart;
+    currentTop = (newStart / 60 - minH) * HOUR_H;
+    el.style.top = currentTop + 'px';
+    if (ghost) ghost.style.top = currentTop + 'px';
+    updateTag(currentStart);
+  }
+
+  function endDrag(commit) {
+    if (!dragging) return;
+    dragging = false;
+    el.classList.remove('dragging');
+    if (ghost) { ghost.remove(); ghost = null; }
+    if (timeTag) { timeTag.remove(); timeTag = null; }
+    if (commit && currentStart !== timeToMin(ev.start)) {
+      // Guardar en schedules
+      const scs = loadSchedules();
+      const arr = scs[kind] || [];
+      const idx = arr.findIndex(x => x.id === ev.id);
+      if (idx >= 0) {
+        arr[idx].start = fmtHM(currentStart);
+        arr[idx].end = fmtHM(currentStart + DUR);
+        saveSchedule(kind, arr);
+        if (navigator.vibrate) navigator.vibrate(15);
+      }
+      renderDia();
+      renderHoy();
+    } else {
+      // Revertir
+      el.style.top = startTop + 'px';
+    }
+    // Limpiar flag después de un click accidental
+    setTimeout(() => { el.dataset.wasDragging = '0'; }, 50);
+  }
+
+  // Pointer events unificado
+  el.addEventListener('pointerdown', (e) => {
+    if (e.button && e.button !== 0) return;
+    const clientY = e.clientY;
+    pressTimer = setTimeout(() => { startDrag(clientY); try { el.setPointerCapture(e.pointerId); } catch(_){} }, LONG_PRESS);
+
+    const move = (ev2) => {
+      if (!dragging && pressTimer) {
+        // Si se mueve mucho antes del long press, cancelar
+        if (Math.abs(ev2.clientY - clientY) > 8) { clearTimeout(pressTimer); pressTimer = null; }
+      }
+      if (dragging) { ev2.preventDefault(); onMove(ev2.clientY); }
+    };
+    const up = () => {
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+      endDrag(true);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+    };
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  });
 }
 
 document.getElementById('day-prev').addEventListener('click', () => { dayView.setDate(dayView.getDate()-1); expandedId = null; renderDia(); });
