@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="24.4">
+<meta name="app-version" content="25.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1338,7 +1338,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.4 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v25.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1408,8 +1408,11 @@
     <h2>Toca un día para ver detalle</h2>
 
     <div class="chart-card" id="week-cat-card" style="margin-top:20px;">
-      <div class="chart-title">Tiempo por categoría</div>
-      <div class="cat-bars" id="week-cat-bars"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div class="chart-title" style="margin-bottom:0;">Tiempo por categoría</div>
+        <button class="btn-secondary" id="edit-goals-btn" style="padding:4px 10px;font-size:12px;">Metas</button>
+      </div>
+      <div class="cat-bars" id="week-cat-bars" style="margin-top:12px;"></div>
     </div>
   </section>
 
@@ -2582,24 +2585,48 @@ function renderSemana() {
     });
   });
   const bars = document.getElementById('week-cat-bars');
+  const goals = S.get('catGoals', {}); // { catId: minutosPorSemana }
   if (bars) {
     bars.innerHTML = '';
-    const sorted = CATS.map(c => ({ ...c, total: catTotals[c.id] || 0 }))
-      .filter(c => c.total > 0)
-      .sort((a,b) => b.total - a.total);
-    if (sorted.length === 0) {
-      bars.innerHTML = '<div style="color:var(--text-3); font-size:13px; text-align:center; padding:8px;">Sin bloques esta semana.</div>';
+    // Incluir todas las categorías que tengan tiempo O meta
+    const rows = CATS.map(c => ({
+      ...c,
+      total: catTotals[c.id] || 0,
+      goal: goals[c.id] || 0
+    })).filter(c => c.total > 0 || c.goal > 0)
+      .sort((a,b) => {
+        // Con meta primero, luego por tiempo total
+        if ((b.goal > 0) !== (a.goal > 0)) return (b.goal > 0) - (a.goal > 0);
+        return b.total - a.total;
+      });
+    if (rows.length === 0) {
+      bars.innerHTML = '<div style="color:var(--text-3); font-size:13px; text-align:center; padding:8px;">Sin bloques ni metas esta semana. Toca “Metas” para definirlas.</div>';
     } else {
-      const maxT = Math.max(1, ...sorted.map(c => c.total));
-      sorted.forEach(c => {
+      const maxWithoutGoal = Math.max(1, ...rows.filter(c => !c.goal).map(c => c.total));
+      rows.forEach(c => {
         const row = document.createElement('div');
         row.className = 'cat-bar-row';
-        const pct = (c.total / maxT) * 100;
-        row.innerHTML = `
-          <div class="cat-bar-lbl" style="color:${c.color}">${c.label}</div>
-          <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%; background:${c.color};"></div></div>
-          <div class="cat-bar-val">${fmtDur(c.total)}</div>
-        `;
+        if (c.goal > 0) {
+          const pct = Math.min(100, (c.total / c.goal) * 100);
+          const reached = c.total >= c.goal;
+          const overflowPct = c.total > c.goal ? ((c.total - c.goal) / c.goal) * 100 : 0;
+          row.innerHTML = `
+            <div class="cat-bar-lbl" style="color:${c.color}">${c.label}</div>
+            <div class="cat-bar-track">
+              <div class="cat-bar-fill" style="width:${pct}%; background:${c.color}; ${reached ? 'box-shadow: 0 0 0 1px '+c.color+' inset;' : ''}"></div>
+            </div>
+            <div class="cat-bar-val" style="${reached ? 'color:'+c.color+';font-weight:600;' : ''}">
+              ${fmtDur(c.total)} <span style="color:var(--text-3);font-weight:400;font-size:11px;">/ ${fmtDur(c.goal)}</span>
+            </div>
+          `;
+        } else {
+          const pct = (c.total / maxWithoutGoal) * 100;
+          row.innerHTML = `
+            <div class="cat-bar-lbl" style="color:${c.color}">${c.label}</div>
+            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%; background:${c.color};"></div></div>
+            <div class="cat-bar-val">${fmtDur(c.total)}</div>
+          `;
+        }
         bars.appendChild(row);
       });
     }
@@ -2607,6 +2634,57 @@ function renderSemana() {
 }
 document.getElementById('wk-prev').addEventListener('click', () => { weekOffset--; renderSemana(); });
 document.getElementById('wk-next').addEventListener('click', () => { weekOffset++; renderSemana(); });
+
+// Sheet: Metas semanales por categoría
+function openGoalsSheet() {
+  const esc = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const goals = S.get('catGoals', {});
+  const rows = CATS.map(c => {
+    const mins = goals[c.id] || 0;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `<div class="goal-row" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="width:12px;height:12px;border-radius:3px;background:${c.color};flex-shrink:0;"></div>
+      <div style="flex:1;font-size:14px;color:${c.color};font-weight:500;">${esc(c.label)}</div>
+      <input type="number" min="0" max="168" data-goal-cat="${c.id}" data-part="h" value="${h}" style="width:52px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-size:14px;text-align:center;" />
+      <span style="color:var(--text-3);font-size:12px;">h</span>
+      <input type="number" min="0" max="59" step="5" data-goal-cat="${c.id}" data-part="m" value="${m}" style="width:52px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-size:14px;text-align:center;" />
+      <span style="color:var(--text-3);font-size:12px;">min</span>
+    </div>`;
+  }).join('');
+  const html = `
+    <div style="font-size:13px;color:var(--text-3);line-height:1.5;margin-bottom:12px;">
+      Define cuánto tiempo quieres dedicar por semana a cada categoría. Deja en 0 para no fijar meta.
+    </div>
+    ${rows}
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn-secondary" id="goals-clear" style="flex:1;">Borrar todas</button>
+    </div>
+  `;
+  openSheet('Metas semanales', html, () => {
+    const newGoals = {};
+    const sb = document.getElementById('sheet-body');
+    CATS.forEach(c => {
+      const hIn = sb.querySelector(`input[data-goal-cat="${c.id}"][data-part="h"]`);
+      const mIn = sb.querySelector(`input[data-goal-cat="${c.id}"][data-part="m"]`);
+      const h = Math.max(0, Math.min(168, parseInt(hIn.value) || 0));
+      const m = Math.max(0, Math.min(59, parseInt(mIn.value) || 0));
+      const total = h * 60 + m;
+      if (total > 0) newGoals[c.id] = total;
+    });
+    S.set('catGoals', newGoals);
+    closeSheet();
+    if (document.getElementById('tab-semana').classList.contains('active')) renderSemana();
+  });
+  setTimeout(() => {
+    const sb = document.getElementById('sheet-body');
+    const cbtn = sb.querySelector('#goals-clear');
+    if (cbtn) cbtn.addEventListener('click', () => {
+      sb.querySelectorAll('input[data-goal-cat]').forEach(i => i.value = 0);
+    });
+  }, 30);
+}
+document.getElementById('edit-goals-btn').addEventListener('click', openGoalsSheet);
 
 // ============================================================
 // TAB: HÁBITOS
