@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="24.0">
+<meta name="app-version" content="24.1">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1067,15 +1067,22 @@
   .diary-section-count { background: var(--surface-2); color: var(--text-2); font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 500; letter-spacing: 0; text-transform: none; }
   .diary-text { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; font-family: inherit; font-size: 15px; line-height: 1.5; color: var(--text); resize: vertical; min-height: 100px; }
   .diary-text:focus { outline: none; border-color: var(--text-3); }
-  .diary-item { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--text-3); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .diary-item { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--text-3); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; transition: background 0.15s; }
+  .diary-item:hover { background: var(--surface-2); }
+  .diary-item.expanded { background: var(--surface-2); cursor: default; }
   .diary-item.done { opacity: 0.75; }
   .diary-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
   .diary-item-time { font-size: 11px; font-weight: 600; color: var(--text-3); font-variant-numeric: tabular-nums; min-width: 88px; }
   .diary-item-label { font-size: 14px; font-weight: 500; color: var(--text); flex: 1; }
   .diary-item-check { width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--surface-2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; color: var(--text); }
   .diary-item.done .diary-item-check { background: var(--text); color: var(--bg); border-color: var(--text); }
-  .diary-note { width: 100%; background: transparent; border: none; padding: 0; font-family: inherit; font-size: 13px; line-height: 1.4; color: var(--text-2); resize: none; overflow: hidden; }
-  .diary-note:focus { outline: none; color: var(--text); }
+  .diary-note-preview { font-size: 12px; color: var(--text-3); line-height: 1.4; padding: 4px 0 0 0; font-style: italic; }
+  .diary-note-preview.has-note { color: var(--text-2); font-style: normal; }
+  .diary-note { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-family: inherit; font-size: 13px; line-height: 1.5; color: var(--text); resize: none; overflow: hidden; margin-top: 8px; box-sizing: border-box; }
+  .diary-note:focus { outline: none; border-color: var(--accent, #2563EB); background: var(--surface); }
+  .diary-note-wrap { display: none; }
+  .diary-item.expanded .diary-note-wrap { display: block; }
+  .diary-item.expanded .diary-note-preview { display: none; }
   .diary-note::placeholder { color: var(--text-3); }
 
   /* Historial del diario */
@@ -1331,7 +1338,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.1 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -4254,12 +4261,17 @@ function openDiarySheet(dateKey) {
     const cat = b.isImpr ? null : CATS.find(c => c.id === b.cat);
     const color = b.isImpr ? '#C2410C' : (cat ? cat.color : '#52525B');
     const note = day.blocks[b.id] || '';
-    return `<div class="diary-item" style="border-left-color:${color};">
+    const hasNote = !!note;
+    const previewText = hasNote ? esc(note.length > 100 ? note.slice(0, 100) + '…' : note) : 'Toca para agregar una nota';
+    return `<div class="diary-item${hasNote ? ' expanded' : ''}" style="border-left-color:${color};">
       <div class="diary-item-head">
         <div class="diary-item-time">${b.start} – ${b.end}</div>
         <div class="diary-item-label">${esc(b.label)}</div>
       </div>
-      <textarea class="diary-note" data-kind="block" data-id="${b.id}" rows="1" placeholder="Nota (opcional)">${esc(note)}</textarea>
+      <div class="diary-note-preview${hasNote ? ' has-note' : ''}">${previewText}</div>
+      <div class="diary-note-wrap">
+        <textarea class="diary-note" data-kind="block" data-id="${b.id}" rows="2" placeholder="¿Cómo estuvo este bloque? Qué hiciste, cómo te sentiste…">${esc(note)}</textarea>
+      </div>
     </div>`;
   }).join('') : '<div class="empty" style="padding:8px 0;">Sin bloques ese día</div>';
 
@@ -4268,14 +4280,19 @@ function openDiarySheet(dateKey) {
     const color = cat ? cat.color : '#52525B';
     const done = !!(log[k] && log[k][h.id]);
     const note = day.habits[h.id] || '';
-    return `<div class="diary-item${done ? ' done' : ''}" style="border-left-color:${color};">
+    const hasNote = !!note;
+    const previewText = hasNote ? esc(note.length > 100 ? note.slice(0, 100) + '…' : note) : 'Toca para agregar una nota';
+    return `<div class="diary-item${done ? ' done' : ''}${hasNote ? ' expanded' : ''}" style="border-left-color:${color};">
       <div class="diary-item-head">
         <div class="diary-item-check" data-hid="${h.id}">
           ${done ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
         </div>
         <div class="diary-item-label">${esc(h.name)}</div>
       </div>
-      <textarea class="diary-note" data-kind="habit" data-id="${h.id}" rows="1" placeholder="Nota (opcional)">${esc(note)}</textarea>
+      <div class="diary-note-preview${hasNote ? ' has-note' : ''}">${previewText}</div>
+      <div class="diary-note-wrap">
+        <textarea class="diary-note" data-kind="habit" data-id="${h.id}" rows="2" placeholder="Nota sobre este hábito…">${esc(note)}</textarea>
+      </div>
     </div>`;
   }).join('') : '<div class="empty" style="padding:8px 0;">Sin hábitos</div>';
 
@@ -4311,17 +4328,50 @@ function openDiarySheet(dateKey) {
     if (document.getElementById('tab-hoy').classList.contains('active')) renderHoy();
   });
 
-  // Auto-crecer los textareas de notas
+  // Auto-crecer los textareas de notas y expandir/colapsar cards
   setTimeout(() => {
     const sb = document.getElementById('sheet-body');
-    const autoGrow = (t) => { t.style.height = 'auto'; t.style.height = Math.max(32, t.scrollHeight) + 'px'; };
+    const autoGrow = (t) => { t.style.height = 'auto'; t.style.height = Math.max(48, t.scrollHeight) + 'px'; };
     sb.querySelectorAll('.diary-note').forEach(t => {
       autoGrow(t);
-      t.addEventListener('input', () => autoGrow(t));
+      t.addEventListener('input', () => {
+        autoGrow(t);
+        // Actualizar preview en tiempo real (aunque esté oculto, se ve al colapsar)
+        const item = t.closest('.diary-item');
+        const preview = item.querySelector('.diary-note-preview');
+        const val = t.value.trim();
+        if (val) {
+          preview.textContent = val.length > 100 ? val.slice(0, 100) + '…' : val;
+          preview.classList.add('has-note');
+        } else {
+          preview.textContent = 'Toca para agregar una nota';
+          preview.classList.remove('has-note');
+        }
+      });
+      // Impedir que el click dentro del textarea cierre la card
+      t.addEventListener('click', (e) => e.stopPropagation());
+    });
+    // Toggle expandir card al tocar el head o el preview
+    sb.querySelectorAll('.diary-item').forEach(item => {
+      const head = item.querySelector('.diary-item-head');
+      const preview = item.querySelector('.diary-note-preview');
+      const toggle = (e) => {
+        // No expandir si el click fue en el check de hábito
+        if (e.target.closest('.diary-item-check')) return;
+        const wasExpanded = item.classList.contains('expanded');
+        item.classList.toggle('expanded');
+        if (!wasExpanded) {
+          const ta = item.querySelector('.diary-note');
+          if (ta) { setTimeout(() => { autoGrow(ta); ta.focus(); }, 20); }
+        }
+      };
+      if (head) head.addEventListener('click', toggle);
+      if (preview) preview.addEventListener('click', toggle);
     });
     // Marcar/desmarcar hábito directo desde el diario
     sb.querySelectorAll('.diary-item-check').forEach(c => {
-      c.addEventListener('click', () => {
+      c.addEventListener('click', (ev) => {
+        ev.stopPropagation();
         const hid = c.dataset.hid;
         const l = habitLog();
         if (!l[k]) l[k] = {};
