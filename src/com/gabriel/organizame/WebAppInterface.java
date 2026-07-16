@@ -114,7 +114,8 @@ public class WebAppInterface {
         Class<?>[] providers = {
             AhoraWidgetProvider.class,
             ProximosWidgetProvider.class,
-            HabitosWidgetProvider.class
+            HabitosWidgetProvider.class,
+            SiguienteWidgetProvider.class
         };
         for (Class<?> p : providers) {
             try {
