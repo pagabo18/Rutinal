@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="24.1">
+<meta name="app-version" content="24.2">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1338,7 +1338,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.1 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.2 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -2092,14 +2092,8 @@ function renderHoy() {
           <span class="val">--:--</span><span class="lbl">restante</span>
         </div>
         <div class="now-track"><div class="now-fill" id="now-fill" style="${color ? 'background:'+color : ''}"></div></div>
-        <button class="now-pomo-btn" id="now-pomo-btn" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-          Iniciar Pomodoro
-        </button>
       </div>`;
     updateNowTimer();
-    const pbtn = document.getElementById('now-pomo-btn');
-    if (pbtn) pbtn.addEventListener('click', () => { startPomoQuick(); });
   } else {
     const next = merged.find(b => timeToMin(b.start) > nm);
     if (next) {
@@ -4298,16 +4292,17 @@ function openDiarySheet(dateKey) {
 
   const html = `
     <div class="diary-section">
-      <div class="diary-section-title">Notas del día</div>
-      <textarea id="diary-text" class="diary-text" rows="5" placeholder="¿Cómo estuvo tu día? Qué aprendiste, cómo te sentiste…">${esc(day.text)}</textarea>
-    </div>
-    <div class="diary-section">
-      <div class="diary-section-title">Bloques <span class="diary-section-count">${allBlocks.length}</span></div>
+      <div class="diary-section-title">Bloques del día <span class="diary-section-count">${allBlocks.length}</span></div>
+      <div style="font-size:12px;color:var(--text-3);margin:-4px 0 10px 0;">Toca una tarjeta para agregar o editar una nota.</div>
       ${blockRows}
     </div>
     <div class="diary-section">
       <div class="diary-section-title">Hábitos <span class="diary-section-count">${doneHabits.length}/${habits.length}</span></div>
       ${habitRows}
+    </div>
+    <div class="diary-section">
+      <div class="diary-section-title">Escribir diario</div>
+      <textarea id="diary-text" class="diary-text" rows="5" placeholder="¿Cómo estuvo tu día? Qué aprendiste, cómo te sentiste…">${esc(day.text)}</textarea>
     </div>
   `;
 
