@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="27.1">
+<meta name="app-version" content="27.2">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1352,7 +1352,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v27.1 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v27.2 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1520,7 +1520,10 @@
           <svg class="icon" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
         </button>
       </div>
-      <button class="btn-ghost" id="pomo-reset-cycles" style="margin-top:14px;font-size:12px;color:var(--text-3);background:none;border:none;padding:6px 10px;cursor:pointer;letter-spacing:0.02em;">↻ Reiniciar ciclos</button>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;">
+        <button class="btn-ghost" id="pomo-back-focus" style="font-size:12px;color:var(--text-3);background:none;border:none;padding:6px 10px;cursor:pointer;letter-spacing:0.02em;">← Volver al enfoque</button>
+        <button class="btn-ghost" id="pomo-reset-cycles" style="font-size:12px;color:var(--text-3);background:none;border:none;padding:6px 10px;cursor:pointer;letter-spacing:0.02em;">↻ Reiniciar ciclos</button>
+      </div>
     </div>
 
     <div class="pomo-settings">
@@ -5055,6 +5058,20 @@ document.getElementById('pomo-reset').addEventListener('click', () => {
   S.set('pomo_state', pomoState);
   pomoAndroidCancel();
   renderPomoDisplay();
+});
+document.getElementById('pomo-back-focus').addEventListener('click', () => {
+  // Regresa a la fase de enfoque del ciclo actual (útil si estás en descanso y quieres re-hacer el enfoque)
+  pomoState.running = false;
+  pomoState.endMs = null;
+  pomoState.startedAt = null;
+  pomoState.phase = 'focus';
+  // Si estamos en descanso largo, significa que ya se completó el último ciclo, volvemos a ese
+  // Si estamos en descanso corto, ya se completó el ciclo actual, volvemos a él
+  // Si ya estamos en enfoque, se queda igual
+  pomoState.remainingMs = pomoPhaseMs('focus');
+  S.set('pomo_state', pomoState);
+  pomoAndroidCancel();
+  renderPomo();
 });
 document.getElementById('pomo-reset-cycles').addEventListener('click', () => {
   if (!confirm('¿Reiniciar los ciclos? Volverás al ciclo 1, fase de enfoque.')) return;
