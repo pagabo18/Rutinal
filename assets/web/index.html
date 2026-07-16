@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="26.0">
+<meta name="app-version" content="26.1">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1352,7 +1352,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v26.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v26.1 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -4408,16 +4408,17 @@ function openBlockSheet(block, kind) {
 function openHabitSheet(habit) {
   const isNew = !habit;
   const defaultCat = CATS[0] ? CATS[0].id : 'personal';
-  const h = habit || { id: uid(), name:'', meta:'', cat: defaultCat };
+  const h = habit || { id: uid(), name:'', meta:'', notes:'', cat: defaultCat };
   const curCat = h.cat && CATS.find(c => c.id === h.cat) ? h.cat : defaultCat;
+  const escVal = s => (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const html = `
     <div class="field">
       <div class="field-label">Nombre</div>
-      <input class="field-input" id="f-name" placeholder="ej. Meditar 10 min" value="${(h.name||'').replace(/"/g,'&quot;')}">
+      <input class="field-input" id="f-name" placeholder="ej. Meditar 10 min" value="${escVal(h.name)}">
     </div>
     <div class="field">
       <div class="field-label">Detalle</div>
-      <input class="field-input" id="f-meta" placeholder="ej. Todas las mañanas" value="${(h.meta||'').replace(/"/g,'&quot;')}">
+      <input class="field-input" id="f-meta" placeholder="ej. Todas las mañanas" value="${escVal(h.meta)}">
     </div>
     <div class="field">
       <div class="field-label">Categoría</div>
@@ -4425,17 +4426,22 @@ function openHabitSheet(habit) {
         ${CATS.map(c => `<div class="chip${curCat===c.id?' selected':''}" data-v="${c.id}"><span class="dot" style="background:${c.color}"></span>${c.label}</div>`).join('')}
       </div>
     </div>
+    <div class="field">
+      <div class="field-label">Notas</div>
+      <textarea class="field-input" id="f-notes" rows="4" placeholder="¿Por qué lo hago? Meta, plan, recordatorios…" style="resize:vertical;min-height:80px;font-family:inherit;line-height:1.5;">${escVal(h.notes)}</textarea>
+    </div>
     ${!isNew ? '<button class="btn-danger" id="f-del">Eliminar</button>' : ''}
   `;
   openSheet(isNew ? 'Nuevo hábito' : 'Editar hábito', html, () => {
     const name = document.getElementById('f-name').value.trim();
     const meta = document.getElementById('f-meta').value.trim();
+    const notes = document.getElementById('f-notes').value.trim();
     const cat = document.querySelector('#f-cat .chip.selected')?.dataset.v || curCat;
     if (!name) { alert('Ponle nombre.'); return; }
     const habits = loadHabits();
     const idx = habits.findIndex(x => x.id === h.id);
-    if (idx >= 0) habits[idx] = { id:h.id, name, meta, cat };
-    else habits.push({ id:h.id, name, meta, cat });
+    if (idx >= 0) habits[idx] = { id:h.id, name, meta, notes, cat };
+    else habits.push({ id:h.id, name, meta, notes, cat });
     saveHabits(habits);
     closeSheet();
     renderHabitos();
