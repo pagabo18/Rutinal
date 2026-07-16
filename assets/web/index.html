@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="29.0">
+<meta name="app-version" content="30.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1352,7 +1352,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v29.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v30.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1526,6 +1526,8 @@
     <h1 class="h-title" style="margin-bottom:4px;">Pomodoro</h1>
     <div style="color:var(--text-3); font-size:13px; margin-bottom:16px;">Método de foco por intervalos</div>
 
+    <div id="pomo-cat-picker" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px;"></div>
+
     <div class="pomo-card">
       <div class="pomo-phase" id="pomo-phase">Enfoque</div>
       <div class="pomo-timer" id="pomo-timer">25:00</div>
@@ -1595,6 +1597,7 @@
         <div class="pomo-stat-lbl">Total</div>
       </div>
     </div>
+    <button class="btn-ghost" id="pomo-stats-btn" style="width:100%;margin-top:12px;padding:10px 14px;background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);border-radius:10px;font-size:14px;cursor:pointer;">📊 Estadísticas por categoría</button>
 
     <div class="chart-card">
       <div class="chart-title">Últimos 7 días</div>
@@ -1701,6 +1704,10 @@
             <input type="number" id="hyd-count" min="0" max="20" class="field-input" value="0">
           </label>
         </div>
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:10px;">
+          <input type="checkbox" id="hyd-enabled" style="width:18px; height:18px;" checked>
+          <span id="hyd-enabled-lbl" style="font-size:14px; color:var(--text-2);">Mostrar tarjeta en Hábitos</span>
+        </label>
         <div style="display:flex;gap:8px;">
           <button class="btn-secondary" id="hyd-save" style="padding:8px 14px;">Guardar</button>
         </div>
@@ -2805,7 +2812,7 @@ function calcStreak(id) {
 // HIDRATACIÓN
 // ============================================================
 function hydSettings() {
-  const def = { goal: 8, mlPerGlass: 0, from: '08:00', to: '22:00', count: 0 };
+  const def = { enabled: true, goal: 8, mlPerGlass: 0, from: '08:00', to: '22:00', count: 0 };
   const v = S.get('hydration_settings', null);
   return v ? Object.assign({}, def, v) : def;
 }
@@ -2822,6 +2829,9 @@ function hydSetToday(n) {
 }
 function renderHydration() {
   const s = hydSettings();
+  const card = document.getElementById('hydration-card');
+  if (card) card.style.display = s.enabled ? '' : 'none';
+  if (!s.enabled) return;
   const cur = hydToday();
   const pct = s.goal > 0 ? Math.min(100, Math.round(cur * 100 / s.goal)) : 0;
   const countEl = document.getElementById('hyd-count');
@@ -3445,21 +3455,28 @@ function renderAjustes() {
   // Hidratación
   try {
     const hs = hydSettings();
+    const enEl = document.getElementById('hyd-enabled');
+    const enLbl = document.getElementById('hyd-enabled-lbl');
     const gEl = document.getElementById('hyd-goal');
     const mEl = document.getElementById('hyd-ml');
     const fEl = document.getElementById('hyd-from');
     const tEl = document.getElementById('hyd-to');
     const cEl = document.getElementById('hyd-count');
     const stEl = document.getElementById('hyd-status');
+    if (enEl) enEl.checked = !!hs.enabled;
+    if (enLbl) enLbl.textContent = hs.enabled ? 'Tarjeta visible en Hábitos' : 'Tarjeta oculta en Hábitos';
     if (gEl) gEl.value = hs.goal;
     if (mEl) mEl.value = hs.mlPerGlass > 0 ? hs.mlPerGlass : '';
     if (fEl) fEl.value = hs.from;
     if (tEl) tEl.value = hs.to;
     if (cEl) cEl.value = hs.count;
     if (stEl) {
-      const times = hydComputeTimes();
-      if (!times.length) stEl.textContent = 'Sin recordatorios activos.';
-      else stEl.textContent = times.length + ' recordatorio(s): ' + times.join(' · ');
+      if (!hs.enabled) stEl.textContent = 'Hidratación desactivada.';
+      else {
+        const times = hydComputeTimes();
+        if (!times.length) stEl.textContent = 'Sin recordatorios activos.';
+        else stEl.textContent = times.length + ' recordatorio(s): ' + times.join(' · ');
+      }
     }
   } catch (e) {}
   // Modo Fin de Semana
@@ -3490,22 +3507,45 @@ function renderAjustes() {
   }
 }
 function bindAjustesOnce() {
+  // Hidratación: toggle mostrar/ocultar
+  const hydEnEl = document.getElementById('hyd-enabled');
+  if (hydEnEl) {
+    hydEnEl.addEventListener('change', () => {
+      const cur = hydSettings();
+      cur.enabled = hydEnEl.checked;
+      S.set('hydration_settings', cur);
+      const lbl = document.getElementById('hyd-enabled-lbl');
+      if (lbl) lbl.textContent = cur.enabled ? 'Tarjeta visible en Hábitos' : 'Tarjeta oculta en Hábitos';
+      // Si desactiva, cancela recordatorios; si reactiva, resincroniza
+      if (!cur.enabled) {
+        try { if (window.Android && window.Android.setHydrationReminders) window.Android.setHydrationReminders('[]'); } catch(e){}
+      } else {
+        hydSyncReminders();
+      }
+      renderHydration();
+    });
+  }
   // Hidratación: guardar
   const hydSaveBtn = document.getElementById('hyd-save');
   if (hydSaveBtn) {
     hydSaveBtn.addEventListener('click', () => {
+      const enabled = document.getElementById('hyd-enabled').checked;
       const goal = Math.max(1, Math.min(20, parseInt(document.getElementById('hyd-goal').value) || 8));
       const mlPerGlass = Math.max(0, Math.min(1000, parseInt(document.getElementById('hyd-ml').value) || 0));
       const from = document.getElementById('hyd-from').value || '08:00';
       const to = document.getElementById('hyd-to').value || '22:00';
       const count = Math.max(0, Math.min(20, parseInt(document.getElementById('hyd-count').value) || 0));
-      S.set('hydration_settings', { goal, mlPerGlass, from, to, count });
-      hydSyncReminders();
+      S.set('hydration_settings', { enabled, goal, mlPerGlass, from, to, count });
+      if (enabled) hydSyncReminders();
+      else { try { if (window.Android && window.Android.setHydrationReminders) window.Android.setHydrationReminders('[]'); } catch(e){} }
       const stEl = document.getElementById('hyd-status');
       if (stEl) {
-        const times = hydComputeTimes();
-        if (!times.length) stEl.textContent = 'Guardado. Sin recordatorios activos.';
-        else stEl.textContent = 'Guardado. ' + times.length + ' recordatorio(s): ' + times.join(' · ');
+        if (!enabled) stEl.textContent = 'Guardado. Hidratación desactivada.';
+        else {
+          const times = hydComputeTimes();
+          if (!times.length) stEl.textContent = 'Guardado. Sin recordatorios activos.';
+          else stEl.textContent = 'Guardado. ' + times.length + ' recordatorio(s): ' + times.join(' · ');
+        }
       }
       renderHydration();
     });
@@ -5056,14 +5096,84 @@ let POMO = Object.assign({}, POMO_DEFAULTS, S.get('pomo_settings', {}));
 let pomoState = S.get('pomo_state', null);
 // pomoState: { phase: 'focus'|'short'|'long', cycle: 1..N, running: bool, endMs: number|null, remainingMs: number, startedAt: number|null }
 if (!pomoState) {
-  pomoState = { phase: 'focus', cycle: 1, running: false, endMs: null, remainingMs: POMO.focus * 60 * 1000, startedAt: null };
+  pomoState = { phase: 'focus', cycle: 1, running: false, endMs: null, remainingMs: POMO.focus * 60 * 1000, startedAt: null, cat: null };
   S.set('pomo_state', pomoState);
 }
+if (pomoState && typeof pomoState.cat === 'undefined') { pomoState.cat = null; }
 function pomoSavedSessions() { return S.get('pomo_sessions', []); }
 function pomoLogSession() {
   const arr = pomoSavedSessions();
-  arr.push({ ts: Date.now(), phase: 'focus', minutes: POMO.focus });
+  arr.push({ ts: Date.now(), phase: 'focus', minutes: POMO.focus, cat: pomoState.cat || null });
   S.set('pomo_sessions', arr);
+}
+function renderPomoCatPicker() {
+  const cont = document.getElementById('pomo-cat-picker');
+  if (!cont) return;
+  const cats = CATS.slice();
+  const cur = pomoState.cat;
+  cont.innerHTML = '';
+  // Chip "Sin categoría"
+  const noneChip = document.createElement('button');
+  noneChip.className = 'chip' + (!cur ? ' selected' : '');
+  noneChip.style.cssText = 'padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:' + (!cur ? 'var(--text-1)' : 'var(--surface-2)') + ';color:' + (!cur ? 'var(--surface-1)' : 'var(--text-2)') + ';font-size:12px;cursor:pointer;';
+  noneChip.textContent = 'Sin categoría';
+  noneChip.addEventListener('click', () => { pomoState.cat = null; S.set('pomo_state', pomoState); renderPomoCatPicker(); });
+  cont.appendChild(noneChip);
+  cats.forEach(c => {
+    const chip = document.createElement('button');
+    const sel = (cur === c.id);
+    chip.className = 'chip' + (sel ? ' selected' : '');
+    chip.style.cssText = 'padding:6px 12px;border-radius:999px;border:1px solid ' + (sel ? c.color : 'var(--border)') + ';background:' + (sel ? c.color : 'var(--surface-2)') + ';color:' + (sel ? '#fff' : 'var(--text-2)') + ';font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;';
+    chip.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:' + c.color + ';border:' + (sel ? '1px solid #fff' : 'none') + ';"></span>' + c.label;
+    chip.addEventListener('click', () => { pomoState.cat = c.id; S.set('pomo_state', pomoState); renderPomoCatPicker(); });
+    cont.appendChild(chip);
+  });
+}
+function openPomoStatsSheet() {
+  const sessions = pomoSavedSessions().filter(s => s.phase === 'focus');
+  // Agrupar por cat
+  const totals = {};
+  sessions.forEach(s => {
+    const k = s.cat || '__none__';
+    if (!totals[k]) totals[k] = { minutes: 0, count: 0 };
+    totals[k].minutes += (s.minutes || 0);
+    totals[k].count += 1;
+  });
+  // Convertir a array ordenado por minutos desc
+  const rows = Object.keys(totals).map(k => {
+    let label = 'Sin categoría', color = 'var(--text-3)';
+    if (k !== '__none__') {
+      const c = CATS.find(x => x.id === k);
+      if (c) { label = c.label; color = c.color; }
+      else { label = k; }
+    }
+    return { id: k, label, color, minutes: totals[k].minutes, count: totals[k].count };
+  }).sort((a, b) => b.minutes - a.minutes);
+  const totalMin = rows.reduce((s, r) => s + r.minutes, 0);
+  const totalCount = rows.reduce((s, r) => s + r.count, 0);
+  const fmtH = (m) => {
+    if (m < 60) return m + ' min';
+    const h = Math.floor(m / 60), rem = m % 60;
+    return rem === 0 ? h + ' h' : (h + ' h ' + rem + ' min');
+  };
+  let html = '';
+  if (rows.length === 0) {
+    html = '<div class="empty" style="padding:24px 12px;text-align:center;color:var(--text-3);">Aún no hay sesiones de enfoque registradas.</div>';
+  } else {
+    html = '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);">' +
+      '<div><div style="font-size:12px;color:var(--text-3);">Total acumulado</div><div style="font-size:20px;font-weight:600;">' + fmtH(totalMin) + '</div></div>' +
+      '<div style="text-align:right;"><div style="font-size:12px;color:var(--text-3);">Sesiones</div><div style="font-size:20px;font-weight:600;">' + totalCount + '</div></div>' +
+      '</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+    rows.forEach(r => {
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;">' +
+        '<div style="display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:10px;height:10px;border-radius:50%;background:' + r.color + ';flex-shrink:0;"></span><span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + r.label + '</span></div>' +
+        '<div style="text-align:right;"><div style="font-weight:600;font-size:14px;">' + fmtH(r.minutes) + '</div><div style="font-size:11px;color:var(--text-3);">' + r.count + ' sesión' + (r.count === 1 ? '' : 'es') + '</div></div>' +
+        '</div>';
+    });
+    html += '</div>';
+  }
+  openSheet('Estadísticas Pomodoro', html);
 }
 function pomoPhaseLabel(p) {
   return p === 'focus' ? 'Enfoque' : (p === 'short' ? 'Descanso corto' : 'Descanso largo');
@@ -5248,6 +5358,7 @@ function renderPomo() {
   renderPomoSettings();
   renderPomoDisplay();
   renderPomoStats();
+  renderPomoCatPicker();
 }
 tabRenderers.pomo = renderPomo;
 
@@ -5300,6 +5411,9 @@ document.getElementById('pomo-next').addEventListener('click', () => {
   pomoNextPhase();
   pomoAndroidCancel();
   renderPomo();
+});
+document.getElementById('pomo-stats-btn').addEventListener('click', () => {
+  openPomoStatsSheet();
 });
 document.getElementById('pomo-reset-cycles').addEventListener('click', () => {
   if (!confirm('¿Reiniciar los ciclos? Volverás al ciclo 1, fase de enfoque.')) return;
