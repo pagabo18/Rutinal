@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.List;
@@ -20,6 +21,8 @@ import java.util.List;
 public class NotificationScheduler {
     public static final String CHANNEL_ID = "bloques";
     public static final String CHANNEL_NAME = "Bloques";
+    public static final String CHANNEL_SILENT_ID = "bloques_silent";
+    public static final String CHANNEL_SILENT_NAME = "Bloques (silencio)";
     public static final String CHANNEL_POMO_ID = "pomodoro";
     public static final String CHANNEL_POMO_NAME = "Pomodoro";
     public static final String CHANNEL_HABITS_ID = "habits_reminder";
@@ -41,6 +44,7 @@ public class NotificationScheduler {
     public static final String EXTRA_KIND = "kind"; // "pre" | "start" | "end"
     public static final String EXTRA_NOTIF_ID = "notif_id";
     public static final String EXTRA_BLOCK_KEY = "block_key";
+    public static final String EXTRA_SILENT = "silent";
 
     public static final String EXTRA_POMO_PHASE = "pomo_phase"; // focus | short | long
     public static final String EXTRA_POMO_NEXT = "pomo_next";
@@ -54,6 +58,14 @@ public class NotificationScheduler {
             NotificationChannel ch = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
             ch.setDescription("Avisos al iniciar, terminar y antes de cada bloque.");
             ch.enableVibration(true);
+            nm.createNotificationChannel(ch);
+        }
+        if (nm.getNotificationChannel(CHANNEL_SILENT_ID) == null) {
+            NotificationChannel ch = new NotificationChannel(CHANNEL_SILENT_ID, CHANNEL_SILENT_NAME, NotificationManager.IMPORTANCE_LOW);
+            ch.setDescription("Bloques en fin de semana o modo silencio. Sin sonido ni vibración.");
+            ch.enableVibration(false);
+            ch.setSound(null, null);
+            ch.setShowBadge(true);
             nm.createNotificationChannel(ch);
         }
         if (nm.getNotificationChannel(CHANNEL_POMO_ID) == null) {
@@ -196,6 +208,16 @@ public class NotificationScheduler {
         long now = System.currentTimeMillis();
         JSONArray active = new JSONArray();
 
+        // Modo Fin de Semana: silenciar notificaciones sab/dom si el usuario lo activó
+        boolean weekendSilent = false;
+        try {
+            JSONObject st = DataHelper.loadState(ctx);
+            weekendSilent = st.optBoolean("weekend_silent", false);
+        } catch (Exception ignored) {}
+        int dow = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_WEEK);
+        boolean isWeekend = (dow == java.util.Calendar.SATURDAY || dow == java.util.Calendar.SUNDAY);
+        boolean silentToday = weekendSilent && isWeekend;
+
         for (DataHelper.Block b : blocks) {
             long startMs = todayMillisAt(b.startMin);
             long endMs = todayMillisAt(b.endMin);
@@ -205,19 +227,19 @@ public class NotificationScheduler {
             long preMs = startMs - 5 * 60_000L;
             if (preMs > now) {
                 int id = notifId(blockKey, "pre");
-                schedule(am, ctx, preMs, buildIntent(ctx, b, "pre", id, blockKey), id);
+                schedule(am, ctx, preMs, buildIntent(ctx, b, "pre", id, blockKey, silentToday), id);
                 active.put(id);
             }
             // Aviso al iniciar
             if (startMs > now) {
                 int id = notifId(blockKey, "start");
-                schedule(am, ctx, startMs, buildIntent(ctx, b, "start", id, blockKey), id);
+                schedule(am, ctx, startMs, buildIntent(ctx, b, "start", id, blockKey, silentToday), id);
                 active.put(id);
             }
             // Aviso al terminar
             if (endMs > now) {
                 int id = notifId(blockKey, "end");
-                schedule(am, ctx, endMs, buildIntent(ctx, b, "end", id, blockKey), id);
+                schedule(am, ctx, endMs, buildIntent(ctx, b, "end", id, blockKey, silentToday), id);
                 active.put(id);
             }
         }
@@ -306,7 +328,7 @@ public class NotificationScheduler {
         }
     }
 
-    private static Intent buildIntent(Context ctx, DataHelper.Block b, String kind, int id, String key) {
+    private static Intent buildIntent(Context ctx, DataHelper.Block b, String kind, int id, String key, boolean silent) {
         Intent i = new Intent(ctx, BlockNotificationReceiver.class);
         i.setAction("com.gabriel.organizame.BLOCK_ALARM");
         i.setData(android.net.Uri.parse("organizame://alarm/" + id));
@@ -318,6 +340,7 @@ public class NotificationScheduler {
         i.putExtra(EXTRA_KIND, kind);
         i.putExtra(EXTRA_NOTIF_ID, id);
         i.putExtra(EXTRA_BLOCK_KEY, key);
+        i.putExtra(EXTRA_SILENT, silent);
         return i;
     }
 

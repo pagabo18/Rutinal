@@ -27,6 +27,7 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
         if (kind == null) kind = "start";
         int notifId = intent.getIntExtra(NotificationScheduler.EXTRA_NOTIF_ID, 0);
         String cat = intent.getStringExtra(NotificationScheduler.EXTRA_CAT);
+        boolean silent = intent.getBooleanExtra(NotificationScheduler.EXTRA_SILENT, false);
 
         // No Molestar automático en bloques de trabajo/enfoque
         if (NotificationScheduler.isFocusCategory(cat)) {
@@ -81,10 +82,11 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
 
         Notification.Builder b;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            b = new Notification.Builder(ctx, NotificationScheduler.CHANNEL_ID);
+            String chId = silent ? NotificationScheduler.CHANNEL_SILENT_ID : NotificationScheduler.CHANNEL_ID;
+            b = new Notification.Builder(ctx, chId);
         } else {
             b = new Notification.Builder(ctx);
-            b.setPriority(Notification.PRIORITY_HIGH);
+            b.setPriority(silent ? Notification.PRIORITY_LOW : Notification.PRIORITY_HIGH);
         }
         b.setSmallIcon(R.drawable.ic_notif)
          .setContentTitle(title)
@@ -94,6 +96,20 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
          .setColor(accent)
          .setContentIntent(openPI)
          .setCategory(Notification.CATEGORY_REMINDER);
+
+        // Modo Fin de Semana silencioso: quita sonido, vibración y baja prioridad
+        if (silent) {
+            b.setSound(null);
+            b.setVibrate(new long[]{0});
+            b.setDefaults(0);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                b.setPriority(Notification.PRIORITY_LOW);
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // No podemos cambiar el canal en tiempo real, pero silenciamos lo demás
+                try { b.setOnlyAlertOnce(true); } catch (Exception ignored) {}
+            }
+        }
 
         // Iconos vectoriales para acciones (solo pre/start)
         if (showActions) {

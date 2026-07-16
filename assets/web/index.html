@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="27.3">
+<meta name="app-version" content="28.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1352,7 +1352,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v27.3 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v28.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1599,6 +1599,10 @@
 
     <div id="edit-blocks" class="edit-panel">
       <h2>Bloques <span class="h2-btn" id="edit-add-block">+ Nuevo</span></h2>
+      <div id="today-schedule-chip" style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;font-size:11px;color:var(--text-2);margin-bottom:12px;letter-spacing:0.02em;">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);"></span>
+        <span id="today-schedule-lbl">Hoy: Entre semana</span>
+      </div>
       <div id="edit-blocks-list"></div>
     </div>
 
@@ -1646,6 +1650,15 @@
           <button class="btn-secondary" id="habit-reminder-clear" style="padding:8px 12px;">Quitar</button>
         </div>
         <div id="habit-reminder-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
+      </div>
+      <div class="setting">
+        <div class="setting-label">Modo Fin de Semana</div>
+        <div style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;">Los sábados y domingos, tu horario cambia automáticamente al de fin de semana. Activa esta opción para además recibir las notificaciones de bloques en silencio (sin sonido ni vibración) esos días.</div>
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="weekend-silent-toggle" style="width:18px; height:18px;">
+          <span id="weekend-silent-lbl" style="font-size:14px; color:var(--text-2);">Notificaciones normales sab/dom</span>
+        </label>
+        <div id="weekend-status" style="font-size:12px; color:var(--text-3); margin-top:8px;"></div>
       </div>
       <div class="setting" id="dnd-setting" style="display:none;">
         <div class="setting-label">No Molestar automático</div>
@@ -3294,6 +3307,20 @@ function renderAjustes() {
   } else {
     hbox.style.display = 'none';
   }
+  // Modo Fin de Semana
+  try {
+    const wsSilent = !!S.get('weekend_silent', false);
+    const wsTog = document.getElementById('weekend-silent-toggle');
+    const wsLbl = document.getElementById('weekend-silent-lbl');
+    const wsSt = document.getElementById('weekend-status');
+    if (wsTog) wsTog.checked = wsSilent;
+    if (wsLbl) wsLbl.textContent = wsSilent ? 'Silencio automático sab/dom activo' : 'Notificaciones normales sab/dom';
+    if (wsSt) {
+      const kNow = scheduleKindForDate();
+      const kLbl = kNow === 'weekday' ? 'entre semana' : (kNow === 'saturday' ? 'sábado' : 'domingo');
+      wsSt.textContent = 'Hoy aplica el horario de ' + kLbl + '.';
+    }
+  } catch (e) {}
   // Estado de widgets
   const wbox = document.getElementById('widget-setting');
   const wst = document.getElementById('widget-status');
@@ -3308,6 +3335,17 @@ function renderAjustes() {
   }
 }
 function bindAjustesOnce() {
+  // Toggle Modo Fin de Semana (silencio)
+  const wsTog = document.getElementById('weekend-silent-toggle');
+  if (wsTog) {
+    wsTog.addEventListener('change', () => {
+      S.set('weekend_silent', wsTog.checked);
+      const wsLbl = document.getElementById('weekend-silent-lbl');
+      if (wsLbl) wsLbl.textContent = wsTog.checked ? 'Silencio automático sab/dom activo' : 'Notificaciones normales sab/dom';
+      // Reprogramar notificaciones para aplicar el flag
+      try { if (window.Android && window.Android.scheduleNotifications) window.Android.scheduleNotifications(); } catch (e) {}
+    });
+  }
   document.querySelectorAll('#theme-picker .chip').forEach(el => {
     el.addEventListener('click', () => {
       document.querySelectorAll('#theme-picker .chip').forEach(x => x.classList.remove('selected'));
@@ -3718,6 +3756,13 @@ function daysLabel(b) {
   return '';
 }
 function renderEditBlocks() {
+  // Chip: qué horario aplica hoy
+  try {
+    const k = scheduleKindForDate();
+    const lbl = k === 'weekday' ? 'Entre semana (Lun–Vie)' : (k === 'saturday' ? 'Sábado' : 'Domingo');
+    const el = document.getElementById('today-schedule-lbl');
+    if (el) el.textContent = 'Hoy: ' + lbl;
+  } catch (e) {}
   // Unificar todos los bloques de los 3 baldes por id, quedandonos con el primero
   const scs = loadSchedules();
   const seen = new Set();
