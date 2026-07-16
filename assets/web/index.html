@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="23.0">
+<meta name="app-version" content="24.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1331,7 +1331,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v23.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1623,6 +1623,7 @@
           <button class="btn-secondary" id="btn-export">Exportar datos (JSON)</button>
           <button class="btn-secondary" id="btn-import">Importar datos (JSON)</button>
           <input type="file" id="file-import" accept="application/json" style="display:none;">
+          <button class="btn-secondary" id="btn-undo-import" style="display:none;">Deshacer última importación</button>
           <button class="btn-danger" id="btn-reset">Restablecer todo</button>
         </div>
       </div>
@@ -3084,19 +3085,26 @@ function bindAjustesOnce() {
     });
   });
   document.getElementById('btn-export').addEventListener('click', () => {
-    const keys = ['cats','habits','habitLog','imprevistos','plan','planTasks','sch_weekday','sch_saturday','sch_sunday','bestStreak','theme'];
+    // Exporta TODAS las keys de la app (excluye internas del navegador si las hubiera)
     const data = {};
-    keys.forEach(k => { const v = S.get(k, undefined); if (v !== undefined) data[k] = v; });
-    // Incluir planExp_*
-    S.allKeys().forEach(k => { if (k.startsWith('planExp_')) data[k] = S.get(k, false); });
+    const skipPrefixes = ['__'];
+    S.allKeys().forEach(k => {
+      if (skipPrefixes.some(p => k.startsWith(p))) return;
+      const v = S.get(k, undefined);
+      if (v !== undefined) data[k] = v;
+    });
     data.__exportedAt = new Date().toISOString();
-    data.__version = 3;
+    data.__version = 4;
+    data.__appVersion = '24.0';
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `organizame-${keyDate()}.json`;
+    const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+    a.download = `organizame-backup-${ts}.json`;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   document.getElementById('btn-import').addEventListener('click', () => {
@@ -3104,24 +3112,61 @@ function bindAjustesOnce() {
   });
   document.getElementById('file-import').addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file) { return; }
     const reader = new FileReader();
     reader.onload = () => {
       try {
         const data = JSON.parse(reader.result);
-        if (!confirm('Esto reemplazará todos tus datos actuales. ¿Continuar?')) return;
+        // Validación básica: al menos una key conocida
+        const known = ['sch_weekday','sch_saturday','sch_sunday','habits','cats','plan','imprevistos','habitLog','diary','pomo_state','pomo_settings','pomo_sessions'];
+        const hasKnown = Object.keys(data).some(k => known.includes(k));
+        if (!hasKnown) { alert('Este archivo no parece un backup válido de Organízame.'); e.target.value = ''; return; }
+        // Resumen para el usuario
+        const n = Object.keys(data).filter(k => !k.startsWith('__')).length;
+        const when = data.__exportedAt ? new Date(data.__exportedAt).toLocaleString('es-MX') : 'fecha desconocida';
+        if (!confirm(`Reemplazar tus datos actuales con este backup?\n\nBackup: ${when}\nCampos: ${n}\n\nEsta acción no se puede deshacer.`)) { e.target.value = ''; return; }
+        // Guardar un backup automatico del estado actual antes de importar
+        try {
+          const cur = {};
+          S.allKeys().forEach(k => { if (!k.startsWith('__')) cur[k] = S.get(k, undefined); });
+          S.set('__lastPreImportBackup', { at: new Date().toISOString(), data: cur });
+        } catch(_) {}
+        // Limpiar keys de app (no theme) y aplicar nuevas
+        S.allKeys().forEach(k => { if (!k.startsWith('__') && k !== 'theme') S.del(k); });
         Object.keys(data).forEach(k => {
           if (k.startsWith('__')) return;
           S.set(k, data[k]);
         });
-        alert('Datos importados. Recargando app...');
+        alert('Datos importados. La app se recargará.');
         location.reload();
       } catch(err) {
-        alert('El archivo no es válido.');
+        alert('El archivo no es válido: ' + (err && err.message ? err.message : 'JSON malformado'));
+      } finally {
+        e.target.value = '';
       }
     };
     reader.readAsText(file);
   });
+  // Mostrar botón de deshacer si hay backup previo
+  const undoBtn = document.getElementById('btn-undo-import');
+  if (undoBtn) {
+    const pre = S.get('__lastPreImportBackup', null);
+    if (pre && pre.data) {
+      undoBtn.style.display = '';
+      undoBtn.textContent = 'Deshacer importación (' + new Date(pre.at).toLocaleDateString('es-MX') + ')';
+    }
+    undoBtn.addEventListener('click', () => {
+      const pre2 = S.get('__lastPreImportBackup', null);
+      if (!pre2 || !pre2.data) { alert('No hay backup previo disponible.'); return; }
+      if (!confirm('Restaurar tus datos al estado anterior a la última importación?')) return;
+      S.allKeys().forEach(k => { if (!k.startsWith('__') && k !== 'theme') S.del(k); });
+      Object.keys(pre2.data).forEach(k => S.set(k, pre2.data[k]));
+      S.del('__lastPreImportBackup');
+      alert('Estado restaurado. La app se recargará.');
+      location.reload();
+    });
+  }
+
   document.getElementById('btn-reset').addEventListener('click', () => {
     if (!confirm('¿Borrar TODOS los datos y volver a los valores por defecto? Esto no se puede deshacer.')) return;
     if (!confirm('Confirmar de nuevo: se perderán bloques, hábitos, historial, imprevistos y ajustes.')) return;
