@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="19.0">
+<meta name="app-version" content="20.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1231,7 +1231,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v19.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v20.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1491,6 +1491,16 @@
           <button class="btn-secondary" id="habit-reminder-clear" style="padding:8px 12px;">Quitar</button>
         </div>
         <div id="habit-reminder-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
+      </div>
+      <div class="setting" id="dnd-setting" style="display:none;">
+        <div class="setting-label">No Molestar automático</div>
+        <div style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;">Activa el modo No Molestar (solo prioridad) al iniciar bloques de trabajo o enfoque, y lo desactiva al terminar.</div>
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="dnd-toggle" style="width:18px; height:18px;">
+          <span id="dnd-toggle-lbl" style="font-size:14px; color:var(--text-2);">Desactivado</span>
+        </label>
+        <button class="btn-secondary" id="dnd-permission" style="margin-top:8px; display:none;">Conceder permiso</button>
+        <div id="dnd-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
       </div>
       <div class="setting">
         <div class="setting-label">Datos</div>
@@ -1959,8 +1969,14 @@ function renderHoy() {
           <span class="val">--:--</span><span class="lbl">restante</span>
         </div>
         <div class="now-track"><div class="now-fill" id="now-fill" style="${color ? 'background:'+color : ''}"></div></div>
+        <button class="now-pomo-btn" id="now-pomo-btn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+          Iniciar Pomodoro
+        </button>
       </div>`;
     updateNowTimer();
+    const pbtn = document.getElementById('now-pomo-btn');
+    if (pbtn) pbtn.addEventListener('click', () => { startPomoQuick(); });
   } else {
     const next = merged.find(b => timeToMin(b.start) > nm);
     if (next) {
@@ -2747,6 +2763,29 @@ function renderAjustes() {
   } else {
     box.style.display = 'none';
   }
+  // No Molestar automático
+  const dbox = document.getElementById('dnd-setting');
+  const dtog = document.getElementById('dnd-toggle');
+  const dlbl = document.getElementById('dnd-toggle-lbl');
+  const dperm = document.getElementById('dnd-permission');
+  const dst = document.getElementById('dnd-status');
+  if (typeof window.Android !== 'undefined' && window.Android.setDndAuto) {
+    dbox.style.display = '';
+    let enabled = false, granted = false;
+    try { enabled = window.Android.getDndAuto(); } catch(e) {}
+    try { granted = window.Android.canUseDnd(); } catch(e) {}
+    dtog.checked = enabled;
+    dlbl.textContent = enabled ? 'Activado' : 'Desactivado';
+    if (enabled && !granted) {
+      dperm.style.display = '';
+      dst.textContent = 'Falta el permiso de Android para controlar No Molestar.';
+    } else {
+      dperm.style.display = 'none';
+      dst.textContent = enabled ? 'Se activará en bloques de trabajo o enfoque.' : '';
+    }
+  } else {
+    dbox.style.display = 'none';
+  }
   // Recordatorio de hábitos
   const hbox = document.getElementById('habit-reminder-setting');
   const hin = document.getElementById('habit-reminder-time');
@@ -2841,6 +2880,32 @@ function bindAjustesOnce() {
     try { window.Android && window.Android.setHabitReminder && window.Android.setHabitReminder(''); } catch(e) {}
     hIn.value = '';
     hSt.textContent = 'Sin recordatorio.';
+  });
+  const dTog = document.getElementById('dnd-toggle');
+  const dLbl = document.getElementById('dnd-toggle-lbl');
+  const dPerm = document.getElementById('dnd-permission');
+  const dSt = document.getElementById('dnd-status');
+  if (dTog) dTog.addEventListener('change', () => {
+    const on = dTog.checked;
+    try { window.Android && window.Android.setDndAuto && window.Android.setDndAuto(on); } catch(e) {}
+    dLbl.textContent = on ? 'Activado' : 'Desactivado';
+    if (on) {
+      let granted = false;
+      try { granted = window.Android.canUseDnd(); } catch(e) {}
+      if (!granted) {
+        dPerm.style.display = '';
+        dSt.textContent = 'Falta el permiso de Android para controlar No Molestar.';
+      } else {
+        dPerm.style.display = 'none';
+        dSt.textContent = 'Se activará en bloques de trabajo o enfoque.';
+      }
+    } else {
+      dPerm.style.display = 'none';
+      dSt.textContent = '';
+    }
+  });
+  if (dPerm) dPerm.addEventListener('click', () => {
+    try { window.Android && window.Android.openDndSettings && window.Android.openDndSettings(); } catch(e) {}
   });
 }
 // Botón permiso alarma exacta
@@ -4146,6 +4211,27 @@ function renderPomo() {
   renderPomoStats();
 }
 tabRenderers.pomo = renderPomo;
+
+// Iniciar Pomodoro rápido desde tarjeta Ahora
+function startPomoQuick() {
+  if (pomoState.running) {
+    // Ya corriendo: solo llevar a la pestaña Pomo
+    document.querySelector('nav button[data-tab="pomo"]').click();
+    return;
+  }
+  // Iniciar en fase focus si está reseteado
+  if (pomoState.phase !== 'focus' || pomoState.remainingMs >= pomoPhaseMs('focus')) {
+    pomoState.phase = 'focus';
+    pomoState.remainingMs = pomoPhaseMs('focus');
+  }
+  pomoState.endMs = Date.now() + pomoState.remainingMs;
+  pomoState.running = true;
+  if (!pomoState.startedAt) pomoState.startedAt = Date.now();
+  S.set('pomo_state', pomoState);
+  if (navigator.vibrate) navigator.vibrate(15);
+  pomoAndroidSchedule();
+  document.querySelector('nav button[data-tab="pomo"]').click();
+}
 
 // Listeners Pomodoro
 document.getElementById('pomo-toggle').addEventListener('click', () => {

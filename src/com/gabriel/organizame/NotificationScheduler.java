@@ -29,6 +29,8 @@ public class NotificationScheduler {
     static final String K_ACTIVE_IDS = "active_ids";
     static final String K_POMO_ID = "pomo_id";
     static final String K_HABIT_TIME = "habit_reminder_hhmm"; // "HH:mm" o vacío
+    static final String K_DND_AUTO = "dnd_auto";
+    static final String K_DND_PREV_FILTER = "dnd_prev_filter";
     public static final int HABIT_ALARM_ID = 0x60000001;
 
     public static final String EXTRA_LABEL = "label";
@@ -93,6 +95,53 @@ public class NotificationScheduler {
     public static String getHabitReminderTime(Context ctx) {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
         return sp.getString(K_HABIT_TIME, "");
+    }
+
+    // ----- No Molestar automático -----
+
+    public static void setDndAuto(Context ctx, boolean enabled) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        sp.edit().putBoolean(K_DND_AUTO, enabled).apply();
+    }
+
+    public static boolean getDndAuto(Context ctx) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        return sp.getBoolean(K_DND_AUTO, false);
+    }
+
+    /** Activa No Molestar (solo prioridad) y guarda el filtro previo. */
+    public static void enableDnd(Context ctx) {
+        if (!getDndAuto(ctx)) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm == null || !nm.isNotificationPolicyAccessGranted()) return;
+        try {
+            int prev = nm.getCurrentInterruptionFilter();
+            SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+            sp.edit().putInt(K_DND_PREV_FILTER, prev).apply();
+            nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY);
+        } catch (Exception ignored) {}
+    }
+
+    /** Restaura el filtro previo (o ALL si no se guardó). */
+    public static void disableDnd(Context ctx) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm == null || !nm.isNotificationPolicyAccessGranted()) return;
+        try {
+            SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+            int prev = sp.getInt(K_DND_PREV_FILTER, NotificationManager.INTERRUPTION_FILTER_ALL);
+            if (prev == 0) prev = NotificationManager.INTERRUPTION_FILTER_ALL;
+            nm.setInterruptionFilter(prev);
+            sp.edit().remove(K_DND_PREV_FILTER).apply();
+        } catch (Exception ignored) {}
+    }
+
+    /** Devuelve true si esta categoría debe activar DND automático. */
+    public static boolean isFocusCategory(String cat) {
+        if (cat == null) return false;
+        String c = cat.toLowerCase();
+        return c.equals("trabajo") || c.equals("enfoque") || c.equals("focus");
     }
 
     public static void scheduleHabitReminder(Context ctx) {

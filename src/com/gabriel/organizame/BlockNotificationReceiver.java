@@ -26,6 +26,13 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
         String kind = intent.getStringExtra(NotificationScheduler.EXTRA_KIND);
         if (kind == null) kind = "start";
         int notifId = intent.getIntExtra(NotificationScheduler.EXTRA_NOTIF_ID, 0);
+        String cat = intent.getStringExtra(NotificationScheduler.EXTRA_CAT);
+
+        // No Molestar automático en bloques de trabajo/enfoque
+        if (NotificationScheduler.isFocusCategory(cat)) {
+            if ("start".equals(kind)) NotificationScheduler.enableDnd(ctx);
+            else if ("end".equals(kind)) NotificationScheduler.disableDnd(ctx);
+        }
 
         if (label == null) label = "Bloque";
         if (start == null) start = "";

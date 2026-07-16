@@ -77,6 +77,33 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public boolean canUseDnd() {
+        try {
+            android.app.NotificationManager nm = (android.app.NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            return nm != null && nm.isNotificationPolicyAccessGranted();
+        } catch (Exception e) { return false; }
+    }
+
+    @JavascriptInterface
+    public void openDndSettings() {
+        try {
+            android.content.Intent i = new android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS);
+            i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            ctx.startActivity(i);
+        } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public void setDndAuto(boolean enabled) {
+        try { NotificationScheduler.setDndAuto(ctx, enabled); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public boolean getDndAuto() {
+        try { return NotificationScheduler.getDndAuto(ctx); } catch (Exception e) { return false; }
+    }
+
+    @JavascriptInterface
     public String getState() {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         return sp.getString(K_STATE, "{}");
