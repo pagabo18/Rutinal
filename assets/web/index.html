@@ -827,6 +827,15 @@
   .diary-note:focus { outline: none; color: var(--text); }
   .diary-note::placeholder { color: var(--text-3); }
 
+  /* Historial del diario */
+  .diary-hist-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+  .diary-hist-item:hover, .diary-hist-item:active { background: var(--surface-2); border-color: var(--text-3); }
+  .diary-hist-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .diary-hist-date { font-size: 13px; font-weight: 600; color: var(--text); text-transform: capitalize; }
+  .diary-hist-today { background: var(--text); color: var(--bg); font-size: 9px; font-weight: 700; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 4px; margin-left: 4px; vertical-align: 2px; }
+  .diary-hist-meta { display: flex; gap: 8px; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .diary-hist-preview { font-size: 13px; color: var(--text-2); line-height: 1.45; }
+
   .cal-detail {
     margin-top: 14px; background: var(--surface);
     border: 1px solid var(--border); border-radius: 12px; padding: 14px;
@@ -1163,6 +1172,10 @@
     <div class="cal-head"><div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
     <div class="cal-grid" id="cal-grid"></div>
     <div id="cal-detail"></div>
+    <button class="btn-secondary" id="open-diary-history-btn" style="margin-top:14px;width:100%;">
+      <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;margin-right:6px;vertical-align:-3px;"><path d="M2 3h20v18H2z"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="8" y1="3" x2="8" y2="21"/></svg>
+      Historial del diario
+    </button>
   </section>
 
   <!-- PLAN -->
@@ -2334,6 +2347,7 @@ function renderCal() {
   const dbtn = document.getElementById('open-diary-btn');
   if (dbtn) dbtn.addEventListener('click', () => openDiarySheet(calSel));
 }
+document.getElementById('open-diary-history-btn').addEventListener('click', openDiaryHistorySheet);
 document.getElementById('cal-prev').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth()-1); renderCal(); });
 document.getElementById('cal-next').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth()+1); renderCal(); });
 
@@ -2989,6 +3003,11 @@ function openSheet(title, body, onSave) {
   sheet.classList.add('show');
   backdrop.classList.add('show');
   sheetCtx = { onSave };
+  // Visibilidad del botón Guardar según si hay callback
+  const saveBtn = document.getElementById('sheet-save');
+  const closeBtn = document.getElementById('sheet-close');
+  if (saveBtn) saveBtn.style.display = onSave ? '' : 'none';
+  if (closeBtn) closeBtn.textContent = onSave ? 'Cancelar' : 'Cerrar';
 }
 function closeSheet() {
   sheet.classList.remove('show');
@@ -3272,6 +3291,79 @@ function openDiarySheet(dateKey) {
         item.classList.toggle('done', !!l[k][hid]);
         c.innerHTML = l[k][hid] ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : '';
       });
+    });
+  }, 30);
+}
+
+// ---------- DIARY HISTORY SHEET ----------
+function openDiaryHistorySheet() {
+  const diary = loadDiary();
+  const habits = loadHabits();
+  const dNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const esc = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const today = keyDate();
+
+  const keys = Object.keys(diary).sort((a, b) => b.localeCompare(a));
+
+  const renderList = (filter = '') => {
+    const q = filter.trim().toLowerCase();
+    const filtered = keys.filter(k => {
+      if (!q) return true;
+      const d = diary[k];
+      if ((d.text || '').toLowerCase().includes(q)) return true;
+      if (Object.values(d.blocks || {}).some(v => v.toLowerCase().includes(q))) return true;
+      if (Object.values(d.habits || {}).some(v => v.toLowerCase().includes(q))) return true;
+      return false;
+    });
+    if (!filtered.length) {
+      return `<div class="empty" style="padding:20px 0;text-align:center;color:var(--text-3);">${q ? 'Sin resultados para “' + esc(filter) + '”' : 'Aún no hay entradas en el diario. Toca un día en el calendario para empezar.'}</div>`;
+    }
+    return filtered.map(k => {
+      const d = parseKey(k);
+      const day = diary[k];
+      const blockNotes = Object.keys(day.blocks || {}).length;
+      const habitNotes = Object.keys(day.habits || {}).length;
+      const done = habits.length ? (habitLog()[k] ? Object.values(habitLog()[k]).filter(Boolean).length : 0) : 0;
+      const isToday = k === today;
+      const preview = (day.text || '').slice(0, 180);
+      return `<div class="diary-hist-item" data-key="${k}">
+        <div class="diary-hist-head">
+          <div class="diary-hist-date">${dNames[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}${isToday ? ' <span class="diary-hist-today">HOY</span>' : ''}</div>
+          <div class="diary-hist-meta">
+            ${blockNotes ? `<span title="Notas en bloques">${blockNotes} bloque${blockNotes > 1 ? 's' : ''}</span>` : ''}
+            ${habitNotes ? `<span title="Notas en hábitos">${habitNotes} hábito${habitNotes > 1 ? 's' : ''}</span>` : ''}
+            ${habits.length ? `<span title="Hábitos cumplidos">${done}/${habits.length} ✓</span>` : ''}
+          </div>
+        </div>
+        ${preview ? `<div class="diary-hist-preview">${esc(preview)}${(day.text || '').length > 180 ? '…' : ''}</div>` : (blockNotes || habitNotes ? '<div class="diary-hist-preview" style="color:var(--text-3);font-style:italic;">Sin texto libre, pero hay notas guardadas.</div>' : '')}
+      </div>`;
+    }).join('');
+  };
+
+  const html = `
+    <div style="margin-bottom:12px;position:sticky;top:0;background:var(--bg);padding-bottom:8px;z-index:2;">
+      <input type="text" id="diary-hist-search" placeholder="Buscar en tu diario…" style="width:100%;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;color:var(--text);"/>
+      <div style="margin-top:8px;font-size:12px;color:var(--text-3);">${keys.length} entrada${keys.length === 1 ? '' : 's'} en total</div>
+    </div>
+    <div id="diary-hist-list">${renderList('')}</div>
+  `;
+
+  openSheet('Historial del diario', html, null);
+
+  setTimeout(() => {
+    const list = document.getElementById('diary-hist-list');
+    const search = document.getElementById('diary-hist-search');
+    search.addEventListener('input', () => { list.innerHTML = renderList(search.value); });
+    // Delegar clicks para abrir el sheet del día
+    const sb = document.getElementById('sheet-body');
+    sb.addEventListener('click', (e) => {
+      const item = e.target.closest('.diary-hist-item');
+      if (item) {
+        const k = item.dataset.key;
+        closeSheet();
+        setTimeout(() => openDiarySheet(k), 100);
+      }
     });
   }, 30);
 }
