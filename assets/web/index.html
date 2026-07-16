@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="24.2">
+<meta name="app-version" content="24.3">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1338,7 +1338,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.2 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v24.3 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -2874,13 +2874,25 @@ function renderCal() {
   const kind = scheduleKindForDate(sel);
   const blocks = (scs[kind] || []).slice().sort((a,b) => a.start.localeCompare(b.start));
 
+  const diaryForBlocks = getDiaryDay(calSel);
   const blocksHtml = blocks.map(b => {
     const cat = CATS.find(c => c.id === b.cat);
     const color = cat ? cat.color : '#6b7280';
     const catLbl = cat ? cat.label : '';
-    return `<div class="cal-detail-block">
-      <div class="cal-detail-block-dot" style="background:${color}"></div>
-      <div class="cal-detail-block-label">${b.label}<div class="cal-detail-block-time">${b.start} – ${b.end} · ${catLbl}</div></div>
+    const note = diaryForBlocks.blocks[b.id] || '';
+    const hasNote = !!note;
+    const previewText = hasNote
+      ? esc(note.length > 100 ? note.slice(0, 100) + '…' : note)
+      : 'Toca para agregar una nota';
+    return `<div class="cal-detail-block diary-item${hasNote ? ' expanded' : ''}" data-bid="${b.id}" style="border-left:3px solid ${color};padding-left:10px;cursor:pointer;">
+      <div class="diary-item-head" style="display:flex;align-items:center;gap:10px;">
+        <div class="cal-detail-block-dot" style="background:${color}"></div>
+        <div class="cal-detail-block-label" style="flex:1;">${esc(b.label)}<div class="cal-detail-block-time">${b.start} – ${b.end} · ${esc(catLbl)}</div></div>
+      </div>
+      <div class="diary-note-preview${hasNote ? ' has-note' : ''}">${previewText}</div>
+      <div class="diary-note-wrap">
+        <textarea class="diary-note" data-kind="block" data-id="${b.id}" rows="2" placeholder="¿Cómo estuvo este bloque? Qué hiciste, cómo te sentiste…">${esc(note)}</textarea>
+      </div>
     </div>`;
   }).join('');
 
@@ -2931,6 +2943,48 @@ function renderCal() {
   if (gbtn) gbtn.addEventListener('click', () => {
     dayView = parseKey(calSel);
     document.querySelector('nav button[data-tab="dia"]').click();
+  });
+
+  // Cards editables inline en el detalle del día
+  const autoGrowCal = (t) => { t.style.height = 'auto'; t.style.height = Math.max(48, t.scrollHeight) + 'px'; };
+  dt.querySelectorAll('.diary-item .diary-note').forEach(t => {
+    autoGrowCal(t);
+    t.addEventListener('click', (e) => e.stopPropagation());
+    t.addEventListener('input', () => {
+      autoGrowCal(t);
+      const item = t.closest('.diary-item');
+      const preview = item.querySelector('.diary-note-preview');
+      const val = t.value.trim();
+      if (val) {
+        preview.textContent = val.length > 100 ? val.slice(0, 100) + '…' : val;
+        preview.classList.add('has-note');
+      } else {
+        preview.textContent = 'Toca para agregar una nota';
+        preview.classList.remove('has-note');
+      }
+    });
+    t.addEventListener('blur', () => {
+      // Guardar la nota al perder foco
+      const day = getDiaryDay(calSel);
+      const val = t.value.trim();
+      if (val) day.blocks[t.dataset.id] = val;
+      else delete day.blocks[t.dataset.id];
+      setDiaryDay(calSel, day);
+    });
+  });
+  dt.querySelectorAll('.diary-item').forEach(item => {
+    const head = item.querySelector('.diary-item-head');
+    const preview = item.querySelector('.diary-note-preview');
+    const toggle = () => {
+      const wasExpanded = item.classList.contains('expanded');
+      item.classList.toggle('expanded');
+      if (!wasExpanded) {
+        const ta = item.querySelector('.diary-note');
+        if (ta) { setTimeout(() => { autoGrowCal(ta); ta.focus(); }, 20); }
+      }
+    };
+    if (head) head.addEventListener('click', toggle);
+    if (preview) preview.addEventListener('click', toggle);
   });
 }
 document.getElementById('open-diary-history-btn').addEventListener('click', openDiaryHistorySheet);
