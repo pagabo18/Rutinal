@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="13.0">
+<meta name="app-version" content="14.0">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -303,7 +303,18 @@
     display: flex; align-items: center; gap: 10px;
   }
   .now-meta { font-size: 13px; color: var(--text-2); margin-top: 4px; font-variant-numeric: tabular-nums; }
-  .now-track { height: 3px; background: var(--surface-2); border-radius: 2px; margin-top: 14px; overflow: hidden; }
+  .now-timer {
+    margin-top: 14px;
+    font-size: 48px; font-weight: 700; letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums; line-height: 1;
+    color: var(--text);
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .now-timer .lbl { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-left: 2px; }
+  .now-timer.warn { color: var(--warn); }
+  .now-timer.crit { color: var(--danger); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .now-track { height: 5px; background: var(--surface-2); border-radius: 3px; margin-top: 12px; overflow: hidden; }
   .now-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
   .now-empty {
     background: var(--surface); border: 1px dashed var(--border);
@@ -1107,7 +1118,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v13.0 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v14.0 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1717,35 +1728,43 @@ function renderHoy() {
   const nowStyle = (color) => color ? `style="border-left-color:${color}; background:${hexToRgba10(color)}"` : '';
   if (active) {
     const s = timeToMin(active.start), e = timeToMin(active.end);
-    const pct = Math.max(0, Math.min(100, ((nm - s) / (e - s)) * 100));
-    const rem = e - nm;
     const isImpr = active.type === 'impr';
     const cat = isImpr ? null : CATS.find(c => c.id === active.cat);
     const color = isImpr ? '#C2410C' : (cat ? cat.color : null);
     const catLabel = isImpr ? 'Imprevisto' : (cat ? cat.label : '');
+    const nowMs = Date.now();
+    const startMs = _todayAtMin(s), endMs = _todayAtMin(e);
     wrap.innerHTML = `
       <div class="now" ${nowStyle(color)}>
         <div class="now-label">Ahora</div>
         <div class="now-title">${isImpr ? '⚠ ' : ''}${active.label}</div>
-        <div class="now-meta">${active.start} – ${active.end} · ${fmtDur(rem)} restantes</div>
+        <div class="now-meta">${active.start} – ${active.end}</div>
         ${catLabel ? `<div class="cat-tag" style="color:${color}">${catLabel}</div>` : ''}
-        <div class="now-track"><div class="now-fill" style="width:${pct}%${color ? '; background:'+color : ''}"></div></div>
+        <div class="now-timer" id="now-timer" data-mode="remaining" data-start="${startMs}" data-end="${endMs}">
+          <span class="val">--:--</span><span class="lbl">restante</span>
+        </div>
+        <div class="now-track"><div class="now-fill" id="now-fill" style="${color ? 'background:'+color : ''}"></div></div>
       </div>`;
+    updateNowTimer();
   } else {
     const next = merged.find(b => timeToMin(b.start) > nm);
     if (next) {
-      const wait = timeToMin(next.start) - nm;
       const isImpr = next.type === 'impr';
       const cat = isImpr ? null : CATS.find(c => c.id === next.cat);
       const color = isImpr ? '#C2410C' : (cat ? cat.color : null);
       const catLabel = isImpr ? 'Imprevisto' : (cat ? cat.label : '');
+      const startMs = _todayAtMin(timeToMin(next.start));
       wrap.innerHTML = `
         <div class="now" ${nowStyle(color)}>
           <div class="now-label">A continuación</div>
           <div class="now-title">${next.label}</div>
-          <div class="now-meta">en ${fmtDur(wait)} · ${next.start}</div>
+          <div class="now-meta">Empieza a las ${next.start}</div>
           ${catLabel ? `<div class="cat-tag" style="color:${color}">${catLabel}</div>` : ''}
+          <div class="now-timer" id="now-timer" data-mode="countdown" data-start="${startMs}">
+            <span class="val">--:--</span><span class="lbl">para empezar</span>
+          </div>
         </div>`;
+      updateNowTimer();
     } else {
       wrap.innerHTML = `<div class="now-empty">Nada más por hoy. Buen descanso.</div>`;
     }
@@ -3608,6 +3627,57 @@ document.addEventListener('visibilitychange', () => {
     if (active === 'habitos') renderHabitos();
   }
 });
+// Helpers para el temporizador grande de la tarjeta Ahora / A continuación
+function _todayAtMin(min) {
+  const d = new Date();
+  d.setHours(Math.floor(min / 60), min % 60, 0, 0);
+  return d.getTime();
+}
+function _fmtTimer(ms) {
+  if (ms < 0) ms = 0;
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const r = s % 60;
+  const pad = n => String(n).padStart(2, '0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(r)}` : `${pad(m)}:${pad(r)}`;
+}
+function updateNowTimer() {
+  const el = document.getElementById('now-timer');
+  if (!el) return;
+  const mode = el.dataset.mode;
+  const now = Date.now();
+  const startMs = Number(el.dataset.start);
+  const endMs = Number(el.dataset.end);
+  const valEl = el.querySelector('.val');
+  el.classList.remove('warn', 'crit');
+  if (mode === 'remaining') {
+    const rem = endMs - now;
+    valEl.textContent = _fmtTimer(rem);
+    // Progreso de la barra
+    const fill = document.getElementById('now-fill');
+    if (fill) {
+      const total = endMs - startMs;
+      const done = now - startMs;
+      const pct = Math.max(0, Math.min(100, (done / total) * 100));
+      fill.style.width = pct + '%';
+    }
+    // Colorear según urgencia: <5 min = warn, <1 min = crit
+    if (rem <= 60 * 1000) el.classList.add('crit');
+    else if (rem <= 5 * 60 * 1000) el.classList.add('warn');
+    if (rem <= 0) renderHoy(); // el bloque terminó, refrescar
+  } else if (mode === 'countdown') {
+    const rem = startMs - now;
+    valEl.textContent = _fmtTimer(rem);
+    if (rem <= 60 * 1000) el.classList.add('warn');
+    if (rem <= 0) renderHoy();
+  }
+}
+setInterval(() => {
+  const active = document.querySelector('nav button.active').dataset.tab;
+  if (active === 'hoy') updateNowTimer();
+}, 1000);
+
 setInterval(() => {
   renderClock();
   const active = document.querySelector('nav button.active').dataset.tab;
