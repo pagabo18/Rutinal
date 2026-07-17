@@ -44,21 +44,25 @@
             android:ellipsize="end"
             android:text="—" />
 
-        <ProgressBar
-            android:id="@+id/ah_progress"
-            style="?android:attr/progressBarStyleHorizontal"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="6dp"
             android:layout_marginTop="6dp"
-            android:max="100"
-            android:progress="0" />
-
-        <!-- Este View no se muestra pero permite setBackgroundColor sin advertencias -->
-        <View
-            android:id="@+id/ah_bar_fill"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="#8E8E93" />
+            android:orientation="horizontal"
+            android:background="#E5E5E7">
+            <View
+                android:id="@+id/ah_bar_fill"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0"
+                android:background="#8E8E93" />
+            <View
+                android:id="@+id/ah_bar_rest"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="100"
+                android:background="#00000000" />
+        </LinearLayout>
     </LinearLayout>
 
     <TextView

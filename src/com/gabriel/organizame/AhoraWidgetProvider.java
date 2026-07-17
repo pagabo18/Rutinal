@@ -29,30 +29,43 @@ public class AhoraWidgetProvider extends AppWidgetProvider {
     }
 
     private static void render(Context ctx, AppWidgetManager mgr, int widgetId) {
-        RemoteViews rv = new RemoteViews(ctx.getPackageName(), R.layout.widget_ahora);
+        RemoteViews rv;
+        try {
+            rv = new RemoteViews(ctx.getPackageName(), R.layout.widget_ahora);
+        } catch (Exception e) {
+            return;
+        }
 
-        DataHelper.Block cur = DataHelper.currentBlock(ctx);
-        if (cur == null) {
-            rv.setTextViewText(R.id.ah_title, "Sin bloque activo");
-            rv.setTextViewText(R.id.ah_meta, "Toca para abrir Organízame");
+        try {
+            DataHelper.Block cur = DataHelper.currentBlock(ctx);
+            if (cur == null) {
+                rv.setTextViewText(R.id.ah_title, "Sin bloque activo");
+                rv.setTextViewText(R.id.ah_meta, "Toca para abrir Organízame");
+                rv.setTextViewText(R.id.ah_time, "—");
+                rv.setInt(R.id.ah_bar_fill, "setBackgroundColor", Color.parseColor("#8E8E93"));
+                rv.setInt(R.id.ah_accent, "setBackgroundColor", Color.parseColor("#8E8E93"));
+                setProgress(rv, 0);
+            } else {
+                int now = DataHelper.nowMin();
+                int total = Math.max(1, cur.endMin - cur.startMin);
+                int elapsed = Math.max(0, Math.min(total, now - cur.startMin));
+                int remaining = Math.max(0, cur.endMin - now);
+                int pct = (int) Math.round(100.0 * elapsed / total);
+
+                int color;
+                try { color = Color.parseColor(cur.color); } catch (Exception e) { color = Color.parseColor("#8E8E93"); }
+                rv.setTextViewText(R.id.ah_title, cur.label == null ? "" : cur.label);
+                rv.setTextViewText(R.id.ah_meta, cur.startStr + " – " + cur.endStr);
+                rv.setTextViewText(R.id.ah_time, DataHelper.fmtDur(remaining) + " restantes");
+                rv.setInt(R.id.ah_bar_fill, "setBackgroundColor", color);
+                rv.setInt(R.id.ah_accent, "setBackgroundColor", color);
+                setProgress(rv, pct);
+            }
+        } catch (Exception ex) {
+            // Si algo falla al construir contenido, mostrar estado por defecto
+            rv.setTextViewText(R.id.ah_title, "Organízame");
+            rv.setTextViewText(R.id.ah_meta, "Toca para abrir");
             rv.setTextViewText(R.id.ah_time, "—");
-            rv.setInt(R.id.ah_bar_fill, "setBackgroundColor", Color.parseColor("#8E8E93"));
-            rv.setInt(R.id.ah_accent, "setBackgroundColor", Color.parseColor("#8E8E93"));
-            setProgress(rv, 0);
-        } else {
-            int now = DataHelper.nowMin();
-            int total = Math.max(1, cur.endMin - cur.startMin);
-            int elapsed = Math.max(0, Math.min(total, now - cur.startMin));
-            int remaining = Math.max(0, cur.endMin - now);
-            int pct = (int) Math.round(100.0 * elapsed / total);
-
-            int color = Color.parseColor(cur.color);
-            rv.setTextViewText(R.id.ah_title, cur.label);
-            rv.setTextViewText(R.id.ah_meta, cur.startStr + " – " + cur.endStr);
-            rv.setTextViewText(R.id.ah_time, DataHelper.fmtDur(remaining) + " restantes");
-            rv.setInt(R.id.ah_bar_fill, "setBackgroundColor", color);
-            rv.setInt(R.id.ah_accent, "setBackgroundColor", color);
-            setProgress(rv, pct);
         }
 
         // Al tocar el widget → abrir app
@@ -66,9 +79,13 @@ public class AhoraWidgetProvider extends AppWidgetProvider {
         mgr.updateAppWidget(widgetId, rv);
     }
 
-    /** Progreso 0-100 → ancho relativo con setViewLayoutWeight (API 31+) o padding fallback. */
+    /** Progreso 0-100 con LinearLayout weights (portable). */
     private static void setProgress(RemoteViews rv, int pct) {
-        // Usamos ProgressBar nativo: setProgressBar es lo más portable
-        rv.setProgressBar(R.id.ah_progress, 100, pct, false);
+        pct = Math.max(0, Math.min(100, pct));
+        try {
+            // API 31+ soporta setFloat con setLayoutWeight
+            rv.setFloat(R.id.ah_bar_fill, "setLayoutWeight", (float) pct);
+            rv.setFloat(R.id.ah_bar_rest, "setLayoutWeight", (float) (100 - pct));
+        } catch (Exception ignored) {}
     }
 }

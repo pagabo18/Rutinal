@@ -32,8 +32,20 @@ public class SiguienteWidgetProvider extends AppWidgetProvider {
     }
 
     private static void render(Context ctx, AppWidgetManager mgr, int widgetId) {
-        RemoteViews rv = new RemoteViews(ctx.getPackageName(), R.layout.widget_siguiente);
+        RemoteViews rv;
+        try { rv = new RemoteViews(ctx.getPackageName(), R.layout.widget_siguiente); } catch (Exception e) { return; }
+        try {
+            renderInner(ctx, mgr, widgetId, rv);
+        } catch (Exception ex) {
+            try {
+                rv.setTextViewText(R.id.sig_title, "Organízame");
+                rv.setTextViewText(R.id.sig_meta, "Toca para abrir");
+                mgr.updateAppWidget(widgetId, rv);
+            } catch (Exception ignored) {}
+        }
+    }
 
+    private static void renderInner(Context ctx, AppWidgetManager mgr, int widgetId, RemoteViews rv) {
         int now = DataHelper.nowMin();
         DataHelper.Block cur = DataHelper.currentBlock(ctx);
         List<DataHelper.Block> next = DataHelper.nextBlocks(ctx, 1);

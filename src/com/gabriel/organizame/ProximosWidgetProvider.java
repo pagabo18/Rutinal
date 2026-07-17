@@ -18,26 +18,26 @@ public class ProximosWidgetProvider extends AppWidgetProvider {
     }
 
     private static void render(Context ctx, AppWidgetManager mgr, int widgetId) {
-        RemoteViews rv = new RemoteViews(ctx.getPackageName(), R.layout.widget_proximos);
+        try {
+            RemoteViews rv = new RemoteViews(ctx.getPackageName(), R.layout.widget_proximos);
 
-        // Intent hacia el RemoteViewsService (data única por widget id)
-        Intent svc = new Intent(ctx, ProximosRemoteViewsService.class);
-        svc.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
-        svc.setData(Uri.parse(svc.toUri(Intent.URI_INTENT_SCHEME)));
-        rv.setRemoteAdapter(R.id.prox_list, svc);
-        rv.setEmptyView(R.id.prox_list, R.id.prox_empty);
+            Intent svc = new Intent(ctx, ProximosRemoteViewsService.class);
+            svc.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);
+            svc.setData(Uri.parse(svc.toUri(Intent.URI_INTENT_SCHEME)));
+            rv.setRemoteAdapter(R.id.prox_list, svc);
+            rv.setEmptyView(R.id.prox_list, R.id.prox_empty);
 
-        // PendingIntent template para tocar un item → abrir la app
-        Intent open = new Intent(ctx, MainActivity.class);
-        open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags |= PendingIntent.FLAG_IMMUTABLE;
-        PendingIntent pi = PendingIntent.getActivity(ctx, widgetId, open, flags);
-        rv.setPendingIntentTemplate(R.id.prox_list, pi);
-        rv.setOnClickPendingIntent(R.id.prox_header, pi);
+            Intent open = new Intent(ctx, MainActivity.class);
+            open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags |= PendingIntent.FLAG_IMMUTABLE;
+            PendingIntent pi = PendingIntent.getActivity(ctx, widgetId, open, flags);
+            rv.setPendingIntentTemplate(R.id.prox_list, pi);
+            rv.setOnClickPendingIntent(R.id.prox_header, pi);
 
-        mgr.updateAppWidget(widgetId, rv);
-        mgr.notifyAppWidgetViewDataChanged(widgetId, R.id.prox_list);
+            mgr.updateAppWidget(widgetId, rv);
+            try { mgr.notifyAppWidgetViewDataChanged(widgetId, R.id.prox_list); } catch (Exception ignored) {}
+        } catch (Exception ignored) {}
     }
 
     @Override

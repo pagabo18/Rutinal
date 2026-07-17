@@ -34,8 +34,19 @@ public class HabitosWidgetProvider extends AppWidgetProvider {
     }
 
     private static void render(Context ctx, AppWidgetManager mgr, int widgetId) {
-        RemoteViews rv = new RemoteViews(ctx.getPackageName(), R.layout.widget_habitos);
+        RemoteViews rv;
+        try { rv = new RemoteViews(ctx.getPackageName(), R.layout.widget_habitos); } catch (Exception e) { return; }
+        try {
+            renderInner(ctx, mgr, widgetId, rv);
+        } catch (Exception ex) {
+            try {
+                rv.setTextViewText(R.id.hb_header, "Organízame");
+                mgr.updateAppWidget(widgetId, rv);
+            } catch (Exception ignored) {}
+        }
+    }
 
+    private static void renderInner(Context ctx, AppWidgetManager mgr, int widgetId, RemoteViews rv) {
         List<DataHelper.Habit> hs = DataHelper.habitsToday(ctx, 4);
         int[] rowIds = {R.id.hb_row0, R.id.hb_row1, R.id.hb_row2, R.id.hb_row3};
         int[] nameIds = {R.id.hb_name0, R.id.hb_name1, R.id.hb_name2, R.id.hb_name3};

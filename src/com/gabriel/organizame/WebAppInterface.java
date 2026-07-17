@@ -16,8 +16,10 @@ public class WebAppInterface {
     public static final String K_STATE = "state_json";
 
     private final Context ctx;
+    private final MainActivity activity;
 
     public WebAppInterface(Context ctx) {
+        this.activity = (ctx instanceof MainActivity) ? (MainActivity) ctx : null;
         this.ctx = ctx.getApplicationContext();
     }
 
@@ -72,15 +74,31 @@ public class WebAppInterface {
 
     @JavascriptInterface
     public void requestCalendarPermission() {
-        try {
-            if (ctx instanceof MainActivity) {
-                ((MainActivity) ctx).runOnUiThread(new Runnable() {
-                    @Override public void run() {
-                        ((MainActivity) ctx).requestCalendarPermission();
-                    }
-                });
+        if (activity == null) return;
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    activity.requestCalendarPermission();
+                } catch (Exception e) {
+                    android.widget.Toast.makeText(activity, "Error solicitando permiso: " + e.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+                }
             }
-        } catch (Exception ignored) {}
+        });
+    }
+
+    @JavascriptInterface
+    public void openAppSettings() {
+        if (activity == null) return;
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    android.content.Intent i = new android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    i.setData(android.net.Uri.parse("package:" + activity.getPackageName()));
+                    i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                    activity.startActivity(i);
+                } catch (Exception ignored) {}
+            }
+        });
     }
 
     @JavascriptInterface

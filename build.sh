@@ -40,9 +40,11 @@ cp base.apk unsigned.apk
 zip -j unsigned.apk classes.dex
 cd $PROJECT_DIR
 
-echo "=== 6. Firmar APK (debug keystore) ==="
-KEYSTORE=$BUILD/debug.keystore
+echo "=== 6. Firmar APK (debug keystore persistente) ==="
+KEYSTORE=$PROJECT_DIR/keys/debug.keystore
+mkdir -p $PROJECT_DIR/keys
 if [ ! -f $KEYSTORE ]; then
+  echo "!!! No hay keystore previo, creando uno nuevo (romperá updates de versiones anteriores) !!!"
   keytool -genkey -v -keystore $KEYSTORE -alias organizame \
     -keyalg RSA -keysize 2048 -validity 10000 \
     -storepass android -keypass android \
