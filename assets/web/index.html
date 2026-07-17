@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-version" content="31.1">
+<meta name="app-version" content="31.2">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1352,7 +1352,7 @@
 </head>
 <body>
 
-<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v31.1 · los datos no se guardan al recargar</div>
+<div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v31.2 · los datos no se guardan al recargar</div>
 <header>
   <div>
     <div class="h-title">Organízame</div>
@@ -1687,35 +1687,37 @@
       </div>
       <div class="setting">
         <div class="setting-label">Hidratación</div>
-        <div style="font-size:13px; color:var(--text-3); margin-bottom:10px; line-height:1.4;">Meta diaria de agua y recordatorios opcionales. Las notificaciones son suaves (sin sonido).</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
-            Meta (vasos)
-            <input type="number" id="hyd-goal" min="1" max="20" class="field-input" value="8">
-          </label>
-          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
-            ml por vaso (opcional)
-            <input type="number" id="hyd-ml" min="50" max="1000" step="25" class="field-input" placeholder="250">
-          </label>
-          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
-            Desde
-            <input type="time" id="hyd-from" class="field-input" value="08:00">
-          </label>
-          <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
-            Hasta
-            <input type="time" id="hyd-to" class="field-input" value="22:00">
-          </label>
-          <label style="grid-column:1/-1;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
-            Recordatorios al día (0 = sin recordatorios)
-            <input type="number" id="hyd-count" min="0" max="20" class="field-input" value="0">
-          </label>
-        </div>
         <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:10px;">
           <input type="checkbox" id="hyd-enabled" style="width:18px; height:18px;" checked>
-          <span id="hyd-enabled-lbl" style="font-size:14px; color:var(--text-2);">Mostrar tarjeta en Hábitos</span>
+          <span id="hyd-enabled-lbl" style="font-size:14px; color:var(--text-2);">Hidratación activada</span>
         </label>
-        <div style="display:flex;gap:8px;">
-          <button class="btn-secondary" id="hyd-save" style="padding:8px 14px;">Guardar</button>
+        <div id="hyd-config" style="display:none;">
+          <div style="font-size:13px; color:var(--text-3); margin-bottom:10px; line-height:1.4;">Meta diaria de agua y recordatorios opcionales. Las notificaciones son suaves (sin sonido).</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+            <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+              Meta (vasos)
+              <input type="number" id="hyd-goal" min="1" max="20" class="field-input" value="8">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+              ml por vaso (opcional)
+              <input type="number" id="hyd-ml" min="50" max="1000" step="25" class="field-input" placeholder="250">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+              Desde
+              <input type="time" id="hyd-from" class="field-input" value="08:00">
+            </label>
+            <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+              Hasta
+              <input type="time" id="hyd-to" class="field-input" value="22:00">
+            </label>
+            <label style="grid-column:1/-1;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
+              Recordatorios al día (0 = sin recordatorios)
+              <input type="number" id="hyd-count" min="0" max="20" class="field-input" value="0">
+            </label>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-secondary" id="hyd-save" style="padding:8px 14px;">Guardar</button>
+          </div>
         </div>
         <div id="hyd-status" style="font-size:12px; color:var(--text-3); margin-top:8px;"></div>
       </div>
@@ -3575,7 +3577,9 @@ function renderAjustes() {
     const cEl = document.getElementById('hyd-count');
     const stEl = document.getElementById('hyd-status');
     if (enEl) enEl.checked = !!hs.enabled;
-    if (enLbl) enLbl.textContent = hs.enabled ? 'Tarjeta visible en Hábitos' : 'Tarjeta oculta en Hábitos';
+    if (enLbl) enLbl.textContent = hs.enabled ? 'Hidratación activada' : 'Hidratación desactivada';
+    const cfg = document.getElementById('hyd-config');
+    if (cfg) cfg.style.display = hs.enabled ? '' : 'none';
     if (gEl) gEl.value = hs.goal;
     if (mEl) mEl.value = hs.mlPerGlass > 0 ? hs.mlPerGlass : '';
     if (fEl) fEl.value = hs.from;
@@ -3684,7 +3688,9 @@ function bindAjustesOnce() {
       cur.enabled = hydEnEl.checked;
       S.set('hydration_settings', cur);
       const lbl = document.getElementById('hyd-enabled-lbl');
-      if (lbl) lbl.textContent = cur.enabled ? 'Tarjeta visible en Hábitos' : 'Tarjeta oculta en Hábitos';
+      if (lbl) lbl.textContent = cur.enabled ? 'Hidratación activada' : 'Hidratación desactivada';
+      const cfg = document.getElementById('hyd-config');
+      if (cfg) cfg.style.display = cur.enabled ? '' : 'none';
       // Si desactiva, cancela recordatorios; si reactiva, resincroniza
       if (!cur.enabled) {
         try { if (window.Android && window.Android.setHydrationReminders) window.Android.setHydrationReminders('[]'); } catch(e){}
@@ -3692,6 +3698,15 @@ function bindAjustesOnce() {
         hydSyncReminders();
       }
       renderHydration();
+      // Refrescar status
+      const stEl = document.getElementById('hyd-status');
+      if (stEl) {
+        if (!cur.enabled) stEl.textContent = 'Hidratación desactivada.';
+        else {
+          const times = hydComputeTimes();
+          stEl.textContent = times.length ? (times.length + ' recordatorio(s): ' + times.join(' · ')) : 'Sin recordatorios activos.';
+        }
+      }
     });
   }
   // Hidratación: guardar
