@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<title>Organízame</title>
+<title>Rutinal</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -191,7 +191,7 @@
       border-right: 1px solid var(--border);
     }
     nav::before {
-      content: "Organízame";
+      content: "Rutinal";
       display: block;
       font-size: 18px; font-weight: 700; letter-spacing: -0.02em;
       padding: 8px 16px 20px;
@@ -1355,7 +1355,7 @@
 <div style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v31.2 · los datos no se guardan al recargar</div>
 <header>
   <div>
-    <div class="h-title">Organízame</div>
+    <div class="h-title">Rutinal</div>
     <div class="h-date" id="today-date">—</div>
   </div>
   <div style="display:flex; align-items:center; gap:10px;">
@@ -1388,12 +1388,6 @@
       </div>
     </button>
     <h2>Hoy <span class="h2-btn" id="add-block">+ Nuevo</span></h2>
-    <div id="gcal-toggle-wrap" style="display:none;margin-bottom:10px;">
-      <button id="gcal-toggle-btn" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--text-2);cursor:pointer;">
-        <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span id="gcal-toggle-lbl">Mostrando Calendar</span>
-      </button>
-    </div>
     <div id="today-list"></div>
   </section>
 
@@ -1721,29 +1715,6 @@
         </div>
         <div id="hyd-status" style="font-size:12px; color:var(--text-3); margin-top:8px;"></div>
       </div>
-      <div class="setting" id="gcal-setting" style="display:none;">
-        <div class="setting-label">Google Calendar</div>
-        <div style="font-size:13px; color:var(--text-3); margin-bottom:10px; line-height:1.4;">Importa los eventos de tu Google Calendar del teléfono. Se muestran en la vista Hoy junto con tus bloques (sin editar, solo lectura).</div>
-        <div id="gcal-perm-block" style="display:none; padding:10px 12px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; margin-bottom:10px;">
-          <div style="font-size:13px; color:var(--text-2); margin-bottom:8px;">Se necesita permiso para leer el calendario del teléfono.</div>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn-secondary" id="gcal-perm-btn" style="padding:8px 12px;">Permitir acceso</button>
-            <button class="btn-secondary" id="gcal-open-settings" style="padding:8px 12px;">Abrir Ajustes de la app</button>
-          </div>
-        </div>
-        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:10px;">
-          <input type="checkbox" id="gcal-enabled" style="width:18px; height:18px;">
-          <span id="gcal-enabled-lbl" style="font-size:14px; color:var(--text-2);">Importar eventos de Calendar</span>
-        </label>
-        <div id="gcal-list" style="display:none; margin-bottom:10px;">
-          <div style="font-size:12px; color:var(--text-3); margin-bottom:6px;">Calendarios a mostrar:</div>
-          <div id="gcal-cals-list" style="display:flex; flex-direction:column; gap:6px;"></div>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn-secondary" id="gcal-refresh" style="padding:8px 12px;">Actualizar ahora</button>
-        </div>
-        <div id="gcal-status" style="font-size:12px; color:var(--text-3); margin-top:8px;"></div>
-      </div>
       <div class="setting" id="dnd-setting" style="display:none;">
         <div class="setting-label">No Molestar automático</div>
         <div style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;">Activa el modo No Molestar (solo prioridad) al iniciar bloques de trabajo o enfoque, y lo desactiva al terminar.</div>
@@ -1764,14 +1735,9 @@
           <button class="btn-danger" id="btn-reset">Restablecer todo</button>
         </div>
       </div>
-      <div class="setting" id="widget-setting" style="display:none;">
-        <div class="setting-label">Widgets</div>
-        <div id="widget-status" style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;"></div>
-        <button class="btn-secondary" id="btn-sync-widgets">Sincronizar widgets</button>
-      </div>
       <div class="setting">
         <div class="setting-label">Sobre</div>
-        <div style="color:var(--text-3); font-size:13px; line-height:1.5;">Organízame · versión preview<br>Hecho para el día a día con bloques, hábitos e imprevistos.</div>
+        <div style="color:var(--text-3); font-size:13px; line-height:1.5;">Rutinal · versión 1.0<br>Hecho para el día a día con bloques, hábitos e imprevistos.</div>
       </div>
     </div>
   </section>
@@ -1837,7 +1803,7 @@ const __hasLS = (() => {
   try { localStorage.setItem('__t', '1'); localStorage.removeItem('__t'); return true; }
   catch(e) { return false; }
 })();
-// Claves que interesan a los widgets Android
+// Claves que persistimos en SharedPreferences para backup fiable
 const __WIDGET_KEYS = new Set(['cats','habits','habitLog','imprevistos','sch_weekday','sch_saturday','sch_sunday']);
 let __syncTimer = null;
 function __syncWidgets() {
@@ -2173,70 +2139,14 @@ function renderClock() {
 // TAB: HOY
 // ============================================================
 tabRenderers.hoy = renderHoy;
-// ============================================================
-// GOOGLE CALENDAR (importar, solo lectura)
-// ============================================================
-function gcalSettings() {
-  const def = { enabled: false, calIds: [], showToday: true };
-  const v = S.get('gcal_settings', null);
-  return v ? Object.assign({}, def, v) : def;
-}
-function gcalSetSettings(s) { S.set('gcal_settings', s); }
-function gcalIsAvailable() {
-  try { return !!(window.Android && window.Android.hasCalendarPermission); } catch(e) { return false; }
-}
-function gcalHasPermission() {
-  try { return !!(window.Android && window.Android.hasCalendarPermission()); } catch(e) { return false; }
-}
-function gcalListCalendars() {
-  try {
-    const s = window.Android.listCalendars();
-    return JSON.parse(s || '[]');
-  } catch(e) { return []; }
-}
-function gcalEventsForDate(dateKey) {
-  const s = gcalSettings();
-  if (!s.enabled || !gcalIsAvailable() || !gcalHasPermission()) return [];
-  try {
-    const csv = (s.calIds || []).join(',');
-    const json = window.Android.getGCalEvents(dateKey, csv);
-    const arr = JSON.parse(json || '[]');
-    // Filtrar all-day (no encajan en un horario)
-    return arr.filter(e => !e.allDay);
-  } catch(e) { return []; }
-}
-// Convierte un evento GCal a un pseudo-bloque para el render de Hoy
-function gcalToBlock(ev) {
-  return {
-    id: 'gcal_' + ev.id,
-    label: ev.title,
-    start: ev.start,
-    end: ev.end,
-    cat: 'gcal',
-    type: 'gcal',
-    color: ev.color || '#4285F4',
-    location: ev.location || '',
-    readonly: true
-  };
-}
-
 function renderHoy() {
   const kind = scheduleKindForDate();
   const list = loadSchedules()[kind];
   const todayKey = keyDate();
   const todayImprs = imprsForDate(todayKey);
-  // Toggle chip visible solo si permission + enabled
-  const gs = gcalSettings();
-  const gcalOn = gs.enabled && gcalIsAvailable() && gcalHasPermission();
-  const toggleWrap = document.getElementById('gcal-toggle-wrap');
-  const toggleLbl = document.getElementById('gcal-toggle-lbl');
-  if (toggleWrap) toggleWrap.style.display = gcalOn ? '' : 'none';
-  if (toggleLbl) toggleLbl.textContent = gs.showToday ? 'Mostrando Calendar' : 'Calendar oculto';
-  const gcalEvents = (gcalOn && gs.showToday) ? gcalEventsForDate(todayKey).map(gcalToBlock) : [];
   const merged = [
     ...list.map(b => ({ ...b, type:'block' })),
-    ...todayImprs.map(i => ({ ...i, type:'impr', label:i.what, cat:'impr', imprCat:i.cat })),
-    ...gcalEvents
+    ...todayImprs.map(i => ({ ...i, type:'impr', label:i.what, cat:'impr', imprCat:i.cat }))
   ].sort((a,b) => timeToMin(a.start) - timeToMin(b.start));
   const nm = nowMin();
   let active = null;
@@ -2261,7 +2171,6 @@ function renderHoy() {
   if (active) {
     const s = timeToMin(active.start), e = timeToMin(active.end);
     const isImpr = active.type === 'impr';
-    const isGcalActive = active.type === 'gcal';
     const cat = (isImpr || isGcalActive) ? null : CATS.find(c => c.id === active.cat);
     const color = isImpr ? '#C2410C' : (isGcalActive ? (active.color || '#4285F4') : (cat ? cat.color : null));
     const catLabel = isImpr ? 'Imprevisto' : (isGcalActive ? 'Calendar' : (cat ? cat.label : ''));
@@ -2314,7 +2223,6 @@ function renderHoy() {
   merged.forEach(b => {
     const s = timeToMin(b.start), e = timeToMin(b.end);
     const isImpr = b.type === 'impr';
-    const isGcal = b.type === 'gcal';
     const isActive = nm >= s && nm < e;
     const isPast = nm >= e;
     const isAffected = !isImpr && !isGcal && affected.has(b.id);
@@ -2354,18 +2262,12 @@ function renderHoy() {
 }
 document.getElementById('add-block').addEventListener('click', () => openBlockSheet());
 document.getElementById('impr-btn').addEventListener('click', () => openImprSheet());
-document.getElementById('gcal-toggle-btn').addEventListener('click', () => {
-  const s = gcalSettings();
   s.showToday = !s.showToday;
-  gcalSetSettings(s);
   renderHoy();
 });
 // Al conceder permiso, refrescar la UI
-window.addEventListener('gcalPermission', (ev) => {
   if (ev.detail && ev.detail.granted) {
-    const s = gcalSettings();
     s.enabled = true;
-    gcalSetSettings(s);
   }
   if (document.getElementById('tab-ajustes').classList.contains('active')) renderAjustes();
   if (document.getElementById('tab-hoy').classList.contains('active')) renderHoy();
@@ -3596,17 +3498,7 @@ function renderAjustes() {
   } catch (e) {}
   // Google Calendar (importar)
   try {
-    const gbox = document.getElementById('gcal-setting');
-    if (typeof window.Android !== 'undefined' && window.Android.hasCalendarPermission) {
       gbox.style.display = '';
-      const gs = gcalSettings();
-      const hasPerm = gcalHasPermission();
-      const permBlock = document.getElementById('gcal-perm-block');
-      const enEl = document.getElementById('gcal-enabled');
-      const enLbl = document.getElementById('gcal-enabled-lbl');
-      const listWrap = document.getElementById('gcal-list');
-      const listEl = document.getElementById('gcal-cals-list');
-      const stEl = document.getElementById('gcal-status');
       if (!hasPerm) {
         permBlock.style.display = '';
         enEl.checked = false;
@@ -3621,7 +3513,6 @@ function renderAjustes() {
         enLbl.textContent = gs.enabled ? 'Importando eventos de Calendar' : 'Importación desactivada';
         if (gs.enabled) {
           listWrap.style.display = '';
-          const cals = gcalListCalendars();
           listEl.innerHTML = '';
           if (!cals.length) {
             listEl.innerHTML = '<div style="font-size:12px;color:var(--text-3);">Sin calendarios detectados.</div>';
@@ -3638,10 +3529,8 @@ function renderAjustes() {
             // Persistir default si estaba vacío
             if (!gs.calIds || !gs.calIds.length) {
               gs.calIds = cals.map(c => String(c.id));
-              gcalSetSettings(gs);
             }
           }
-          const evs = gcalEventsForDate(keyDate());
           stEl.textContent = evs.length + ' evento(s) hoy.';
         } else {
           listWrap.style.display = 'none';
@@ -3666,18 +3555,6 @@ function renderAjustes() {
       wsSt.textContent = 'Hoy aplica el horario de ' + kLbl + '.';
     }
   } catch (e) {}
-  // Estado de widgets
-  const wbox = document.getElementById('widget-setting');
-  const wst = document.getElementById('widget-status');
-  if (typeof window.Android !== 'undefined' && window.Android.saveState) {
-    wbox.style.display = '';
-    // Info útil
-    const bloques = (S.get('sch_weekday', [])).length + (S.get('sch_saturday', [])).length + (S.get('sch_sunday', [])).length;
-    const habs = (S.get('habits', [])).length;
-    wst.textContent = `Datos disponibles para widgets: ${bloques} bloques configurados, ${habs} hábitos. Si el widget se ve vacío, toca Sincronizar.`;
-  } else {
-    wbox.style.display = 'none';
-  }
 }
 function bindAjustesOnce() {
   // Hidratación: toggle mostrar/ocultar
@@ -3734,68 +3611,6 @@ function bindAjustesOnce() {
       renderHydration();
     });
   }
-  // Google Calendar: pedir permiso
-  const gcalPermBtn = document.getElementById('gcal-perm-btn');
-  if (gcalPermBtn) {
-    gcalPermBtn.addEventListener('click', () => {
-      try { if (window.Android && window.Android.requestCalendarPermission) window.Android.requestCalendarPermission(); } catch(e){}
-    });
-  }
-  const gcalOpenSettings = document.getElementById('gcal-open-settings');
-  if (gcalOpenSettings) {
-    gcalOpenSettings.addEventListener('click', () => {
-      try { if (window.Android && window.Android.openAppSettings) window.Android.openAppSettings(); } catch(e){}
-    });
-  }
-  // Google Calendar: toggle importar
-  const gcalEnEl = document.getElementById('gcal-enabled');
-  if (gcalEnEl) {
-    gcalEnEl.addEventListener('change', () => {
-      const gs = gcalSettings();
-      if (gcalEnEl.checked && !gcalHasPermission()) {
-        gcalEnEl.checked = false;
-        try { if (window.Android && window.Android.requestCalendarPermission) window.Android.requestCalendarPermission(); } catch(e){}
-        return;
-      }
-      gs.enabled = gcalEnEl.checked;
-      gcalSetSettings(gs);
-      renderAjustes();
-      if (document.getElementById('tab-hoy').classList.contains('active')) renderHoy();
-    });
-  }
-  // Google Calendar: cambios en lista de calendarios (delegación)
-  const gcalCalsList = document.getElementById('gcal-cals-list');
-  if (gcalCalsList) {
-    gcalCalsList.addEventListener('change', (ev) => {
-      const cb = ev.target;
-      if (!cb || cb.type !== 'checkbox' || !cb.dataset.calId) return;
-      const gs = gcalSettings();
-      const set = new Set(gs.calIds || []);
-      if (cb.checked) set.add(cb.dataset.calId);
-      else set.delete(cb.dataset.calId);
-      gs.calIds = Array.from(set);
-      gcalSetSettings(gs);
-      const stEl = document.getElementById('gcal-status');
-      if (stEl) {
-        const evs = gcalEventsForDate(keyDate());
-        stEl.textContent = evs.length + ' evento(s) hoy.';
-      }
-      if (document.getElementById('tab-hoy').classList.contains('active')) renderHoy();
-    });
-  }
-  // Google Calendar: refresh
-  const gcalRefreshBtn = document.getElementById('gcal-refresh');
-  if (gcalRefreshBtn) {
-    gcalRefreshBtn.addEventListener('click', () => {
-      renderAjustes();
-      if (document.getElementById('tab-hoy').classList.contains('active')) renderHoy();
-      const stEl = document.getElementById('gcal-status');
-      if (stEl) {
-        const evs = gcalEventsForDate(keyDate());
-        stEl.textContent = 'Actualizado. ' + evs.length + ' evento(s) hoy.';
-      }
-    });
-  }
   // Toggle Modo Fin de Semana (silencio)
   const wsTog = document.getElementById('weekend-silent-toggle');
   if (wsTog) {
@@ -3831,7 +3646,7 @@ function bindAjustesOnce() {
     const a = document.createElement('a');
     a.href = url;
     const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-    a.download = `organizame-backup-${ts}.json`;
+    a.download = `rutinal-backup-${ts}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -3850,7 +3665,7 @@ function bindAjustesOnce() {
         // Validación básica: al menos una key conocida
         const known = ['sch_weekday','sch_saturday','sch_sunday','habits','cats','plan','imprevistos','habitLog','diary','pomo_state','pomo_settings','pomo_sessions'];
         const hasKnown = Object.keys(data).some(k => known.includes(k));
-        if (!hasKnown) { alert('Este archivo no parece un backup válido de Organízame.'); e.target.value = ''; return; }
+        if (!hasKnown) { alert('Este archivo no parece un backup válido de Rutinal.'); e.target.value = ''; return; }
         // Resumen para el usuario
         const n = Object.keys(data).filter(k => !k.startsWith('__')).length;
         const when = data.__exportedAt ? new Date(data.__exportedAt).toLocaleString('es-MX') : 'fecha desconocida';
@@ -3951,18 +3766,6 @@ function bindAjustesOnce() {
   const btn = document.getElementById('btn-exact-alarm');
   if (btn) btn.addEventListener('click', () => {
     try { window.Android && window.Android.openExactAlarmSettings && window.Android.openExactAlarmSettings(); } catch(e) {}
-  });
-  const btnW = document.getElementById('btn-sync-widgets');
-  if (btnW) btnW.addEventListener('click', () => {
-    try {
-      if (typeof window.Android !== 'undefined' && window.Android.saveState) {
-        const state = {};
-        __WIDGET_KEYS.forEach(k => { state[k] = S.get(k, k.startsWith('sch_') || k === 'cats' || k === 'habits' || k === 'imprevistos' ? [] : {}); });
-        window.Android.saveState(JSON.stringify(state));
-        btnW.textContent = 'Sincronizado ✓';
-        setTimeout(() => btnW.textContent = 'Sincronizar widgets', 1500);
-      }
-    } catch(e) { alert('Error: ' + e.message); }
   });
 })();
 bindAjustesOnce();
@@ -5261,8 +5064,8 @@ function openImprSheet(existing) {
 renderClock();
 renderHoy();
 updateFab('hoy');
-// Sync inicial hacia widgets (inmediato, sin debounce)
-function __syncWidgetsNow() {
+// Sync inicial de estado a SharedPreferences Android (para restore fiable)
+function __syncStateNow() {
   if (typeof window.Android === 'undefined' || !window.Android.saveState) return;
   try {
     const state = {};
@@ -5270,11 +5073,11 @@ function __syncWidgetsNow() {
     window.Android.saveState(JSON.stringify(state));
   } catch(e) {}
 }
-__syncWidgetsNow();
+__syncStateNow();
 // Reintentar por si Android tarda en registrar el bridge
-setTimeout(__syncWidgetsNow, 500);
-setTimeout(__syncWidgetsNow, 2000);
-// Cuando el usuario vuelve a la app tras tocar un widget, refrescamos vistas
+setTimeout(__syncStateNow, 500);
+setTimeout(__syncStateNow, 2000);
+// Refrescar vistas al volver a la app
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     const active = document.querySelector('nav button.active').dataset.tab;

@@ -1,4 +1,4 @@
-package com.gabriel.organizame;
+package com.pagabo18.rutinal;
 
 import android.app.AlarmManager;
 import android.app.NotificationChannel;
@@ -28,7 +28,7 @@ public class NotificationScheduler {
     public static final String CHANNEL_HABITS_ID = "habits_reminder";
     public static final String CHANNEL_HABITS_NAME = "Recordatorio de hábitos";
 
-    static final String PREFS_ALARMS = "organizame_alarms";
+    static final String PREFS_ALARMS = "rutinal_alarms";
     static final String K_ACTIVE_IDS = "active_ids";
     static final String K_POMO_ID = "pomo_id";
     static final String K_HABIT_TIME = "habit_reminder_hhmm"; // "HH:mm" o vacío
@@ -184,8 +184,8 @@ public class NotificationScheduler {
         }
 
         Intent i = new Intent(ctx, HabitReminderReceiver.class);
-        i.setAction("com.gabriel.organizame.HABIT_REMINDER");
-        i.setData(android.net.Uri.parse("organizame://habit/" + HABIT_ALARM_ID));
+        i.setAction("com.pagabo18.rutinal.HABIT_REMINDER");
+        i.setData(android.net.Uri.parse("rutinal://habit/" + HABIT_ALARM_ID));
         schedule(am, ctx, target.getTimeInMillis(), i, HABIT_ALARM_ID);
     }
 
@@ -193,8 +193,8 @@ public class NotificationScheduler {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
         Intent i = new Intent(ctx, HabitReminderReceiver.class);
-        i.setAction("com.gabriel.organizame.HABIT_REMINDER");
-        i.setData(android.net.Uri.parse("organizame://habit/" + HABIT_ALARM_ID));
+        i.setAction("com.pagabo18.rutinal.HABIT_REMINDER");
+        i.setData(android.net.Uri.parse("rutinal://habit/" + HABIT_ALARM_ID));
         PendingIntent pi = PendingIntent.getBroadcast(ctx, HABIT_ALARM_ID, i, piFlags(true));
         if (pi != null) am.cancel(pi);
     }
@@ -246,8 +246,8 @@ public class NotificationScheduler {
                 if (target.getTimeInMillis() <= now) target.add(Calendar.DAY_OF_YEAR, 1);
                 int id = HYD_ALARM_ID_BASE + idx;
                 Intent i = new Intent(ctx, HydrationReminderReceiver.class);
-                i.setAction("com.gabriel.organizame.HYDRATION_REMINDER");
-                i.setData(android.net.Uri.parse("organizame://hydration/" + id));
+                i.setAction("com.pagabo18.rutinal.HYDRATION_REMINDER");
+                i.setData(android.net.Uri.parse("rutinal://hydration/" + id));
                 i.putExtra("slot", idx);
                 schedule(am, ctx, target.getTimeInMillis(), i, id);
             }
@@ -260,8 +260,8 @@ public class NotificationScheduler {
         for (int idx = 0; idx < 20; idx++) {
             int id = HYD_ALARM_ID_BASE + idx;
             Intent i = new Intent(ctx, HydrationReminderReceiver.class);
-            i.setAction("com.gabriel.organizame.HYDRATION_REMINDER");
-            i.setData(android.net.Uri.parse("organizame://hydration/" + id));
+            i.setAction("com.pagabo18.rutinal.HYDRATION_REMINDER");
+            i.setData(android.net.Uri.parse("rutinal://hydration/" + id));
             PendingIntent pi = PendingIntent.getBroadcast(ctx, id, i, piFlags(true));
             if (pi != null) am.cancel(pi);
         }
@@ -329,8 +329,8 @@ public class NotificationScheduler {
             for (int i = 0; i < arr.length(); i++) {
                 int id = arr.getInt(i);
                 Intent intent = new Intent(ctx, BlockNotificationReceiver.class);
-                intent.setAction("com.gabriel.organizame.BLOCK_ALARM");
-                intent.setData(android.net.Uri.parse("organizame://alarm/" + id));
+                intent.setAction("com.pagabo18.rutinal.BLOCK_ALARM");
+                intent.setData(android.net.Uri.parse("rutinal://alarm/" + id));
                 PendingIntent pi = PendingIntent.getBroadcast(ctx, id, intent, piFlags(true));
                 if (pi != null) am.cancel(pi);
             }
@@ -349,8 +349,8 @@ public class NotificationScheduler {
 
         int id = 0x50000000 | ((int) (endMs / 1000) & 0x0FFFFFFF);
         Intent i = new Intent(ctx, PomoNotificationReceiver.class);
-        i.setAction("com.gabriel.organizame.POMO_ALARM");
-        i.setData(android.net.Uri.parse("organizame://pomo/" + id));
+        i.setAction("com.pagabo18.rutinal.POMO_ALARM");
+        i.setData(android.net.Uri.parse("rutinal://pomo/" + id));
         i.putExtra(EXTRA_POMO_PHASE, phase);
         i.putExtra(EXTRA_POMO_NEXT, nextPhase);
         i.putExtra(EXTRA_POMO_CYCLE, cycle);
@@ -368,8 +368,8 @@ public class NotificationScheduler {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
         Intent i = new Intent(ctx, PomoNotificationReceiver.class);
-        i.setAction("com.gabriel.organizame.POMO_ALARM");
-        i.setData(android.net.Uri.parse("organizame://pomo/" + id));
+        i.setAction("com.pagabo18.rutinal.POMO_ALARM");
+        i.setData(android.net.Uri.parse("rutinal://pomo/" + id));
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, i, piFlags(true));
         if (pi != null) am.cancel(pi);
         // Descartar cualquier notificación pomodoro visible
@@ -401,8 +401,8 @@ public class NotificationScheduler {
 
     private static Intent buildIntent(Context ctx, DataHelper.Block b, String kind, int id, String key, boolean silent) {
         Intent i = new Intent(ctx, BlockNotificationReceiver.class);
-        i.setAction("com.gabriel.organizame.BLOCK_ALARM");
-        i.setData(android.net.Uri.parse("organizame://alarm/" + id));
+        i.setAction("com.pagabo18.rutinal.BLOCK_ALARM");
+        i.setData(android.net.Uri.parse("rutinal://alarm/" + id));
         i.putExtra(EXTRA_LABEL, b.label);
         i.putExtra(EXTRA_START, b.startStr);
         i.putExtra(EXTRA_END, b.endStr);

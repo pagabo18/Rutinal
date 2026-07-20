@@ -1,4 +1,4 @@
-package com.gabriel.organizame;
+package com.pagabo18.rutinal;
 
 import android.app.Notification;
 import android.app.NotificationManager;

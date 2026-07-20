@@ -1,4 +1,4 @@
-package com.gabriel.organizame;
+package com.pagabo18.rutinal;
 
 import android.app.AlarmManager;
 import android.app.NotificationManager;
@@ -9,8 +9,8 @@ import android.content.Intent;
 import android.os.Build;
 
 public class NotificationActionReceiver extends BroadcastReceiver {
-    public static final String ACTION_DONE = "com.gabriel.organizame.NOTIF_DONE";
-    public static final String ACTION_SNOOZE = "com.gabriel.organizame.NOTIF_SNOOZE";
+    public static final String ACTION_DONE = "com.pagabo18.rutinal.NOTIF_DONE";
+    public static final String ACTION_SNOOZE = "com.pagabo18.rutinal.NOTIF_SNOOZE";
 
     @Override
     public void onReceive(Context ctx, Intent intent) {
@@ -26,8 +26,8 @@ public class NotificationActionReceiver extends BroadcastReceiver {
             if (nm != null) nm.cancel(id);
             // Reprograma la MISMA notificación 10 min después
             Intent again = new Intent(ctx, BlockNotificationReceiver.class);
-            again.setAction("com.gabriel.organizame.BLOCK_ALARM");
-            again.setData(android.net.Uri.parse("organizame://alarm/snz/" + id + "/" + System.currentTimeMillis()));
+            again.setAction("com.pagabo18.rutinal.BLOCK_ALARM");
+            again.setData(android.net.Uri.parse("rutinal://alarm/snz/" + id + "/" + System.currentTimeMillis()));
             again.putExtras(intent.getExtras());
             int flags = PendingIntent.FLAG_UPDATE_CURRENT;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags |= PendingIntent.FLAG_IMMUTABLE;

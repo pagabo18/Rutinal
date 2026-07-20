@@ -1,4 +1,4 @@
-package com.gabriel.organizame;
+package com.pagabo18.rutinal;
 
 import android.app.Activity;
 import android.os.Build;
@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
 
         webView.setBackgroundColor(Color.parseColor("#0B0F1A"));
 
-        // Bridge JS <-> Java para widgets
+        // Bridge JS <-> Java
         webView.addJavascriptInterface(new WebAppInterface(this), "Android");
 
         webView.loadUrl("file:///android_asset/web/index.html");
@@ -62,48 +62,6 @@ public class MainActivity extends Activity {
         // Asegurar canal + programar notificaciones al abrir
         NotificationScheduler.ensureChannel(this);
         NotificationScheduler.scheduleAll(this);
-    }
-
-    public void requestCalendarPermission() {
-        if (checkSelfPermission("android.permission.READ_CALENDAR") == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            notifyWebPermission(true);
-            return;
-        }
-        // Detectar si el usuario ya dijo 'No volver a preguntar' o si es la primera vez
-        boolean canShowRationale = shouldShowRequestPermissionRationale("android.permission.READ_CALENDAR");
-        // En Android 11+ si fue denegado 2 veces, ni shouldShowRationale ni requestPermissions muestran nada
-        try {
-            android.widget.Toast.makeText(this, "Solicitando permiso de Calendar\u2026", android.widget.Toast.LENGTH_SHORT).show();
-        } catch (Exception ignored) {}
-        requestPermissions(new String[]{"android.permission.READ_CALENDAR"}, 102);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 102) {
-            boolean granted = grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
-            if (!granted) {
-                // Si fue denegado permanentemente, ofrecer abrir Ajustes
-                boolean canAskAgain = shouldShowRequestPermissionRationale("android.permission.READ_CALENDAR");
-                if (!canAskAgain) {
-                    try {
-                        android.widget.Toast.makeText(this, "Activa 'Calendario' en Ajustes de la app", android.widget.Toast.LENGTH_LONG).show();
-                    } catch (Exception ignored) {}
-                }
-            }
-            notifyWebPermission(granted);
-        }
-    }
-
-    private void notifyWebPermission(boolean granted) {
-        try {
-            if (webView != null) {
-                webView.evaluateJavascript(
-                    "window.dispatchEvent(new CustomEvent('gcalPermission', {detail:{granted:" + granted + "}}))",
-                    null);
-            }
-        } catch (Exception ignored) {}
     }
 
     @Override

@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.gabriel.organizame"
-    android:versionCode="33"
-    android:versionName="31.2">
+    package="com.pagabo18.rutinal"
+    android:versionCode="1"
+    android:versionName="1.0">
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -17,7 +16,7 @@
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
     <application
-        android:label="Organízame"
+        android:label="Rutinal"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme"
@@ -37,84 +36,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Widget: Simple (test) -->
-        <receiver
-            android:name=".SimpleWidgetProvider"
-            android:exported="true"
-            android:label="Organízame · Simple">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/appwidget_simple" />
-        </receiver>
-
-        <!-- Widget: Ahora -->
-        <receiver
-            android:name=".AhoraWidgetProvider"
-            android:exported="true"
-            android:label="@string/widget_ahora_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/appwidget_ahora" />
-        </receiver>
-
-        <!-- Widget: Próximos -->
-        <receiver
-            android:name=".ProximosWidgetProvider"
-            android:exported="true"
-            android:label="@string/widget_proximos_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/appwidget_proximos" />
-        </receiver>
-
-        <!-- Widget: Siguiente bloque -->
-        <receiver
-            android:name=".SiguienteWidgetProvider"
-            android:exported="true"
-            android:label="@string/widget_siguiente_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.gabriel.organizame.WIDGET_TICK_SIG" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/appwidget_siguiente" />
-        </receiver>
-
-        <service
-            android:name=".ProximosRemoteViewsService"
-            android:permission="android.permission.BIND_REMOTEVIEWS"
-            android:exported="false" />
-
-        <!-- Widget: Hábitos -->
-        <receiver
-            android:name=".HabitosWidgetProvider"
-            android:exported="true"
-            android:label="@string/widget_habitos_label">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.gabriel.organizame.HABIT_TOGGLE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/appwidget_habitos" />
-        </receiver>
-
         <!-- Notificaciones de bloques -->
         <receiver
             android:name=".BlockNotificationReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.gabriel.organizame.BLOCK_ALARM" />
+                <action android:name="com.pagabo18.rutinal.BLOCK_ALARM" />
             </intent-filter>
         </receiver>
 
@@ -123,7 +50,7 @@
             android:name=".PomoNotificationReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.gabriel.organizame.POMO_ALARM" />
+                <action android:name="com.pagabo18.rutinal.POMO_ALARM" />
             </intent-filter>
         </receiver>
 
@@ -132,7 +59,7 @@
             android:name=".HabitReminderReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.gabriel.organizame.HABIT_REMINDER" />
+                <action android:name="com.pagabo18.rutinal.HABIT_REMINDER" />
             </intent-filter>
         </receiver>
 
@@ -141,7 +68,7 @@
             android:name=".HydrationReminderReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.gabriel.organizame.HYDRATION_REMINDER" />
+                <action android:name="com.pagabo18.rutinal.HYDRATION_REMINDER" />
             </intent-filter>
         </receiver>
 
@@ -149,8 +76,8 @@
             android:name=".NotificationActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.gabriel.organizame.NOTIF_DONE" />
-                <action android:name="com.gabriel.organizame.NOTIF_SNOOZE" />
+                <action android:name="com.pagabo18.rutinal.NOTIF_DONE" />
+                <action android:name="com.pagabo18.rutinal.NOTIF_SNOOZE" />
             </intent-filter>
         </receiver>
 

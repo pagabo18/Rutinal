@@ -5,7 +5,7 @@ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 export ANDROID_HOME=/home/user/android-sdk
 export PATH=$JAVA_HOME/bin:$ANDROID_HOME/build-tools/34.0.0:$ANDROID_HOME/platform-tools:$PATH
 
-PROJECT_DIR=/home/user/workspace/organizame
+PROJECT_DIR=/home/user/workspace/rutinal
 BUILD=$PROJECT_DIR/build
 ANDROID_JAR=$ANDROID_HOME/platforms/android-34/android.jar
 
@@ -45,19 +45,19 @@ KEYSTORE=$PROJECT_DIR/keys/debug.keystore
 mkdir -p $PROJECT_DIR/keys
 if [ ! -f $KEYSTORE ]; then
   echo "!!! No hay keystore previo, creando uno nuevo (romperá updates de versiones anteriores) !!!"
-  keytool -genkey -v -keystore $KEYSTORE -alias organizame \
+  keytool -genkey -v -keystore $KEYSTORE -alias rutinal \
     -keyalg RSA -keysize 2048 -validity 10000 \
     -storepass android -keypass android \
-    -dname "CN=Organizame, O=Gabriel, C=MX"
+    -dname "CN=Rutinal, O=Gabriel, C=MX"
 fi
 
 zipalign -f 4 $BUILD/unsigned.apk $BUILD/aligned.apk
 
 apksigner sign \
   --ks $KEYSTORE --ks-pass pass:android --key-pass pass:android \
-  --out $BUILD/Organizame.apk \
+  --out $BUILD/Rutinal.apk \
   $BUILD/aligned.apk
 
 echo "=== 7. Verificar ==="
-apksigner verify $BUILD/Organizame.apk && echo "APK VÁLIDO"
-ls -lh $BUILD/Organizame.apk
+apksigner verify $BUILD/Rutinal.apk && echo "APK VÁLIDO"
+ls -lh $BUILD/Rutinal.apk

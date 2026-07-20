@@ -1,4 +1,4 @@
-package com.gabriel.organizame;
+package com.pagabo18.rutinal;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -64,14 +64,14 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
         // Acción: Listo → descarta esta notificación
         Intent listo = new Intent(ctx, NotificationActionReceiver.class);
         listo.setAction(NotificationActionReceiver.ACTION_DONE);
-        listo.setData(android.net.Uri.parse("organizame://notif/done/" + notifId));
+        listo.setData(android.net.Uri.parse("rutinal://notif/done/" + notifId));
         listo.putExtra(NotificationScheduler.EXTRA_NOTIF_ID, notifId);
         PendingIntent listoPI = PendingIntent.getBroadcast(ctx, notifId + 1, listo, piFlags());
 
         // Acción: Posponer 10 min → replanifica
         Intent snz = new Intent(ctx, NotificationActionReceiver.class);
         snz.setAction(NotificationActionReceiver.ACTION_SNOOZE);
-        snz.setData(android.net.Uri.parse("organizame://notif/snooze/" + notifId));
+        snz.setData(android.net.Uri.parse("rutinal://notif/snooze/" + notifId));
         snz.putExtras(intent.getExtras());
         PendingIntent snzPI = PendingIntent.getBroadcast(ctx, notifId + 2, snz, piFlags());
 
