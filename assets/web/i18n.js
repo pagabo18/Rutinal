@@ -2087,8 +2087,15 @@
     .map(esTpl => {
       // Extraer nombres de placeholders y construir regex
       const varNames = [];
+      // Placeholders tipados: los numéricos capturan solo dígitos (evita que
+      // frases como "Crear hábitos" matcheen "{{count}} hábito{{plural}}" y
+      // salgan mezclas tipo "Crear habits"), y {{plural}} captura 's' opcional
+      // (con (.+?) el singular "1 hábito" jamás matcheaba).
+      const NUMERIC_VARS = ['count', 'done', 'total', 'h', 'm', 'current', 'goal'];
       const regexStr = esTpl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{\\\{(\w+)\\\}\\\}/g, (_, name) => {
         varNames.push(name);
+        if (name === 'plural') return '(s?)';
+        if (NUMERIC_VARS.includes(name)) return '(\\d+)';
         return '(.+?)';
       });
       return { esTpl, regex: new RegExp('^' + regexStr + '$'), varNames };

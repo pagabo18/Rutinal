@@ -45,6 +45,8 @@ public class BarcodeScannerActivity extends AppCompatActivity {
     private PreviewView previewView;
     private TextView hintView;
     private ExecutorService cameraExecutor;
+    private com.google.mlkit.vision.barcode.BarcodeScanner scanner;
+    private ProcessCameraProvider cameraProvider;
     private volatile boolean handled = false;
 
     @Override
@@ -154,6 +156,9 @@ public class BarcodeScannerActivity extends AppCompatActivity {
         providerFuture.addListener(() -> {
             try {
                 ProcessCameraProvider provider = providerFuture.get();
+                cameraProvider = provider;
+
+                if (isFinishing() || isDestroyed()) return;
 
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
@@ -175,7 +180,7 @@ public class BarcodeScannerActivity extends AppCompatActivity {
                                 Barcode.FORMAT_QR_CODE,
                                 Barcode.FORMAT_ITF)
                         .build();
-                com.google.mlkit.vision.barcode.BarcodeScanner scanner = BarcodeScanning.getClient(opts);
+                scanner = BarcodeScanning.getClient(opts);
 
                 analysis.setAnalyzer(cameraExecutor, new BarcodeAnalyzer(scanner));
 
@@ -199,31 +204,42 @@ public class BarcodeScannerActivity extends AppCompatActivity {
             android.media.Image mediaImage = proxy.getImage();
             if (mediaImage == null) { proxy.close(); return; }
             InputImage img = InputImage.fromMediaImage(mediaImage, proxy.getImageInfo().getRotationDegrees());
-            scanner.process(img)
-                    .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<List<Barcode>>() {
-                        @Override
-                        public void onSuccess(List<Barcode> barcodes) {
-                            if (handled) return;
-                            for (Barcode b : barcodes) {
-                                String raw = b.getRawValue();
-                                if (raw != null && !raw.isEmpty()) {
-                                    handled = true;
-                                    Intent out = new Intent();
-                                    out.putExtra("barcode", raw);
-                                    setResult(RESULT_OK, out);
-                                    finish();
-                                    return;
+            try {
+                scanner.process(img)
+                        .addOnSuccessListener(new com.google.android.gms.tasks.OnSuccessListener<List<Barcode>>() {
+                            @Override
+                            public void onSuccess(List<Barcode> barcodes) {
+                                if (handled) return;
+                                for (Barcode b : barcodes) {
+                                    String raw = b.getRawValue();
+                                    if (raw != null && !raw.isEmpty()) {
+                                        handled = true;
+                                        Intent out = new Intent();
+                                        out.putExtra("barcode", raw);
+                                        setResult(RESULT_OK, out);
+                                        finish();
+                                        return;
+                                    }
                                 }
                             }
-                        }
-                    })
-                    .addOnCompleteListener(t -> proxy.close());
+                        })
+                        .addOnCompleteListener(t -> proxy.close());
+            } catch (Exception e) {
+                // Si process() falla síncronamente, asegúrate de liberar el frame
+                proxy.close();
+            }
         }
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        if (cameraProvider != null) {
+            try { cameraProvider.unbindAll(); } catch (Exception ignored) {}
+        }
         if (cameraExecutor != null) cameraExecutor.shutdown();
+        if (scanner != null) {
+            try { scanner.close(); } catch (Exception ignored) {}
+        }
+        super.onDestroy();
     }
 }

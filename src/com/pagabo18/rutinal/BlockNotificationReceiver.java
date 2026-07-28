@@ -72,7 +72,8 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
         Intent snz = new Intent(ctx, NotificationActionReceiver.class);
         snz.setAction(NotificationActionReceiver.ACTION_SNOOZE);
         snz.setData(android.net.Uri.parse("rutinal://notif/snooze/" + notifId));
-        snz.putExtras(intent.getExtras());
+        android.os.Bundle extras = intent.getExtras();
+        if (extras != null) snz.putExtras(extras);
         PendingIntent snzPI = PendingIntent.getBroadcast(ctx, notifId + 2, snz, piFlags());
 
         // Tap principal → abrir app
@@ -127,6 +128,10 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
 
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) nm.notify(notifId, b.build());
+
+        // Re-encadenar alarmas (bloques restantes / día siguiente) aunque
+        // el usuario no abra la app. Nunca debe romper la notificación.
+        try { NotificationScheduler.scheduleAll(ctx); } catch (Exception ignored) {}
     }
 
     private int piFlags() {

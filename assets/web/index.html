@@ -1393,6 +1393,7 @@
   .food-source-badge { display:inline-block; font-size:9px; font-weight:700; padding:1px 5px; border-radius:4px; margin-left:6px; vertical-align:middle; letter-spacing:0.3px; }
   .food-source-badge.usda { background: rgba(34,197,94,0.15); color:#22C55E; }
   .food-source-badge.off  { background: rgba(124,156,255,0.15); color:#7C9CFF; }
+  .food-source-badge.local { background: rgba(245,158,11,0.15); color:#F59E0B; }
   .auto-badge { display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; margin-top:4px; letter-spacing:0.5px; background: rgba(124,156,255,0.15); color:#7C9CFF; }
   .habit.auto-habit .check { opacity: 0.85; }
   .habit.auto-habit.done .check { background: linear-gradient(135deg, #22C55E, #16A34A); }
@@ -2315,7 +2316,7 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
             </label>
             <label style="grid-column:1/-1;display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-3);">
               Recordatorios al día (0 = sin recordatorios)
-              <input type="number" id="hyd-count" min="0" max="20" class="field-input" value="0">
+              <input type="number" id="hyd-reminder-count" min="0" max="20" class="field-input" value="0">
             </label>
           </div>
           <div style="display:flex;gap:8px;">
@@ -2397,6 +2398,7 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
   <div class="sheet-body" id="sheet-body"></div>
 </div>
 
+<script src="food_db.js"></script>
 <script src="i18n.js"></script>
 <script>
 // ============================================================
@@ -3443,6 +3445,9 @@ document.getElementById('edit-goals-btn').addEventListener('click', openGoalsShe
 tabRenderers.habitos = renderHabitos;
 
 function toggleHabit(id) {
+  // El hábito nutricional es automático: lo marca/desmarca updateNutriHabitAuto
+  // según los totales del día; un toggle manual sería sobrescrito y confunde.
+  if (id === 'nutri_goal') return;
   const log = habitLog();
   const k = keyDate();
   if (!log[k]) log[k] = {};
@@ -3470,6 +3475,10 @@ function isDayPerfect(dateKey, habits, log) {
   if (!habits || habits.length === 0) return false;
   if (!log[dateKey]) return false;
   for (const h of habits) {
+    // Los hábitos virtuales (nutri_goal) solo se exigen en días donde la
+    // auto-evaluación llegó a registrar una entrada; si no existía perfil
+    // ese día, no debe romper el día perfecto ni resetear la racha.
+    if (h.virtual && !(h.id in log[dateKey])) continue;
     if (!log[dateKey][h.id]) return false;
   }
   return true;
@@ -3597,10 +3606,14 @@ function calcWeekMetrics(monday) {
     }
   });
 
-  // Pomodoros: sumar sessions de la semana
-  const pomoLog = S.get('pomoSessions', {});
+  // Pomodoros: sumar sesiones de foco de la semana. El módulo Pomodoro guarda
+  // 'pomo_sessions' como array de {ts, phase, minutes, cat}.
+  const pomoArr = S.get('pomo_sessions', []);
   let pomoSessions = 0;
-  days.forEach(d => { pomoSessions += (pomoLog[keyDate(d)] || 0); });
+  const weekKeys = new Set(days.map(d => keyDate(d)));
+  (Array.isArray(pomoArr) ? pomoArr : []).forEach(s => {
+    if (s && s.ts && weekKeys.has(keyDate(new Date(s.ts)))) pomoSessions++;
+  });
 
   return { perfectDays, hydrationDays, mealDays, earlyDays, streakKept, pomoSessions };
 }
@@ -3828,7 +3841,7 @@ function loadHabitsWithVirtual() {
   const habits = loadHabits().slice();
   try {
     const prof = nutriProfile();
-    if (prof && prof.weightKg && prof.heightCm && prof.age) {
+    if (hasNutriProfile() && prof.weightKg && prof.heightCm && prof.age) {
       // Insertar hábito virtual solo si el perfil está configurado
       const targets = calcNutriTargets(prof);
       if (targets && targets.kcal) {
@@ -4430,7 +4443,7 @@ function renderAjustes() {
     const mEl = document.getElementById('hyd-ml');
     const fEl = document.getElementById('hyd-from');
     const tEl = document.getElementById('hyd-to');
-    const cEl = document.getElementById('hyd-count');
+    const cEl = document.getElementById('hyd-reminder-count');
     const stEl = document.getElementById('hyd-status');
     if (enEl) enEl.checked = !!hs.enabled;
     if (enLbl) enLbl.textContent = hs.enabled ? 'Hidratación activada' : 'Hidratación desactivada';
@@ -4504,7 +4517,7 @@ function bindAjustesOnce() {
       const mlPerGlass = Math.max(0, Math.min(1000, parseInt(document.getElementById('hyd-ml').value) || 0));
       const from = document.getElementById('hyd-from').value || '08:00';
       const to = document.getElementById('hyd-to').value || '22:00';
-      const count = Math.max(0, Math.min(20, parseInt(document.getElementById('hyd-count').value) || 0));
+      const count = Math.max(0, Math.min(20, parseInt(document.getElementById('hyd-reminder-count').value) || 0));
       S.set('hydration_settings', { enabled, goal, mlPerGlass, from, to, count });
       if (enabled) hydSyncReminders();
       else { try { if (window.Android && window.Android.setHydrationReminders) window.Android.setHydrationReminders('[]'); } catch(e){} }
@@ -4597,8 +4610,10 @@ function bindAjustesOnce() {
           S.allKeys().forEach(k => { if (!k.startsWith('__')) cur[k] = S.get(k, undefined); });
           S.set('__lastPreImportBackup', { at: new Date().toISOString(), data: cur });
         } catch(_) {}
-        // Limpiar keys de app (no theme) y aplicar nuevas
-        S.allKeys().forEach(k => { if (!k.startsWith('__') && k !== 'theme') S.del(k); });
+        // Limpiar keys de app y aplicar nuevas (preservando preferencias de
+        // dispositivo que no forman parte del backup: tema, idioma y API key)
+        const keep = ['theme', 'rutinal_lang', 'usda_api_key'];
+        S.allKeys().forEach(k => { if (!k.startsWith('__') && !keep.includes(k)) S.del(k); });
         Object.keys(data).forEach(k => {
           if (k.startsWith('__')) return;
           S.set(k, data[k]);
@@ -4625,7 +4640,8 @@ function bindAjustesOnce() {
       const pre2 = S.get('__lastPreImportBackup', null);
       if (!pre2 || !pre2.data) { alert('No hay backup previo disponible.'); return; }
       if (!confirm('Restaurar tus datos al estado anterior a la última importación?')) return;
-      S.allKeys().forEach(k => { if (!k.startsWith('__') && k !== 'theme') S.del(k); });
+      const keepUndo = ['theme', 'rutinal_lang', 'usda_api_key'];
+      S.allKeys().forEach(k => { if (!k.startsWith('__') && !keepUndo.includes(k)) S.del(k); });
       Object.keys(pre2.data).forEach(k => S.set(k, pre2.data[k]));
       S.del('__lastPreImportBackup');
       alert('Estado restaurado. La app se recargará.');
@@ -5093,6 +5109,11 @@ function renderEditHabits() {
 // Lápiz               = abre el editor
 // Long-press ~350 ms   = activa drag & drop
 function enableHabitosDrag(container) {
+  // El contenedor persiste entre renders (solo se limpia su innerHTML):
+  // sin este guard, cada renderHabitos() apila otro pointerdown y un tap
+  // termina disparando N toggles.
+  if (container.dataset.dragBound) return;
+  container.dataset.dragBound = '1';
   const LONG_PRESS_MS = 350;
   const MOVE_THRESHOLD = 8;
   let dragEl = null, placeholder = null, offsetY = 0, pointerId = null;
@@ -5939,6 +5960,11 @@ function nutriProfile() {
     manualKcal: null,  // si el usuario quiere override
   });
 }
+// true solo si el usuario guardó su perfil alguna vez (nutriProfile() siempre
+// devuelve defaults, así que no sirve como chequeo de "configurado").
+function hasNutriProfile() {
+  return S.get('nutri_profile', null) !== null;
+}
 function saveNutriProfile(p) {
   S.set('nutri_profile', p);
   // Log de peso para histórico
@@ -6501,6 +6527,8 @@ function openSheet(title, body, onSave) {
   if (closeBtn) closeBtn.textContent = onSave ? 'Cancelar' : 'Cerrar';
 }
 function closeSheet() {
+  // Si el escáner web dejó la cámara abierta, apagarla al cerrar el sheet
+  if (typeof stopWebScanner === 'function') { try { stopWebScanner(); } catch (e) {} }
   sheet.classList.remove('show');
   backdrop.classList.remove('show');
   sheetCtx = null;
@@ -6964,7 +6992,7 @@ function openImprSheet(existing) {
     saveImprs(list);
     closeSheet();
     renderHoy();
-    const active = document.querySelector('nav button.active').dataset.tab;
+    const active = (document.querySelector('nav button.active') || {dataset:{}}).dataset.tab;
     if (tabRenderers[active]) tabRenderers[active]();
     if (navigator.vibrate) navigator.vibrate(20);
   });
@@ -6979,7 +7007,7 @@ function openImprSheet(existing) {
     if (!confirm('¿Eliminar este imprevisto?')) return;
     saveImprs(loadImprs().filter(x => x.id !== i.id));
     closeSheet();
-    const active = document.querySelector('nav button.active').dataset.tab;
+    const active = (document.querySelector('nav button.active') || {dataset:{}}).dataset.tab;
     if (tabRenderers[active]) tabRenderers[active]();
     renderHoy();
   });
@@ -7007,7 +7035,7 @@ setTimeout(__syncStateNow, 2000);
 // Refrescar vistas al volver a la app
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
-    const active = document.querySelector('nav button.active').dataset.tab;
+    const active = (document.querySelector('nav button.active') || {dataset:{}}).dataset.tab;
     if (active === 'hoy') renderHoy();
     if (active === 'habitos') renderHabitos();
   }
@@ -7059,7 +7087,7 @@ function updateNowTimer() {
   }
 }
 setInterval(() => {
-  const active = document.querySelector('nav button.active').dataset.tab;
+  const active = (document.querySelector('nav button.active') || {dataset:{}}).dataset.tab;
   if (active === 'hoy') updateNowTimer();
   if (active === 'pomo') pomoTick();
 }, 1000);
@@ -7427,7 +7455,7 @@ document.querySelectorAll('.pomo-num-btn').forEach(btn => {
 
 setInterval(() => {
   renderClock();
-  const active = document.querySelector('nav button.active').dataset.tab;
+  const active = (document.querySelector('nav button.active') || {dataset:{}}).dataset.tab;
   if (active === 'hoy') renderHoy();
   if (active === 'dia') renderDia();
 }, 30000);
@@ -7480,7 +7508,7 @@ function calcMealTotals(list) {
 }
 
 /* ---------- Platillos guardados (recetas) ---------- */
-const DEFAULT_DISH_EMOJIS = ['🍽️','🍜','🥗','🍛','🍚','🍝','🍲','🍘','🍞','🥘','🍮','🍰','🍳','🥘','🍿','🥣'];
+const DEFAULT_DISH_EMOJIS = ['🍽️','🍜','🥗','🍛','🍚','🍝','🍲','🍘','🍞','🥘','🍮','🍰','🍳','🌮','🍿','🥣'];
 
 function dishesAll() { return S.get('dishes', []); }
 function dishesSave(list) { S.set('dishes', list); }
@@ -7540,7 +7568,7 @@ function saveMealAsDish(mealId, name, emoji) {
   const dish = {
     id: 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
     name: name || (t('dish_untitled') || 'Platillo'),
-    icon: emoji || DEFAULT_DISH_EMOJIS[Math.floor(Math.random() * 4)],
+    icon: emoji || DEFAULT_DISH_EMOJIS[Math.floor(Math.random() * DEFAULT_DISH_EMOJIS.length)],
     servings: 1,
     items,
     createdAt: Date.now(),
@@ -7637,7 +7665,7 @@ function openDishEditor(dishId, opts) {
     } : {
       id: null,
       name: '',
-      icon: DEFAULT_DISH_EMOJIS[Math.floor(Math.random() * 6)],
+      icon: DEFAULT_DISH_EMOJIS[Math.floor(Math.random() * DEFAULT_DISH_EMOJIS.length)],
       servings: 1,
       items: [],
     };
@@ -7736,7 +7764,7 @@ function openDishEditor(dishId, opts) {
         name, icon: _dishEditorState.icon,
         servings: _dishEditorState.servings,
         items: _dishEditorState.items,
-        createdAt: now, lastUsedAt: 0,
+        createdAt: now, lastUsedAt: now,
       });
     }
     dishesSave(list);
@@ -7931,8 +7959,9 @@ function evalNutriDayGoal(current, targets, tolerance) {
 // Auto-marca/desmarca el hábito virtual 'nutri_goal' según el estado del día.
 function updateNutriHabitAuto(current, targets, tolerance) {
   const prof = nutriProfile();
-  // Solo aplica si el usuario configuró su perfil
-  if (!prof || !prof.weightKg || !targets || !targets.kcal) return null;
+  // Solo aplica si el usuario configuró su perfil (mismo criterio que
+  // loadHabitsWithVirtual, para no escribir entradas nutri_goal huérfanas)
+  if (!hasNutriProfile() || !prof.weightKg || !prof.heightCm || !prof.age || !targets || !targets.kcal) return null;
   const state = evalNutriDayGoal(current, targets, tolerance || prof.tolerance);
   const log = habitLog();
   const k = keyDate();
@@ -8047,7 +8076,7 @@ function renderComida() {
   let targets = null;
   try {
     const prof = typeof nutriProfile === 'function' ? nutriProfile() : null;
-    if (prof && prof.weightKg) {
+    if (prof && prof.weightKg && (typeof hasNutriProfile !== 'function' || hasNutriProfile())) {
       targets = calcNutriTargets(prof);
     }
   } catch(e){}
@@ -8108,8 +8137,8 @@ function renderComida() {
         li.className = 'meal-item';
         li.innerHTML = `
           <div class="meal-item-info">
-            <div class="meal-item-name">${it.name || 'Alimento'}</div>
-            <div class="meal-item-meta">${it.grams}g${it.brand ? ' · ' + it.brand : ''} · P${mm.protein} C${mm.carbs} G${mm.fat}</div>
+            <div class="meal-item-name">${escapeHtml(it.name || 'Alimento')}</div>
+            <div class="meal-item-meta">${it.grams}g${it.brand ? ' · ' + escapeHtml(it.brand) : ''} · P${mm.protein} C${mm.carbs} G${mm.fat}</div>
           </div>
           <div class="meal-item-kcal">${mm.kcal}</div>`;
         li.addEventListener('click', () => openPortionEditor(it, m.id, i));
@@ -8192,6 +8221,7 @@ function parseUsdaFood(f) {
     serving_size: (f.servingSize && f.servingSizeUnit) ? `${f.servingSize} ${f.servingSizeUnit}` : '',
     source: 'usda',
     dataType: f.dataType || '',
+    barcode: f.gtinUpc || null,
   };
 }
 
@@ -8238,85 +8268,186 @@ async function usdaSearch(q) {
   return results;
 }
 
-/* ============ Traducción ligera ES->EN para USDA ============ */
-// USDA es principalmente en inglés. Traducimos las palabras más comunes
-// para que el usuario pueda buscar en español y obtener resultados.
-const ES_EN_FOOD = {
-  // Frutas
-  'manzana':'apple','platano':'banana','plátano':'banana','banano':'banana','naranja':'orange','pera':'pear','uva':'grape','uvas':'grapes',
-  'fresa':'strawberry','fresas':'strawberries','sandia':'watermelon','sandía':'watermelon','melon':'melon','melón':'melon','piña':'pineapple','pina':'pineapple',
-  'mango':'mango','papaya':'papaya','durazno':'peach','ciruela':'plum','limon':'lemon','limón':'lemon','lima':'lime','kiwi':'kiwi',
-  'aguacate':'avocado','coco':'coconut','higo':'fig','granada':'pomegranate','arandano':'blueberry','arándano':'blueberry','mora':'blackberry','frambuesa':'raspberry',
-  // Verduras / vegetales
-  'lechuga':'lettuce','tomate':'tomato','jitomate':'tomato','cebolla':'onion','ajo':'garlic','pepino':'cucumber','zanahoria':'carrot','apio':'celery',
-  'espinaca':'spinach','brocoli':'broccoli','brócoli':'broccoli','coliflor':'cauliflower','calabaza':'squash','calabacin':'zucchini','calabacín':'zucchini','chile':'chili pepper','pimiento':'bell pepper','pimenton':'paprika',
-  'papa':'potato','patata':'potato','camote':'sweet potato','betabel':'beet','elote':'corn','maiz':'corn','maíz':'corn','esparrago':'asparagus','espárrago':'asparagus',
-  'champiñon':'mushroom','champinon':'mushroom','hongo':'mushroom','nopal':'cactus','ejote':'green bean','frijol':'bean','frijoles':'beans','lenteja':'lentil','garbanzo':'chickpea',
-  // Cereales / granos
-  'arroz':'rice','pasta':'pasta','fideo':'noodle','harina':'flour','avena':'oats','trigo':'wheat','cebada':'barley','centeno':'rye','quinoa':'quinoa','tortilla':'tortilla','pan':'bread',
-  // Proteínas
-  'pollo':'chicken','pechuga':'chicken breast','muslo':'chicken thigh','res':'beef','carne':'beef','cerdo':'pork','puerco':'pork','tocino':'bacon','jamon':'ham','jamón':'ham','pavo':'turkey','salchicha':'sausage',
-  'pescado':'fish','atun':'tuna','atún':'tuna','salmon':'salmon','salmón':'salmon','camaron':'shrimp','camarón':'shrimp','huevo':'egg','huevos':'eggs',
-  // Lácteos
-  'leche':'milk','queso':'cheese','yogur':'yogurt','yogurt':'yogurt','mantequilla':'butter','crema':'cream','requeson':'ricotta','requesón':'ricotta',
-  // Bebidas
-  'agua':'water','cafe':'coffee','café':'coffee','te':'tea','té':'tea','jugo':'juice','refresco':'soda','cerveza':'beer','vino':'wine',
-  // Grasas / aceites
-  'aceite':'oil','oliva':'olive oil','aguacate':'avocado oil','manteca':'lard',
-  // Dulces / snacks
-  'azucar':'sugar','azúcar':'sugar','miel':'honey','chocolate':'chocolate','galleta':'cookie','galletas':'cookies','pastel':'cake','helado':'ice cream','nuez':'walnut','almendra':'almond','cacahuate':'peanut','pistache':'pistachio',
-  // Comida mexicana
-  'taco':'taco','burrito':'burrito','quesadilla':'quesadilla','enchilada':'enchilada','tamale':'tamale','tamal':'tamale','pozole':'pozole','mole':'mole','guacamole':'guacamole','salsa':'salsa','chilaquiles':'chilaquiles','tostada':'tostada',
+/* ============ Traducción ES->EN para USDA (frases + palabras) ============ */
+// USDA es principalmente en inglés. Primero intentamos frases completas
+// (mayor precisión) y después palabra por palabra, ignorando conectores.
+const ES_EN_PHRASES = {
+  'clara de huevo':'egg white','claras de huevo':'egg whites','yema de huevo':'egg yolk',
+  'huevo cocido':'boiled egg','huevo duro':'hard boiled egg','huevo frito':'fried egg','huevo revuelto':'scrambled egg',
+  'pechuga de pollo':'chicken breast','muslo de pollo':'chicken thigh','pierna de pollo':'chicken leg','pollo asado':'roasted chicken','pollo molido':'ground chicken',
+  'carne molida':'ground beef','carne de res':'beef','carne de cerdo':'pork','lomo de cerdo':'pork loin','chuleta de cerdo':'pork chop',
+  'pechuga de pavo':'turkey breast','jamon de pavo':'turkey ham','atun en agua':'tuna in water','atun en aceite':'tuna in oil',
+  'leche entera':'whole milk','leche descremada':'skim milk','leche deslactosada':'lactose free milk','leche de almendra':'almond milk','leche de soya':'soy milk',
+  'yogur griego':'greek yogurt','yogurt griego':'greek yogurt','queso panela':'panela cheese','queso fresco':'queso fresco','queso cottage':'cottage cheese',
+  'crema de cacahuate':'peanut butter','mantequilla de mani':'peanut butter',
+  'arroz blanco':'white rice','arroz integral':'brown rice','arroz cocido':'cooked rice',
+  'pan integral':'whole wheat bread','pan blanco':'white bread','pan de caja':'sliced bread',
+  'tortilla de maiz':'corn tortilla','tortilla de harina':'flour tortilla',
+  'frijoles negros':'black beans','frijoles pintos':'pinto beans','frijoles refritos':'refried beans',
+  'papa cocida':'boiled potato','camote cocido':'baked sweet potato',
+  'aceite de oliva':'olive oil','aceite de coco':'coconut oil','aceite vegetal':'vegetable oil',
+  'agua de coco':'coconut water','jugo de naranja':'orange juice',
+  'avena en hojuelas':'rolled oats','proteina en polvo':'protein powder','proteina whey':'whey protein',
+  'semillas de chia':'chia seeds','semillas de girasol':'sunflower seeds',
 };
+const ES_EN_FOOD = {
+  // Huevo / proteínas básicas
+  'huevo':'egg','huevos':'eggs','clara':'egg white','claras':'egg whites','yema':'egg yolk','yemas':'egg yolks',
+  // Frutas
+  'manzana':'apple','platano':'banana','banano':'banana','naranja':'orange','pera':'pear','uva':'grape','uvas':'grapes',
+  'fresa':'strawberry','fresas':'strawberries','sandia':'watermelon','melon':'melon','pina':'pineapple',
+  'mango':'mango','papaya':'papaya','durazno':'peach','ciruela':'plum','limon':'lemon','lima':'lime','kiwi':'kiwi',
+  'aguacate':'avocado','coco':'coconut','higo':'fig','granada':'pomegranate','arandano':'blueberry','arandanos':'blueberries','mora':'blackberry','frambuesa':'raspberry',
+  'guayaba':'guava','mandarina':'tangerine','tuna':'prickly pear','mamey':'mamey','guanabana':'soursop','maracuya':'passion fruit','platanos':'bananas','cereza':'cherry','cerezas':'cherries',
+  // Verduras
+  'lechuga':'lettuce','tomate':'tomato','jitomate':'tomato','cebolla':'onion','ajo':'garlic','pepino':'cucumber','zanahoria':'carrot','apio':'celery',
+  'espinaca':'spinach','espinacas':'spinach','brocoli':'broccoli','coliflor':'cauliflower','calabaza':'squash','calabacin':'zucchini','calabacita':'zucchini','chile':'chili pepper','pimiento':'bell pepper','pimenton':'paprika',
+  'papa':'potato','papas':'potatoes','patata':'potato','camote':'sweet potato','betabel':'beet','elote':'corn','maiz':'corn','esparrago':'asparagus','esparragos':'asparagus',
+  'champinon':'mushroom','champinones':'mushrooms','hongo':'mushroom','hongos':'mushrooms','nopal':'nopales','nopales':'nopales','ejote':'green bean','ejotes':'green beans',
+  'frijol':'bean','frijoles':'beans','lenteja':'lentil','lentejas':'lentils','garbanzo':'chickpea','garbanzos':'chickpeas','haba':'fava bean','habas':'fava beans',
+  'chayote':'chayote','col':'cabbage','repollo':'cabbage','acelga':'chard','rabano':'radish','poro':'leek','cilantro':'cilantro','perejil':'parsley','kale':'kale','arugula':'arugula',
+  // Cereales / granos
+  'arroz':'rice','pasta':'pasta','fideo':'noodle','fideos':'noodles','harina':'flour','avena':'oats','trigo':'wheat','cebada':'barley','centeno':'rye','quinoa':'quinoa','tortilla':'tortilla','tortillas':'tortillas','pan':'bread','bolillo':'bread roll','granola':'granola','amaranto':'amaranth','cereal':'cereal','galleta':'cookie','galletas':'cookies',
+  // Proteínas
+  'pollo':'chicken','pechuga':'chicken breast','muslo':'chicken thigh','res':'beef','carne':'meat','cerdo':'pork','puerco':'pork','tocino':'bacon','jamon':'ham','pavo':'turkey','salchicha':'sausage','chorizo':'chorizo','bistec':'beef steak','milanesa':'breaded cutlet','costilla':'ribs','higado':'liver',
+  'pescado':'fish','atun':'tuna','salmon':'salmon','camaron':'shrimp','camarones':'shrimp','tilapia':'tilapia','mojarra':'tilapia','sardina':'sardine','sardinas':'sardines','pulpo':'octopus','ostion':'oyster',
+  'tofu':'tofu','soya':'soy','seitan':'seitan','tempeh':'tempeh','whey':'whey protein','caseina':'casein protein',
+  // Lácteos
+  'leche':'milk','queso':'cheese','yogur':'yogurt','yogurt':'yogurt','mantequilla':'butter','crema':'cream','requeson':'ricotta','panela':'panela cheese','oaxaca':'oaxaca cheese','manchego':'manchego cheese','cotija':'cotija cheese','kefir':'kefir',
+  // Bebidas
+  'agua':'water','cafe':'coffee','te':'tea','jugo':'juice','refresco':'soda','cerveza':'beer','vino':'wine','horchata':'horchata','atole':'atole',
+  // Grasas / aceites
+  'aceite':'oil','oliva':'olive','manteca':'lard','mayonesa':'mayonnaise','aderezo':'dressing','margarina':'margarine',
+  // Frutos secos / semillas
+  'nuez':'walnut','nueces':'walnuts','almendra':'almond','almendras':'almonds','cacahuate':'peanut','cacahuates':'peanuts','pistache':'pistachio','pistaches':'pistachios','avellana':'hazelnut','chia':'chia seeds','linaza':'flaxseed','pepitas':'pumpkin seeds','ajonjoli':'sesame seeds',
+  // Dulces / snacks
+  'azucar':'sugar','miel':'honey','chocolate':'chocolate','pastel':'cake','helado':'ice cream','mermelada':'jam','cajeta':'caramel spread','papitas':'potato chips','palomitas':'popcorn',
+  // Comida mexicana
+  'taco':'taco','tacos':'tacos','burrito':'burrito','quesadilla':'quesadilla','enchilada':'enchilada','enchiladas':'enchiladas','tamale':'tamale','tamal':'tamale','tamales':'tamales','pozole':'pozole','mole':'mole','guacamole':'guacamole','salsa':'salsa','chilaquiles':'chilaquiles','tostada':'tostada','tostadas':'tostadas','sopa':'soup','caldo':'broth','barbacoa':'barbacoa','carnitas':'carnitas','birria':'birria','menudo':'menudo tripe soup','ceviche':'ceviche','esquites':'corn esquites',
+  // Preparaciones / participios comunes
+  'revuelto':'scrambled','revueltos':'scrambled','revuelta':'scrambled','cocido':'cooked','cocidos':'cooked','cocida':'cooked','cocidas':'cooked',
+  'frito':'fried','fritos':'fried','frita':'fried','fritas':'fried','asado':'roasted','asada':'roasted','asados':'roasted','asadas':'roasted',
+  'molido':'ground','molida':'ground','plancha':'grilled','horneado':'baked','horneada':'baked','hervido':'boiled','hervida':'boiled',
+  'crudo':'raw','cruda':'raw','entero':'whole','entera':'whole','descremada':'skim','descremado':'skim','deslactosada':'lactose free','integral':'whole grain','light':'light',
+};
+const ES_STOPWORDS = new Set(['de','del','la','el','los','las','con','sin','al','a','en','y','o','un','una']);
+function normalizeFoodQuery(q) {
+  return (q || '').toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
 function translateEsToEn(q) {
-  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const translated = words.map(w => {
-    // quitar acentos para lookup
-    const key = w.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    return ES_EN_FOOD[w] || ES_EN_FOOD[key] || w;
+  let s = normalizeFoodQuery(q);
+  // Frases completas primero (más largas primero para que "claras de huevo"
+  // gane a "clara"). El resultado se protege con un placeholder para que el
+  // pase palabra-por-palabra NO lo re-traduzca ("tuna in water" contiene
+  // "tuna", que en español es la fruta del nopal).
+  const protectedParts = [];
+  const phrases = Object.keys(ES_EN_PHRASES).sort((a, b) => b.length - a.length);
+  for (const ph of phrases) {
+    if (s.includes(ph)) {
+      protectedParts.push(ES_EN_PHRASES[ph]);
+      s = s.replace(ph, '\u0001' + (protectedParts.length - 1) + '\u0001');
+    }
+  }
+  // Palabra por palabra, saltando conectores y placeholders
+  const words = s.split(/\s+/).filter(Boolean).map(w => {
+    if (w.startsWith('\u0001')) return w;
+    if (ES_STOPWORDS.has(w)) return '';
+    return ES_EN_FOOD[w] || w;
+  }).filter(Boolean);
+  // Restaurar frases protegidas
+  const restored = words.map(w =>
+    w.replace(/\u0001(\d+)\u0001/g, (_, i) => protectedParts[+i] || '')
+  ).join(' ');
+  // Quitar palabras repetidas ("carne molida de res" -> "ground beef beef")
+  const seen = new Set();
+  const dedup = restored.split(/\s+/).filter(w => {
+    if (!w) return false;
+    if (seen.has(w)) return false;
+    seen.add(w);
+    return true;
   });
-  return translated.join(' ');
+  return dedup.join(' ');
 }
 
-/* ============ Búsqueda unificada multi-fuente ============ */
-// Estrategia: intenta USDA en el idioma del usuario. Si es búsqueda en español
-// y trae pocos resultados, también intenta con la traducción al inglés.
-// Fallback a OFF si USDA falla.
+/* ============ Base local de alimentos (offline, instantánea) ============ */
+function localFoodSearch(q) {
+  const nq = normalizeFoodQuery(q);
+  if (!nq || nq.length < 2 || typeof LOCAL_FOODS === 'undefined') return [];
+  const terms = nq.split(/\s+/).filter(w => w && !ES_STOPWORDS.has(w));
+  if (!terms.length) return [];
+  const scored = [];
+  LOCAL_FOODS.forEach((f, idx) => {
+    const name = normalizeFoodQuery(f.n);
+    const en = (f.en || '').toLowerCase();
+    const aliases = f.a || [];
+    let score = 0;
+    // Query completa igual a un alias o al nombre → máxima prioridad
+    if (aliases.includes(nq) || name === nq || en === nq) score = 100;
+    else {
+      // Cada término debe aparecer en nombre, inglés o algún alias
+      const hay = name + ' ' + en + ' ' + aliases.join(' ');
+      const allMatch = terms.every(t => hay.includes(t));
+      if (!allMatch) return;
+      score = 50;
+      // Bonus si el nombre empieza con el primer término
+      if (name.startsWith(terms[0])) score += 20;
+      // Bonus si algún alias es exactamente el primer término
+      if (aliases.includes(terms[0])) score += 15;
+      // Penalizar nombres largos (menos específicos)
+      score -= Math.min(10, Math.floor(name.length / 10));
+    }
+    scored.push({ score, idx, f });
+  });
+  scored.sort((a, b) => b.score - a.score || a.idx - b.idx);
+  return scored.slice(0, 12).map(({ f, idx }) => ({
+    id: 'local_' + idx,
+    name: f.n,
+    brand: '',
+    image: '',
+    per100g: {
+      kcal: Math.round(f.k), protein: +(f.p || 0), carbs: +(f.c || 0), fat: +(f.f || 0),
+      fiber: +(f.fb || 0), sugars: +(f.s || 0), sodium: +(f.na || 0),
+    },
+    serving_size: '',
+    source: 'local',
+  }));
+}
+
+/* ============ Búsqueda unificada multi-fuente (paralela) ============ */
+// Local (instantánea) + USDA (original y traducida) + Open Food Facts, todo
+// en paralelo. Los resultados locales van primero; luego USDA genéricos,
+// luego branded/OFF. Solo reportamos rate-limit si no hubo ningún resultado.
 async function foodSearchMulti(q) {
   const results = [];
   const seen = new Set();
   const addResults = arr => {
-    arr.forEach(f => {
+    (arr || []).forEach(f => {
       const k = (f.name + '|' + (f.brand || '')).toLowerCase();
       if (!seen.has(k)) { seen.add(k); results.push(f); }
     });
   };
 
-  // Intento 1: USDA con la query original
-  try {
-    const r1 = await usdaSearch(q);
-    addResults(r1);
-  } catch (e) { console.warn('USDA search failed', e); }
+  const local = localFoodSearch(q);
+  addResults(local);
 
-  // Intento 2: si hay pocos y es español, traducir a inglés
-  if (results.length < 8) {
-    const en = translateEsToEn(q);
-    if (en !== q.toLowerCase()) {
-      try {
-        const r2 = await usdaSearch(en);
-        addResults(r2);
-      } catch (e) {}
-    }
+  const en = translateEsToEn(q);
+  const differs = en && en !== normalizeFoodQuery(q);
+  const tasks = [usdaSearch(q)];
+  if (differs) tasks.push(usdaSearch(en));
+  // OFF recibe SIEMPRE la query original (tiene muchos productos en español)
+  // y además la traducción cuando difiere.
+  tasks.push(offSearch(q));
+  if (differs) tasks.push(offSearch(en));
+
+  const settled = await Promise.allSettled(tasks);
+  settled.forEach(s => { if (s.status === 'fulfilled') addResults(s.value); });
+
+  if (results.length === 0) {
+    const rateLimited = settled.some(s => s.status === 'rejected' && String(s.reason?.message || '').includes('RATE_LIMIT'));
+    const allFailed = settled.every(s => s.status === 'rejected');
+    if (rateLimited) throw new Error('USDA_RATE_LIMIT');
+    if (allFailed) throw new Error('SEARCH_ALL_FAILED');
   }
-
-  // Intento 3: si aún hay pocos, probar OFF search
-  if (results.length < 5) {
-    try {
-      const r3 = await offSearch(q);
-      addResults(r3);
-    } catch (e) { /* OFF a veces 503, ignorar */ }
-  }
-
   return results;
 }
 
@@ -8344,8 +8475,12 @@ function parseOffProduct(p) {
 }
 
 async function offSearch(q) {
-  const url = `https://world.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(q)}&fields=code,product_name,generic_name,brands,nutriments,serving_size,image_thumb_url,image_url&page_size=20`;
-  const r = await fetch(url, { headers: { 'User-Agent': 'Rutinal/1.2 (Android)' } });
+  // Nota: /api/v2/search NO soporta búsqueda por texto (ignora search_terms);
+  // el endpoint correcto para texto libre es cgi/search.pl.
+  const url = 'https://world.openfoodfacts.org/cgi/search.pl?search_terms=' + encodeURIComponent(q)
+    + '&search_simple=1&action=process&json=1&page_size=20'
+    + '&fields=code,product_name,generic_name,brands,nutriments,serving_size,image_thumb_url,image_url';
+  const r = await fetch(url);
   if (!r.ok) throw new Error('OFF search failed');
   const j = await r.json();
   return (j.products || []).map(parseOffProduct).filter(p => p && p.per100g.kcal > 0);
@@ -8374,6 +8509,7 @@ async function offByBarcode(barcode) {
 /* ---------- Búsqueda (sheet) ---------- */
 let _foodSearchMealId = 'lunch';
 let _foodSearchTimer = null;
+let _foodSearchSeq = 0;
 function openFoodSearch(mealId) {
   _foodSearchMealId = mealId || 'lunch';
   const body = `
@@ -8385,6 +8521,37 @@ function openFoodSearch(mealId) {
   const inp = document.getElementById('food-q');
   const res = document.getElementById('food-res');
   setTimeout(() => inp && inp.focus(), 100);
+  function renderFoodResults(products, stillLoading) {
+    res.innerHTML = '';
+    products.forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'food-result-item';
+      const srcBadge = p.source === 'usda'
+        ? `<span class="food-source-badge usda" title="USDA ${escapeHtml(p.dataType || '')}">USDA</span>`
+        : (p.source === 'local'
+          ? `<span class="food-source-badge local" title="Base local Rutinal">LOCAL</span>`
+          : `<span class="food-source-badge off" title="Open Food Facts">OFF</span>`);
+      const img = (p.image && /^https:\/\//.test(p.image)) ? p.image : '';
+      el.innerHTML = `
+        ${img ? `<img class="food-result-img" src="${escapeHtml(img)}" alt="" onerror="this.style.display='none'"/>` : '<div class="food-result-img"></div>'}
+        <div class="food-result-info">
+          <div class="food-result-name">${escapeHtml(p.name)} ${srcBadge}</div>
+          <div class="food-result-brand">${escapeHtml(p.brand || '—')}</div>
+        </div>
+        <div class="food-result-kcal">${p.per100g.kcal} kcal/100g</div>`;
+      el.addEventListener('click', () => {
+        closeSheet();
+        openPortionEditor({ ...p, grams: 100 }, _foodSearchMealId, -1);
+      });
+      res.appendChild(el);
+    });
+    if (stillLoading) {
+      const ld = document.createElement('div');
+      ld.className = 'food-loader';
+      ld.textContent = 'Buscando en USDA y Open Food Facts...';
+      res.appendChild(ld);
+    }
+  }
   inp.addEventListener('input', () => {
     clearTimeout(_foodSearchTimer);
     const q = inp.value.trim();
@@ -8392,40 +8559,37 @@ function openFoodSearch(mealId) {
       res.innerHTML = '<div class="food-loader">Escribe al menos 2 letras para buscar</div>';
       return;
     }
-    res.innerHTML = '<div class="food-loader">Buscando...</div>';
+    // Pintado inmediato de la base local; las fuentes online llegan después
+    const locals = localFoodSearch(q);
+    if (locals.length) renderFoodResults(locals, true);
+    else res.innerHTML = '<div class="food-loader">Buscando...</div>';
+    const mySeq = ++_foodSearchSeq;
     _foodSearchTimer = setTimeout(async () => {
       try {
         const products = await foodSearchMulti(q);
+        // Descartar respuestas fuera de orden (el usuario ya escribió otra cosa)
+        if (mySeq !== _foodSearchSeq) return;
         if (products.length === 0) {
-          res.innerHTML = '<div class="food-loader">Sin resultados para “'+q+'”. Prueba con otro término.</div>';
+          res.innerHTML = '<div class="food-loader">Sin resultados para “' + escapeHtml(q) + '”. Prueba con otro término.</div>';
           return;
         }
-        res.innerHTML = '';
-        products.forEach(p => {
-          const el = document.createElement('div');
-          el.className = 'food-result-item';
-          const srcBadge = p.source === 'usda'
-            ? `<span class="food-source-badge usda" title="USDA ${p.dataType || ''}">USDA</span>`
-            : `<span class="food-source-badge off" title="Open Food Facts">OFF</span>`;
-          el.innerHTML = `
-            ${p.image ? `<img class="food-result-img" src="${p.image}" alt="" onerror="this.style.display='none'"/>` : '<div class="food-result-img"></div>'}
-            <div class="food-result-info">
-              <div class="food-result-name">${p.name} ${srcBadge}</div>
-              <div class="food-result-brand">${p.brand || '—'}</div>
-            </div>
-            <div class="food-result-kcal">${p.per100g.kcal} kcal/100g</div>`;
-          el.addEventListener('click', () => {
-            closeSheet();
-            openPortionEditor({ ...p, grams: 100 }, _foodSearchMealId, -1);
-          });
-          res.appendChild(el);
-        });
+        renderFoodResults(products, false);
       } catch (e) {
         console.error('foodSearchMulti error', e);
-        if (String(e.message||'').includes('RATE_LIMIT')) {
-          res.innerHTML = '<div class="food-loader">Límite de USDA DEMO_KEY alcanzado. Configura tu propia API key en Editar → API keys (gratis en api.data.gov).</div>';
+        if (mySeq !== _foodSearchSeq) return;
+        if (locals.length) {
+          // Conservar los resultados locales; solo avisar que lo online falló
+          renderFoodResults(locals, false);
+          const note = document.createElement('div');
+          note.className = 'food-loader';
+          note.textContent = String(e.message||'').includes('RATE_LIMIT')
+            ? 'USDA sin cupo (DEMO_KEY). Mostrando solo la base local.'
+            : 'Sin conexión con USDA/OFF. Mostrando solo la base local.';
+          res.appendChild(note);
+        } else if (String(e.message||'').includes('RATE_LIMIT')) {
+          res.innerHTML = '<div class="food-loader">Límite de la USDA DEMO_KEY alcanzado y sin resultados en las demás fuentes. Configura tu propia API key gratis en api.data.gov (Editar → Nutrición) o intenta con nombres simples (huevo, arroz, pollo).</div>';
         } else {
-          res.innerHTML = '<div class="food-loader">Sin conexión. Intenta de nuevo.</div>';
+          res.innerHTML = '<div class="food-loader">Sin conexión con las bases online. Prueba con nombres simples de la base local (huevo, arroz, pollo).</div>';
         }
       }
     }, 350);
@@ -8438,10 +8602,10 @@ function openPortionEditor(item, mealId, index) {
   const isNew = index < 0;
   const body = `
     <div class="portion-header">
-      ${item.image ? `<img class="portion-img" src="${item.image}" alt="" onerror="this.style.display='none'"/>` : '<div class="portion-img"></div>'}
+      ${(item.image && /^https:\/\//.test(item.image)) ? `<img class="portion-img" src="${escapeHtml(item.image)}" alt="" onerror="this.style.display='none'"/>` : '<div class="portion-img"></div>'}
       <div style="flex:1;min-width:0;">
-        <div class="portion-title">${item.name}</div>
-        <div class="portion-brand">${item.brand || '—'}</div>
+        <div class="portion-title">${escapeHtml(item.name)}</div>
+        <div class="portion-brand">${escapeHtml(item.brand || '—')}</div>
       </div>
     </div>
     <div class="portion-form">
@@ -8496,8 +8660,18 @@ function openPortionEditor(item, mealId, index) {
     document.getElementById('pv-g').textContent = mm.fat;
   }
   gramsInp.addEventListener('input', updatePreview);
+  let _prevUnitMult = parseFloat(unitSel.value) || 1;
   unitSel.addEventListener('change', () => {
-    // no auto-recalculamos porque el usuario puede querer mantener el número
+    // Convertir el número para conservar los gramos equivalentes: 100 g al
+    // pasar a "porción (100g)" se vuelve 1 porción, no 100 porciones (10 kg).
+    const newMult = parseFloat(unitSel.value) || 1;
+    const raw = parseFloat(gramsInp.value);
+    if (!isNaN(raw) && newMult !== _prevUnitMult) {
+      const grams = raw * _prevUnitMult;
+      const conv = grams / newMult;
+      gramsInp.value = (Math.round(conv * 100) / 100).toString();
+    }
+    _prevUnitMult = newMult;
     updatePreview();
   });
   updatePreview();
@@ -8572,32 +8746,108 @@ function openPortionEditor(item, mealId, index) {
 }
 
 /* ---------- Escaneo de código de barras ---------- */
+let _webScanStream = null;
+let _webScanTimer = null;
+let _webScanGen = 0; // invalida getUserMedia pendientes al cerrar el sheet
+function stopWebScanner() {
+  _webScanGen++;
+  if (_webScanTimer) { clearInterval(_webScanTimer); _webScanTimer = null; }
+  if (_webScanStream) {
+    try { _webScanStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    _webScanStream = null;
+  }
+}
+
 async function openBarcodeScanner() {
-  // Puente nativo Android (ML Kit)
+  window._pendingScanMeal = _foodSearchMealId || 'lunch';
+  // 1) Puente nativo Android (CameraX + ML Kit), si el APK lo incluye
   if (window.Android && typeof window.Android.openBarcodeScanner === 'function') {
-    window._pendingScanMeal = _foodSearchMealId || 'lunch';
     try { window.Android.openBarcodeScanner(); return; } catch (e) {}
   }
-  // Fallback: pedir barcode manual
+  // 2) Escáner web: cámara del WebView + BarcodeDetector
+  const canWebScan = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && 'BarcodeDetector' in window);
+  if (canWebScan) {
+    const body = `
+      <div style="position:relative;border-radius:12px;overflow:hidden;background:#000;">
+        <video id="scan-video" playsinline autoplay muted style="width:100%;height:280px;object-fit:cover;display:block;"></video>
+        <div style="position:absolute;left:10%;right:10%;top:38%;height:24%;border:2px solid rgba(255,255,255,0.85);border-radius:10px;box-shadow:0 0 0 2000px rgba(0,0,0,0.25);pointer-events:none;"></div>
+      </div>
+      <div id="scan-status" style="text-align:center;color:var(--text-3);font-size:13px;margin-top:10px;">Apunta al código de barras</div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <input type="text" class="food-search-input" id="manual-barcode" placeholder="O escribe el código" inputmode="numeric" style="flex:1;margin:0;"/>
+        <button class="btn-secondary" id="manual-scan-btn">Buscar</button>
+      </div>`;
+    openSheet('Escanear código', body);
+    bindManualBarcode();
+    const video = document.getElementById('scan-video');
+    const status = document.getElementById('scan-status');
+    const gen = _webScanGen;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      // Si el usuario cerró el sheet mientras respondía el diálogo de permiso,
+      // apagar el stream recién obtenido en vez de dejar la cámara encendida.
+      if (gen !== _webScanGen) {
+        try { stream.getTracks().forEach(t => t.stop()); } catch (e2) {}
+        return;
+      }
+      _webScanStream = stream;
+      video.srcObject = _webScanStream;
+      await video.play().catch(() => {});
+      const detector = new BarcodeDetector({
+        formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf'],
+      });
+      _webScanTimer = setInterval(async () => {
+        if (!_webScanStream || !video.videoWidth) return;
+        try {
+          const codes = await detector.detect(video);
+          if (codes && codes.length && codes[0].rawValue) {
+            const bc = codes[0].rawValue.trim();
+            stopWebScanner();
+            if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }
+            handleScannedBarcode(bc);
+          }
+        } catch (e) { /* frame no decodificable, seguir */ }
+      }, 280);
+    } catch (e) {
+      stopWebScanner();
+      if (status) status.textContent = 'No se pudo abrir la cámara. Revisa el permiso de cámara de la app, o escribe el código abajo.';
+    }
+    return;
+  }
+  // 3) Último recurso: entrada manual
   const body = `
-    <p style="color:var(--text-3);font-size:13px;margin-bottom:12px;">Escanea la app en tu teléfono para usar la cámara. O introduce el código manualmente:</p>
+    <p style="color:var(--text-3);font-size:13px;margin-bottom:12px;">Tu dispositivo no soporta el escáner con cámara. Introduce el código manualmente:</p>
     <input type="text" class="food-search-input" id="manual-barcode" placeholder="Código de barras" inputmode="numeric"/>
     <button class="btn-primary" id="manual-scan-btn" style="width:100%;">Buscar</button>`;
   openSheet('Código de barras', body);
-  document.getElementById('manual-scan-btn').addEventListener('click', async () => {
-    const bc = document.getElementById('manual-barcode').value.trim();
+  bindManualBarcode();
+}
+
+function bindManualBarcode() {
+  const btn = document.getElementById('manual-scan-btn');
+  const inp = document.getElementById('manual-barcode');
+  if (!btn || !inp) return;
+  const go = async () => {
+    const bc = inp.value.trim();
     if (!bc) return;
+    stopWebScanner();
     await handleScannedBarcode(bc);
-  });
+  };
+  btn.addEventListener('click', go);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
 }
 
 // USDA GTIN lookup: busca en Branded foods por código
 async function usdaByBarcode(barcode) {
   try {
-    const results = await usdaSearchRaw(barcode, 'Branded', 5);
-    // Coincidencia exacta por gtinUpc
-    const exact = results.find(f => f.barcode === barcode || (f.raw && f.raw.gtinUpc === barcode));
-    return exact || results[0] || null;
+    const results = await usdaSearchRaw(barcode, 'Branded', 10);
+    // Solo coincidencia exacta de GTIN (ignorando ceros a la izquierda:
+    // un UPC-A es el mismo código que su EAN-13 con 0 inicial).
+    const norm = s => String(s || '').replace(/^0+/, '');
+    return results.find(f => norm(f.barcode) === norm(barcode)) || null;
   } catch(e) { return null; }
 }
 
@@ -8614,7 +8864,7 @@ async function handleScannedBarcode(barcode) {
     }
     closeSheet();
     if (!p) {
-      openSheet('No encontrado', `<p style="color:var(--text-2);">El código <b>${barcode}</b> no está en Open Food Facts ni en USDA.</p><button class="btn-primary" style="width:100%;margin-top:12px;" onclick="closeSheet();openFoodSearch('${window._pendingScanMeal || 'lunch'}')">Buscar por nombre</button>`);
+      openSheet('No encontrado', `<p style="color:var(--text-2);">El código <b>${escapeHtml(String(barcode))}</b> no está en Open Food Facts ni en USDA.</p><button class="btn-primary" style="width:100%;margin-top:12px;" onclick="closeSheet();openFoodSearch('${escapeHtml(String(window._pendingScanMeal || 'lunch'))}')">Buscar por nombre</button>`);
       return;
     }
     openPortionEditor({ ...p, grams: 100 }, window._pendingScanMeal || 'lunch', -1);

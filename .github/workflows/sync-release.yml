@@ -34,7 +34,7 @@ jobs:
           export ANDROID_HOME="$ANDROID_SDK_ROOT"
           sed -i "s|/home/user/android-sdk|$ANDROID_SDK_ROOT|g" build.sh
           sed -i "s|/usr/lib/jvm/java-17-openjdk-amd64|$JAVA_HOME|g" build.sh
-          sed -i "s|PROJECT_DIR=/home/user/workspace/organizame|PROJECT_DIR=$PWD|g" build.sh
+          sed -i "s|PROJECT_DIR=/home/user/workspace/rutinal|PROJECT_DIR=$PWD|g" build.sh
           chmod +x build.sh
           ./build.sh
 
@@ -42,5 +42,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag }}
-          files: build/Organizame.apk
+          files: build/Rutinal.apk
           fail_on_unmatched_files: true

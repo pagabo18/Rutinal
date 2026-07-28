@@ -28,7 +28,8 @@ public class NotificationActionReceiver extends BroadcastReceiver {
             Intent again = new Intent(ctx, BlockNotificationReceiver.class);
             again.setAction("com.pagabo18.rutinal.BLOCK_ALARM");
             again.setData(android.net.Uri.parse("rutinal://alarm/snz/" + id + "/" + System.currentTimeMillis()));
-            again.putExtras(intent.getExtras());
+            android.os.Bundle extras = intent.getExtras();
+            if (extras != null) again.putExtras(extras);
             int flags = PendingIntent.FLAG_UPDATE_CURRENT;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags |= PendingIntent.FLAG_IMMUTABLE;
             PendingIntent pi = PendingIntent.getBroadcast(ctx, id, again, flags);
