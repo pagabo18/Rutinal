@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_root"
+    android:id="@+id/widget_food_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -9,42 +9,18 @@
     android:padding="14dp">
 
     <TextView
-        android:id="@+id/widget_ahora_kicker"
+        android:id="@+id/widget_food_kcal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="AHORA"
-        android:textAllCaps="true"
-        android:letterSpacing="0.12"
-        android:textColor="@color/widgetAccent"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:maxLines="1" />
-
-    <TextView
-        android:id="@+id/widget_current_label"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="1dp"
-        android:text="Sin bloque activo"
+        android:text="Abre Rutinal para ver tu día"
         android:textColor="@color/widgetText1"
-        android:textSize="14sp"
+        android:textSize="17sp"
         android:textStyle="bold"
-        android:maxLines="1"
-        android:ellipsize="end" />
-
-    <TextView
-        android:id="@+id/widget_current_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text=""
-        android:textColor="@color/widgetText2"
-        android:textSize="12sp"
         android:maxLines="1"
         android:ellipsize="end" />
 
     <ProgressBar
-        android:id="@+id/widget_ahora_progress"
+        android:id="@+id/widget_food_progress"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="4dp"
@@ -55,13 +31,14 @@
         android:visibility="gone" />
 
     <TextView
-        android:id="@+id/widget_next"
+        android:id="@+id/widget_food_macros"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="Sin más bloques hoy"
+        android:text=""
         android:textColor="@color/widgetText2"
         android:textSize="11sp"
         android:maxLines="1"
-        android:ellipsize="end" />
+        android:ellipsize="end"
+        android:visibility="gone" />
 </LinearLayout>

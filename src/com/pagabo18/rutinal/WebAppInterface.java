@@ -214,6 +214,15 @@ public class WebAppInterface {
         }
     }
 
+    /**
+     * Devuelve la cola de acciones generadas por los widgets (array JSON
+     * como string) y la borra atómicamente. "[]" si está vacía.
+     */
+    @JavascriptInterface
+    public String consumeWidgetActions() {
+        try { return WidgetActionQueue.consume(ctx); } catch (Exception e) { return "[]"; }
+    }
+
     @JavascriptInterface
     public String getState() {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);

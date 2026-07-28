@@ -47,6 +47,7 @@ public class AhoraWidgetProvider extends AppWidgetProvider {
         String currentLabel = "Sin bloque activo";
         String currentSub = "";
         String nextText = "Sin más bloques hoy";
+        int progressPct = -1; // -1 = sin bloque activo (barra oculta)
 
         try {
             JSONObject state = DataHelper.loadState(context);
@@ -61,6 +62,15 @@ public class AhoraWidgetProvider extends AppWidgetProvider {
                 if (cat != null && !cat.isEmpty()) sb.append(" · ").append(cat);
                 sb.append(" · quedan ").append(DataHelper.fmtDur(left));
                 currentSub = sb.toString();
+
+                // % transcurrido del bloque actual
+                int dur = cur.endMin - cur.startMin;
+                if (dur > 0) {
+                    int pct = (DataHelper.nowMin() - cur.startMin) * 100 / dur;
+                    if (pct < 0) pct = 0;
+                    if (pct > 100) pct = 100;
+                    progressPct = pct;
+                }
             }
 
             List<DataHelper.Block> next = DataHelper.nextBlocks(context, 1);
@@ -79,8 +89,18 @@ public class AhoraWidgetProvider extends AppWidgetProvider {
                 currentSub.isEmpty() ? View.GONE : View.VISIBLE);
         rv.setTextViewText(R.id.widget_next, nextText);
 
+        // Barra de progreso del bloque actual
+        if (progressPct >= 0) {
+            rv.setProgressBar(R.id.widget_ahora_progress, 100, progressPct, false);
+            rv.setViewVisibility(R.id.widget_ahora_progress, View.VISIBLE);
+        } else {
+            rv.setViewVisibility(R.id.widget_ahora_progress, View.GONE);
+        }
+
         Intent open = new Intent(context, MainActivity.class);
         open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        open.setData(android.net.Uri.parse("rutinal://open/hoy"));
+        open.putExtra("open_tab", "hoy");
         PendingIntent pi = PendingIntent.getActivity(context, 0, open,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         rv.setOnClickPendingIntent(R.id.widget_root, pi);

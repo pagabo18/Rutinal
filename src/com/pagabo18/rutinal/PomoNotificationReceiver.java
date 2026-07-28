@@ -39,6 +39,11 @@ public class PomoNotificationReceiver extends BroadcastReceiver {
                 body = "Empieza una nueva ronda de Pomodoros.";
                 accent = Color.parseColor("#3B82F6");
                 break;
+            case "timer":
+                title = "\u00a1Tiempo!";
+                body = "Tu temporizador termin\u00f3.";
+                accent = Color.parseColor("#F59E0B");
+                break;
             default: // focus
                 title = "Termina el Pomodoro";
                 body = describeNext(next);
