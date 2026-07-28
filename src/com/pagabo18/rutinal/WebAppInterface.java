@@ -123,6 +123,11 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public boolean hasNativeBarcodeScanner() {
+        return false;
+    }
+
+    @JavascriptInterface
     public String getState() {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         return sp.getString(K_STATE, "{}");

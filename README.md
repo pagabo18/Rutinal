@@ -2,7 +2,7 @@
 
 App Android local-first para organizar tu día, tus hábitos, tu Pomodoro y tu nutrición. Fork limpio de Organizame, sin widgets ni sync con Google Calendar. WebView + puente nativo.
 
-**Versión actual: v1.4** (versionCode 5)
+**Versión actual: v1.5** (versionCode 6)
 
 ## Qué incluye
 
@@ -16,12 +16,14 @@ Por categoría con racha, weekly achievements y estadísticas de 30 días.
 ### Pomodoro
 Timer con historial por categoría.
 
-### Comida (nuevo en v1.4)
+### Comida (mejorado en v1.5)
 - **Anillos concéntricos** de kcal, proteína, carbos y grasa con % vs meta
 - Estado **over-goal >100%** con pulso animado
-- **Búsqueda USDA + Open Food Facts** en paralelo (Foundation, SR Legacy, FNDDS + Branded)
-- Badges USDA-G / USDA-B / OFF en cada resultado
-- **Barcode**: OFF primero, USDA GTIN como fallback
+- **Base local de ~230 alimentos básicos** (huevo, claras, cortes de carne, platillos mexicanos...) con macros USDA: resultados instantáneos y sin conexión
+- **Búsqueda local + USDA + Open Food Facts en paralelo** (Foundation, SR Legacy, FNDDS + Branded), con traducción ES→EN de frases ("clara de huevo" → "egg white")
+- Badges LOCAL / USDA / OFF en cada resultado
+- **Escáner de código de barras**: nativo (CameraX + ML Kit) en el build Gradle, y **escáner web con la cámara del WebView** (BarcodeDetector) como fallback universal; entrada manual como último recurso
+- **Barcode**: OFF primero, USDA GTIN (coincidencia exacta) como fallback
 - **Mis platillos**: guarda combinaciones frecuentes
 - Editor de porción con macros por gramo
 
