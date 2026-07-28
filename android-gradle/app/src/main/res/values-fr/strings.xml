@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Rutinal</string>
+    <string name="action_done">Fait</string>
+    <string name="action_snooze_10">Reporter 10 min</string>
+    <string name="channel_blocks">Blocs</string>
+    <string name="channel_blocks_silent">Blocs (silencieux)</string>
+    <string name="channel_pomodoro">Pomodoro</string>
+    <string name="channel_habits">Rappel d\'habitudes</string>
+    <string name="channel_habits_desc">Rappel quotidien doux d\'habitudes. Sans son ni vibration.</string>
+    <string name="channel_blocks_desc">Notifications au début, à la fin et avant chaque bloc.</string>
+    <string name="channel_blocks_silent_desc">Blocs de week-end ou en mode silencieux. Sans son ni vibration.</string>
+    <string name="channel_pomodoro_desc">Alertes Pomodoro à la fin de chaque phase.</string>
+</resources>

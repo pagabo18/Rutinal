@@ -24,3 +24,14 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Gradle build artifacts
+android-gradle/**/build/
+android-gradle/.gradle/
+android-gradle/local.properties
+
+# Assets pesados de gradle (los originales viven en assets/web)
+android-gradle/app/src/main/assets/web/
+
+# Screenshots efímeros
+screenshot_*.png

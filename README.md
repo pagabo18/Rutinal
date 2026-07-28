@@ -1,68 +1,101 @@
-# Organizame
+# Rutinal
 
-App Android para organizar tu día a día con bloques de tiempo, hábitos e imprevistos. WebView + widgets nativos + notificaciones.
+App Android local-first para organizar tu día, tus hábitos, tu Pomodoro y tu nutrición. Fork limpio de Organizame, sin widgets ni sync con Google Calendar. WebView + puente nativo.
+
+**Versión actual: v1.4** (versionCode 5)
 
 ## Qué incluye
 
-- **Hoy**: card del bloque activo con progreso, siguiente bloque y hábitos.
-- **Día**: timeline por horas del día actual.
-- **Planificador semanal**: los 7 días de un vistazo.
-- **Hábitos**: por categoría, con racha y meta.
-- **Imprevistos**: eventos ad-hoc del día con su propio color.
-- **Plan de 8 semanas**: tareas semanales expandibles.
-- **Editor**: bloques, hábitos, imprevistos, categorías y ajustes editables.
-- **Modo oscuro / claro / sistema**.
-- **Exportar / importar / restablecer** todos los datos como JSON.
+### Hoy
+Card del bloque activo con progreso, hidratación (0/8 vasos), racha global y siguiente bloque.
 
-### Widgets nativos
+### Hábitos
+Por categoría con racha, weekly achievements y estadísticas de 30 días.
+**Hábito automático "Cumplí mi meta nutricional"**: se marca solo al final del día si tus totales caen dentro de tu tolerancia configurada (strict / balanced / flex). Cuenta hacia tu racha global.
 
-- **Ahora** (4×1): bloque activo con barra de progreso.
-- **Próximos** (4×2): los siguientes bloques del día.
-- **Hábitos** (4×2): checklist tocable sin abrir la app.
+### Pomodoro
+Timer con historial por categoría.
 
-### Notificaciones
+### Comida (nuevo en v1.4)
+- **Anillos concéntricos** de kcal, proteína, carbos y grasa con % vs meta
+- Estado **over-goal >100%** con pulso animado
+- **Búsqueda USDA + Open Food Facts** en paralelo (Foundation, SR Legacy, FNDDS + Branded)
+- Badges USDA-G / USDA-B / OFF en cada resultado
+- **Barcode**: OFF primero, USDA GTIN como fallback
+- **Mis platillos**: guarda combinaciones frecuentes
+- Editor de porción con macros por gramo
 
-- **5 min antes** de cada bloque: aviso previo.
-- **Al iniciar**: notificación con acciones "Listo" y "Posponer 10 min".
-- Programadas con `AlarmManager` exacto. Reprograma sola al editar o al reiniciar el teléfono.
+### Calendario
+Vista mensual con bloques, hábitos e imprevistos.
+
+### Editar
+Bloques, hábitos, imprevistos, categorías, plan de 8 semanas, nutrición (perfil + macros + tolerancia), ajustes.
+
+### Ajustes de nutrición
+Perfil (sexo, edad, altura, peso, %grasa, actividad, objetivo), split de macros (equilibrado / alto proteína / low carb), tolerancia. Campo para pegar tu USDA API key personal.
+
+### General
+- **Modo oscuro / claro / sistema**
+- **Multilenguaje**: es, en, pt-BR, fr
+- **Exportar / importar / restablecer** JSON
+- **Local-first**: todo vive en localStorage + SharedPreferences
 
 ## Estructura
 
 ```
-organizame/
+rutinal/
 ├── AndroidManifest.xml
-├── build.sh                    # Script de compilación
-├── assets/web/index.html       # UI completa (HTML + CSS + JS)
-├── src/com/gabriel/organizame/
-│   ├── MainActivity.java              # WebView + bridge
-│   ├── WebAppInterface.java           # Puente JS ↔ Java
-│   ├── DataHelper.java                # Modelo compartido
-│   ├── NotificationScheduler.java     # Programación de alarmas
-│   ├── BlockNotificationReceiver.java # Muestra la notificación
-│   ├── NotificationActionReceiver.java # Acciones Listo/Posponer
-│   ├── BootReceiver.java              # Reprograma al reiniciar
-│   ├── AhoraWidgetProvider.java
-│   ├── ProximosWidgetProvider.java
-│   ├── ProximosRemoteViewsService.java
-│   └── HabitosWidgetProvider.java
-└── res/
-    ├── drawable/, mipmap-*/, layout/, values/, xml/
+├── assets/web/
+│   ├── index.html          # UI completa (HTML + CSS + JS)
+│   └── i18n.js             # Traducciones runtime
+├── src/com/pagabo18/rutinal/
+│   ├── MainActivity.java
+│   ├── WebAppInterface.java
+│   ├── BarcodeScannerActivity.java   # CameraX + ML Kit
+│   └── ...
+├── res/
+├── android-gradle/         # Proyecto Gradle para builds firmados
+│   ├── build.gradle
+│   ├── settings.gradle
+│   └── app/
+│       ├── build.gradle    # versionCode 5, versionName "1.4"
+│       └── src/
+├── releases/
+│   ├── Rutinal-v1.4.apk    # 22 MB, firmado
+│   └── Rutinal-v1.4.aab    # 12 MB, para Play Store
+└── build.sh                # Script legacy (aapt manual)
 ```
 
-## Compilación
+## Build firmado v1.4
 
-Requiere Android SDK (build-tools 34) y JDK 17.
+Requiere JDK 17, Android SDK build-tools 34.0.0 y Gradle 8.5.
 
 ```bash
-./build.sh
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export ANDROID_HOME=/ruta/a/android-sdk
+export PATH=$JAVA_HOME/bin:$ANDROID_HOME/build-tools/34.0.0:$PATH
+
+# Configura tu keystore
+export RUTINAL_KEYSTORE_PATH=/ruta/a/tu-upload.keystore
+export RUTINAL_KEYSTORE_PASS='tu-password'
+
+# Copia los assets web al proyecto gradle
+rm -rf android-gradle/app/src/main/assets/web
+cp -r assets/web android-gradle/app/src/main/assets/web
+
+# Build
+cd android-gradle
+gradle assembleRelease bundleRelease --no-daemon
 ```
 
-El APK sale en `build/Organizame.apk`.
+Los artefactos salen en:
+- `android-gradle/app/build/outputs/apk/release/app-release.apk`
+- `android-gradle/app/build/outputs/bundle/release/app-release.aab`
 
-## Persistencia
+## APIs de nutrición
 
-- WebView usa `localStorage`.
-- El bridge `Android.saveState()` copia el estado a `SharedPreferences` para que widgets y notificaciones lean sin abrir el WebView.
+- **USDA FoodData Central**: `api.nal.usda.gov/fdc/v1/foods/search`. Con `DEMO_KEY` funciona con rate limit compartido; para uso intensivo registra una key gratis en [api.data.gov/signup](https://api.data.gov/signup/) y pégala en **Editar → Ajustes → USDA API key**.
+- **Open Food Facts**: `world.openfoodfacts.org/api/v2/`. Sin key. Bueno para productos europeos/latinos y barcode.
 
 ## Permisos requeridos
 
@@ -70,7 +103,25 @@ El APK sale en `build/Organizame.apk`.
 - `POST_NOTIFICATIONS` (Android 13+)
 - `SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`
 - `RECEIVE_BOOT_COMPLETED`
+- `CAMERA` (barcode scanner)
+
+## Changelog
+
+### v1.4 (jul 2026)
+- Anillos concéntricos con % y estado over-goal
+- Hábito automático "Cumplí mi meta nutricional"
+- Búsqueda USDA estratificada + merge con OFF
+- Barcode con fallback USDA GTIN
+- 25+ strings i18n nuevos (es/en/pt-BR/fr)
+- Fix crítico i18n: `dataset` no admite guiones → camelCase
+
+### v1.3
+- Sistema de nutrición base con perfil y macros
+- Editor de porción con macros por gramo
+
+### v1.0
+- Fork limpio de Organizame sin widgets ni Google Calendar
 
 ## Licencia
 
-MIT (o la que quieras poner).
+MIT
