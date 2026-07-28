@@ -148,6 +148,24 @@ public class WebAppInterface {
     }
 
     @JavascriptInterface
+    public void shareText(final String subject, final String text) {
+        if (text == null || text.isEmpty()) return;
+        try {
+            android.content.Intent send = new android.content.Intent(android.content.Intent.ACTION_SEND);
+            send.setType("text/plain");
+            send.putExtra(android.content.Intent.EXTRA_SUBJECT, subject == null ? "Rutinal" : subject);
+            send.putExtra(android.content.Intent.EXTRA_TEXT, text);
+            android.content.Intent chooser = android.content.Intent.createChooser(send, "Compartir");
+            if (activity != null) {
+                activity.startActivity(chooser);
+            } else {
+                chooser.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                ctx.startActivity(chooser);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
     public String getState() {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         return sp.getString(K_STATE, "{}");
