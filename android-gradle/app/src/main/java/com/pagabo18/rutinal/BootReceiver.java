@@ -13,8 +13,9 @@ public class BootReceiver extends BroadcastReceiver {
                 || "android.intent.action.LOCKED_BOOT_COMPLETED".equals(a)) {
             try { NotificationScheduler.scheduleAll(ctx); } catch (Exception ignored) {}
             try { NotificationScheduler.scheduleHabitReminder(ctx); } catch (Exception ignored) {}
+            try { NotificationScheduler.scheduleMealReminder(ctx); } catch (Exception ignored) {}
             try { NotificationScheduler.scheduleHydrationReminders(ctx); } catch (Exception ignored) {}
-            try { AhoraWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
+            try { WidgetRefresher.refreshAll(ctx); } catch (Exception ignored) {}
         }
     }
 }

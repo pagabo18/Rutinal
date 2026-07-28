@@ -32,12 +32,15 @@ public class NotificationScheduler {
     static final String K_ACTIVE_IDS = "active_ids";
     static final String K_POMO_ID = "pomo_id";
     static final String K_HABIT_TIME = "habit_reminder_hhmm"; // "HH:mm" o vacío
+    static final String K_MEAL_TIME = "meal_reminder_hhmm"; // "HH:mm" o vacío
+    static final String K_LAST_MEAL_LOG = "last_meal_log_date"; // "YYYY-MM-DD" del último registro de comida
     static final String K_HYD_TIMES = "hydration_times"; // JSON array de "HH:mm"
     // Rango de IDs para alarmas de hidratación (máx 20)
     public static final int HYD_ALARM_ID_BASE = 0x60001000;
     static final String K_DND_AUTO = "dnd_auto";
     static final String K_DND_PREV_FILTER = "dnd_prev_filter";
     public static final int HABIT_ALARM_ID = 0x60000001;
+    public static final int MEAL_ALARM_ID = 0x60000002;
 
     public static final String EXTRA_LABEL = "label";
     public static final String EXTRA_START = "start";
@@ -110,6 +113,76 @@ public class NotificationScheduler {
     public static String getHabitReminderTime(Context ctx) {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
         return sp.getString(K_HABIT_TIME, "");
+    }
+
+    // ----- Recordatorio de comida -----
+
+    /** Guarda la hora y programa la próxima. hhmm vacío o null cancela. */
+    public static void setMealReminderTime(Context ctx, String hhmm) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        if (hhmm == null || hhmm.isEmpty()) {
+            sp.edit().remove(K_MEAL_TIME).apply();
+            cancelMealReminder(ctx);
+        } else {
+            sp.edit().putString(K_MEAL_TIME, hhmm).apply();
+            scheduleMealReminder(ctx);
+        }
+    }
+
+    public static String getMealReminderTime(Context ctx) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        return sp.getString(K_MEAL_TIME, "");
+    }
+
+    /** Guarda la fecha (YYYY-MM-DD) del último registro de comida. */
+    public static void setLastMealLogDate(Context ctx, String dateKey) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        sp.edit().putString(K_LAST_MEAL_LOG, dateKey == null ? "" : dateKey).apply();
+    }
+
+    public static String getLastMealLogDate(Context ctx) {
+        SharedPreferences sp = ctx.getSharedPreferences(PREFS_ALARMS, Context.MODE_PRIVATE);
+        return sp.getString(K_LAST_MEAL_LOG, "");
+    }
+
+    public static void scheduleMealReminder(Context ctx) {
+        ensureHabitChannel(ctx);
+        String hhmm = getMealReminderTime(ctx);
+        if (hhmm == null || hhmm.isEmpty()) return;
+        int colon = hhmm.indexOf(':');
+        if (colon < 0) return;
+        int hh, mm;
+        try {
+            hh = Integer.parseInt(hhmm.substring(0, colon));
+            mm = Integer.parseInt(hhmm.substring(colon + 1));
+        } catch (Exception e) { return; }
+
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+
+        Calendar target = Calendar.getInstance();
+        target.set(Calendar.HOUR_OF_DAY, hh);
+        target.set(Calendar.MINUTE, mm);
+        target.set(Calendar.SECOND, 0);
+        target.set(Calendar.MILLISECOND, 0);
+        if (target.getTimeInMillis() <= System.currentTimeMillis()) {
+            target.add(Calendar.DAY_OF_YEAR, 1);
+        }
+
+        Intent i = new Intent(ctx, MealReminderReceiver.class);
+        i.setAction("com.pagabo18.rutinal.MEAL_REMINDER");
+        i.setData(android.net.Uri.parse("rutinal://meal/" + MEAL_ALARM_ID));
+        schedule(am, ctx, target.getTimeInMillis(), i, MEAL_ALARM_ID);
+    }
+
+    public static void cancelMealReminder(Context ctx) {
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+        Intent i = new Intent(ctx, MealReminderReceiver.class);
+        i.setAction("com.pagabo18.rutinal.MEAL_REMINDER");
+        i.setData(android.net.Uri.parse("rutinal://meal/" + MEAL_ALARM_ID));
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, MEAL_ALARM_ID, i, piFlags(true));
+        if (pi != null) am.cancel(pi);
     }
 
     // ----- No Molestar automático -----

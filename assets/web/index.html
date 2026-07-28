@@ -245,12 +245,15 @@
 
     /* Solo la sección activa: .active es imprescindible para no pisar
        el display:none de las secciones ocultas (especificidad de ID) */
-    #tab-hoy.active, #tab-comida.active {
+    #tab-hoy.active, #tab-comida.active, #tab-habitos.active {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       column-gap: 24px;
       align-items: start;
     }
+    #tab-habitos > .split-col-a { grid-column: 1; }
+    #tab-habitos > .split-col-b { grid-column: 2; }
+    #tab-habitos > .split-full { grid-column: 1 / -1; }
     /* Título y fecha de Comida ocupan todo el ancho */
     #tab-comida > .h-title, #tab-comida > #food-date-label { grid-column: 1 / -1; }
     #tab-hoy > .split-col-a, #tab-comida > .split-col-a { grid-column: 1; }
@@ -1389,6 +1392,7 @@
   }
   .meal-empty:active { background: var(--surface-2); }
   .meal-empty.meal-add-more { padding: 8px; font-size: 11px; border-style: dashed; opacity: 0.85; }
+  .food-inline-link { color: var(--accent, #3B82F6); cursor: pointer; font-weight: 600; }
 
   /* Food search modal */
   .food-search-input {
@@ -1826,7 +1830,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.7 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.8 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try { if (window.Android && typeof window.Android.saveState === 'function') { const b = document.getElementById('preview-banner'); if (b) b.style.display = 'none'; } } catch(e){}
@@ -1876,6 +1880,7 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
   <!-- DÍA (timeline por horas) -->
   <!-- HÁBITOS -->
   <section id="tab-habitos">
+    <div class="split-col split-col-a">
     <div id="hydration-card" class="habit-card" style="margin-bottom:16px;padding:14px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:10px;">
@@ -1916,8 +1921,12 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
       </div>
     </div>
 
-    <h2>Hoy <span class="h2-btn" id="add-habit">+ Nuevo</span></h2>
+    </div>
+    <div class="split-col split-col-b">
+    <h2 style="margin-top:4px;">Hoy <span class="h2-btn" id="add-habit">+ Nuevo</span></h2>
     <div id="habits-list"></div>
+    </div>
+    <div class="split-full">
     <h2>Estadísticas</h2>
     <div class="stats">
       <div class="stat"><div class="lbl">Hoy</div><div class="num" id="st-today">0</div><div class="sub" id="st-today-sub">—</div></div>
@@ -1927,6 +1936,10 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
     <div class="chart-card">
       <div class="chart-title">Últimos 30 días<span class="chart-val" id="ch30-val">0%</span></div>
       <svg class="chart" id="ch30" viewBox="0 0 320 90" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="chart-card" id="cross-stats-card" style="display:none;">
+      <div class="chart-title">Hábitos × Nutrición</div>
+      <div id="cross-stats" style="font-size:13px;color:var(--text-2);line-height:1.6;"></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Actividad<span class="chart-val" id="heatmap-val">racha 0</span></div>
@@ -1954,6 +1967,7 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
       <svg class="chart" id="im-chart" viewBox="0 0 320 90" preserveAspectRatio="none"></svg>
     </div>
     <div id="impr-list" style="margin-top:8px;"></div>
+    </div>
   </section>
 
   <!-- CALENDARIO (unificado: Día · Semana · Mes) -->
@@ -2319,6 +2333,16 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
         </div>
         <div id="habit-reminder-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
       </div>
+      <div class="setting" id="meal-reminder-setting" style="display:none;">
+        <div class="setting-label">Recordatorio de comida</div>
+        <div style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;">Si a la hora que elijas todavía no has registrado nada de comida, te lo recordamos con un aviso suave.</div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="time" id="meal-reminder-time" class="field-input" style="flex:1; max-width:140px;">
+          <button class="btn-secondary" id="meal-reminder-save">Guardar</button>
+          <button class="btn-secondary" id="meal-reminder-clear" style="padding:8px 12px;">Quitar</button>
+        </div>
+        <div id="meal-reminder-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
+      </div>
       <div class="setting">
         <div class="setting-label">Modo Fin de Semana</div>
         <div style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;">Los sábados y domingos, tu horario cambia automáticamente al de fin de semana. Activa esta opción para además recibir las notificaciones de bloques en silencio (sin sonido ni vibración) esos días.</div>
@@ -2383,6 +2407,11 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
           <button class="btn-secondary" id="btn-undo-import" style="display:none;">Deshacer última importación</button>
           <button class="btn-danger" id="btn-reset">Restablecer todo</button>
         </div>
+        <label id="auto-backup-row" style="display:none; align-items:center; gap:10px; cursor:pointer; margin-top:10px;">
+          <input type="checkbox" id="auto-backup-toggle" style="width:18px; height:18px;">
+          <span style="font-size:14px; color:var(--text-2);">Respaldo automático semanal en Descargas</span>
+        </label>
+        <div id="auto-backup-status" style="font-size:12px; color:var(--text-3); margin-top:4px;"></div>
       </div>
       <div class="setting">
         <div class="setting-label">Sobre</div>
@@ -3522,6 +3551,13 @@ function isDayPerfect(dateKey, habits, log) {
   }
   return true;
 }
+// Pausas de racha (vacaciones / descanso): días neutros que no rompen
+// ni suman la racha. Array de {from, to} en YYYY-MM-DD inclusive.
+function streakPauses() { return S.get('streak_pauses', []); }
+function isStreakPaused(dateKey) {
+  return streakPauses().some(p => p.from <= dateKey && dateKey <= p.to);
+}
+
 // Cuenta días perfectos consecutivos hasta hoy (o ayer si hoy aún no está completo)
 function calcGlobalStreak() {
   const habits = loadHabitsWithVirtual();
@@ -3530,12 +3566,13 @@ function calcGlobalStreak() {
   let streak = 0;
   const today = new Date(); today.setHours(0,0,0,0);
   const todayKey = keyDate(today);
-  const todayPerfect = isDayPerfect(todayKey, habits, log);
+  const todayPerfect = !isStreakPaused(todayKey) && isDayPerfect(todayKey, habits, log);
   // Empezamos desde hoy si es perfecto, si no desde ayer (hoy aún puede completarse)
   const startOffset = todayPerfect ? 0 : 1;
   for (let i = startOffset; i < 400; i++) {
     const d = new Date(today); d.setDate(today.getDate() - i);
     const k = keyDate(d);
+    if (isStreakPaused(k)) continue; // día en pausa: ni suma ni rompe
     if (isDayPerfect(k, habits, log)) streak++;
     else break;
   }
@@ -3821,6 +3858,63 @@ function renderStreakCard() {
   }
   // Card apagado si racha rota (0) y día aún no completado
   if (!p.perfect && streak === 0 && p.done < p.total) card.classList.add('broken');
+
+  // Aviso de pausa activa + acceso a "modo vacaciones"
+  if (isStreakPaused(keyDate())) {
+    hint.textContent = '⏸ Racha en pausa (modo descanso): hoy no suma ni rompe tu racha.';
+  }
+  let pauseLink = document.getElementById('streak-pause-link');
+  if (!pauseLink) {
+    pauseLink = document.createElement('div');
+    pauseLink.id = 'streak-pause-link';
+    pauseLink.className = 'food-inline-link';
+    pauseLink.style.cssText = 'font-size:11px;margin-top:8px;text-align:right;';
+    card.appendChild(pauseLink);
+    pauseLink.addEventListener('click', openStreakPauseSheet);
+  }
+  pauseLink.textContent = isStreakPaused(keyDate()) ? 'Gestionar pausa ›' : '⏸ Pausar racha (vacaciones) ›';
+}
+
+function openStreakPauseSheet() {
+  const pauses = streakPauses();
+  const today = keyDate();
+  const rows = pauses.length ? pauses.map((pz, i) => `
+    <div class="meal-item" style="cursor:default;">
+      <div class="meal-item-info"><div class="meal-item-name">${pz.from} → ${pz.to}</div>
+      <div class="meal-item-meta">${pz.to >= today ? 'Activa o futura' : 'Pasada'}</div></div>
+      <button class="food-edit-btn" data-del-pause="${i}" title="Eliminar">✕</button>
+    </div>`).join('') : '<div class="food-loader">Sin pausas programadas.</div>';
+  const in7 = new Date(); in7.setDate(in7.getDate() + 6);
+  const body = `
+    <p style="color:var(--text-3);font-size:13px;margin-bottom:10px;">Los días en pausa no rompen tu racha ni suman puntos: perfectos para vacaciones o semanas de descanso.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><span class="fe-lbl2" style="text-align:left;">Desde</span><input type="date" class="field-input" id="sp-from" value="${today}"/></div>
+      <div><span class="fe-lbl2" style="text-align:left;">Hasta</span><input type="date" class="field-input" id="sp-to" value="${keyDate(in7)}"/></div>
+    </div>
+    <button class="btn-primary" id="sp-add" style="width:100%;margin-top:10px;">Programar pausa</button>
+    <div class="fe-lbl" style="font-weight:600;margin-top:14px;">Pausas</div>
+    ${rows}`;
+  openSheet('Pausar racha', body);
+  document.getElementById('sp-add').addEventListener('click', () => {
+    const from = document.getElementById('sp-from').value;
+    const to = document.getElementById('sp-to').value;
+    if (!from || !to || to < from) { alert('Revisa las fechas.'); return; }
+    const list = streakPauses();
+    list.push({ from, to });
+    S.set('streak_pauses', list);
+    closeSheet();
+    renderStreakCard();
+  });
+  document.querySelectorAll('[data-del-pause]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const list = streakPauses();
+      list.splice(parseInt(btn.dataset.delPause), 1);
+      S.set('streak_pauses', list);
+      closeSheet();
+      renderStreakCard();
+      openStreakPauseSheet();
+    });
+  });
 }
 
 function renderAchievements() {
@@ -3991,7 +4085,72 @@ function renderHabitos() {
 
   drawChart30(habits, log);
   drawHeatmap(habits, log, best);
+  renderCrossStats(habits, log);
   renderImprSection();
+}
+
+// Correlaciones simples hábitos × nutrición (30 días, todo local)
+function renderCrossStats(habits, log) {
+  const card = document.getElementById('cross-stats-card');
+  const cont = document.getElementById('cross-stats');
+  if (!card || !cont) return;
+  const gymHabits = habits.filter(h => h.cat === 'gym').map(h => h.id);
+  const rows = [];
+  // Recolectar 30 días: totales de comida + si entrenó
+  const withFood = [], gymDays = [], restDays = [];
+  for (let i = 1; i <= 30; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const k = keyDate(d);
+    const t = (typeof dayMealTotals === 'function') ? dayMealTotals(k) : null;
+    if (!t) continue;
+    withFood.push({ k, t });
+    if (gymHabits.length && log[k] && gymHabits.some(id => log[k][id])) gymDays.push(t);
+    else restDays.push(t);
+  }
+  const avg = (arr, f) => Math.round(arr.reduce((s, x) => s + x[f], 0) / arr.length);
+  if (withFood.length >= 5 && gymDays.length >= 3 && restDays.length >= 3) {
+    const dk = avg(gymDays, 'kcal') - avg(restDays, 'kcal');
+    rows.push(`🏋️ Días con gym comes en promedio <b>${avg(gymDays, 'kcal')} kcal</b> (${dk >= 0 ? '+' : ''}${dk} vs días sin gym).`);
+    const dp = avg(gymDays, 'protein') - avg(restDays, 'protein');
+    rows.push(`🥩 Tu proteína promedio ${dp >= 0 ? 'sube' : 'baja'} <b>${Math.abs(dp)} g</b> los días que entrenas (${avg(gymDays, 'protein')}g vs ${avg(restDays, 'protein')}g).`);
+  }
+  // Día de la semana donde más se rompe el día perfecto (60 días)
+  if (habits.length) {
+    const failByDow = [0,0,0,0,0,0,0], countByDow = [0,0,0,0,0,0,0];
+    for (let i = 1; i <= 60; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const k = keyDate(d);
+      if (!log[k]) continue;
+      countByDow[d.getDay()]++;
+      if (!isDayPerfect(k, habits, log)) failByDow[d.getDay()]++;
+    }
+    let worst = -1, worstRate = 0;
+    for (let dw = 0; dw < 7; dw++) {
+      if (countByDow[dw] >= 3) {
+        const r = failByDow[dw] / countByDow[dw];
+        if (r > worstRate) { worstRate = r; worst = dw; }
+      }
+    }
+    if (worst >= 0 && worstRate > 0.3) {
+      const names = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+      rows.push(`📉 El día que más se te escapan los hábitos es el <b>${names[worst]}</b> (${Math.round(worstRate * 100)}% de las veces).`);
+    }
+  }
+  // Cumplimiento de meta nutricional últimos 14 días
+  if (typeof nutriMetForDay === 'function' && hasNutriProfile() && withFood.length >= 5) {
+    let met = 0, tot = 0;
+    for (let i = 1; i <= 14; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const k = keyDate(d);
+      if (!dayMealTotals(k)) continue;
+      tot++;
+      if (nutriMetForDay(k)) met++;
+    }
+    if (tot >= 3) rows.push(`🎯 Cumpliste tu meta nutricional <b>${met} de ${tot}</b> días registrados en las últimas 2 semanas.`);
+  }
+  if (!rows.length) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  cont.innerHTML = rows.map(r => `<div style="margin-bottom:6px;">${r}</div>`).join('');
 }
 
 function drawHeatmap(habits, log, bestStreak) {
@@ -4473,6 +4632,37 @@ function renderAjustes() {
   } else {
     hbox.style.display = 'none';
   }
+  // Respaldo automático (solo con puente nativo)
+  const abRow = document.getElementById('auto-backup-row');
+  if (abRow) {
+    if (window.Android && typeof window.Android.saveTextFile === 'function') {
+      abRow.style.display = 'flex';
+      const abTog = document.getElementById('auto-backup-toggle');
+      const abSt = document.getElementById('auto-backup-status');
+      abTog.checked = !!S.get('auto_backup', true);
+      const abLast = S.get('auto_backup_last', 0);
+      if (abSt) abSt.textContent = abLast ? ('Último respaldo automático: ' + new Date(abLast).toLocaleDateString('es-MX')) : 'Aún sin respaldos automáticos.';
+      if (!abTog.dataset.bound) {
+        abTog.dataset.bound = '1';
+        abTog.addEventListener('change', () => { S.set('auto_backup', abTog.checked); if (abTog.checked) maybeAutoBackup(); });
+      }
+    }
+  }
+  // Recordatorio de comida (solo con puente nativo)
+  const mbox = document.getElementById('meal-reminder-setting');
+  if (mbox) {
+    if (typeof window.Android !== 'undefined' && window.Android.getMealReminder) {
+      mbox.style.display = '';
+      let mcur = '';
+      try { mcur = window.Android.getMealReminder() || ''; } catch(e) {}
+      const mIn2 = document.getElementById('meal-reminder-time');
+      const mSt2 = document.getElementById('meal-reminder-status');
+      if (mIn2) mIn2.value = mcur;
+      if (mSt2) mSt2.textContent = mcur ? `Activo a las ${mcur}: solo avisa si no has registrado comida.` : 'Sin recordatorio.';
+    } else {
+      mbox.style.display = 'none';
+    }
+  }
   // Hidratación
   try {
     const hs = hydSettings();
@@ -4517,6 +4707,64 @@ function renderAjustes() {
     }
   } catch (e) {}
 }
+// Export completo de la app (usado por export manual y respaldo automático)
+function buildFullExport() {
+  const data = {};
+  S.allKeys().forEach(k => {
+    if (k.startsWith('__')) return;
+    const v = S.get(k, undefined);
+    if (v !== undefined) data[k] = v;
+  });
+  data.__exportedAt = new Date().toISOString();
+  data.__version = 4;
+  data.__appVersion = '24.0';
+  return data;
+}
+
+// Respaldo automático semanal a Descargas (requiere puente nativo)
+function maybeAutoBackup() {
+  try {
+    if (!S.get('auto_backup', true)) return;
+    if (!(window.Android && typeof window.Android.saveTextFile === 'function')) return;
+    const last = S.get('auto_backup_last', 0);
+    if (Date.now() - last < 7 * 24 * 60 * 60 * 1000) return;
+    const ts = new Date().toISOString().slice(0, 10);
+    const saved = window.Android.saveTextFile(`rutinal-auto-backup-${ts}.json`, JSON.stringify(buildFullExport()));
+    if (saved) S.set('auto_backup_last', Date.now());
+  } catch (e) {}
+}
+setTimeout(maybeAutoBackup, 6000);
+
+// Archivos JSON abiertos/compartidos con la app (entrega el nativo)
+window.onImportFile = function(text) {
+  try {
+    if (!text || typeof text !== 'string') return;
+    let data = null;
+    try { data = JSON.parse(text); } catch (e) { alert('El archivo no es un JSON válido.'); return; }
+    // ¿Export de alimentos de Rutinal?
+    if ((data && data.type === 'rutinal-foods') || Array.isArray(data)) {
+      const r = importFoodsFromJson(text);
+      if (r.ok) alert(`Alimentos importados: ${r.added} nuevos, ${r.updated} actualizados.`);
+      else alert('No se pudo importar: ' + r.error);
+      return;
+    }
+    // ¿Respaldo completo de la app?
+    if (data && (data.__exportedAt || data.habits || data.sch_weekday)) {
+      if (!confirm('Este archivo parece un respaldo completo de Rutinal. ¿Importarlo? Tus datos actuales se respaldan y podrás deshacer desde Ajustes.')) return;
+      const cur = {};
+      try { S.allKeys().forEach(k => { const v = S.get(k, undefined); if (v !== undefined) cur[k] = v; }); } catch (e) {}
+      S.set('__lastPreImportBackup', { at: new Date().toISOString(), data: cur });
+      const keep = ['theme', 'rutinal_lang', 'usda_api_key'];
+      S.allKeys().forEach(k => { if (!k.startsWith('__') && !keep.includes(k)) S.del(k); });
+      Object.keys(data).forEach(k => { if (!k.startsWith('__')) S.set(k, data[k]); });
+      alert('Respaldo importado. La app se recargará.');
+      location.reload();
+      return;
+    }
+    alert('Formato no reconocido.');
+  } catch (e) { console.error('onImportFile', e); }
+};
+
 function bindAjustesOnce() {
   // Hidratación: toggle mostrar/ocultar
   const hydEnEl = document.getElementById('hyd-enabled');
@@ -4603,17 +4851,14 @@ function bindAjustesOnce() {
     });
   });
   document.getElementById('btn-export').addEventListener('click', () => {
-    // Exporta TODAS las keys de la app (excluye internas del navegador si las hubiera)
-    const data = {};
-    const skipPrefixes = ['__'];
-    S.allKeys().forEach(k => {
-      if (skipPrefixes.some(p => k.startsWith(p))) return;
-      const v = S.get(k, undefined);
-      if (v !== undefined) data[k] = v;
-    });
-    data.__exportedAt = new Date().toISOString();
-    data.__version = 4;
-    data.__appVersion = '24.0';
+    const data = buildFullExport();
+    // Con puente nativo: guardar directo en Descargas
+    if (window.Android && typeof window.Android.saveTextFile === 'function') {
+      const ts2 = new Date().toISOString().slice(0, 10);
+      let saved = '';
+      try { saved = window.Android.saveTextFile(`rutinal-backup-${ts2}.json`, JSON.stringify(data, null, 2)) || ''; } catch (e) {}
+      if (saved) { alert('Respaldo guardado en Descargas: ' + saved); return; }
+    }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -4742,6 +4987,23 @@ function bindAjustesOnce() {
     try { window.Android && window.Android.setHabitReminder && window.Android.setHabitReminder(''); } catch(e) {}
     hIn.value = '';
     hSt.textContent = 'Sin recordatorio.';
+  });
+  // Recordatorio de comida (puente nativo)
+  const mSave = document.getElementById('meal-reminder-save');
+  const mClear = document.getElementById('meal-reminder-clear');
+  const mIn = document.getElementById('meal-reminder-time');
+  const mSt = document.getElementById('meal-reminder-status');
+  if (mSave) mSave.addEventListener('click', () => {
+    const v = (mIn.value || '').trim();
+    if (!v) { alert('Elige una hora.'); return; }
+    try { window.Android && window.Android.setMealReminder && window.Android.setMealReminder(v); } catch(e) {}
+    mSt.textContent = `Activo a las ${v}: solo avisa si no has registrado comida.`;
+    if (navigator.vibrate) navigator.vibrate(15);
+  });
+  if (mClear) mClear.addEventListener('click', () => {
+    try { window.Android && window.Android.setMealReminder && window.Android.setMealReminder(''); } catch(e) {}
+    mIn.value = '';
+    mSt.textContent = 'Sin recordatorio.';
   });
   const dTog = document.getElementById('dnd-toggle');
   const dLbl = document.getElementById('dnd-toggle-lbl');
@@ -7198,9 +7460,19 @@ if (!pomoState) {
 }
 if (pomoState && typeof pomoState.cat === 'undefined') { pomoState.cat = null; }
 function pomoSavedSessions() { return S.get('pomo_sessions', []); }
+// Categoría del bloque activo ahora mismo (para etiquetar el Pomodoro solo)
+function currentBlockCat() {
+  try {
+    const now = new Date();
+    const nm = now.getHours() * 60 + now.getMinutes();
+    const b = scheduleForDate(now).find(x => timeToMin(x.start) <= nm && nm < timeToMin(x.end));
+    return (b && b.cat) ? b.cat : null;
+  } catch (e) { return null; }
+}
 function pomoLogSession() {
   const arr = pomoSavedSessions();
-  arr.push({ ts: Date.now(), phase: 'focus', minutes: POMO.focus, cat: pomoState.cat || null });
+  // Si el usuario no eligió categoría, hereda la del bloque activo
+  arr.push({ ts: Date.now(), phase: 'focus', minutes: POMO.focus, cat: pomoState.cat || currentBlockCat() || null });
   S.set('pomo_sessions', arr);
 }
 function renderPomoCatPicker() {
@@ -7572,11 +7844,202 @@ function todaysMeals() {
   const log = mealLog();
   return log[k] || { breakfast: [], lunch: [], dinner: [], snack: [] };
 }
+function yesterdayMeals() {
+  const d = new Date(); d.setDate(d.getDate() - 1);
+  return mealLog()[keyDate(d)] || null;
+}
+function yesterdayHasMeal(mealId) {
+  const y = yesterdayMeals();
+  return !!(y && (y[mealId] || []).length);
+}
+// Copia las comidas de ayer a hoy. mealId concreto, o null = día completo.
+function copyMealsFromYesterday(mealId) {
+  const y = yesterdayMeals();
+  if (!y) return;
+  const meals = todaysMeals();
+  const ids = mealId ? [mealId] : MEALS.map(m => m.id);
+  let copied = 0;
+  ids.forEach(id => {
+    (y[id] || []).forEach(it => {
+      meals[id] = meals[id] || [];
+      meals[id].push({ ...it, ts: Date.now() });
+      copied++;
+    });
+  });
+  if (!copied) return;
+  saveTodaysMeals(meals);
+  renderComida();
+}
+
+/* ---------- Unidades naturales de porción ---------- */
+// Heurística por nombre y categoría: pesos típicos USDA/label mexicano.
+const NATURAL_UNIT_RULES = [
+  [/clara/,                          [['pieza', 33]]],
+  [/yema/,                           [['pieza', 17]]],
+  [/huevo/,                          [['pieza', 50]]],
+  [/tortilla de harina/,             [['pieza', 45]]],
+  [/tortilla/,                       [['pieza', 30]]],
+  [/tostada/,                        [['pieza', 13]]],
+  [/bolillo|birote|telera/,          [['pieza', 60]]],
+  [/pan de caja|pan blanco|pan integral|pan tostado|rebanada/, [['rebanada', 25]]],
+  [/concha|dona|cuernito|pan dulce|muffin|bisquet|croissant/,  [['pieza', 70]]],
+  [/galleta/,                        [['pieza', 10]]],
+  [/queso.*rebanad|americano/,       [['rebanada', 20]]],
+  [/jamon|salami|mortadela|pastrami/,[['rebanada', 20]]],
+  [/tocino/,                         [['tira', 12]]],
+  [/salchicha/,                      [['pieza', 45]]],
+  [/platano macho/,                  [['pieza', 200]]],
+  [/platano|banana/,                 [['pieza', 118]]],
+  [/manzana/,                        [['pieza', 180]]],
+  [/naranja/,                        [['pieza', 130]]],
+  [/limon/,                          [['pieza', 60]]],
+  [/aguacate/,                       [['pieza', 140], ['mitad', 70]]],
+  [/mandarina/,                      [['pieza', 90]]],
+  [/aceite|manteca|margarina/,       [['cucharada', 14], ['cucharadita', 5]]],
+  [/mayonesa|aderezo|crema de cacahuate|mantequilla de|tahini|nutella/, [['cucharada', 16]]],
+  [/mantequilla/,                    [['cucharada', 14], ['cucharadita', 5]]],
+  [/azucar/,                         [['cucharada', 12], ['cucharadita', 4]]],
+  [/miel|mermelada|cajeta|lechera/,  [['cucharada', 21]]],
+  [/taco|flauta/,                    [['pieza', 90]]],
+  [/quesadilla|sope|gordita|empanada/,[['pieza', 110]]],
+  [/tamal/,                          [['pieza', 130]]],
+  [/enchilada|enfrijolada|entomatada/,[['pieza', 90]]],
+  [/torta |pambazo|sandwich|hamburguesa/, [['pieza', 250]]],
+  [/pizza/,                          [['rebanada', 107]]],
+  [/refresco|cerveza|energetica|isotonica/, [['lata', 355], ['botella 600ml', 600]]],
+  [/leche|jugo|agua de|licuado|smoothie|naranjada|limonada|te helado|horchata|jamaica|tamarindo/, [['vaso', 240]]],
+  [/cafe|capuchino|latte|americano|chocolate caliente|atole|champurrado/, [['taza', 240]]],
+  [/tequila|mezcal|ron|whisky|vodka/,[['caballito', 45]]],
+  [/vino/,                           [['copa', 150]]],
+  [/arroz|pasta|espagueti|fideo|quinoa|avena cocida|cuscus|frijoles|lentejas|garbanzos/, [['taza', 160], ['media taza', 80]]],
+  [/avena/,                          [['taza', 80], ['cucharada', 10]]],
+  [/cereal|granola|muesli/,          [['taza', 40]]],
+  [/proteina|whey|caseina/,          [['scoop', 30]]],
+  [/sopa|caldo|crema de|pozole|menudo/, [['plato', 300], ['taza', 240]]],
+];
+const NATURAL_UNIT_BY_CAT = {
+  fruta: [['pieza', 120]], verdura: [['taza', 100]], frutoseco: [['puñado', 28], ['cucharada', 15]],
+  dulce: [['pieza', 40]], platillo: [['plato', 250]], bebida: [['vaso', 240]],
+  pescado: [['filete', 120]], carne: [['porción chica', 90], ['porción grande', 150]],
+};
+function naturalUnits(item) {
+  const n = normalizeFoodQuery((item && item.name) || '');
+  for (const [re, units] of NATURAL_UNIT_RULES) {
+    if (re.test(n)) return units.map(([label, g]) => ({ label, g }));
+  }
+  const cat = foodCatOf(item);
+  if (cat && NATURAL_UNIT_BY_CAT[cat]) return NATURAL_UNIT_BY_CAT[cat].map(([label, g]) => ({ label, g }));
+  return [];
+}
+
+/* ---------- Tendencias de nutrición y peso ---------- */
+function dayMealTotals(dateKey) {
+  const day = mealLog()[dateKey];
+  if (!day) return null;
+  let kcal = 0, protein = 0, carbs = 0, fat = 0, items = 0;
+  ['breakfast','lunch','dinner','snack'].forEach(mid => {
+    (day[mid] || []).forEach(it => {
+      const m = calcItemMacros(it);
+      kcal += m.kcal; protein += m.protein; carbs += m.carbs; fat += m.fat; items++;
+    });
+  });
+  return items ? { kcal: Math.round(kcal), protein: Math.round(protein), carbs: Math.round(carbs), fat: Math.round(fat) } : null;
+}
+
+function openNutriTrends() {
+  const targets = (typeof hasNutriProfile === 'function' && hasNutriProfile()) ? calcNutriTargets(nutriProfile()) : null;
+  const goalK = targets ? targets.kcal : (parseInt(S.get('food_goal_kcal', 0)) || 2000);
+
+  // Últimos 14 días
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push({ key: keyDate(d), dow: 'DLMMJVS'[d.getDay()], t: dayMealTotals(keyDate(d)) });
+  }
+  const withData = days.filter(d => d.t);
+  const last7 = days.slice(-7).filter(d => d.t);
+  const avg = (arr, f) => arr.length ? Math.round(arr.reduce((s, d) => s + d.t[f], 0) / arr.length) : 0;
+
+  // Barras de kcal (SVG 320x120)
+  const maxK = Math.max(goalK * 1.2, ...days.map(d => d.t ? d.t.kcal : 0), 1);
+  const bw = 320 / 14;
+  const bars = days.map((d, i) => {
+    if (!d.t) return `<text x="${i * bw + bw / 2}" y="112" font-size="7" text-anchor="middle" fill="var(--text-3)">${d.dow}</text>`;
+    const h = Math.max(2, (d.t.kcal / maxK) * 95);
+    const over = targets && d.t.kcal > goalK * 1.05;
+    return `<rect x="${(i * bw + 2).toFixed(1)}" y="${(100 - h).toFixed(1)}" width="${(bw - 4).toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${over ? '#EF4444' : 'var(--accent, #3B82F6)'}" opacity="0.85"/>
+      <text x="${i * bw + bw / 2}" y="112" font-size="7" text-anchor="middle" fill="var(--text-3)">${d.dow}</text>`;
+  }).join('');
+  const goalY = 100 - (goalK / maxK) * 95;
+  const kcalChart = `<svg viewBox="0 0 320 118" style="width:100%;">
+    ${bars}
+    <line x1="0" y1="${goalY.toFixed(1)}" x2="320" y2="${goalY.toFixed(1)}" stroke="#22C55E" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="318" y="${(goalY - 3).toFixed(1)}" font-size="8" text-anchor="end" fill="#22C55E">meta ${goalK}</text>
+  </svg>`;
+
+  // Peso (línea, últimos 60 días con datos)
+  const wlog = S.get('weight_log', {});
+  const wkeys = Object.keys(wlog).sort().slice(-60);
+  let weightChart = '<div class="food-loader">Registra tu peso abajo para ver la tendencia.</div>';
+  if (wkeys.length >= 2) {
+    const ws = wkeys.map(k => wlog[k]);
+    const wmin = Math.min(...ws) - 0.5, wmax = Math.max(...ws) + 0.5;
+    const pts = wkeys.map((k, i) => `${(i / (wkeys.length - 1) * 316 + 2).toFixed(1)},${(95 - (wlog[k] - wmin) / (wmax - wmin) * 85 + 5).toFixed(1)}`).join(' ');
+    weightChart = `<svg viewBox="0 0 320 110" style="width:100%;">
+      <polyline points="${pts}" fill="none" stroke="#A855F7" stroke-width="2" stroke-linejoin="round"/>
+      <text x="2" y="10" font-size="9" fill="var(--text-3)">${wmax.toFixed(1)} kg</text>
+      <text x="2" y="105" font-size="9" fill="var(--text-3)">${wmin.toFixed(1)} kg</text>
+      <text x="318" y="10" font-size="9" text-anchor="end" fill="#A855F7">${ws[ws.length-1].toFixed(1)} kg</text>
+    </svg>`;
+  }
+
+  const avgRow = (lbl, val, goal, unit) => `
+    <div class="portion-preview-item"><div class="portion-preview-num">${val}${unit}</div>
+    <div class="portion-preview-lbl">${lbl}${goal ? ' / ' + goal + unit : ''}</div></div>`;
+
+  const body = `
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div>
+        <div class="fe-lbl" style="font-weight:600;">Kcal por día (últimos 14)</div>
+        ${withData.length ? kcalChart : '<div class="food-loader">Aún no hay días registrados.</div>'}
+      </div>
+      <div>
+        <div class="fe-lbl" style="font-weight:600;">Promedio últimos 7 días (${last7.length} con registro)</div>
+        <div class="portion-preview">
+          ${avgRow('kcal', avg(last7, 'kcal'), targets ? goalK : 0, '')}
+          ${avgRow('Prot', avg(last7, 'protein'), targets ? targets.protein : 0, 'g')}
+          ${avgRow('Carb', avg(last7, 'carbs'), targets ? targets.carbs : 0, 'g')}
+          ${avgRow('Grasa', avg(last7, 'fat'), targets ? targets.fat : 0, 'g')}
+        </div>
+      </div>
+      <div>
+        <div class="fe-lbl" style="font-weight:600;">Peso corporal</div>
+        ${weightChart}
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <input type="number" class="field-input" id="trend-weight" placeholder="Peso de hoy (kg)" min="30" max="250" step="0.1" style="flex:1;"/>
+          <button class="btn-secondary" id="trend-weight-save">Registrar</button>
+        </div>
+      </div>
+    </div>`;
+  openSheet('Tendencias', body);
+  document.getElementById('trend-weight-save').addEventListener('click', () => {
+    const w = parseFloat(document.getElementById('trend-weight').value);
+    if (!(w >= 30 && w <= 250)) return;
+    const log = S.get('weight_log', {});
+    log[keyDate()] = w;
+    S.set('weight_log', log);
+    // Sincronizar con el perfil de nutrición
+    try { const p = nutriProfile(); p.weightKg = w; saveNutriProfile(p); } catch (e) {}
+    openNutriTrends();
+  });
+}
 function saveTodaysMeals(meals) {
   const k = keyDate();
   const log = mealLog();
   log[k] = meals;
   saveMealLog(log);
+  // Avisar al nativo que hoy sí se registró comida (para el recordatorio)
+  try { window.Android && window.Android.setLastMealLog && window.Android.setLastMealLog(k); } catch (e) {}
 }
 
 function calcItemMacros(item) {
@@ -8251,6 +8714,18 @@ function renderComida() {
   totalP = Math.round(totalP); totalC = Math.round(totalC); totalG = Math.round(totalG);
   document.getElementById('food-total-kcal').textContent = totalK;
 
+  // Fila de acciones del día: repetir ayer (si hoy está vacío) + tendencias
+  const dateLbl = document.getElementById('food-date-label');
+  if (dateLbl) {
+    const canCopyDay = totalK === 0 && !!yesterdayMeals();
+    dateLbl.innerHTML = `Hoy
+      ${canCopyDay ? ' · <span class="food-inline-link" id="food-copy-yday">⧉ Repetir todo ayer</span>' : ''}
+      · <span class="food-inline-link" id="food-trends-link">📈 Tendencias</span>`;
+    const cd = document.getElementById('food-copy-yday');
+    if (cd) cd.addEventListener('click', () => copyMealsFromYesterday(null));
+    document.getElementById('food-trends-link').addEventListener('click', openNutriTrends);
+  }
+
   // Determinar targets: perfil de nutrición si existe, si no food_goal_kcal legacy
   let targets = null;
   try {
@@ -8296,13 +8771,22 @@ function renderComida() {
       <div class="meal-head">
         <div class="meal-name">${m.name}</div>
         <div style="display:flex;align-items:center;gap:8px;">
+          ${!items.length && yesterdayHasMeal(m.id) ? `<button class="meal-save-dish meal-copy-yday" data-meal="${m.id}" title="Repetir lo de ayer">⧉ Ayer</button>` : ''}
           ${items.length ? `<button class="meal-save-dish" data-meal="${m.id}" title="Guardar como platillo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button>` : ''}
           <div class="meal-kcal">${t.kcal} kcal</div>
         </div>
       </div>
       <div class="meal-list" data-meal="${m.id}"></div>`;
+    // Bind botón "Repetir ayer" (por comida)
+    const cpBtn = grp.querySelector('.meal-copy-yday');
+    if (cpBtn) {
+      cpBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        copyMealsFromYesterday(m.id);
+      });
+    }
     // Bind botón "Guardar como platillo"
-    const saveBtn = grp.querySelector('.meal-save-dish');
+    const saveBtn = grp.querySelector('.meal-save-dish:not(.meal-copy-yday)');
     if (saveBtn) {
       saveBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -8724,8 +9208,12 @@ function customFoodSearch(q) {
 function customFoodAsResult(f) {
   return {
     id: f.id, custom_id: f.id, name: f.n, brand: f.brand || '', cat: f.cat || null,
-    image: '', per100g: f.per100g, serving_size: '', source: 'custom',
+    image: f.img || '', per100g: f.per100g, serving_size: '', source: 'custom',
   };
+}
+// Imagen segura para mostrar: https remota o dataURL local (fotos MÍO)
+function safeFoodImage(src) {
+  return (src && (/^https:\/\//.test(src) || /^data:image\//.test(src))) ? src : '';
 }
 
 // Exportar / compartir en JSON portable entre instalaciones de Rutinal
@@ -8807,6 +9295,15 @@ function openFoodEditor(existing, opts) {
         <input type="text" class="field-input" id="fe-brand" value="${escapeHtml(f.brand || '')}" maxlength="60"/>
       </div>
       <div>
+        <label class="fe-lbl">Foto (opcional)</label>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div id="fe-photo-preview" style="width:52px;height:52px;border-radius:10px;background:var(--surface-2);background-size:cover;background-position:center;flex-shrink:0;${f.img ? `background-image:url(${f.img});` : ''}"></div>
+          <button class="btn-secondary" id="fe-photo-btn" style="flex:1;font-size:12px;">${f.img ? 'Cambiar foto' : '📷 Añadir foto'}</button>
+          ${f.img ? '<button class="btn-secondary" id="fe-photo-del" style="font-size:12px;">Quitar</button>' : ''}
+          <input type="file" id="fe-photo-input" accept="image/*" style="display:none;"/>
+        </div>
+      </div>
+      <div>
         <label class="fe-lbl">Tipo</label>
         <div class="chips" id="fe-cats" style="flex-wrap:wrap;">${catChips}</div>
       </div>
@@ -8829,6 +9326,32 @@ function openFoodEditor(existing, opts) {
     </div>`;
   openSheet(isNew ? 'Crear alimento' : 'Editar alimento', body);
 
+  // Foto: leer, reescalar a 256px y guardar como dataURL (~15-25 KB)
+  let photoData = f.img || null;
+  const phInput = document.getElementById('fe-photo-input');
+  const phBtn = document.getElementById('fe-photo-btn');
+  const phPrev = document.getElementById('fe-photo-preview');
+  const phDel = document.getElementById('fe-photo-del');
+  if (phBtn) phBtn.addEventListener('click', () => phInput.click());
+  if (phDel) phDel.addEventListener('click', () => { photoData = null; phPrev.style.backgroundImage = ''; phDel.style.display = 'none'; });
+  if (phInput) phInput.addEventListener('change', () => {
+    const file = phInput.files && phInput.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      const max = 256;
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * scale);
+      cv.height = Math.round(img.height * scale);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      photoData = cv.toDataURL('image/jpeg', 0.7);
+      phPrev.style.backgroundImage = `url(${photoData})`;
+      URL.revokeObjectURL(img.src);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+
   let selCat = f.cat || null;
   document.querySelectorAll('#fe-cats .chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -8848,6 +9371,7 @@ function openFoodEditor(existing, opts) {
     const item = {
       id: existing ? existing.id : ('cf_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
       n: name,
+      img: photoData || null,
       brand: document.getElementById('fe-brand').value.trim(),
       cat: selCat || classifyFoodName(name) || null,
       per100g: {
@@ -8892,6 +9416,7 @@ function openMyFoodsList() {
   const rows = foods.length ? foods.map(f => {
     const tint = foodTint({ name: f.n, cat: f.cat, per100g: f.per100g }, 0.14);
     return `<div class="food-result-item" data-cfid="${f.id}" ${tint ? `style="background-image:${tint.bg};border-left:3px solid ${tint.border};"` : ''}>
+      ${f.img ? `<img class="food-result-img" src="${f.img}" alt=""/>` : ''}
       <div class="food-result-info">
         <div class="food-result-name">${escapeHtml(f.n)} <span class="food-source-badge mine">MÍO</span></div>
         <div class="food-result-brand">${escapeHtml(f.brand || (f.cat && FOOD_CATS[f.cat] ? FOOD_CATS[f.cat].label : '—'))}</div>
@@ -8978,7 +9503,7 @@ function openFoodSearch(mealId) {
           : (p.source === 'custom'
             ? `<span class="food-source-badge mine" title="Creado por ti">MÍO</span>`
             : `<span class="food-source-badge off" title="Open Food Facts">OFF</span>`));
-      const img = (p.image && /^https:\/\//.test(p.image)) ? p.image : '';
+      const img = safeFoodImage(p.image);
       el.innerHTML = `
         ${img ? `<img class="food-result-img" src="${escapeHtml(img)}" alt="" onerror="this.style.display='none'"/>` : '<div class="food-result-img"></div>'}
         <div class="food-result-info">
@@ -9055,7 +9580,7 @@ function openPortionEditor(item, mealId, index) {
   const p100 = item.per100g || {};
   const isNew = index < 0;
   const ptint = foodTint(item, 0.18);
-  const hasPhoto = !!(item.image && /^https:\/\//.test(item.image));
+  const hasPhoto = !!safeFoodImage(item.image);
   const body = `
     <div class="portion-header"${ptint ? ` style="background-image:${ptint.bg};border-left:3px solid ${ptint.border};border-radius:12px;padding:10px;"` : ''}>
       ${hasPhoto ? `<img class="portion-img" src="${escapeHtml(item.image)}" alt="" onerror="this.style.display='none'"/>` : '<div class="portion-img"></div>'}
@@ -9080,6 +9605,7 @@ function openPortionEditor(item, mealId, index) {
           <input type="number" class="portion-input" id="portion-grams" value="${item.grams || 100}" min="1" step="1"/>
           <select class="portion-select" id="portion-unit">
             <option value="1">g</option>
+            ${naturalUnits(item).map(u => `<option value="${u.g}">${u.label} (${u.g}g)</option>`).join('')}
             <option value="100">porción (100g)</option>
           </select>
         </div>
