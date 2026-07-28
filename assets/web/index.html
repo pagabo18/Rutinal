@@ -6037,6 +6037,23 @@ function calcNutriTargets(pIn) {
   const goalDef = NUTRI_GOALS.find(g => g.id === p.goal) || NUTRI_GOALS[1];
   const kcalGoal = p.manualKcal ? p.manualKcal : Math.round(tdee * (1 + goalDef.kcalAdj));
 
+  // Override manual completo: si el usuario fijó sus macros en gramos,
+  // se respetan tal cual (kcal manual si la puso, o la suma de macros).
+  const mm = p.manualMacros;
+  if (mm && ((mm.p || 0) > 0 || (mm.c || 0) > 0 || (mm.f || 0) > 0)) {
+    const proteinG = Math.round(mm.p || 0);
+    const carbG = Math.round(mm.c || 0);
+    const fatG = Math.round(mm.f || 0);
+    const macroKcal = proteinG * 4 + carbG * 4 + fatG * 9;
+    return {
+      bmr, tdee,
+      kcal: p.manualKcal || macroKcal,
+      protein: proteinG, fat: fatG, carbs: carbG,
+      proteinKcal: proteinG * 4, fatKcal: fatG * 9, carbKcal: carbG * 4,
+      manual: true,
+    };
+  }
+
   // Determinar split y proteína/kg
   let split, proteinPerKg;
   const splitDef = MACRO_SPLITS.find(s => s.id === p.macroSplit) || MACRO_SPLITS[3];
@@ -6117,8 +6134,8 @@ function renderEditNutri() {
 
     <div class="nutri-summary">
       <div class="nutri-sum-num">${t.kcal}</div>
-      <div class="nutri-sum-lbl">kcal / día objetivo</div>
-      <div class="nutri-sum-sub">BMR ${t.bmr} · TDEE ${t.tdee}</div>
+      <div class="nutri-sum-lbl">kcal / día objetivo${t.manual || p.manualKcal ? ' · <b style="color:#A855F7;">meta manual</b>' : ''}</div>
+      <div class="nutri-sum-sub">BMR ${t.bmr} · TDEE ${t.tdee}${p.bodyFatPct ? ' · Katch-McArdle' : ' · Mifflin-St Jeor'}</div>
       <div class="nutri-sum-macros">
         <div class="nutri-sum-macro" style="--mc:#F87171;"><b>${t.protein}g</b><span>Proteína</span></div>
         <div class="nutri-sum-macro" style="--mc:#FBBF24;"><b>${t.carbs}g</b><span>Carbos</span></div>
@@ -6178,10 +6195,32 @@ function renderEditNutri() {
           ${NUTRI_TOLERANCES.map(t2 => `<div class="chip${t2.id === p.tolerance ? ' selected' : ''}" data-v="${t2.id}">${t2.label}</div>`).join('')}
         </div>
       </div>
-      <div class="nutri-field">
-        <label>Kcal manual <span style="color:var(--text-3);font-weight:400;">(sobreescribe el cálculo)</span></label>
-        <input type="number" id="nutri-manual" value="${p.manualKcal || ''}" min="800" max="6000" placeholder="Automático"/>
+      <div class="nutri-field" style="border-top:1px solid var(--border);padding-top:14px;margin-top:6px;">
+        <label>Ajustar a tu gusto <span style="color:var(--text-3);font-weight:400;">(sobreescribe el cálculo automático)</span></label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px;">
+          <div><span class="fe-lbl2">kcal</span><input type="number" id="nutri-manual" value="${p.manualKcal || ''}" min="800" max="8000" placeholder="${t.manual ? t.kcal : 'Auto'}"/></div>
+          <div><span class="fe-lbl2">Prot g</span><input type="number" id="nutri-mm-p" value="${p.manualMacros ? p.manualMacros.p : ''}" min="0" max="500" placeholder="${t.protein}"/></div>
+          <div><span class="fe-lbl2">Carb g</span><input type="number" id="nutri-mm-c" value="${p.manualMacros ? p.manualMacros.c : ''}" min="0" max="900" placeholder="${t.carbs}"/></div>
+          <div><span class="fe-lbl2">Grasa g</span><input type="number" id="nutri-mm-g" value="${p.manualMacros ? p.manualMacros.f : ''}" min="0" max="400" placeholder="${t.fat}"/></div>
+        </div>
+        <div id="nutri-mm-hint" style="font-size:11px;color:var(--text-3);margin-top:6px;">${p.manualMacros ? 'Usando tu meta manual. ' : 'Deja vacío lo que quieras en automático. '}Los gramos que escribas mandan sobre todo lo demás.</div>
+        ${(p.manualKcal || p.manualMacros) ? '<button class="btn-secondary" id="nutri-mm-reset" style="width:100%;margin-top:8px;font-size:12px;padding:8px;">Restablecer cálculo automático</button>' : ''}
       </div>
+
+      <details class="nutri-science" style="margin-top:14px;">
+        <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text-2);">¿De dónde salen estos números?</summary>
+        <div style="font-size:12px;color:var(--text-3);line-height:1.6;margin-top:8px;">
+          Tu meta usa las ecuaciones con mayor respaldo científico en nutrición clínica y deportiva:
+          <ul style="padding-left:16px;margin:6px 0;">
+            <li><b>Metabolismo basal:</b> ${p.bodyFatPct ? 'Katch-McArdle (usa tu masa magra a partir de tu % de grasa — la más precisa cuando conoces tu composición corporal)' : 'Mifflin-St Jeor (1990), señalada por la Academy of Nutrition and Dietetics como la más precisa en adultos tras revisar decenas de estudios'}. Tu BMR: <b>${t.bmr} kcal</b>.</li>
+            <li><b>Gasto total (TDEE):</b> multiplicadores de actividad estilo FAO/OMS (1.2–1.9). Tu TDEE: <b>${t.tdee} kcal</b>.</li>
+            <li><b>Proteína:</b> 1.6–2.2 g/kg según objetivo, el rango del consenso de la International Society of Sports Nutrition (2017) y del meta-análisis de Morton et al. (2018, 49 estudios / 1863 personas).</li>
+            <li><b>Déficit/superávit:</b> ±10–20% moderado, el rango con mejor adherencia y retención de masa magra en la literatura.</li>
+            <li><b>Reparto restante:</b> grasa y carbohidratos dentro de los rangos aceptables (AMDR) del Institute of Medicine: grasa 20–35%, carbos 45–65% de las kcal.</li>
+          </ul>
+          Aún así, ninguna fórmula te conoce mejor que tú: si sabes lo que te funciona, escribe tu meta arriba y la app la respetará tal cual.
+        </div>
+      </details>
     </div>
   `;
 
@@ -6197,6 +6236,12 @@ function renderEditNutri() {
       macroSplit: document.querySelector('#nutri-split .chip.selected')?.dataset.v || p.macroSplit,
       tolerance: document.querySelector('#nutri-tol .chip.selected')?.dataset.v || p.tolerance,
       manualKcal: parseInt(document.getElementById('nutri-manual').value) || null,
+      manualMacros: (() => {
+        const mp = parseFloat(document.getElementById('nutri-mm-p').value) || 0;
+        const mc = parseFloat(document.getElementById('nutri-mm-c').value) || 0;
+        const mf = parseFloat(document.getElementById('nutri-mm-g').value) || 0;
+        return (mp > 0 || mc > 0 || mf > 0) ? { p: mp, c: mc, f: mf } : null;
+      })(),
     };
   }
 
@@ -6223,8 +6268,17 @@ function renderEditNutri() {
     });
   });
   // Bind inputs (guardar on blur / change)
-  ['nutri-age','nutri-h','nutri-w','nutri-bf','nutri-manual'].forEach(id => {
+  ['nutri-age','nutri-h','nutri-w','nutri-bf','nutri-manual','nutri-mm-p','nutri-mm-c','nutri-mm-g'].forEach(id => {
     document.getElementById(id).addEventListener('change', saveAndRefresh);
+  });
+  const mmReset = document.getElementById('nutri-mm-reset');
+  if (mmReset) mmReset.addEventListener('click', () => {
+    const cur = readForm();
+    cur.manualKcal = null;
+    cur.manualMacros = null;
+    saveNutriProfile(cur);
+    S.set('food_goal_kcal', calcNutriTargets(cur).kcal);
+    renderEditNutri();
   });
   // Bind botón entrevista
   document.getElementById('nutri-wizard-btn').addEventListener('click', () => {
