@@ -7502,31 +7502,78 @@ function calcMealTotals(list) {
   }, { kcal: 0, protein: 0, carbs: 0, fat: 0 });
 }
 
-// Gradiente según el reparto calórico de macros del alimento:
-// proteína (verde) / carbos (azul) / grasa (naranja), mismos colores de los
-// anillos. El ancho de cada franja es proporcional a las kcal que aporta.
-function macroGradient(p100, alpha) {
-  if (!p100) return '';
-  const pk = (p100.protein || 0) * 4;
-  const ck = (p100.carbs   || 0) * 4;
-  const fk = (p100.fat     || 0) * 9;
-  const tot = pk + ck + fk;
-  if (tot <= 0) return '';
-  const a = alpha || 0.12;
-  const segs = [
-    { rgb: '34,197,94',   w: pk / tot },  // proteína
-    { rgb: '124,156,255', w: ck / tot },  // carbos
-    { rgb: '245,158,11',  w: fk / tot },  // grasa
-  ].filter(s => s.w >= 0.03);
-  if (!segs.length) return '';
-  // Cada color ancla en el centro de su segmento para una mezcla suave
-  let acc = 0;
-  const stops = segs.map(s => {
-    const mid = ((acc + s.w / 2) * 100).toFixed(1);
-    acc += s.w;
-    return `rgba(${s.rgb},${a}) ${mid}%`;
-  });
-  return `linear-gradient(90deg, ${stops.join(', ')})`;
+// ---------- Color por tipo de alimento ----------
+// Cada categoría tiene su color; la tarjeta se tiñe con un gradiente que se
+// desvanece de izquierda a derecha + un borde izquierdo de acento.
+const FOOD_CATS = {
+  huevo:     { label:'Huevo',         rgb:'250,204,21'  }, // amarillo
+  carne:     { label:'Carne',         rgb:'239,68,68'   }, // rojo
+  pescado:   { label:'Pescado',       rgb:'6,182,212'   }, // cian
+  lacteo:    { label:'Lácteo',        rgb:'59,130,246'  }, // azul
+  protveg:   { label:'Prot. vegetal', rgb:'132,204,22'  }, // lima
+  cereal:    { label:'Cereal',        rgb:'217,119,6'   }, // ámbar
+  legumbre:  { label:'Legumbre',      rgb:'180,83,9'    }, // café
+  verdura:   { label:'Verdura',       rgb:'34,197,94'   }, // verde
+  fruta:     { label:'Fruta',         rgb:'236,72,153'  }, // rosa
+  frutoseco: { label:'Fruto seco',    rgb:'161,98,7'    }, // café dorado
+  grasa:     { label:'Grasa',         rgb:'245,158,11'  }, // naranja
+  dulce:     { label:'Dulce',         rgb:'168,85,247'  }, // morado
+  bebida:    { label:'Bebida',        rgb:'14,165,233'  }, // azul cielo
+  platillo:  { label:'Platillo',      rgb:'249,115,22'  }, // naranja fuerte
+};
+
+// Clasificador por palabras clave (es/en, sin acentos) para resultados de
+// USDA/OFF o items guardados sin categoría. El orden importa.
+const FOOD_CAT_KEYWORDS = [
+  ['huevo',     ['huevo','clara','yema','egg','omelet']],
+  ['pescado',   ['atun','salmon','tilapia','mojarra','camaron','sardina','pescado','pulpo','bacalao','huachinango','surimi','marisco','ceviche','tuna','fish','shrimp','cod','snapper','seafood','sardine','anchov']],
+  ['lacteo',    ['leche','queso','yogur','yogurt','crema','requeson','mantequilla','kefir','lacteo','milk','cheese','cream','butter','dairy','whey']],
+  ['carne',     ['pollo','pechuga','muslo','pavo','res','bistec','arrachera','milanesa','cerdo','puerco','lomo','chuleta','costilla','tocino','jamon','salchicha','chorizo','longaniza','carnitas','barbacoa','salami','mortadela','higado','carne','birria','chicken','beef','pork','turkey','ham','bacon','sausage','steak','meat','liver']],
+  ['frutoseco', ['almendra','nuez','cacahuate','pistache','avellana','chia','linaza','pepitas','ajonjoli','semilla','almond','walnut','peanut','pistachio','seed','nut']],
+  ['legumbre',  ['frijol','lenteja','garbanzo','haba','edamame','alubia','bean','lentil','chickpea','legume']],
+  ['dulce',     ['azucar','miel','chocolate','galleta','pastel','helado','mermelada','cajeta','lechera','dulce','concha','pan dulce','dona','sugar','honey','cookie','cake','candy','ice cream','donut','jam']],
+  ['bebida',    ['refresco','jugo','cerveza','vino','cafe','horchata','atole','agua de','bebida','soda','juice','beer','wine','coffee','drink','cola']],
+  ['cereal',    ['arroz','avena','tortilla','pan','bolillo','pasta','fideo','quinoa','amaranto','granola','cereal','galletas saladas','harina','trigo','maiz','elote','esquites','palomitas','rice','oat','bread','noodle','wheat','corn','popcorn','cracker']],
+  ['grasa',     ['aceite','manteca','mayonesa','aderezo','margarina','oil','lard','mayo','dressing']],
+  ['fruta',     ['manzana','platano','naranja','fresa','papaya','mango','sandia','melon','pina','uva','guayaba','mandarina','pera','durazno','limon','kiwi','arandano','tuna','mamey','fruta','apple','banana','orange','strawberry','grape','peach','berry','fruit']],
+  ['verdura',   ['jitomate','tomate','cebolla','nopal','chayote','calabacita','calabaza','brocoli','espinaca','lechuga','zanahoria','papa','camote','aguacate','chile','pepino','ejote','col','coliflor','betabel','apio','champinon','verdura','ensalada','potato','tomato','onion','broccoli','spinach','lettuce','carrot','avocado','vegetable','salad','mushroom']],
+  ['platillo',  ['taco','quesadilla','tamal','pozole','mole','guacamole','salsa','chilaquiles','tostada','enchilada','burrito','sopa','caldo','sandwich','torta','pizza','hamburguesa','burger','soup','stew']],
+];
+
+function classifyFoodName(name) {
+  const n = normalizeFoodQuery(name || '');
+  if (!n) return null;
+  for (const [cat, words] of FOOD_CAT_KEYWORDS) {
+    if (words.some(w => n.includes(w))) return cat;
+  }
+  return null;
+}
+
+function foodCatOf(item) {
+  if (item && item.cat && FOOD_CATS[item.cat]) return item.cat;
+  return classifyFoodName(item && item.name);
+}
+
+// Sin categoría reconocible: color del macro dominante como respaldo
+function dominantMacroRgb(p100) {
+  if (!p100) return null;
+  const pk = (p100.protein || 0) * 4, ck = (p100.carbs || 0) * 4, fk = (p100.fat || 0) * 9;
+  if (pk + ck + fk <= 0) return null;
+  if (pk >= ck && pk >= fk) return '34,197,94';
+  if (ck >= fk) return '124,156,255';
+  return '245,158,11';
+}
+
+function foodTint(item, alpha) {
+  const cat = foodCatOf(item);
+  const rgb = cat ? FOOD_CATS[cat].rgb : dominantMacroRgb(item && item.per100g);
+  if (!rgb) return null;
+  const a = alpha || 0.16;
+  return {
+    bg: `linear-gradient(90deg, rgba(${rgb},${a}), rgba(${rgb},${(a * 0.2).toFixed(3)}))`,
+    border: `rgba(${rgb},0.55)`,
+    cat,
+  };
 }
 
 /* ---------- Platillos guardados (recetas) ---------- */
@@ -8176,8 +8223,11 @@ function renderComida() {
         const mm = calcItemMacros(it);
         const li = document.createElement('div');
         li.className = 'meal-item';
-        const grad = macroGradient(it.per100g);
-        if (grad) li.style.backgroundImage = grad;
+        const tint = foodTint(it);
+        if (tint) {
+          li.style.backgroundImage = tint.bg;
+          li.style.borderLeft = '3px solid ' + tint.border;
+        }
         li.innerHTML = `
           <div class="meal-item-info">
             <div class="meal-item-name">${escapeHtml(it.name || 'Alimento')}</div>
@@ -8445,6 +8495,7 @@ function localFoodSearch(q) {
   return scored.slice(0, 12).map(({ f, idx }) => ({
     id: 'local_' + idx,
     name: f.n,
+    cat: f.g || null,
     brand: '',
     image: '',
     per100g: {
@@ -8569,8 +8620,11 @@ function openFoodSearch(mealId) {
     products.forEach(p => {
       const el = document.createElement('div');
       el.className = 'food-result-item';
-      const rgrad = macroGradient(p.per100g);
-      if (rgrad) el.style.backgroundImage = rgrad;
+      const rtint = foodTint(p);
+      if (rtint) {
+        el.style.backgroundImage = rtint.bg;
+        el.style.borderLeft = '3px solid ' + rtint.border;
+      }
       const srcBadge = p.source === 'usda'
         ? `<span class="food-source-badge usda" title="USDA ${escapeHtml(p.dataType || '')}">USDA</span>`
         : (p.source === 'local'
@@ -8645,9 +8699,9 @@ function openFoodSearch(mealId) {
 function openPortionEditor(item, mealId, index) {
   const p100 = item.per100g || {};
   const isNew = index < 0;
-  const pgrad = macroGradient(p100, 0.14);
+  const ptint = foodTint(item, 0.18);
   const body = `
-    <div class="portion-header"${pgrad ? ` style="background-image:${pgrad};border-radius:12px;padding:10px;"` : ''}>
+    <div class="portion-header"${ptint ? ` style="background-image:${ptint.bg};border-left:3px solid ${ptint.border};border-radius:12px;padding:10px;"` : ''}>
       ${(item.image && /^https:\/\//.test(item.image)) ? `<img class="portion-img" src="${escapeHtml(item.image)}" alt="" onerror="this.style.display='none'"/>` : '<div class="portion-img"></div>'}
       <div style="flex:1;min-width:0;">
         <div class="portion-title">${escapeHtml(item.name)}</div>
@@ -8739,6 +8793,7 @@ function openPortionEditor(item, mealId, index) {
     const newItem = {
       food_id: item.barcode || item.food_id || ('c_' + Date.now()),
       name: item.name,
+      cat: item.cat || foodCatOf(item) || null,
       brand: item.brand || '',
       image: item.image || '',
       per100g: p100,
