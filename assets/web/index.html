@@ -1831,7 +1831,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.8.1 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.8.2 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try { if (window.Android && typeof window.Android.saveState === 'function') { const b = document.getElementById('preview-banner'); if (b) b.style.display = 'none'; } } catch(e){}
@@ -2490,12 +2490,14 @@ function __syncWidgets() {
     try {
       const state = {};
       __WIDGET_KEYS.forEach(k => { state[k] = S.get(k, k.startsWith('sch_') || k === 'cats' || k === 'habits' || k === 'imprevistos' ? [] : {}); });
-      // Bloques efectivos: si el usuario nunca los editó, enviar los defaults
+      // Datos efectivos: si el usuario nunca los editó, enviar los defaults
       // que la app muestra (si no, los widgets se ven vacíos).
       try {
         if (!state.sch_weekday.length && typeof DEFAULT_WEEKDAY !== 'undefined') state.sch_weekday = DEFAULT_WEEKDAY;
         if (!state.sch_saturday.length && typeof DEFAULT_SAT !== 'undefined') state.sch_saturday = DEFAULT_SAT;
         if (!state.sch_sunday.length && typeof DEFAULT_SUN !== 'undefined') state.sch_sunday = DEFAULT_SUN;
+        if (!state.habits.length && typeof DEFAULT_HABITS !== 'undefined') state.habits = DEFAULT_HABITS;
+        if (!state.cats.length && typeof DEFAULT_CATS !== 'undefined') state.cats = DEFAULT_CATS;
       } catch (e2) {}
       window.Android.saveState(JSON.stringify(state));
     } catch(e) {}
@@ -7385,15 +7387,11 @@ function openImprSheet(existing) {
 renderClock();
 renderHoy();
 updateFab('hoy');
-// Sync inicial de estado a SharedPreferences Android (para restore fiable)
-function __syncStateNow() {
-  if (typeof window.Android === 'undefined' || !window.Android.saveState) return;
-  try {
-    const state = {};
-    __WIDGET_KEYS.forEach(k => { state[k] = S.get(k, k.startsWith('sch_') || k === 'cats' || k === 'habits' || k === 'imprevistos' ? [] : {}); });
-    window.Android.saveState(JSON.stringify(state));
-  } catch(e) {}
-}
+// Sync inicial de estado a SharedPreferences Android (para restore fiable).
+// IMPORTANTE: delega en __syncWidgets, que es el ÚNICO guardador (incluye los
+// defaults efectivos); antes había dos guardadores y este pisaba al bueno con
+// listas vacías → widgets "Sin bloque activo" hasta editar algo.
+function __syncStateNow() { __syncWidgets(); }
 __syncStateNow();
 // Reintentar por si Android tarda en registrar el bridge
 setTimeout(__syncStateNow, 500);
@@ -7404,6 +7402,9 @@ document.addEventListener('visibilitychange', () => {
     const active = (document.querySelector('nav button.active') || {dataset:{}}).dataset.tab;
     if (active === 'hoy') renderHoy();
     if (active === 'habitos') renderHabitos();
+  } else {
+    // Al salir de la app: sincronizar para que los widgets queden al día
+    try { __syncWidgets(); } catch (e) {}
   }
 });
 // Helpers para el temporizador grande de la tarjeta Ahora / A continuación
