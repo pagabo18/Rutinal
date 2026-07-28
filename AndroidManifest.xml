@@ -30,7 +30,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|density"
             android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -82,6 +82,19 @@
                 <action android:name="com.pagabo18.rutinal.NOTIF_DONE" />
                 <action android:name="com.pagabo18.rutinal.NOTIF_SNOOZE" />
             </intent-filter>
+        </receiver>
+
+        <!-- Widget "Ahora" -->
+        <receiver
+            android:name=".AhoraWidgetProvider"
+            android:label="Ahora"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_ahora_info" />
         </receiver>
 
         <receiver

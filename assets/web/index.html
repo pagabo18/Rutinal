@@ -148,7 +148,8 @@
   /* Tablet mediana (Fold parcial, iPad mini): centro más ancho, bottom nav */
   @media (min-width: 640px) and (max-width: 1023px) {
     header, main { max-width: 640px; margin-left: auto; margin-right: auto; }
-    nav {
+    /* body nav: mayor especificidad que la regla base `nav` (definida después) */
+    body nav {
       left: 50%; right: auto;
       transform: translateX(-50%);
       width: 100%; max-width: 640px;
@@ -179,7 +180,7 @@
       padding: 0 32px 40px;
     }
     /* Nav pasa a sidebar lateral izquierdo */
-    nav {
+    body nav {
       top: 0; bottom: 0; left: 0; right: auto;
       width: 240px; height: 100vh;
       flex-direction: column;
@@ -236,14 +237,30 @@
     .sheet.show { transform: translate(-50%, 0); }
   }
 
-  /* Fold 7 desplegado exacto (~2100dp) y monitores: grid de 2 columnas en Hoy */
-  @media (min-width: 1280px) {
-    #tab-hoy.two-col {
+  /* Fold 7 desplegado (~750dp), tablets y desktop: dos columnas en Hoy y Comida */
+  @media (min-width: 700px) {
+    header, main { max-width: 960px; }
+    body nav { max-width: 960px; }
+    .fab { right: max(20px, calc(50vw - 480px + 20px)); }
+
+    /* Solo la sección activa: .active es imprescindible para no pisar
+       el display:none de las secciones ocultas (especificidad de ID) */
+    #tab-hoy.active, #tab-comida.active {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 24px;
       align-items: start;
     }
+    /* Título y fecha de Comida ocupan todo el ancho */
+    #tab-comida > .h-title, #tab-comida > #food-date-label { grid-column: 1 / -1; }
+    #tab-hoy > .split-col-a, #tab-comida > .split-col-a { grid-column: 1; }
+    #tab-hoy > .split-col-b, #tab-comida > .split-col-b { grid-column: 2; }
+    /* Los anillos quedan fijos al hacer scroll en la lista de comidas */
+    #tab-comida > .split-col-a { position: sticky; top: 12px; }
+    #tab-hoy .split-col-b > h2:first-child { margin-top: 4px; }
+  }
+  @media (min-width: 1024px) {
+    header, main { max-width: 1100px; }
   }
 
   /* ---------- HEADER ---------- */
@@ -1822,16 +1839,20 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
 <main>
   <!-- HOY -->
   <section id="tab-hoy" class="active">
-    <div id="now-wrap"></div>
-    <button class="impr-btn" id="impr-btn">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-      <div>
-        <div>Reportar imprevisto</div>
-        <div class="sub">Algo cambió mi día</div>
-      </div>
-    </button>
-    <h2>Hoy <span class="h2-btn" id="add-block">+ Nuevo</span></h2>
-    <div id="today-list"></div>
+    <div class="split-col split-col-a">
+      <div id="now-wrap"></div>
+      <button class="impr-btn" id="impr-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+        <div>
+          <div>Reportar imprevisto</div>
+          <div class="sub">Algo cambió mi día</div>
+        </div>
+      </button>
+    </div>
+    <div class="split-col split-col-b">
+      <h2>Hoy <span class="h2-btn" id="add-block">+ Nuevo</span></h2>
+      <div id="today-list"></div>
+    </div>
   </section>
 
   <!-- DÍA (timeline por horas) -->
@@ -2084,6 +2105,7 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
     <div style="color:var(--text-3); font-size:13px; margin-bottom:16px;" id="food-date-label">Hoy</div>
 
     <!-- Anillos de macros y kcal -->
+    <div class="split-col split-col-a">
     <div class="food-totals">
       <div class="macro-rings-wrap">
         <div class="macro-rings" id="macro-rings">
@@ -2144,6 +2166,8 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
       </div>
     </div>
 
+    </div>
+    <div class="split-col split-col-b">
     <!-- Botones de acción rápida -->
     <div class="food-actions">
       <button class="food-action-btn primary" id="food-search-btn">
@@ -2171,6 +2195,7 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
 
     <!-- Comidas del día -->
     <div id="food-meals"></div>
+    </div>
   </section>
 
   <!-- EDITAR -->

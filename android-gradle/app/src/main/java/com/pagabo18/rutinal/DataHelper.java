@@ -99,23 +99,56 @@ public class DataHelper {
         return "";
     }
 
-    /** Devuelve todos los bloques del día ordenados por hora. */
+    /**
+     * Devuelve todos los bloques del día ordenados por hora.
+     *
+     * Reproduce scheduleForDate() del HTML: un bloque aplica hoy si
+     * - tiene onceDate igual a la fecha de hoy, o
+     * - tiene days (0=domingo..6=sábado, como Date.getDay() en JS) que
+     *   incluye el día de hoy, o
+     * - es legacy (sin days ni onceDate) y vive en el balde que corresponde
+     *   al día (sch_saturday / sch_sunday / sch_weekday).
+     * Se recorren los tres baldes y se deduplica por id (gana el primero).
+     */
     public static List<Block> todayBlocks(Context ctx) {
         JSONObject state = loadState(ctx);
         List<Block> out = new ArrayList<>();
 
-        // Elegir schedule según día de semana
         Calendar c = Calendar.getInstance();
-        int dow = c.get(Calendar.DAY_OF_WEEK);
-        String key;
-        if (dow == Calendar.SATURDAY) key = "sch_saturday";
-        else if (dow == Calendar.SUNDAY) key = "sch_sunday";
-        else key = "sch_weekday";
-        JSONArray blocks = state.optJSONArray(key);
-        if (blocks != null) {
+        int dowJs = c.get(Calendar.DAY_OF_WEEK) - 1; // Calendar.SUNDAY=1 -> 0 (estilo JS)
+        String kindKey;
+        if (dowJs == 6) kindKey = "sch_saturday";
+        else if (dowJs == 0) kindKey = "sch_sunday";
+        else kindKey = "sch_weekday";
+        String today = todayKey();
+
+        String[] buckets = { "sch_weekday", "sch_saturday", "sch_sunday" };
+        List<String> seen = new ArrayList<>();
+        for (String bucket : buckets) {
+            JSONArray blocks = state.optJSONArray(bucket);
+            if (blocks == null) continue;
             for (int i = 0; i < blocks.length(); i++) {
                 JSONObject b = blocks.optJSONObject(i);
                 if (b == null) continue;
+                String id = b.optString("id", "");
+                if (!id.isEmpty() && seen.contains(id)) continue;
+
+                boolean applies;
+                String onceDate = b.optString("onceDate", "");
+                JSONArray days = b.optJSONArray("days");
+                if (!onceDate.isEmpty()) {
+                    applies = onceDate.equals(today);
+                } else if (days != null && days.length() > 0) {
+                    applies = false;
+                    for (int j = 0; j < days.length(); j++) {
+                        if (days.optInt(j, -1) == dowJs) { applies = true; break; }
+                    }
+                } else {
+                    applies = bucket.equals(kindKey);
+                }
+                if (!applies) continue;
+                if (!id.isEmpty()) seen.add(id);
+
                 Block bl = new Block();
                 bl.startStr = b.optString("start", "00:00");
                 bl.endStr = b.optString("end", "00:00");
@@ -131,7 +164,6 @@ public class DataHelper {
 
         // Imprevistos del día actual
         JSONArray imprs = state.optJSONArray("imprevistos");
-        String today = todayKey();
         if (imprs != null) {
             for (int i = 0; i < imprs.length(); i++) {
                 JSONObject b = imprs.optJSONObject(i);
@@ -151,7 +183,11 @@ public class DataHelper {
         }
 
         // Ordenar por hora de inicio
-        java.util.Collections.sort(out, (a, b) -> Integer.compare(a.startMin, b.startMin));
+        java.util.Collections.sort(out, new java.util.Comparator<Block>() {
+            @Override public int compare(Block a, Block b) {
+                return Integer.compare(a.startMin, b.startMin);
+            }
+        });
         return out;
     }
 
