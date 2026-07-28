@@ -1371,6 +1371,7 @@
     cursor: pointer;
   }
   .meal-empty:active { background: var(--surface-2); }
+  .meal-empty.meal-add-more { padding: 8px; font-size: 11px; border-style: dashed; opacity: 0.85; }
 
   /* Food search modal */
   .food-search-input {
@@ -8212,13 +8213,7 @@ function renderComida() {
       });
     }
     const list = grp.querySelector('.meal-list');
-    if (items.length === 0) {
-      const em = document.createElement('div');
-      em.className = 'meal-empty';
-      em.textContent = '+ Añadir alimento';
-      em.addEventListener('click', () => openFoodSearch(m.id));
-      list.appendChild(em);
-    } else {
+    {
       items.forEach((it, i) => {
         const mm = calcItemMacros(it);
         const li = document.createElement('div');
@@ -8237,6 +8232,13 @@ function renderComida() {
         li.addEventListener('click', () => openPortionEditor(it, m.id, i));
         list.appendChild(li);
       });
+      // El botón "+ Añadir alimento" queda siempre al final de cada comida,
+      // haya o no elementos, para poder seguir agregando.
+      const em = document.createElement('div');
+      em.className = 'meal-empty' + (items.length ? ' meal-add-more' : '');
+      em.textContent = '+ Añadir alimento';
+      em.addEventListener('click', () => openFoodSearch(m.id));
+      list.appendChild(em);
     }
     cont.appendChild(grp);
   });
