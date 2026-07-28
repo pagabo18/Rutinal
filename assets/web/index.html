@@ -1188,6 +1188,8 @@
   .macro-legend-lbl { font-size:11px; color:var(--text-3); font-weight:600; letter-spacing:0.03em; }
   .macro-legend-val { font-size:13px; color:var(--text-1); font-weight:700; margin-top:2px; }
   .macro-legend-val .over { color:#EF4444; }
+  .macro-legend-bar { height:4px; background:var(--surface-2); border-radius:2px; overflow:hidden; margin-top:5px; }
+  .macro-legend-bar-fill { height:100%; width:0%; border-radius:2px; transition:width 400ms ease; }
 
   .food-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
   .food-action-btn {
@@ -1788,7 +1790,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.4 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.5.1 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try { if (window.Android && typeof window.Android.saveState === 'function') { const b = document.getElementById('preview-banner'); if (b) b.style.display = 'none'; } } catch(e){}
@@ -1874,17 +1876,6 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
       </div>
     </div>
 
-    <!-- Logros semanales v1.3 -->
-    <div id="ach-card" class="ach-card">
-      <div class="ach-header">
-        <div>
-          <div class="ach-title">Logros de la semana</div>
-          <div class="ach-sub" id="ach-sub">0 de 0 conseguidos</div>
-        </div>
-        <div class="ach-medal" id="ach-medal">🎖️</div>
-      </div>
-      <div class="ach-list" id="ach-list"></div>
-    </div>
     <h2>Hoy <span class="h2-btn" id="add-habit">+ Nuevo</span></h2>
     <div id="habits-list"></div>
     <h2>Estadísticas</h2>
@@ -2122,18 +2113,22 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
         <div class="macro-legend-item">
           <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#EF4444;"></span>kcal</div>
           <div class="macro-legend-val" id="leg-kcal">0 / 0</div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-kcal" style="background:#EF4444;"></div></div>
         </div>
         <div class="macro-legend-item">
           <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#22C55E;"></span>Proteína</div>
           <div class="macro-legend-val" id="leg-p">0 / 0g</div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-p" style="background:#22C55E;"></div></div>
         </div>
         <div class="macro-legend-item">
           <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#7C9CFF;"></span>Carbos</div>
           <div class="macro-legend-val" id="leg-c">0 / 0g</div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-c" style="background:#7C9CFF;"></div></div>
         </div>
         <div class="macro-legend-item">
           <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#F59E0B;"></span>Grasa</div>
           <div class="macro-legend-val" id="leg-g">0 / 0g</div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-g" style="background:#F59E0B;"></div></div>
         </div>
       </div>
       <!-- Total macros compacto (para cuando no hay perfil de nutrición) -->
@@ -7978,12 +7973,12 @@ function updateNutriHabitAuto(current, targets, tolerance) {
 // ============ Anillos concentricos: cálculo y actualización ============
 // Recibe { kcal, protein, carbs, fat } de hoy y targets equivalentes.
 // Si no hay targets, muestra los anillos vacíos con un placeholder.
-function updateMacroRings(current, targets) {
+function updateMacroRings(current, targets, suggested) {
   const rings = [
-    { fillId:'ring-kcal', pillId:'pill-kcal', legId:'leg-kcal', r:110, cur:current.kcal,    goal: targets ? targets.kcal    : 0, unit:'' },
-    { fillId:'ring-p',    pillId:'pill-p',    legId:'leg-p',    r:88,  cur:current.protein, goal: targets ? targets.protein : 0, unit:'g' },
-    { fillId:'ring-c',    pillId:'pill-c',    legId:'leg-c',    r:66,  cur:current.carbs,   goal: targets ? targets.carbs   : 0, unit:'g' },
-    { fillId:'ring-g',    pillId:'pill-g',    legId:'leg-g',    r:44,  cur:current.fat,     goal: targets ? targets.fat     : 0, unit:'g' },
+    { fillId:'ring-kcal', pillId:'pill-kcal', legId:'leg-kcal', barId:'bar-kcal', r:110, cur:current.kcal,    goal: targets ? targets.kcal    : 0, unit:'' },
+    { fillId:'ring-p',    pillId:'pill-p',    legId:'leg-p',    barId:'bar-p',    r:88,  cur:current.protein, goal: targets ? targets.protein : 0, unit:'g' },
+    { fillId:'ring-c',    pillId:'pill-c',    legId:'leg-c',    barId:'bar-c',    r:66,  cur:current.carbs,   goal: targets ? targets.carbs   : 0, unit:'g' },
+    { fillId:'ring-g',    pillId:'pill-g',    legId:'leg-g',    barId:'bar-g',    r:44,  cur:current.fat,     goal: targets ? targets.fat     : 0, unit:'g' },
   ];
 
   // Centro (SVG viewBox 260x260)
@@ -7999,10 +7994,13 @@ function updateMacroRings(current, targets) {
     // Setear dasharray una sola vez
     fill.setAttribute('stroke-dasharray', circ);
 
+    const bar = document.getElementById(r.barId);
+
     if (!r.goal || r.goal <= 0) {
       // Sin meta: anillo vacío
       fill.setAttribute('stroke-dashoffset', circ);
       pill.style.display = 'none';
+      if (bar) bar.style.width = '0%';
       leg.innerHTML = `<span>${Math.round(r.cur)}${r.unit}</span>`;
       return;
     }
@@ -8015,6 +8013,13 @@ function updateMacroRings(current, targets) {
 
     const over = pct > 1;
     fill.classList.toggle('over', over);
+
+    // Barra de progreso bajo la leyenda (siempre visible con meta)
+    if (bar) {
+      if (!bar.dataset.color) bar.dataset.color = bar.style.background;
+      bar.style.width = Math.min(100, pct * 100).toFixed(1) + '%';
+      bar.style.background = over ? '#EF4444' : bar.dataset.color;
+    }
 
     // Si no hay consumo, ocultar pill (evita pila apilada de 0%)
     if (r.cur <= 0) {
@@ -8053,7 +8058,9 @@ function updateMacroRings(current, targets) {
   // Texto centro: meta kcal
   const goalTxt = document.getElementById('food-total-goal');
   if (goalTxt) {
-    if (targets && targets.kcal) {
+    if (targets && targets.kcal && suggested) {
+      goalTxt.textContent = `de ${targets.kcal} (sugerido)`;
+    } else if (targets && targets.kcal) {
       goalTxt.textContent = `de ${targets.kcal} meta`;
     } else {
       goalTxt.textContent = 'Configura tu meta en Editar';
@@ -8085,8 +8092,15 @@ function renderComida() {
     // Estimar macros con split default 30/25/45 si solo hay kcal
     targets = { kcal: legacyGoal, protein: Math.round(legacyGoal*0.30/4), fat: Math.round(legacyGoal*0.25/9), carbs: Math.round(legacyGoal*0.45/4) };
   }
+  // Sin perfil ni meta: usar una meta sugerida (2000 kcal, split 30/25/45)
+  // para que el progreso siempre sea visible en cuanto se registra comida.
+  let suggestedTargets = false;
+  if (!targets) {
+    targets = { kcal: 2000, protein: 150, fat: 56, carbs: 225 };
+    suggestedTargets = true;
+  }
 
-  updateMacroRings({ kcal: totalK, protein: totalP, carbs: totalC, fat: totalG }, targets);
+  updateMacroRings({ kcal: totalK, protein: totalP, carbs: totalC, fat: totalG }, targets, suggestedTargets);
 
   // Auto-marca el hábito virtual de meta nutricional del día
   updateNutriHabitAuto({ kcal: totalK, protein: totalP, carbs: totalC, fat: totalG }, targets);
