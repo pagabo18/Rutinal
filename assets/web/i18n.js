@@ -170,10 +170,10 @@
     "pt-BR": "Hábitos",
     "fr": "Habitudes"
   },
-  "Pomo": {
-    "en": "Pomo",
-    "pt-BR": "Pomo",
-    "fr": "Pomo"
+  "Reloj": {
+    "en": "Clock",
+    "pt-BR": "Relógio",
+    "fr": "Horloge"
   },
   "Día": {
     "en": "Day",
@@ -560,10 +560,10 @@
     "pt-BR": "Pomodoro",
     "fr": "Pomodoro"
   },
-  "Método de foco por intervalos": {
-    "en": "Interval-based focus method",
-    "pt-BR": "Método de foco por intervalos",
-    "fr": "Méthode de focus par intervalles"
+  "Pomodoro y temporizador": {
+    "en": "Pomodoro & timer",
+    "pt-BR": "Pomodoro e temporizador",
+    "fr": "Pomodoro et minuteur"
   },
   "Enfoque": {
     "en": "Focus",
