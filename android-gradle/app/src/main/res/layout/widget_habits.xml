@@ -5,90 +5,202 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/widget_bg"
-    android:paddingLeft="14dp"
-    android:paddingRight="14dp"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp">
+    android:padding="14dp">
 
     <TextView
         android:id="@+id/widget_habits_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Hábitos de hoy"
-        android:textColor="#18181B"
-        android:textSize="13sp"
+        android:textColor="@color/widgetText1"
+        android:textSize="14sp"
         android:textStyle="bold"
         android:maxLines="1"
         android:ellipsize="end" />
 
-    <TextView
-        android:id="@+id/widget_habit_1"
+    <LinearLayout
+        android:id="@+id/widget_habit_row_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/widget_habit_check_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            android:text="○"
+            android:textColor="@color/widgetText2"
+            android:textSize="16sp"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/widget_habit_name_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text=""
+            android:textColor="@color/widgetText1"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_habit_row_2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
-        android:text=""
-        android:textColor="#3F3F46"
-        android:textSize="12sp"
-        android:maxLines="1"
-        android:ellipsize="end" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
 
-    <TextView
-        android:id="@+id/widget_habit_2"
+        <TextView
+            android:id="@+id/widget_habit_check_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            android:text="○"
+            android:textColor="@color/widgetText2"
+            android:textSize="16sp"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/widget_habit_name_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text=""
+            android:textColor="@color/widgetText1"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_habit_row_3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text=""
-        android:textColor="#3F3F46"
-        android:textSize="12sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:visibility="gone" />
+        android:layout_marginTop="3dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
 
-    <TextView
-        android:id="@+id/widget_habit_3"
+        <TextView
+            android:id="@+id/widget_habit_check_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            android:text="○"
+            android:textColor="@color/widgetText2"
+            android:textSize="16sp"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/widget_habit_name_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text=""
+            android:textColor="@color/widgetText1"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_habit_row_4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text=""
-        android:textColor="#3F3F46"
-        android:textSize="12sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:visibility="gone" />
+        android:layout_marginTop="3dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
 
-    <TextView
-        android:id="@+id/widget_habit_4"
+        <TextView
+            android:id="@+id/widget_habit_check_4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            android:text="○"
+            android:textColor="@color/widgetText2"
+            android:textSize="16sp"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/widget_habit_name_4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text=""
+            android:textColor="@color/widgetText1"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_habit_row_5"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text=""
-        android:textColor="#3F3F46"
-        android:textSize="12sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:visibility="gone" />
+        android:layout_marginTop="3dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
 
-    <TextView
-        android:id="@+id/widget_habit_5"
+        <TextView
+            android:id="@+id/widget_habit_check_5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            android:text="○"
+            android:textColor="@color/widgetText2"
+            android:textSize="16sp"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/widget_habit_name_5"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text=""
+            android:textColor="@color/widgetText1"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/widget_habit_row_6"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text=""
-        android:textColor="#3F3F46"
-        android:textSize="12sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:visibility="gone" />
+        android:layout_marginTop="3dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:visibility="gone">
 
-    <TextView
-        android:id="@+id/widget_habit_6"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text=""
-        android:textColor="#3F3F46"
-        android:textSize="12sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:visibility="gone" />
+        <TextView
+            android:id="@+id/widget_habit_check_6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            android:text="○"
+            android:textColor="@color/widgetText2"
+            android:textSize="16sp"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/widget_habit_name_6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text=""
+            android:textColor="@color/widgetText1"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
 </LinearLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores de texto de los widgets (modo claro) -->
+    <color name="widgetText1">#18181B</color>
+    <color name="widgetText2">#52525B</color>
+    <color name="widgetAccent">#3B82F6</color>
+</resources>

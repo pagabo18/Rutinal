@@ -1831,7 +1831,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.8.2 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try { if (window.Android && typeof window.Android.saveState === 'function') { const b = document.getElementById('preview-banner'); if (b) b.style.display = 'none'; } } catch(e){}
@@ -2049,8 +2049,39 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
 
   <!-- POMODORO -->
   <section id="tab-pomo">
-    <h1 class="h-title" style="margin-bottom:4px;">Pomodoro</h1>
-    <div style="color:var(--text-3); font-size:13px; margin-bottom:16px;">Método de foco por intervalos</div>
+    <h1 class="h-title" style="margin-bottom:4px;">Reloj</h1>
+    <div style="color:var(--text-3); font-size:13px; margin-bottom:16px;">Pomodoro y temporizador</div>
+
+    <div class="chips" id="pomo-mode-chips" style="margin-bottom:14px;">
+      <div class="chip selected" data-pm="pomo">Pomodoro</div>
+      <div class="chip" data-pm="timer">Temporizador</div>
+    </div>
+
+    <!-- Temporizador simple (cuenta regresiva libre) -->
+    <div class="pomo-card" id="timer-card" style="display:none;">
+      <div class="pomo-phase">Temporizador</div>
+      <div class="pomo-timer" id="timer-display">10:00</div>
+      <div class="pomo-cycle" id="timer-status">Elige la duración</div>
+      <div class="chips" id="timer-presets" style="justify-content:center;margin:12px 0 4px;">
+        <div class="chip" data-tmin="5">5m</div>
+        <div class="chip selected" data-tmin="10">10m</div>
+        <div class="chip" data-tmin="15">15m</div>
+        <div class="chip" data-tmin="25">25m</div>
+        <div class="chip" data-tmin="45">45m</div>
+        <div class="chip" data-tmin="60">60m</div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:10px;">
+        <input type="number" class="field-input" id="timer-custom" placeholder="Minutos" min="1" max="600" style="max-width:110px;text-align:center;"/>
+        <button class="btn-secondary" id="timer-custom-set">Fijar</button>
+      </div>
+      <div class="pomo-track"><div class="pomo-fill" id="timer-fill" style="width:0"></div></div>
+      <div class="pomo-actions">
+        <button class="btn-secondary" id="timer-reset" title="Reiniciar" aria-label="Reiniciar">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </button>
+        <button class="btn-primary" id="timer-toggle">Iniciar</button>
+      </div>
+    </div>
 
     <div id="pomo-cat-picker" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px;"></div>
 
@@ -2438,8 +2469,8 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
     Hábitos
   </button>
   <button data-tab="pomo">
-    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 3h6"/></svg>
-    Pomo
+    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+    Reloj
   </button>
   <button data-tab="comida">
     <svg class="icon" viewBox="0 0 24 24"><path d="M4 3v7c0 2 1 3 3 3h1v9"/><path d="M8 3v10"/><path d="M18 3v18M16 3c0 4 2 5 2 8h-4c0-3 2-4 2-8"/></svg>
@@ -2482,6 +2513,8 @@ const __hasLS = (() => {
 })();
 // Claves que persistimos en SharedPreferences para backup fiable
 const __WIDGET_KEYS = new Set(['cats','habits','habitLog','imprevistos','sch_weekday','sch_saturday','sch_sunday']);
+// Claves que además disparan un re-sync (alimentan widget_food / widget_pomo)
+const __WIDGET_TRIGGERS = new Set([...__WIDGET_KEYS, 'pomo_state', 'pomo_settings', 'timer_state', 'meal_log', 'nutri_profile', 'food_goal_kcal']);
 let __syncTimer = null;
 function __syncWidgets() {
   if (typeof window.Android === 'undefined' || !window.Android.saveState) return;
@@ -2499,6 +2532,32 @@ function __syncWidgets() {
         if (!state.habits.length && typeof DEFAULT_HABITS !== 'undefined') state.habits = DEFAULT_HABITS;
         if (!state.cats.length && typeof DEFAULT_CATS !== 'undefined') state.cats = DEFAULT_CATS;
       } catch (e2) {}
+      // Resumen de comida de hoy para el widget de alimentos
+      try {
+        const t = (typeof dayMealTotals === 'function') ? dayMealTotals(keyDate()) : null;
+        let tg = null;
+        try { if (typeof hasNutriProfile === 'function' && hasNutriProfile()) tg = calcNutriTargets(nutriProfile()); } catch (e3) {}
+        const goalK = tg ? tg.kcal : (parseInt(S.get('food_goal_kcal', 0)) || 2000);
+        state.widget_food = {
+          kcal: t ? t.kcal : 0, goal: goalK,
+          p: t ? t.protein : 0, gp: tg ? tg.protein : 150,
+          c: t ? t.carbs : 0, gc: tg ? tg.carbs : 225,
+          f: t ? t.fat : 0, gf: tg ? tg.fat : 56,
+        };
+      } catch (e3) {}
+      // Estado del Pomodoro/temporizador para su widget
+      try {
+        const tstate = S.get('timer_state', null);
+        const ps = S.get('pomo_state', null);
+        const po = Object.assign({ focus: 25, short: 5, long: 15, cycles: 4 }, S.get('pomo_settings', {}));
+        if (tstate && (tstate.running || tstate.remainingMs > 0) && (!ps || !ps.running)) {
+          state.widget_pomo = { phase: 'timer', running: !!tstate.running, endMs: tstate.endMs || 0,
+            remainingMs: tstate.remainingMs || 0, cycle: 1, cycles: 1 };
+        } else if (ps) {
+          state.widget_pomo = { phase: ps.phase || 'focus', running: !!ps.running, endMs: ps.endMs || 0,
+            remainingMs: ps.remainingMs != null ? ps.remainingMs : po.focus * 60000, cycle: ps.cycle || 1, cycles: po.cycles };
+        }
+      } catch (e3) {}
       window.Android.saveState(JSON.stringify(state));
     } catch(e) {}
   }, 120);
@@ -2521,12 +2580,12 @@ const S = {
     } else {
       __mem[k] = v;
     }
-    if (__WIDGET_KEYS.has(k)) __syncWidgets();
+    if (__WIDGET_TRIGGERS.has(k)) __syncWidgets();
   },
   del(k) {
     if (__hasLS) { try { localStorage.removeItem(k); } catch(e) {} }
     delete __mem[k];
-    if (__WIDGET_KEYS.has(k)) __syncWidgets();
+    if (__WIDGET_TRIGGERS.has(k)) __syncWidgets();
   },
   allKeys() {
     if (__hasLS) { try { return Object.keys(localStorage); } catch(e) {} }
@@ -7387,6 +7446,44 @@ function openImprSheet(existing) {
 renderClock();
 renderHoy();
 updateFab('hoy');
+// Abrir una pestaña concreta (lo invoca el nativo desde los widgets)
+window.openTab = function(tab) {
+  const btn = document.querySelector('nav button[data-tab="' + tab + '"]');
+  if (btn) btn.click();
+};
+
+// Acciones hechas DESDE los widgets (toggles de hábitos, play/pausa pomo):
+// el nativo las encola y aquí se aplican al estado real de la app.
+function applyWidgetActions() {
+  try {
+    if (!(window.Android && typeof window.Android.consumeWidgetActions === 'function')) return;
+    let acts = [];
+    try { acts = JSON.parse(window.Android.consumeWidgetActions() || '[]'); } catch (e) { return; }
+    if (!Array.isArray(acts) || !acts.length) return;
+    let habitsChanged = false, pomoChanged = false;
+    acts.forEach(a => {
+      if (!a || !a.t) return;
+      if (a.t === 'habit_toggle' && a.id && a.date) {
+        const log = habitLog();
+        log[a.date] = log[a.date] || {};
+        log[a.date][a.id] = !!a.v;
+        S.set('habitLog', log);
+        habitsChanged = true;
+      } else if (a.t === 'pomo') {
+        if (a.a === 'start' && !pomoState.running) pomoToggleRun();
+        else if (a.a === 'pause' && pomoState.running) pomoToggleRun();
+        else if (a.a === 'reset') pomoResetCycles();
+        pomoChanged = true;
+      }
+    });
+    const active = (document.querySelector('nav button.active') || { dataset: {} }).dataset.tab;
+    if (habitsChanged && active === 'habitos') renderHabitos();
+    if (habitsChanged && active === 'hoy') renderHoy();
+    if (pomoChanged && active === 'pomo' && typeof renderPomo === 'function') renderPomo();
+  } catch (e) {}
+}
+setTimeout(applyWidgetActions, 1200);
+
 // Sync inicial de estado a SharedPreferences Android (para restore fiable).
 // IMPORTANTE: delega en __syncWidgets, que es el ÚNICO guardador (incluye los
 // defaults efectivos); antes había dos guardadores y este pisaba al bueno con
@@ -7399,6 +7496,8 @@ setTimeout(__syncStateNow, 2000);
 // Refrescar vistas al volver a la app
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
+    // Aplicar lo que el usuario hizo desde los widgets mientras la app dormía
+    applyWidgetActions();
     const active = (document.querySelector('nav button.active') || {dataset:{}}).dataset.tab;
     if (active === 'hoy') renderHoy();
     if (active === 'habitos') renderHabitos();
@@ -7457,6 +7556,7 @@ setInterval(() => {
   const active = (document.querySelector('nav button.active') || {dataset:{}}).dataset.tab;
   if (active === 'hoy') updateNowTimer();
   if (active === 'pomo') pomoTick();
+  timerTick(); // el temporizador corre aunque estés en otra pestaña
 }, 1000);
 
 // ============================================================
@@ -7765,7 +7865,118 @@ function startPomoQuick() {
 }
 
 // Listeners Pomodoro
-document.getElementById('pomo-toggle').addEventListener('click', () => {
+/* ---------- Temporizador simple (independiente del Pomodoro) ---------- */
+let timerState = S.get('timer_state', { running: false, endMs: null, remainingMs: 10 * 60000, totalMs: 10 * 60000 });
+function timerSave() { S.set('timer_state', timerState); }
+function timerFmt(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(ss).padStart(2, '0');
+}
+function renderTimer() {
+  const disp = document.getElementById('timer-display');
+  if (!disp) return;
+  const rem = timerState.running ? Math.max(0, timerState.endMs - Date.now()) : timerState.remainingMs;
+  disp.textContent = timerFmt(rem);
+  const st = document.getElementById('timer-status');
+  if (st) st.textContent = timerState.running ? 'Corriendo' : (rem < timerState.totalMs ? 'En pausa' : 'Elige la duración');
+  const fill = document.getElementById('timer-fill');
+  if (fill) fill.style.width = (timerState.totalMs > 0 ? (100 - rem / timerState.totalMs * 100) : 0) + '%';
+  const btn = document.getElementById('timer-toggle');
+  if (btn) btn.textContent = timerState.running ? 'Pausar' : (rem < timerState.totalMs && rem > 0 ? 'Continuar' : 'Iniciar');
+}
+function timerSetMinutes(min) {
+  timerState.totalMs = min * 60000;
+  timerState.remainingMs = timerState.totalMs;
+  timerState.running = false;
+  timerState.endMs = null;
+  timerSave();
+  try { if (!pomoState.running) pomoAndroidCancel(); } catch (e) {}
+  renderTimer();
+}
+function timerToggle() {
+  if (timerState.running) {
+    timerState.remainingMs = Math.max(0, timerState.endMs - Date.now());
+    timerState.running = false;
+    timerState.endMs = null;
+    // Restaurar la alarma del pomodoro si estaba corriendo
+    try { if (!pomoState.running) pomoAndroidCancel(); else pomoAndroidSchedule(); } catch (e) {}
+  } else {
+    if (timerState.remainingMs <= 0) timerState.remainingMs = timerState.totalMs;
+    timerState.endMs = Date.now() + timerState.remainingMs;
+    timerState.running = true;
+    // Alarma nativa de fin (si el pomodoro no está usando la suya)
+    try { if (window.Android && Android.schedulePomoAlarm && !pomoState.running) Android.schedulePomoAlarm('timer', '', 1, timerState.endMs); } catch (e) {}
+  }
+  timerSave();
+  renderTimer();
+}
+function timerReset() {
+  timerState.running = false;
+  timerState.endMs = null;
+  timerState.remainingMs = timerState.totalMs;
+  timerSave();
+  try { if (!pomoState.running) pomoAndroidCancel(); else pomoAndroidSchedule(); } catch (e) {}
+  renderTimer();
+}
+function timerTick() {
+  if (!timerState.running) return;
+  const rem = timerState.endMs - Date.now();
+  if (rem <= 0) {
+    timerState.running = false;
+    timerState.endMs = null;
+    timerState.remainingMs = timerState.totalMs;
+    timerSave();
+    pomoBeep();
+    const st = document.getElementById('timer-status');
+    if (st) st.textContent = '¡Tiempo! ⏱';
+    renderTimer();
+    return;
+  }
+  renderTimer();
+}
+// Bindings del temporizador y del selector de modo
+(function bindTimer() {
+  const tgl = document.getElementById('timer-toggle');
+  if (!tgl) return;
+  tgl.addEventListener('click', () => { if (navigator.vibrate) navigator.vibrate(15); timerToggle(); });
+  document.getElementById('timer-reset').addEventListener('click', timerReset);
+  document.querySelectorAll('#timer-presets .chip').forEach(ch => {
+    ch.addEventListener('click', () => {
+      document.querySelectorAll('#timer-presets .chip').forEach(c => c.classList.remove('selected'));
+      ch.classList.add('selected');
+      timerSetMinutes(parseInt(ch.dataset.tmin));
+    });
+  });
+  document.getElementById('timer-custom-set').addEventListener('click', () => {
+    const m = parseInt(document.getElementById('timer-custom').value);
+    if (!(m >= 1 && m <= 600)) return;
+    document.querySelectorAll('#timer-presets .chip').forEach(c => c.classList.remove('selected'));
+    timerSetMinutes(m);
+  });
+  document.querySelectorAll('#pomo-mode-chips .chip').forEach(ch => {
+    ch.addEventListener('click', () => {
+      document.querySelectorAll('#pomo-mode-chips .chip').forEach(c => c.classList.remove('selected'));
+      ch.classList.add('selected');
+      const timerMode = ch.dataset.pm === 'timer';
+      document.getElementById('timer-card').style.display = timerMode ? '' : 'none';
+      document.querySelectorAll('#tab-pomo > :not(#timer-card):not(#pomo-mode-chips):not(.h-title)').forEach(el => {
+        if (el.tagName === 'DIV' && el.style) {
+          if (el.id === 'pomo-cat-picker' || el.classList.contains('pomo-card') || el.classList.contains('pomo-settings')) {
+            el.style.display = timerMode ? 'none' : (el.id === 'pomo-cat-picker' ? 'flex' : '');
+          }
+        }
+      });
+      const statsBtn = document.getElementById('pomo-stats-btn');
+      if (statsBtn) statsBtn.style.display = timerMode ? 'none' : '';
+      if (timerMode) renderTimer();
+    });
+  });
+  renderTimer();
+})();
+
+// Play/pausa reutilizable (UI y acciones desde el widget)
+function pomoToggleRun() {
   if (pomoState.running) {
     // Pausar
     pomoState.remainingMs = Math.max(0, pomoState.endMs - Date.now());
@@ -7778,9 +7989,12 @@ document.getElementById('pomo-toggle').addEventListener('click', () => {
     if (!pomoState.startedAt) pomoState.startedAt = Date.now();
   }
   S.set('pomo_state', pomoState);
-  if (navigator.vibrate) navigator.vibrate(15);
   if (pomoState.running) pomoAndroidSchedule(); else pomoAndroidCancel();
   renderPomoDisplay();
+}
+document.getElementById('pomo-toggle').addEventListener('click', () => {
+  if (navigator.vibrate) navigator.vibrate(15);
+  pomoToggleRun();
 });
 
 document.getElementById('pomo-prev').addEventListener('click', () => {
@@ -7796,8 +8010,7 @@ document.getElementById('pomo-next').addEventListener('click', () => {
 document.getElementById('pomo-stats-btn').addEventListener('click', () => {
   openPomoStatsSheet();
 });
-document.getElementById('pomo-reset-cycles').addEventListener('click', () => {
-  if (!confirm('¿Reiniciar los ciclos? Volverás al ciclo 1, fase de enfoque.')) return;
+function pomoResetCycles() {
   pomoState.running = false;
   pomoState.endMs = null;
   pomoState.startedAt = null;
@@ -7805,6 +8018,11 @@ document.getElementById('pomo-reset-cycles').addEventListener('click', () => {
   pomoState.cycle = 1;
   pomoState.remainingMs = pomoPhaseMs('focus');
   S.set('pomo_state', pomoState);
+  pomoAndroidCancel();
+}
+document.getElementById('pomo-reset-cycles').addEventListener('click', () => {
+  if (!confirm('¿Reiniciar los ciclos? Volverás al ciclo 1, fase de enfoque.')) return;
+  pomoResetCycles();
   pomoAndroidCancel();
   renderPomo();
 });

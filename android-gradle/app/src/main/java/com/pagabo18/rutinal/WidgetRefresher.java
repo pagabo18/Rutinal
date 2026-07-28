@@ -11,5 +11,7 @@ public class WidgetRefresher {
     public static void refreshAll(Context ctx) {
         try { AhoraWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
         try { HabitsWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
+        try { FoodWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
+        try { PomoWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
     }
 }

@@ -2,7 +2,7 @@
 
 App Android local-first para organizar tu día, tus hábitos, tu Pomodoro y tu nutrición. Fork limpio de Organizame, sin widgets ni sync con Google Calendar. WebView + puente nativo.
 
-**Versión actual: v1.8.2** (versionCode 12)
+**Versión actual: v1.9** (versionCode 13)
 
 ## Qué incluye
 
@@ -26,6 +26,7 @@ Timer con historial por categoría.
 - **Barcode**: OFF primero, USDA GTIN (coincidencia exacta) como fallback
 - **Mis platillos**: guarda combinaciones frecuentes
 - **v1.8**: copiar comidas de ayer, tendencias (kcal 14 días, promedios, peso), porciones naturales (pieza/taza/cucharada), fotos en tus alimentos, pausa de racha (vacaciones), correlaciones hábitos×nutrición, Pomodoro hereda la categoría del bloque, recordatorio de comida, respaldo automático semanal, abrir JSON compartidos, widget de hábitos y Hábitos en dos columnas en plegables
+- **v1.9**: 4 widgets rediseñados con modo oscuro (Ahora con progreso, Hábitos interactivo con toggles, Comida con kcal/macros, Pomodoro con cuenta regresiva en vivo y play/pausa) + modo Temporizador en la pestaña Pomo
 - **Metas editables (v1.7)**: cálculo con Mifflin-St Jeor / Katch-McArdle, proteína ISSN, panel de evidencia, y override manual de kcal y macros
 - **Mis alimentos (v1.6)**: crea alimentos propios con macros y categoría, renombra los que no tienen foto, y compártelos/impórtalos en JSON entre dispositivos
 - Editor de porción con macros por gramo

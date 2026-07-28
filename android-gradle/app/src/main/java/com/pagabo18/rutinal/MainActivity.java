@@ -128,6 +128,9 @@ public class MainActivity extends Activity {
         // por eso se entrega con retraso)
         handleImportIntent(getIntent(), true);
 
+        // Pestaña solicitada por un widget (extra "open_tab")
+        handleOpenTabIntent(getIntent(), true);
+
         // Pedir permiso de notificaciones en Android 13+
         if (Build.VERSION.SDK_INT >= 33) {
             if (checkSelfPermission("android.permission.POST_NOTIFICATIONS") != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -145,6 +148,38 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleImportIntent(intent, false);
+        handleOpenTabIntent(intent, false);
+    }
+
+    /**
+     * Abre la pestaña pedida por un widget (Intent extra "open_tab":
+     * "comida" | "pomo" | "habitos" | "hoy"). El valor viene de nuestros
+     * PendingIntents, y además se valida contra la lista blanca. Nunca lanza.
+     */
+    private void handleOpenTabIntent(Intent intent, boolean delayed) {
+        if (intent == null || webView == null) return;
+        String tab = null;
+        try { tab = intent.getStringExtra("open_tab"); } catch (Exception ignored) {}
+        if (tab == null) return;
+        if (!"comida".equals(tab) && !"pomo".equals(tab)
+                && !"habitos".equals(tab) && !"hoy".equals(tab)) return;
+
+        final String t = tab;
+        Runnable deliver = new Runnable() {
+            @Override public void run() {
+                try {
+                    webView.evaluateJavascript(
+                            "window.openTab && window.openTab('" + t + "')", null);
+                } catch (Exception ignored) {}
+            }
+        };
+        try {
+            if (delayed) {
+                webView.postDelayed(deliver, 1500);
+            } else {
+                webView.post(deliver);
+            }
+        } catch (Exception ignored) {}
     }
 
     /**
