@@ -7502,6 +7502,33 @@ function calcMealTotals(list) {
   }, { kcal: 0, protein: 0, carbs: 0, fat: 0 });
 }
 
+// Gradiente según el reparto calórico de macros del alimento:
+// proteína (verde) / carbos (azul) / grasa (naranja), mismos colores de los
+// anillos. El ancho de cada franja es proporcional a las kcal que aporta.
+function macroGradient(p100, alpha) {
+  if (!p100) return '';
+  const pk = (p100.protein || 0) * 4;
+  const ck = (p100.carbs   || 0) * 4;
+  const fk = (p100.fat     || 0) * 9;
+  const tot = pk + ck + fk;
+  if (tot <= 0) return '';
+  const a = alpha || 0.12;
+  const segs = [
+    { rgb: '34,197,94',   w: pk / tot },  // proteína
+    { rgb: '124,156,255', w: ck / tot },  // carbos
+    { rgb: '245,158,11',  w: fk / tot },  // grasa
+  ].filter(s => s.w >= 0.03);
+  if (!segs.length) return '';
+  // Cada color ancla en el centro de su segmento para una mezcla suave
+  let acc = 0;
+  const stops = segs.map(s => {
+    const mid = ((acc + s.w / 2) * 100).toFixed(1);
+    acc += s.w;
+    return `rgba(${s.rgb},${a}) ${mid}%`;
+  });
+  return `linear-gradient(90deg, ${stops.join(', ')})`;
+}
+
 /* ---------- Platillos guardados (recetas) ---------- */
 const DEFAULT_DISH_EMOJIS = ['🍽️','🍜','🥗','🍛','🍚','🍝','🍲','🍘','🍞','🥘','🍮','🍰','🍳','🌮','🍿','🥣'];
 
@@ -8149,6 +8176,8 @@ function renderComida() {
         const mm = calcItemMacros(it);
         const li = document.createElement('div');
         li.className = 'meal-item';
+        const grad = macroGradient(it.per100g);
+        if (grad) li.style.backgroundImage = grad;
         li.innerHTML = `
           <div class="meal-item-info">
             <div class="meal-item-name">${escapeHtml(it.name || 'Alimento')}</div>
@@ -8540,6 +8569,8 @@ function openFoodSearch(mealId) {
     products.forEach(p => {
       const el = document.createElement('div');
       el.className = 'food-result-item';
+      const rgrad = macroGradient(p.per100g);
+      if (rgrad) el.style.backgroundImage = rgrad;
       const srcBadge = p.source === 'usda'
         ? `<span class="food-source-badge usda" title="USDA ${escapeHtml(p.dataType || '')}">USDA</span>`
         : (p.source === 'local'
@@ -8614,8 +8645,9 @@ function openFoodSearch(mealId) {
 function openPortionEditor(item, mealId, index) {
   const p100 = item.per100g || {};
   const isNew = index < 0;
+  const pgrad = macroGradient(p100, 0.14);
   const body = `
-    <div class="portion-header">
+    <div class="portion-header"${pgrad ? ` style="background-image:${pgrad};border-radius:12px;padding:10px;"` : ''}>
       ${(item.image && /^https:\/\//.test(item.image)) ? `<img class="portion-img" src="${escapeHtml(item.image)}" alt="" onerror="this.style.display='none'"/>` : '<div class="portion-img"></div>'}
       <div style="flex:1;min-width:0;">
         <div class="portion-title">${escapeHtml(item.name)}</div>
