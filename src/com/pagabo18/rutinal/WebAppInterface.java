@@ -28,6 +28,13 @@ public class WebAppInterface {
         sp.edit().putString(K_STATE, json).apply();
         // Reprograma notificaciones cada vez que cambia el schedule
         try { NotificationScheduler.scheduleAll(ctx); } catch (Exception ignored) {}
+        // Refresca el widget "Ahora"
+        try { AhoraWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public void refreshAllWidgets() {
+        AhoraWidgetProvider.refreshAll(ctx);
     }
 
     @JavascriptInterface

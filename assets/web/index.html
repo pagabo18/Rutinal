@@ -148,7 +148,8 @@
   /* Tablet mediana (Fold parcial, iPad mini): centro más ancho, bottom nav */
   @media (min-width: 640px) and (max-width: 1023px) {
     header, main { max-width: 640px; margin-left: auto; margin-right: auto; }
-    nav {
+    /* body nav: mayor especificidad que la regla base `nav` (definida después) */
+    body nav {
       left: 50%; right: auto;
       transform: translateX(-50%);
       width: 100%; max-width: 640px;
@@ -179,7 +180,7 @@
       padding: 0 32px 40px;
     }
     /* Nav pasa a sidebar lateral izquierdo */
-    nav {
+    body nav {
       top: 0; bottom: 0; left: 0; right: auto;
       width: 240px; height: 100vh;
       flex-direction: column;
@@ -236,14 +237,30 @@
     .sheet.show { transform: translate(-50%, 0); }
   }
 
-  /* Fold 7 desplegado exacto (~2100dp) y monitores: grid de 2 columnas en Hoy */
-  @media (min-width: 1280px) {
-    #tab-hoy.two-col {
+  /* Fold 7 desplegado (~750dp), tablets y desktop: dos columnas en Hoy y Comida */
+  @media (min-width: 700px) {
+    header, main { max-width: 960px; }
+    body nav { max-width: 960px; }
+    .fab { right: max(20px, calc(50vw - 480px + 20px)); }
+
+    /* Solo la sección activa: .active es imprescindible para no pisar
+       el display:none de las secciones ocultas (especificidad de ID) */
+    #tab-hoy.active, #tab-comida.active {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 24px;
       align-items: start;
     }
+    /* Título y fecha de Comida ocupan todo el ancho */
+    #tab-comida > .h-title, #tab-comida > #food-date-label { grid-column: 1 / -1; }
+    #tab-hoy > .split-col-a, #tab-comida > .split-col-a { grid-column: 1; }
+    #tab-hoy > .split-col-b, #tab-comida > .split-col-b { grid-column: 2; }
+    /* Los anillos quedan fijos al hacer scroll en la lista de comidas */
+    #tab-comida > .split-col-a { position: sticky; top: 12px; }
+    #tab-hoy .split-col-b > h2:first-child { margin-top: 4px; }
+  }
+  @media (min-width: 1024px) {
+    header, main { max-width: 1100px; }
   }
 
   /* ---------- HEADER ---------- */
@@ -1188,6 +1205,8 @@
   .macro-legend-lbl { font-size:11px; color:var(--text-3); font-weight:600; letter-spacing:0.03em; }
   .macro-legend-val { font-size:13px; color:var(--text-1); font-weight:700; margin-top:2px; }
   .macro-legend-val .over { color:#EF4444; }
+  .macro-legend-bar { height:4px; background:var(--surface-2); border-radius:2px; overflow:hidden; margin-top:5px; }
+  .macro-legend-bar-fill { height:100%; width:0%; border-radius:2px; transition:width 400ms ease; }
 
   .food-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
   .food-action-btn {
@@ -1369,6 +1388,7 @@
     cursor: pointer;
   }
   .meal-empty:active { background: var(--surface-2); }
+  .meal-empty.meal-add-more { padding: 8px; font-size: 11px; border-style: dashed; opacity: 0.85; }
 
   /* Food search modal */
   .food-search-input {
@@ -1788,7 +1808,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.4 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.5.1 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try { if (window.Android && typeof window.Android.saveState === 'function') { const b = document.getElementById('preview-banner'); if (b) b.style.display = 'none'; } } catch(e){}
@@ -1819,16 +1839,20 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
 <main>
   <!-- HOY -->
   <section id="tab-hoy" class="active">
-    <div id="now-wrap"></div>
-    <button class="impr-btn" id="impr-btn">
-      <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-      <div>
-        <div>Reportar imprevisto</div>
-        <div class="sub">Algo cambió mi día</div>
-      </div>
-    </button>
-    <h2>Hoy <span class="h2-btn" id="add-block">+ Nuevo</span></h2>
-    <div id="today-list"></div>
+    <div class="split-col split-col-a">
+      <div id="now-wrap"></div>
+      <button class="impr-btn" id="impr-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+        <div>
+          <div>Reportar imprevisto</div>
+          <div class="sub">Algo cambió mi día</div>
+        </div>
+      </button>
+    </div>
+    <div class="split-col split-col-b">
+      <h2>Hoy <span class="h2-btn" id="add-block">+ Nuevo</span></h2>
+      <div id="today-list"></div>
+    </div>
   </section>
 
   <!-- DÍA (timeline por horas) -->
@@ -1874,17 +1898,6 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
       </div>
     </div>
 
-    <!-- Logros semanales v1.3 -->
-    <div id="ach-card" class="ach-card">
-      <div class="ach-header">
-        <div>
-          <div class="ach-title">Logros de la semana</div>
-          <div class="ach-sub" id="ach-sub">0 de 0 conseguidos</div>
-        </div>
-        <div class="ach-medal" id="ach-medal">🎖️</div>
-      </div>
-      <div class="ach-list" id="ach-list"></div>
-    </div>
     <h2>Hoy <span class="h2-btn" id="add-habit">+ Nuevo</span></h2>
     <div id="habits-list"></div>
     <h2>Estadísticas</h2>
@@ -2092,6 +2105,7 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
     <div style="color:var(--text-3); font-size:13px; margin-bottom:16px;" id="food-date-label">Hoy</div>
 
     <!-- Anillos de macros y kcal -->
+    <div class="split-col split-col-a">
     <div class="food-totals">
       <div class="macro-rings-wrap">
         <div class="macro-rings" id="macro-rings">
@@ -2122,18 +2136,22 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
         <div class="macro-legend-item">
           <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#EF4444;"></span>kcal</div>
           <div class="macro-legend-val" id="leg-kcal">0 / 0</div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-kcal" style="background:#EF4444;"></div></div>
         </div>
         <div class="macro-legend-item">
           <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#22C55E;"></span>Proteína</div>
           <div class="macro-legend-val" id="leg-p">0 / 0g</div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-p" style="background:#22C55E;"></div></div>
         </div>
         <div class="macro-legend-item">
           <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#7C9CFF;"></span>Carbos</div>
           <div class="macro-legend-val" id="leg-c">0 / 0g</div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-c" style="background:#7C9CFF;"></div></div>
         </div>
         <div class="macro-legend-item">
           <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#F59E0B;"></span>Grasa</div>
           <div class="macro-legend-val" id="leg-g">0 / 0g</div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-g" style="background:#F59E0B;"></div></div>
         </div>
       </div>
       <!-- Total macros compacto (para cuando no hay perfil de nutrición) -->
@@ -2148,6 +2166,8 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
       </div>
     </div>
 
+    </div>
+    <div class="split-col split-col-b">
     <!-- Botones de acción rápida -->
     <div class="food-actions">
       <button class="food-action-btn primary" id="food-search-btn">
@@ -2175,6 +2195,7 @@ try { if (window.Android && typeof window.Android.saveState === 'function') { co
 
     <!-- Comidas del día -->
     <div id="food-meals"></div>
+    </div>
   </section>
 
   <!-- EDITAR -->
@@ -7507,6 +7528,80 @@ function calcMealTotals(list) {
   }, { kcal: 0, protein: 0, carbs: 0, fat: 0 });
 }
 
+// ---------- Color por tipo de alimento ----------
+// Cada categoría tiene su color; la tarjeta se tiñe con un gradiente que se
+// desvanece de izquierda a derecha + un borde izquierdo de acento.
+const FOOD_CATS = {
+  huevo:     { label:'Huevo',         rgb:'250,204,21'  }, // amarillo
+  carne:     { label:'Carne',         rgb:'239,68,68'   }, // rojo
+  pescado:   { label:'Pescado',       rgb:'6,182,212'   }, // cian
+  lacteo:    { label:'Lácteo',        rgb:'59,130,246'  }, // azul
+  protveg:   { label:'Prot. vegetal', rgb:'132,204,22'  }, // lima
+  cereal:    { label:'Cereal',        rgb:'217,119,6'   }, // ámbar
+  legumbre:  { label:'Legumbre',      rgb:'180,83,9'    }, // café
+  verdura:   { label:'Verdura',       rgb:'34,197,94'   }, // verde
+  fruta:     { label:'Fruta',         rgb:'236,72,153'  }, // rosa
+  frutoseco: { label:'Fruto seco',    rgb:'161,98,7'    }, // café dorado
+  grasa:     { label:'Grasa',         rgb:'245,158,11'  }, // naranja
+  dulce:     { label:'Dulce',         rgb:'168,85,247'  }, // morado
+  bebida:    { label:'Bebida',        rgb:'14,165,233'  }, // azul cielo
+  platillo:  { label:'Platillo',      rgb:'249,115,22'  }, // naranja fuerte
+};
+
+// Clasificador por palabras clave (es/en, sin acentos) para resultados de
+// USDA/OFF o items guardados sin categoría. El orden importa.
+const FOOD_CAT_KEYWORDS = [
+  ['huevo',     ['huevo','clara','yema','egg','omelet']],
+  ['pescado',   ['atun','salmon','tilapia','mojarra','camaron','sardina','pescado','pulpo','bacalao','huachinango','surimi','marisco','ceviche','tuna','fish','shrimp','cod','snapper','seafood','sardine','anchov']],
+  ['lacteo',    ['leche','queso','yogur','yogurt','crema','requeson','mantequilla','kefir','lacteo','milk','cheese','cream','butter','dairy','whey']],
+  ['carne',     ['pollo','pechuga','muslo','pavo','res','bistec','arrachera','milanesa','cerdo','puerco','lomo','chuleta','costilla','tocino','jamon','salchicha','chorizo','longaniza','carnitas','barbacoa','salami','mortadela','higado','carne','birria','chicken','beef','pork','turkey','ham','bacon','sausage','steak','meat','liver']],
+  ['frutoseco', ['almendra','nuez','cacahuate','pistache','avellana','chia','linaza','pepitas','ajonjoli','semilla','almond','walnut','peanut','pistachio','seed','nut']],
+  ['legumbre',  ['frijol','lenteja','garbanzo','haba','edamame','alubia','bean','lentil','chickpea','legume']],
+  ['dulce',     ['azucar','miel','chocolate','galleta','pastel','helado','mermelada','cajeta','lechera','dulce','concha','pan dulce','dona','sugar','honey','cookie','cake','candy','ice cream','donut','jam']],
+  ['bebida',    ['refresco','jugo','cerveza','vino','cafe','horchata','atole','agua de','bebida','soda','juice','beer','wine','coffee','drink','cola']],
+  ['cereal',    ['arroz','avena','tortilla','pan','bolillo','pasta','fideo','quinoa','amaranto','granola','cereal','galletas saladas','harina','trigo','maiz','elote','esquites','palomitas','rice','oat','bread','noodle','wheat','corn','popcorn','cracker']],
+  ['grasa',     ['aceite','manteca','mayonesa','aderezo','margarina','oil','lard','mayo','dressing']],
+  ['fruta',     ['manzana','platano','naranja','fresa','papaya','mango','sandia','melon','pina','uva','guayaba','mandarina','pera','durazno','limon','kiwi','arandano','tuna','mamey','fruta','apple','banana','orange','strawberry','grape','peach','berry','fruit']],
+  ['verdura',   ['jitomate','tomate','cebolla','nopal','chayote','calabacita','calabaza','brocoli','espinaca','lechuga','zanahoria','papa','camote','aguacate','chile','pepino','ejote','col','coliflor','betabel','apio','champinon','verdura','ensalada','potato','tomato','onion','broccoli','spinach','lettuce','carrot','avocado','vegetable','salad','mushroom']],
+  ['platillo',  ['taco','quesadilla','tamal','pozole','mole','guacamole','salsa','chilaquiles','tostada','enchilada','burrito','sopa','caldo','sandwich','torta','pizza','hamburguesa','burger','soup','stew']],
+];
+
+function classifyFoodName(name) {
+  const n = normalizeFoodQuery(name || '');
+  if (!n) return null;
+  for (const [cat, words] of FOOD_CAT_KEYWORDS) {
+    if (words.some(w => n.includes(w))) return cat;
+  }
+  return null;
+}
+
+function foodCatOf(item) {
+  if (item && item.cat && FOOD_CATS[item.cat]) return item.cat;
+  return classifyFoodName(item && item.name);
+}
+
+// Sin categoría reconocible: color del macro dominante como respaldo
+function dominantMacroRgb(p100) {
+  if (!p100) return null;
+  const pk = (p100.protein || 0) * 4, ck = (p100.carbs || 0) * 4, fk = (p100.fat || 0) * 9;
+  if (pk + ck + fk <= 0) return null;
+  if (pk >= ck && pk >= fk) return '34,197,94';
+  if (ck >= fk) return '124,156,255';
+  return '245,158,11';
+}
+
+function foodTint(item, alpha) {
+  const cat = foodCatOf(item);
+  const rgb = cat ? FOOD_CATS[cat].rgb : dominantMacroRgb(item && item.per100g);
+  if (!rgb) return null;
+  const a = alpha || 0.16;
+  return {
+    bg: `linear-gradient(90deg, rgba(${rgb},${a}), rgba(${rgb},${(a * 0.2).toFixed(3)}))`,
+    border: `rgba(${rgb},0.55)`,
+    cat,
+  };
+}
+
 /* ---------- Platillos guardados (recetas) ---------- */
 const DEFAULT_DISH_EMOJIS = ['🍽️','🍜','🥗','🍛','🍚','🍝','🍲','🍘','🍞','🥘','🍮','🍰','🍳','🌮','🍿','🥣'];
 
@@ -7978,12 +8073,12 @@ function updateNutriHabitAuto(current, targets, tolerance) {
 // ============ Anillos concentricos: cálculo y actualización ============
 // Recibe { kcal, protein, carbs, fat } de hoy y targets equivalentes.
 // Si no hay targets, muestra los anillos vacíos con un placeholder.
-function updateMacroRings(current, targets) {
+function updateMacroRings(current, targets, suggested) {
   const rings = [
-    { fillId:'ring-kcal', pillId:'pill-kcal', legId:'leg-kcal', r:110, cur:current.kcal,    goal: targets ? targets.kcal    : 0, unit:'' },
-    { fillId:'ring-p',    pillId:'pill-p',    legId:'leg-p',    r:88,  cur:current.protein, goal: targets ? targets.protein : 0, unit:'g' },
-    { fillId:'ring-c',    pillId:'pill-c',    legId:'leg-c',    r:66,  cur:current.carbs,   goal: targets ? targets.carbs   : 0, unit:'g' },
-    { fillId:'ring-g',    pillId:'pill-g',    legId:'leg-g',    r:44,  cur:current.fat,     goal: targets ? targets.fat     : 0, unit:'g' },
+    { fillId:'ring-kcal', pillId:'pill-kcal', legId:'leg-kcal', barId:'bar-kcal', r:110, cur:current.kcal,    goal: targets ? targets.kcal    : 0, unit:'' },
+    { fillId:'ring-p',    pillId:'pill-p',    legId:'leg-p',    barId:'bar-p',    r:88,  cur:current.protein, goal: targets ? targets.protein : 0, unit:'g' },
+    { fillId:'ring-c',    pillId:'pill-c',    legId:'leg-c',    barId:'bar-c',    r:66,  cur:current.carbs,   goal: targets ? targets.carbs   : 0, unit:'g' },
+    { fillId:'ring-g',    pillId:'pill-g',    legId:'leg-g',    barId:'bar-g',    r:44,  cur:current.fat,     goal: targets ? targets.fat     : 0, unit:'g' },
   ];
 
   // Centro (SVG viewBox 260x260)
@@ -7999,10 +8094,13 @@ function updateMacroRings(current, targets) {
     // Setear dasharray una sola vez
     fill.setAttribute('stroke-dasharray', circ);
 
+    const bar = document.getElementById(r.barId);
+
     if (!r.goal || r.goal <= 0) {
       // Sin meta: anillo vacío
       fill.setAttribute('stroke-dashoffset', circ);
       pill.style.display = 'none';
+      if (bar) bar.style.width = '0%';
       leg.innerHTML = `<span>${Math.round(r.cur)}${r.unit}</span>`;
       return;
     }
@@ -8015,6 +8113,13 @@ function updateMacroRings(current, targets) {
 
     const over = pct > 1;
     fill.classList.toggle('over', over);
+
+    // Barra de progreso bajo la leyenda (siempre visible con meta)
+    if (bar) {
+      if (!bar.dataset.color) bar.dataset.color = bar.style.background;
+      bar.style.width = Math.min(100, pct * 100).toFixed(1) + '%';
+      bar.style.background = over ? '#EF4444' : bar.dataset.color;
+    }
 
     // Si no hay consumo, ocultar pill (evita pila apilada de 0%)
     if (r.cur <= 0) {
@@ -8053,7 +8158,9 @@ function updateMacroRings(current, targets) {
   // Texto centro: meta kcal
   const goalTxt = document.getElementById('food-total-goal');
   if (goalTxt) {
-    if (targets && targets.kcal) {
+    if (targets && targets.kcal && suggested) {
+      goalTxt.textContent = `de ${targets.kcal} (sugerido)`;
+    } else if (targets && targets.kcal) {
       goalTxt.textContent = `de ${targets.kcal} meta`;
     } else {
       goalTxt.textContent = 'Configura tu meta en Editar';
@@ -8085,8 +8192,15 @@ function renderComida() {
     // Estimar macros con split default 30/25/45 si solo hay kcal
     targets = { kcal: legacyGoal, protein: Math.round(legacyGoal*0.30/4), fat: Math.round(legacyGoal*0.25/9), carbs: Math.round(legacyGoal*0.45/4) };
   }
+  // Sin perfil ni meta: usar una meta sugerida (2000 kcal, split 30/25/45)
+  // para que el progreso siempre sea visible en cuanto se registra comida.
+  let suggestedTargets = false;
+  if (!targets) {
+    targets = { kcal: 2000, protein: 150, fat: 56, carbs: 225 };
+    suggestedTargets = true;
+  }
 
-  updateMacroRings({ kcal: totalK, protein: totalP, carbs: totalC, fat: totalG }, targets);
+  updateMacroRings({ kcal: totalK, protein: totalP, carbs: totalC, fat: totalG }, targets, suggestedTargets);
 
   // Auto-marca el hábito virtual de meta nutricional del día
   updateNutriHabitAuto({ kcal: totalK, protein: totalP, carbs: totalC, fat: totalG }, targets);
@@ -8124,17 +8238,16 @@ function renderComida() {
       });
     }
     const list = grp.querySelector('.meal-list');
-    if (items.length === 0) {
-      const em = document.createElement('div');
-      em.className = 'meal-empty';
-      em.textContent = '+ Añadir alimento';
-      em.addEventListener('click', () => openFoodSearch(m.id));
-      list.appendChild(em);
-    } else {
+    {
       items.forEach((it, i) => {
         const mm = calcItemMacros(it);
         const li = document.createElement('div');
         li.className = 'meal-item';
+        const tint = foodTint(it);
+        if (tint) {
+          li.style.backgroundImage = tint.bg;
+          li.style.borderLeft = '3px solid ' + tint.border;
+        }
         li.innerHTML = `
           <div class="meal-item-info">
             <div class="meal-item-name">${escapeHtml(it.name || 'Alimento')}</div>
@@ -8144,6 +8257,13 @@ function renderComida() {
         li.addEventListener('click', () => openPortionEditor(it, m.id, i));
         list.appendChild(li);
       });
+      // El botón "+ Añadir alimento" queda siempre al final de cada comida,
+      // haya o no elementos, para poder seguir agregando.
+      const em = document.createElement('div');
+      em.className = 'meal-empty' + (items.length ? ' meal-add-more' : '');
+      em.textContent = '+ Añadir alimento';
+      em.addEventListener('click', () => openFoodSearch(m.id));
+      list.appendChild(em);
     }
     cont.appendChild(grp);
   });
@@ -8402,6 +8522,7 @@ function localFoodSearch(q) {
   return scored.slice(0, 12).map(({ f, idx }) => ({
     id: 'local_' + idx,
     name: f.n,
+    cat: f.g || null,
     brand: '',
     image: '',
     per100g: {
@@ -8526,6 +8647,11 @@ function openFoodSearch(mealId) {
     products.forEach(p => {
       const el = document.createElement('div');
       el.className = 'food-result-item';
+      const rtint = foodTint(p);
+      if (rtint) {
+        el.style.backgroundImage = rtint.bg;
+        el.style.borderLeft = '3px solid ' + rtint.border;
+      }
       const srcBadge = p.source === 'usda'
         ? `<span class="food-source-badge usda" title="USDA ${escapeHtml(p.dataType || '')}">USDA</span>`
         : (p.source === 'local'
@@ -8600,8 +8726,9 @@ function openFoodSearch(mealId) {
 function openPortionEditor(item, mealId, index) {
   const p100 = item.per100g || {};
   const isNew = index < 0;
+  const ptint = foodTint(item, 0.18);
   const body = `
-    <div class="portion-header">
+    <div class="portion-header"${ptint ? ` style="background-image:${ptint.bg};border-left:3px solid ${ptint.border};border-radius:12px;padding:10px;"` : ''}>
       ${(item.image && /^https:\/\//.test(item.image)) ? `<img class="portion-img" src="${escapeHtml(item.image)}" alt="" onerror="this.style.display='none'"/>` : '<div class="portion-img"></div>'}
       <div style="flex:1;min-width:0;">
         <div class="portion-title">${escapeHtml(item.name)}</div>
@@ -8693,6 +8820,7 @@ function openPortionEditor(item, mealId, index) {
     const newItem = {
       food_id: item.barcode || item.food_id || ('c_' + Date.now()),
       name: item.name,
+      cat: item.cat || foodCatOf(item) || null,
       brand: item.brand || '',
       image: item.image || '',
       per100g: p100,

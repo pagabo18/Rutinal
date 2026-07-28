@@ -14,6 +14,7 @@ public class BootReceiver extends BroadcastReceiver {
             try { NotificationScheduler.scheduleAll(ctx); } catch (Exception ignored) {}
             try { NotificationScheduler.scheduleHabitReminder(ctx); } catch (Exception ignored) {}
             try { NotificationScheduler.scheduleHydrationReminders(ctx); } catch (Exception ignored) {}
+            try { AhoraWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
         }
     }
 }

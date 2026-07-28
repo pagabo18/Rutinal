@@ -2,7 +2,7 @@
 
 App Android local-first para organizar tu día, tus hábitos, tu Pomodoro y tu nutrición. Fork limpio de Organizame, sin widgets ni sync con Google Calendar. WebView + puente nativo.
 
-**Versión actual: v1.5** (versionCode 6)
+**Versión actual: v1.5.1** (versionCode 7)
 
 ## Qué incluye
 
