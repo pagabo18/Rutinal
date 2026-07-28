@@ -8,8 +8,11 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.webkit.PermissionRequest;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -19,8 +22,10 @@ import android.graphics.Color;
 public class MainActivity extends Activity {
     public static final int REQ_BARCODE = 4201;
     private static final int REQ_CAMERA_WEB = 4301;
+    private static final int REQ_FILE_CHOOSER = 4302;
     private WebView webView;
     private android.webkit.PermissionRequest pendingWebPermissionRequest;
+    private ValueCallback<Uri[]> pendingFileChooserCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +81,39 @@ public class MainActivity extends Activity {
                     requestPermissions(new String[]{Manifest.permission.CAMERA}, REQ_CAMERA_WEB);
                 }
             }
+
+            @Override
+            public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> filePathCallback,
+                                             FileChooserParams fileChooserParams) {
+                // Liberar cualquier callback anterior sin resolver
+                if (pendingFileChooserCallback != null) {
+                    try { pendingFileChooserCallback.onReceiveValue(null); } catch (Exception ignored) {}
+                    pendingFileChooserCallback = null;
+                }
+                pendingFileChooserCallback = filePathCallback;
+                try {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    String type = "*/*";
+                    String[] accept = (fileChooserParams != null) ? fileChooserParams.getAcceptTypes() : null;
+                    if (accept != null && accept.length > 0 && accept[0] != null && !accept[0].trim().isEmpty()) {
+                        type = accept[0].trim();
+                        if (accept.length > 1) {
+                            intent.putExtra(Intent.EXTRA_MIME_TYPES, accept);
+                        }
+                    }
+                    intent.setType(type);
+                    startActivityForResult(Intent.createChooser(intent, "Elegir archivo"), REQ_FILE_CHOOSER);
+                    return true;
+                } catch (Exception e) {
+                    ValueCallback<Uri[]> cb = pendingFileChooserCallback;
+                    pendingFileChooserCallback = null;
+                    if (cb != null) {
+                        try { cb.onReceiveValue(null); } catch (Exception ignored) {}
+                    }
+                    return false;
+                }
+            }
         });
 
         webView.setBackgroundColor(Color.parseColor("#0B0F1A"));
@@ -85,6 +123,10 @@ public class MainActivity extends Activity {
 
         webView.loadUrl("file:///android_asset/web/index.html");
         setContentView(webView);
+
+        // Archivos JSON compartidos/abiertos con la app (el WebView aún carga,
+        // por eso se entrega con retraso)
+        handleImportIntent(getIntent(), true);
 
         // Pedir permiso de notificaciones en Android 13+
         if (Build.VERSION.SDK_INT >= 33) {
@@ -99,8 +141,96 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleImportIntent(intent, false);
+    }
+
+    /**
+     * Lee un JSON compartido/abierto con la app (ACTION_VIEW / ACTION_SEND)
+     * y lo entrega al JS como window.onImportFile(texto). Nunca lanza.
+     */
+    private void handleImportIntent(Intent intent, boolean delayed) {
+        if (intent == null || webView == null) return;
+        String action = intent.getAction();
+        if (!Intent.ACTION_VIEW.equals(action) && !Intent.ACTION_SEND.equals(action)) return;
+
+        String text = null;
+        try {
+            if (Intent.ACTION_SEND.equals(action)) {
+                text = intent.getStringExtra(Intent.EXTRA_TEXT);
+                if (text == null) {
+                    Uri stream = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                    if (stream != null) text = readTextFromUri(stream);
+                }
+            } else {
+                Uri data = intent.getData();
+                if (data != null) text = readTextFromUri(data);
+            }
+        } catch (Exception ignored) {}
+        if (text == null || text.isEmpty()) return;
+
+        final String quoted = org.json.JSONObject.quote(text);
+        Runnable deliver = new Runnable() {
+            @Override public void run() {
+                try {
+                    webView.evaluateJavascript(
+                            "window.onImportFile && window.onImportFile(" + quoted + ")", null);
+                } catch (Exception ignored) {}
+            }
+        };
+        try {
+            if (delayed) {
+                webView.postDelayed(deliver, 1500);
+            } else {
+                webView.post(deliver);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    /** Lee texto UTF-8 de un content Uri con límite de 5 MB. null si falla. */
+    private String readTextFromUri(Uri uri) {
+        java.io.InputStream is = null;
+        try {
+            is = getContentResolver().openInputStream(uri);
+            if (is == null) return null;
+            java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+            byte[] buf = new byte[8192];
+            int n;
+            int total = 0;
+            while ((n = is.read(buf)) > 0) {
+                total += n;
+                if (total > 5 * 1024 * 1024) return null; // límite 5 MB
+                bos.write(buf, 0, n);
+            }
+            return new String(bos.toByteArray(), "UTF-8");
+        } catch (Exception e) {
+            return null;
+        } finally {
+            if (is != null) {
+                try { is.close(); } catch (Exception ignored) {}
+            }
+        }
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQ_FILE_CHOOSER) {
+            ValueCallback<Uri[]> cb = pendingFileChooserCallback;
+            pendingFileChooserCallback = null;
+            if (cb != null) {
+                Uri[] result = null;
+                try {
+                    if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+                        result = new Uri[]{ data.getData() };
+                    }
+                } catch (Exception ignored) {}
+                try { cb.onReceiveValue(result); } catch (Exception ignored) {}
+            }
+            return;
+        }
         if (requestCode == REQ_BARCODE && resultCode == Activity.RESULT_OK && data != null) {
             String barcode = data.getStringExtra("barcode");
             if (barcode != null && webView != null) {

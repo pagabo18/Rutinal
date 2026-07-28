@@ -28,13 +28,13 @@ public class WebAppInterface {
         sp.edit().putString(K_STATE, json).apply();
         // Reprograma notificaciones cada vez que cambia el schedule
         try { NotificationScheduler.scheduleAll(ctx); } catch (Exception ignored) {}
-        // Refresca el widget "Ahora"
-        try { AhoraWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
+        // Refresca los widgets ("Ahora" y "Hábitos de hoy")
+        try { WidgetRefresher.refreshAll(ctx); } catch (Exception ignored) {}
     }
 
     @JavascriptInterface
     public void refreshAllWidgets() {
-        AhoraWidgetProvider.refreshAll(ctx);
+        WidgetRefresher.refreshAll(ctx);
     }
 
     @JavascriptInterface
@@ -62,6 +62,21 @@ public class WebAppInterface {
     @JavascriptInterface
     public String getHabitReminder() {
         try { return NotificationScheduler.getHabitReminderTime(ctx); } catch (Exception ignored) { return ""; }
+    }
+
+    @JavascriptInterface
+    public void setMealReminder(String hhmm) {
+        try { NotificationScheduler.setMealReminderTime(ctx, hhmm); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public String getMealReminder() {
+        try { return NotificationScheduler.getMealReminderTime(ctx); } catch (Exception ignored) { return ""; }
+    }
+
+    @JavascriptInterface
+    public void setLastMealLog(String dateKey) {
+        try { NotificationScheduler.setLastMealLogDate(ctx, dateKey); } catch (Exception ignored) {}
     }
 
     @JavascriptInterface
@@ -150,6 +165,53 @@ public class WebAppInterface {
                 ctx.startActivity(chooser);
             }
         } catch (Exception ignored) {}
+    }
+
+    /**
+     * Guarda un archivo de texto en Descargas. Devuelve la ruta o el
+     * nombre visible si tuvo éxito, o "" si falló.
+     */
+    @JavascriptInterface
+    public String saveTextFile(String filename, String content) {
+        if (content == null) return "";
+        try {
+            String name = (filename == null) ? "" : filename.replaceAll("[^a-zA-Z0-9._-]", "");
+            if (name.isEmpty()) name = "rutinal.json";
+            byte[] bytes = content.getBytes("UTF-8");
+
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                android.content.ContentValues values = new android.content.ContentValues();
+                values.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, name);
+                values.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "application/json");
+                android.net.Uri uri = ctx.getContentResolver().insert(
+                        android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                if (uri == null) return "";
+                java.io.OutputStream os = ctx.getContentResolver().openOutputStream(uri);
+                if (os == null) return "";
+                try {
+                    os.write(bytes);
+                    os.flush();
+                } finally {
+                    try { os.close(); } catch (Exception ignored) {}
+                }
+                return "Descargas/" + name;
+            } else {
+                java.io.File dir = android.os.Environment.getExternalStoragePublicDirectory(
+                        android.os.Environment.DIRECTORY_DOWNLOADS);
+                if (dir != null && !dir.exists()) dir.mkdirs();
+                java.io.File f = new java.io.File(dir, name);
+                java.io.FileOutputStream fos = new java.io.FileOutputStream(f);
+                try {
+                    fos.write(bytes);
+                    fos.flush();
+                } finally {
+                    try { fos.close(); } catch (Exception ignored) {}
+                }
+                return f.getAbsolutePath();
+            }
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     @JavascriptInterface

@@ -132,8 +132,8 @@ public class BlockNotificationReceiver extends BroadcastReceiver {
         // Re-encadenar alarmas (bloques restantes / día siguiente) aunque
         // el usuario no abra la app. Nunca debe romper la notificación.
         try { NotificationScheduler.scheduleAll(ctx); } catch (Exception ignored) {}
-        // Refresca el widget "Ahora" al cambiar de bloque
-        try { AhoraWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
+        // Refresca los widgets al cambiar de bloque
+        try { WidgetRefresher.refreshAll(ctx); } catch (Exception ignored) {}
     }
 
     private int piFlags() {

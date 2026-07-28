@@ -12,6 +12,9 @@
 
     <!-- Cámara para escaneo de códigos de barras -->
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Guardar exportaciones en Descargas (solo API 24-28; desde 29 se usa MediaStore) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
@@ -42,6 +45,20 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Abrir archivos JSON con la app -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/json" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <!-- Recibir JSON compartido con la app -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="application/json" />
+            </intent-filter>
         </activity>
 
         <!-- Notificaciones de bloques -->
@@ -68,6 +85,15 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.pagabo18.rutinal.HABIT_REMINDER" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Recordatorio de comida (suave) -->
+        <receiver
+            android:name=".MealReminderReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.pagabo18.rutinal.MEAL_REMINDER" />
             </intent-filter>
         </receiver>
 
@@ -100,6 +126,19 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_ahora_info" />
+        </receiver>
+
+        <!-- Widget "Hábitos de hoy" -->
+        <receiver
+            android:name=".HabitsWidgetProvider"
+            android:label="Hábitos de hoy"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_habits_info" />
         </receiver>
 
         <receiver
