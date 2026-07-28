@@ -1414,6 +1414,24 @@
   .food-source-badge.usda { background: rgba(34,197,94,0.15); color:#22C55E; }
   .food-source-badge.off  { background: rgba(124,156,255,0.15); color:#7C9CFF; }
   .food-source-badge.local { background: rgba(245,158,11,0.15); color:#F59E0B; }
+  .food-source-badge.mine { background: rgba(168,85,247,0.15); color:#A855F7; }
+  .food-edit-btn {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
+    border-radius: 8px; width: 30px; height: 30px; font-size: 14px; cursor: pointer;
+    flex-shrink: 0; margin-right: 6px;
+  }
+  .fe-lbl { font-size: 12px; color: var(--text-3); display: block; margin-bottom: 6px; }
+  .fe-lbl2 { font-size: 10px; color: var(--text-3); display: block; margin-bottom: 3px; text-align: center; }
+  .portion-title-input {
+    width: 100%; background: transparent; border: 0; border-bottom: 1px dashed var(--border);
+    color: var(--text-1); font-size: 16px; font-weight: 700; padding: 0 0 2px; outline: none;
+  }
+  .portion-title-input:focus { border-bottom-color: var(--accent); }
+  .portion-save-mine {
+    margin-top: 6px; background: transparent; border: 0; padding: 0;
+    color: var(--text-3); font-size: 12px; cursor: pointer; text-align: left;
+  }
+  .portion-save-mine:disabled { color: #A855F7; }
   .auto-badge { display:inline-block; font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; margin-top:4px; letter-spacing:0.5px; background: rgba(124,156,255,0.15); color:#7C9CFF; }
   .habit.auto-habit .check { opacity: 0.85; }
   .habit.auto-habit.done .check { background: linear-gradient(135deg, #22C55E, #16A34A); }
@@ -1808,7 +1826,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.5.1 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.6 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try { if (window.Android && typeof window.Android.saveState === 'function') { const b = document.getElementById('preview-banner'); if (b) b.style.display = 'none'; } } catch(e){}
@@ -8548,8 +8566,8 @@ async function foodSearchMulti(q) {
     });
   };
 
-  const local = localFoodSearch(q);
-  addResults(local);
+  addResults(customFoodSearch(q));
+  addResults(localFoodSearch(q));
 
   const en = translateEsToEn(q);
   const differs = en && en !== normalizeFoodQuery(q);
@@ -8631,14 +8649,261 @@ async function offByBarcode(barcode) {
 let _foodSearchMealId = 'lunch';
 let _foodSearchTimer = null;
 let _foodSearchSeq = 0;
+/* ---------- Mis alimentos (creados por el usuario) ---------- */
+function customFoods() { return S.get('custom_foods', []); }
+function saveCustomFoods(list) { S.set('custom_foods', list); }
+function customFoodById(id) { return customFoods().find(f => f.id === id) || null; }
+
+function customFoodSearch(q) {
+  const nq = normalizeFoodQuery(q);
+  if (!nq || nq.length < 2) return [];
+  const scored = [];
+  customFoods().forEach(f => {
+    const name = normalizeFoodQuery(f.n);
+    const brand = normalizeFoodQuery(f.brand || '');
+    if (!name.includes(nq) && !brand.includes(nq)) return;
+    scored.push({ score: name.startsWith(nq) ? 2 : 1, f });
+  });
+  scored.sort((a, b) => b.score - a.score || (b.f.ts || 0) - (a.f.ts || 0));
+  return scored.slice(0, 8).map(({ f }) => customFoodAsResult(f));
+}
+function customFoodAsResult(f) {
+  return {
+    id: f.id, custom_id: f.id, name: f.n, brand: f.brand || '', cat: f.cat || null,
+    image: '', per100g: f.per100g, serving_size: '', source: 'custom',
+  };
+}
+
+// Exportar / compartir en JSON portable entre instalaciones de Rutinal
+function buildFoodsExport(foods) {
+  return JSON.stringify({ type: 'rutinal-foods', v: 1, foods }, null, 1);
+}
+function shareTextSmart(subject, text) {
+  try {
+    if (window.Android && typeof window.Android.shareText === 'function') {
+      window.Android.shareText(subject, text);
+      return;
+    }
+  } catch (e) {}
+  if (navigator.share) {
+    navigator.share({ title: subject, text }).catch(() => copyToClipboardWithNote(text));
+    return;
+  }
+  copyToClipboardWithNote(text);
+}
+function copyToClipboardWithNote(text) {
+  const done = () => alert('Copiado al portapapeles. Pégalo en la otra app o guárdalo donde quieras.');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => prompt('Copia el texto:', text));
+  } else {
+    prompt('Copia el texto:', text);
+  }
+}
+function importFoodsFromJson(raw) {
+  let data;
+  try { data = JSON.parse(raw); } catch (e) { return { ok: false, error: 'JSON inválido' }; }
+  const foods = Array.isArray(data) ? data : (data && data.type === 'rutinal-foods' && Array.isArray(data.foods) ? data.foods : null);
+  if (!foods) return { ok: false, error: 'Formato no reconocido. Se espera un export de alimentos de Rutinal.' };
+  const list = customFoods();
+  let added = 0, updated = 0, skipped = 0;
+  foods.forEach(f => {
+    if (!f || typeof f.n !== 'string' || !f.n.trim() || !f.per100g || !(+f.per100g.kcal > 0)) { skipped++; return; }
+    const clean = {
+      id: (typeof f.id === 'string' && f.id.startsWith('cf_')) ? f.id : ('cf_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
+      n: f.n.trim().slice(0, 80),
+      brand: (f.brand || '').toString().slice(0, 60),
+      cat: (f.cat && FOOD_CATS[f.cat]) ? f.cat : (classifyFoodName(f.n) || null),
+      per100g: {
+        kcal: Math.round(+f.per100g.kcal),
+        protein: +(+f.per100g.protein || 0).toFixed(1),
+        carbs: +(+f.per100g.carbs || 0).toFixed(1),
+        fat: +(+f.per100g.fat || 0).toFixed(1),
+        fiber: +(+f.per100g.fiber || 0).toFixed(1),
+        sugars: +(+f.per100g.sugars || 0).toFixed(1),
+        sodium: +(+f.per100g.sodium || 0).toFixed(3),
+      },
+      ts: Date.now(),
+    };
+    const byId = list.findIndex(x => x.id === clean.id);
+    const byName = list.findIndex(x => normalizeFoodQuery(x.n) === normalizeFoodQuery(clean.n));
+    if (byId >= 0) { list[byId] = clean; updated++; }
+    else if (byName >= 0) { list[byName] = { ...clean, id: list[byName].id }; updated++; }
+    else { list.push(clean); added++; }
+  });
+  saveCustomFoods(list);
+  return { ok: true, added, updated, skipped };
+}
+
+/* ---------- Editor de alimento propio ---------- */
+function openFoodEditor(existing, opts) {
+  const o = opts || {};
+  const f = existing || { n: o.prefillName || '', brand: '', cat: null, per100g: { kcal: '', protein: '', carbs: '', fat: '' } };
+  const isNew = !existing;
+  const catChips = Object.keys(FOOD_CATS).map(id =>
+    `<div class="chip${f.cat === id ? ' selected' : ''}" data-cat="${id}">${FOOD_CATS[id].label}</div>`).join('');
+  const num = v => (v === '' || v == null) ? '' : v;
+  const body = `
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label class="fe-lbl">Nombre</label>
+        <input type="text" class="field-input" id="fe-name" value="${escapeHtml(f.n)}" placeholder="Ej: Licuado de avena de mamá" maxlength="80"/>
+      </div>
+      <div>
+        <label class="fe-lbl">Marca (opcional)</label>
+        <input type="text" class="field-input" id="fe-brand" value="${escapeHtml(f.brand || '')}" maxlength="60"/>
+      </div>
+      <div>
+        <label class="fe-lbl">Tipo</label>
+        <div class="chips" id="fe-cats" style="flex-wrap:wrap;">${catChips}</div>
+      </div>
+      <div>
+        <label class="fe-lbl">Por 100 g / 100 ml</label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+          <div><label class="fe-lbl2">kcal</label><input type="number" class="field-input" id="fe-k" value="${num(f.per100g.kcal)}" min="0" inputmode="decimal"/></div>
+          <div><label class="fe-lbl2">Prot g</label><input type="number" class="field-input" id="fe-p" value="${num(f.per100g.protein)}" min="0" step="0.1" inputmode="decimal"/></div>
+          <div><label class="fe-lbl2">Carb g</label><input type="number" class="field-input" id="fe-c" value="${num(f.per100g.carbs)}" min="0" step="0.1" inputmode="decimal"/></div>
+          <div><label class="fe-lbl2">Grasa g</label><input type="number" class="field-input" id="fe-g" value="${num(f.per100g.fat)}" min="0" step="0.1" inputmode="decimal"/></div>
+        </div>
+      </div>
+      <div id="fe-err" style="color:#EF4444;font-size:12px;display:none;"></div>
+      <button class="btn-primary" id="fe-save" style="width:100%;">${isNew ? 'Crear alimento' : 'Guardar cambios'}</button>
+      ${!isNew ? `
+      <div style="display:flex;gap:8px;">
+        <button class="btn-secondary" id="fe-share" style="flex:1;">Compartir</button>
+        <button class="btn-secondary" id="fe-del" style="flex:1;color:#EF4444;">Eliminar</button>
+      </div>` : ''}
+    </div>`;
+  openSheet(isNew ? 'Crear alimento' : 'Editar alimento', body);
+
+  let selCat = f.cat || null;
+  document.querySelectorAll('#fe-cats .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const was = chip.classList.contains('selected');
+      document.querySelectorAll('#fe-cats .chip').forEach(c => c.classList.remove('selected'));
+      if (!was) { chip.classList.add('selected'); selCat = chip.dataset.cat; }
+      else selCat = null;
+    });
+  });
+
+  document.getElementById('fe-save').addEventListener('click', () => {
+    const name = document.getElementById('fe-name').value.trim();
+    const kcal = parseFloat(document.getElementById('fe-k').value);
+    const err = document.getElementById('fe-err');
+    if (!name) { err.textContent = 'Ponle un nombre.'; err.style.display = 'block'; return; }
+    if (!(kcal >= 0)) { err.textContent = 'Indica las kcal por 100 g.'; err.style.display = 'block'; return; }
+    const item = {
+      id: existing ? existing.id : ('cf_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
+      n: name,
+      brand: document.getElementById('fe-brand').value.trim(),
+      cat: selCat || classifyFoodName(name) || null,
+      per100g: {
+        kcal: Math.round(kcal || 0),
+        protein: +(parseFloat(document.getElementById('fe-p').value) || 0).toFixed(1),
+        carbs: +(parseFloat(document.getElementById('fe-c').value) || 0).toFixed(1),
+        fat: +(parseFloat(document.getElementById('fe-g').value) || 0).toFixed(1),
+        fiber: existing ? +(existing.per100g.fiber || 0) : 0,
+        sugars: existing ? +(existing.per100g.sugars || 0) : 0,
+        sodium: existing ? +(existing.per100g.sodium || 0) : 0,
+      },
+      ts: Date.now(),
+    };
+    const list = customFoods();
+    const i = list.findIndex(x => x.id === item.id);
+    if (i >= 0) list[i] = item; else list.push(item);
+    saveCustomFoods(list);
+    closeSheet();
+    if (o.thenPortion) {
+      openPortionEditor({ ...customFoodAsResult(item), grams: 100 }, _foodSearchMealId, -1);
+    } else {
+      openMyFoodsList();
+    }
+  });
+
+  const del = document.getElementById('fe-del');
+  if (del) del.addEventListener('click', () => {
+    if (!confirm('¿Eliminar "' + f.n + '" de tus alimentos?')) return;
+    saveCustomFoods(customFoods().filter(x => x.id !== existing.id));
+    closeSheet();
+    openMyFoodsList();
+  });
+  const sh = document.getElementById('fe-share');
+  if (sh) sh.addEventListener('click', () => {
+    shareTextSmart('Alimento Rutinal: ' + f.n, buildFoodsExport([existing]));
+  });
+}
+
+/* ---------- Lista "Mis alimentos" + compartir/importar ---------- */
+function openMyFoodsList() {
+  const foods = customFoods().slice().sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  const rows = foods.length ? foods.map(f => {
+    const tint = foodTint({ name: f.n, cat: f.cat, per100g: f.per100g }, 0.14);
+    return `<div class="food-result-item" data-cfid="${f.id}" ${tint ? `style="background-image:${tint.bg};border-left:3px solid ${tint.border};"` : ''}>
+      <div class="food-result-info">
+        <div class="food-result-name">${escapeHtml(f.n)} <span class="food-source-badge mine">MÍO</span></div>
+        <div class="food-result-brand">${escapeHtml(f.brand || (f.cat && FOOD_CATS[f.cat] ? FOOD_CATS[f.cat].label : '—'))}</div>
+      </div>
+      <div class="food-result-kcal">${f.per100g.kcal} kcal/100g</div>
+    </div>`;
+  }).join('') : '<div class="food-loader">Aún no has creado alimentos. Crea el primero o importa los de un amigo.</div>';
+  const body = `
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn-primary" id="mf-new" style="flex:1.2;">+ Crear</button>
+      <button class="btn-secondary" id="mf-share" style="flex:1;">Compartir</button>
+      <button class="btn-secondary" id="mf-import" style="flex:1;">Importar</button>
+    </div>
+    <div class="food-search-results">${rows}</div>`;
+  openSheet('Mis alimentos', body);
+  document.getElementById('mf-new').addEventListener('click', () => openFoodEditor(null));
+  document.getElementById('mf-share').addEventListener('click', () => {
+    const all = customFoods();
+    if (!all.length) { alert('No tienes alimentos que compartir todavía.'); return; }
+    shareTextSmart('Mis alimentos de Rutinal (' + all.length + ')', buildFoodsExport(all));
+  });
+  document.getElementById('mf-import').addEventListener('click', openFoodsImport);
+  document.querySelectorAll('[data-cfid]').forEach(el => {
+    el.addEventListener('click', () => {
+      const f = customFoodById(el.dataset.cfid);
+      if (f) openFoodEditor(f);
+    });
+  });
+}
+
+function openFoodsImport() {
+  const body = `
+    <p style="color:var(--text-3);font-size:13px;margin-bottom:10px;">Pega aquí el JSON de alimentos que te compartieron (de Rutinal u otra app compatible):</p>
+    <textarea class="field-input" id="fi-json" rows="8" style="width:100%;font-family:monospace;font-size:12px;" placeholder='{"type":"rutinal-foods","foods":[...]}'></textarea>
+    <div id="fi-err" style="color:#EF4444;font-size:12px;margin-top:6px;display:none;"></div>
+    <button class="btn-primary" id="fi-go" style="width:100%;margin-top:10px;">Importar</button>`;
+  openSheet('Importar alimentos', body);
+  document.getElementById('fi-go').addEventListener('click', () => {
+    const raw = document.getElementById('fi-json').value.trim();
+    const err = document.getElementById('fi-err');
+    if (!raw) { err.textContent = 'Pega el JSON primero.'; err.style.display = 'block'; return; }
+    const r = importFoodsFromJson(raw);
+    if (!r.ok) { err.textContent = r.error; err.style.display = 'block'; return; }
+    closeSheet();
+    alert(`Importados: ${r.added} nuevos, ${r.updated} actualizados${r.skipped ? ', ' + r.skipped + ' inválidos omitidos' : ''}.`);
+    openMyFoodsList();
+  });
+}
+
 function openFoodSearch(mealId) {
   _foodSearchMealId = mealId || 'lunch';
   const body = `
     <input type="text" class="food-search-input" id="food-q" placeholder="Busca por nombre... (ej: plátano, leche)" autocomplete="off" />
+    <div style="display:flex;gap:8px;margin:8px 0 10px;">
+      <button class="btn-secondary" id="food-create-btn" style="flex:1;font-size:12px;padding:8px;">+ Crear alimento</button>
+      <button class="btn-secondary" id="food-mine-btn" style="flex:1;font-size:12px;padding:8px;">Mis alimentos</button>
+    </div>
     <div class="food-search-results" id="food-res">
       <div class="food-loader">Escribe al menos 2 letras para buscar</div>
     </div>`;
   openSheet('Añadir alimento', body);
+  document.getElementById('food-create-btn').addEventListener('click', () => {
+    const q = (document.getElementById('food-q')?.value || '').trim();
+    openFoodEditor(null, { prefillName: q, thenPortion: true });
+  });
+  document.getElementById('food-mine-btn').addEventListener('click', openMyFoodsList);
   const inp = document.getElementById('food-q');
   const res = document.getElementById('food-res');
   setTimeout(() => inp && inp.focus(), 100);
@@ -8656,7 +8921,9 @@ function openFoodSearch(mealId) {
         ? `<span class="food-source-badge usda" title="USDA ${escapeHtml(p.dataType || '')}">USDA</span>`
         : (p.source === 'local'
           ? `<span class="food-source-badge local" title="Base local Rutinal">LOCAL</span>`
-          : `<span class="food-source-badge off" title="Open Food Facts">OFF</span>`);
+          : (p.source === 'custom'
+            ? `<span class="food-source-badge mine" title="Creado por ti">MÍO</span>`
+            : `<span class="food-source-badge off" title="Open Food Facts">OFF</span>`));
       const img = (p.image && /^https:\/\//.test(p.image)) ? p.image : '';
       el.innerHTML = `
         ${img ? `<img class="food-result-img" src="${escapeHtml(img)}" alt="" onerror="this.style.display='none'"/>` : '<div class="food-result-img"></div>'}
@@ -8664,10 +8931,17 @@ function openFoodSearch(mealId) {
           <div class="food-result-name">${escapeHtml(p.name)} ${srcBadge}</div>
           <div class="food-result-brand">${escapeHtml(p.brand || '—')}</div>
         </div>
+        ${p.source === 'custom' ? '<button class="food-edit-btn" title="Editar">✎</button>' : ''}
         <div class="food-result-kcal">${p.per100g.kcal} kcal/100g</div>`;
       el.addEventListener('click', () => {
         closeSheet();
         openPortionEditor({ ...p, grams: 100 }, _foodSearchMealId, -1);
+      });
+      const editBtn = el.querySelector('.food-edit-btn');
+      if (editBtn) editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const f = customFoodById(p.custom_id);
+        if (f) openFoodEditor(f);
       });
       res.appendChild(el);
     });
@@ -8685,8 +8959,8 @@ function openFoodSearch(mealId) {
       res.innerHTML = '<div class="food-loader">Escribe al menos 2 letras para buscar</div>';
       return;
     }
-    // Pintado inmediato de la base local; las fuentes online llegan después
-    const locals = localFoodSearch(q);
+    // Pintado inmediato de mis alimentos + base local; lo online llega después
+    const locals = [...customFoodSearch(q), ...localFoodSearch(q)];
     if (locals.length) renderFoodResults(locals, true);
     else res.innerHTML = '<div class="food-loader">Buscando...</div>';
     const mySeq = ++_foodSearchSeq;
@@ -8696,7 +8970,7 @@ function openFoodSearch(mealId) {
         // Descartar respuestas fuera de orden (el usuario ya escribió otra cosa)
         if (mySeq !== _foodSearchSeq) return;
         if (products.length === 0) {
-          res.innerHTML = '<div class="food-loader">Sin resultados para “' + escapeHtml(q) + '”. Prueba con otro término.</div>';
+          res.innerHTML = '<div class="food-loader">Sin resultados para “' + escapeHtml(q) + '”. Prueba con otro término, o créalo con "+ Crear alimento".</div>';
           return;
         }
         renderFoodResults(products, false);
@@ -8727,12 +9001,16 @@ function openPortionEditor(item, mealId, index) {
   const p100 = item.per100g || {};
   const isNew = index < 0;
   const ptint = foodTint(item, 0.18);
+  const hasPhoto = !!(item.image && /^https:\/\//.test(item.image));
   const body = `
     <div class="portion-header"${ptint ? ` style="background-image:${ptint.bg};border-left:3px solid ${ptint.border};border-radius:12px;padding:10px;"` : ''}>
-      ${(item.image && /^https:\/\//.test(item.image)) ? `<img class="portion-img" src="${escapeHtml(item.image)}" alt="" onerror="this.style.display='none'"/>` : '<div class="portion-img"></div>'}
+      ${hasPhoto ? `<img class="portion-img" src="${escapeHtml(item.image)}" alt="" onerror="this.style.display='none'"/>` : '<div class="portion-img"></div>'}
       <div style="flex:1;min-width:0;">
-        <div class="portion-title">${escapeHtml(item.name)}</div>
+        ${hasPhoto
+          ? `<div class="portion-title">${escapeHtml(item.name)}</div>`
+          : `<input type="text" class="portion-title-input" id="portion-name" value="${escapeHtml(item.name)}" maxlength="80" title="Toca para renombrar"/>`}
         <div class="portion-brand">${escapeHtml(item.brand || '—')}</div>
+        <button class="portion-save-mine" id="portion-save-mine">☆ Guardar en mis alimentos</button>
       </div>
     </div>
     <div class="portion-form">
@@ -8812,6 +9090,36 @@ function openPortionEditor(item, mealId, index) {
     }
   }
 
+  // Nombre editable (alimentos sin foto): usar el valor actual del input
+  function currentItemName() {
+    const ni = document.getElementById('portion-name');
+    const v = ni ? ni.value.trim() : '';
+    return v || item.name;
+  }
+
+  // Guardar este alimento (con el nombre editado) en "Mis alimentos"
+  const saveMineBtn = document.getElementById('portion-save-mine');
+  if (saveMineBtn) saveMineBtn.addEventListener('click', () => {
+    const name = currentItemName();
+    const list = customFoods();
+    const existing = list.findIndex(x => normalizeFoodQuery(x.n) === normalizeFoodQuery(name));
+    const cf = {
+      id: existing >= 0 ? list[existing].id : ('cf_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
+      n: name,
+      brand: item.brand || '',
+      cat: item.cat || foodCatOf({ ...item, name }) || null,
+      per100g: {
+        kcal: Math.round(p100.kcal || 0), protein: +(p100.protein || 0), carbs: +(p100.carbs || 0),
+        fat: +(p100.fat || 0), fiber: +(p100.fiber || 0), sugars: +(p100.sugars || 0), sodium: +(p100.sodium || 0),
+      },
+      ts: Date.now(),
+    };
+    if (existing >= 0) list[existing] = cf; else list.push(cf);
+    saveCustomFoods(list);
+    saveMineBtn.textContent = '★ Guardado en mis alimentos';
+    saveMineBtn.disabled = true;
+  });
+
   document.getElementById('portion-save').addEventListener('click', () => {
     const raw = parseFloat(gramsInp.value) || 0;
     const mult = parseFloat(unitSel.value) || 1;
@@ -8819,7 +9127,7 @@ function openPortionEditor(item, mealId, index) {
     if (grams <= 0) return;
     const newItem = {
       food_id: item.barcode || item.food_id || ('c_' + Date.now()),
-      name: item.name,
+      name: currentItemName(),
       cat: item.cat || foodCatOf(item) || null,
       brand: item.brand || '',
       image: item.image || '',

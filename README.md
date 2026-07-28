@@ -2,7 +2,7 @@
 
 App Android local-first para organizar tu día, tus hábitos, tu Pomodoro y tu nutrición. Fork limpio de Organizame, sin widgets ni sync con Google Calendar. WebView + puente nativo.
 
-**Versión actual: v1.5.1** (versionCode 7)
+**Versión actual: v1.6** (versionCode 8)
 
 ## Qué incluye
 
@@ -25,6 +25,7 @@ Timer con historial por categoría.
 - **Escáner de código de barras**: nativo (CameraX + ML Kit) en el build Gradle, y **escáner web con la cámara del WebView** (BarcodeDetector) como fallback universal; entrada manual como último recurso
 - **Barcode**: OFF primero, USDA GTIN (coincidencia exacta) como fallback
 - **Mis platillos**: guarda combinaciones frecuentes
+- **Mis alimentos (v1.6)**: crea alimentos propios con macros y categoría, renombra los que no tienen foto, y compártelos/impórtalos en JSON entre dispositivos
 - Editor de porción con macros por gramo
 
 ### Calendario
