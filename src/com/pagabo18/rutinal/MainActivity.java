@@ -261,4 +261,12 @@ public class MainActivity extends Activity {
         }
         return super.onKeyDown(keyCode, event);
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Al salir de la app (p.ej. a la pantalla de inicio) los widgets se
+        // refrescan con el estado más reciente.
+        try { WidgetRefresher.refreshAll(getApplicationContext()); } catch (Exception ignored) {}
+    }
 }
