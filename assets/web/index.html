@@ -1392,6 +1392,7 @@
   }
   .meal-empty:active { background: var(--surface-2); }
   .meal-empty.meal-add-more { padding: 8px; font-size: 11px; border-style: dashed; opacity: 0.85; }
+  .mini-ico { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-2px; }
   .food-inline-link { color: var(--accent, #3B82F6); cursor: pointer; font-weight: 600; }
 
   /* Food search modal */
@@ -1830,7 +1831,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.8 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.8.1 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try { if (window.Android && typeof window.Android.saveState === 'function') { const b = document.getElementById('preview-banner'); if (b) b.style.display = 'none'; } } catch(e){}
@@ -2489,10 +2490,20 @@ function __syncWidgets() {
     try {
       const state = {};
       __WIDGET_KEYS.forEach(k => { state[k] = S.get(k, k.startsWith('sch_') || k === 'cats' || k === 'habits' || k === 'imprevistos' ? [] : {}); });
+      // Bloques efectivos: si el usuario nunca los editó, enviar los defaults
+      // que la app muestra (si no, los widgets se ven vacíos).
+      try {
+        if (!state.sch_weekday.length && typeof DEFAULT_WEEKDAY !== 'undefined') state.sch_weekday = DEFAULT_WEEKDAY;
+        if (!state.sch_saturday.length && typeof DEFAULT_SAT !== 'undefined') state.sch_saturday = DEFAULT_SAT;
+        if (!state.sch_sunday.length && typeof DEFAULT_SUN !== 'undefined') state.sch_sunday = DEFAULT_SUN;
+      } catch (e2) {}
       window.Android.saveState(JSON.stringify(state));
     } catch(e) {}
   }, 120);
 }
+// Sincronizar al arranque: sin esto los widgets quedan vacíos hasta que el
+// usuario edita algo (state_json nunca se llenaba tras instalar/actualizar).
+setTimeout(__syncWidgets, 800);
 const S = {
   get(k, d) {
     if (__hasLS) {
@@ -8015,16 +8026,23 @@ function openNutriTrends() {
       <div>
         <div class="fe-lbl" style="font-weight:600;">Peso corporal</div>
         ${weightChart}
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <input type="number" class="field-input" id="trend-weight" placeholder="Peso de hoy (kg)" min="30" max="250" step="0.1" style="flex:1;"/>
-          <button class="btn-secondary" id="trend-weight-save">Registrar</button>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:stretch;">
+          <input type="text" inputmode="decimal" class="field-input" id="trend-weight" placeholder="Peso de hoy (kg)" style="flex:2;min-width:0;width:100%;box-sizing:border-box;"/>
+          <button class="btn-secondary" id="trend-weight-save" style="flex:1;white-space:nowrap;">Registrar</button>
         </div>
+        <div id="trend-weight-err" style="color:#EF4444;font-size:12px;margin-top:4px;display:none;"></div>
       </div>
     </div>`;
   openSheet('Tendencias', body);
   document.getElementById('trend-weight-save').addEventListener('click', () => {
-    const w = parseFloat(document.getElementById('trend-weight').value);
-    if (!(w >= 30 && w <= 250)) return;
+    // Aceptar coma decimal (teclados es-MX) y validar con feedback visible
+    const raw = (document.getElementById('trend-weight').value || '').replace(',', '.').trim();
+    const w = parseFloat(raw);
+    const errEl = document.getElementById('trend-weight-err');
+    if (!(w >= 30 && w <= 250)) {
+      if (errEl) { errEl.textContent = 'Escribe un peso válido entre 30 y 250 kg (ej. 78.5).'; errEl.style.display = 'block'; }
+      return;
+    }
     const log = S.get('weight_log', {});
     log[keyDate()] = w;
     S.set('weight_log', log);
@@ -8719,8 +8737,8 @@ function renderComida() {
   if (dateLbl) {
     const canCopyDay = totalK === 0 && !!yesterdayMeals();
     dateLbl.innerHTML = `Hoy
-      ${canCopyDay ? ' · <span class="food-inline-link" id="food-copy-yday">⧉ Repetir todo ayer</span>' : ''}
-      · <span class="food-inline-link" id="food-trends-link">📈 Tendencias</span>`;
+      ${canCopyDay ? ` · <span class="food-inline-link" id="food-copy-yday"><svg class="mini-ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Repetir todo ayer</span>` : ''}
+      · <span class="food-inline-link" id="food-trends-link"><svg class="mini-ico" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg> Tendencias</span>`;
     const cd = document.getElementById('food-copy-yday');
     if (cd) cd.addEventListener('click', () => copyMealsFromYesterday(null));
     document.getElementById('food-trends-link').addEventListener('click', openNutriTrends);
@@ -8771,7 +8789,7 @@ function renderComida() {
       <div class="meal-head">
         <div class="meal-name">${m.name}</div>
         <div style="display:flex;align-items:center;gap:8px;">
-          ${!items.length && yesterdayHasMeal(m.id) ? `<button class="meal-save-dish meal-copy-yday" data-meal="${m.id}" title="Repetir lo de ayer">⧉ Ayer</button>` : ''}
+          ${!items.length && yesterdayHasMeal(m.id) ? `<button class="meal-save-dish meal-copy-yday" data-meal="${m.id}" title="Repetir lo de ayer"><svg class="mini-ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Ayer</button>` : ''}
           ${items.length ? `<button class="meal-save-dish" data-meal="${m.id}" title="Guardar como platillo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button>` : ''}
           <div class="meal-kcal">${t.kcal} kcal</div>
         </div>
@@ -9298,7 +9316,7 @@ function openFoodEditor(existing, opts) {
         <label class="fe-lbl">Foto (opcional)</label>
         <div style="display:flex;align-items:center;gap:10px;">
           <div id="fe-photo-preview" style="width:52px;height:52px;border-radius:10px;background:var(--surface-2);background-size:cover;background-position:center;flex-shrink:0;${f.img ? `background-image:url(${f.img});` : ''}"></div>
-          <button class="btn-secondary" id="fe-photo-btn" style="flex:1;font-size:12px;">${f.img ? 'Cambiar foto' : '📷 Añadir foto'}</button>
+          <button class="btn-secondary" id="fe-photo-btn" style="flex:1;font-size:12px;">${f.img ? 'Cambiar foto' : '<svg class="mini-ico" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> Añadir foto'}</button>
           ${f.img ? '<button class="btn-secondary" id="fe-photo-del" style="font-size:12px;">Quitar</button>' : ''}
           <input type="file" id="fe-photo-input" accept="image/*" style="display:none;"/>
         </div>
@@ -9510,7 +9528,7 @@ function openFoodSearch(mealId) {
           <div class="food-result-name">${escapeHtml(p.name)} ${srcBadge}</div>
           <div class="food-result-brand">${escapeHtml(p.brand || '—')}</div>
         </div>
-        ${p.source === 'custom' ? '<button class="food-edit-btn" title="Editar">✎</button>' : ''}
+        ${p.source === 'custom' ? '<button class="food-edit-btn" title="Editar"><svg class="mini-ico" viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>' : ''}
         <div class="food-result-kcal">${p.per100g.kcal} kcal/100g</div>`;
       el.addEventListener('click', () => {
         closeSheet();
@@ -9589,7 +9607,7 @@ function openPortionEditor(item, mealId, index) {
           ? `<div class="portion-title">${escapeHtml(item.name)}</div>`
           : `<input type="text" class="portion-title-input" id="portion-name" value="${escapeHtml(item.name)}" maxlength="80" title="Toca para renombrar"/>`}
         <div class="portion-brand">${escapeHtml(item.brand || '—')}</div>
-        <button class="portion-save-mine" id="portion-save-mine">☆ Guardar en mis alimentos</button>
+        <button class="portion-save-mine" id="portion-save-mine"><svg class="mini-ico" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Guardar en mis alimentos</button>
       </div>
     </div>
     <div class="portion-form">
@@ -9696,7 +9714,7 @@ function openPortionEditor(item, mealId, index) {
     };
     if (existing >= 0) list[existing] = cf; else list.push(cf);
     saveCustomFoods(list);
-    saveMineBtn.textContent = '★ Guardado en mis alimentos';
+    saveMineBtn.innerHTML = '<svg class="mini-ico" style="fill:currentColor;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Guardado en mis alimentos';
     saveMineBtn.disabled = true;
   });
 
