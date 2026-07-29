@@ -1,0 +1,16 @@
+{
+  "name": "Rutinal",
+  "short_name": "Rutinal",
+  "description": "Organiza tu día: bloques, hábitos, Pomodoro y nutrición. Local-first.",
+  "lang": "es-MX",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAFAFA",
+  "theme_color": "#FAFAFA",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" }
+  ]
+}

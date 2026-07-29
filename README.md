@@ -46,6 +46,10 @@ Perfil (sexo, edad, altura, peso, %grasa, actividad, objetivo), split de macros 
 - **Exportar / importar / restablecer** JSON
 - **Local-first**: todo vive en localStorage + SharedPreferences
 
+## PWA (iPhone, Android y PC desde el navegador)
+
+`assets/web` se publica en GitHub Pages como PWA instalable: manifest + service worker con modo offline. En iPhone: Safari → Compartir → "Agregar a pantalla de inicio". Requiere activar Pages en el repo (Settings → Pages → Source: GitHub Actions; el repo debe ser público en plan gratuito). La PWA no incluye widgets ni alarmas exactas (eso es exclusivo del APK).
+
 ## Estructura
 
 ```
