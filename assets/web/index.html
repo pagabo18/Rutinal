@@ -8,6 +8,14 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="app-version" content="31.2">
+<!-- PWA (solo aplica servida por http/https; el APK la ignora) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#FAFAFA">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Rutinal">
 <script>
   // Aplicar tema temprano para evitar flash
   try {
@@ -1834,7 +1842,19 @@
 <div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
-try { if (window.Android && typeof window.Android.saveState === 'function') { const b = document.getElementById('preview-banner'); if (b) b.style.display = 'none'; } } catch(e){}
+try {
+  const b = document.getElementById('preview-banner');
+  if (b) {
+    if (window.Android && typeof window.Android.saveState === 'function') {
+      // APK: sin banner
+      b.style.display = 'none';
+    } else if (/^https?:$/.test(location.protocol)) {
+      // PWA servida por web: los datos SÍ persisten (localStorage del navegador)
+      b.style.display = 'none';
+    }
+    // file:// sin puente (vista previa de desarrollo): banner visible
+  }
+} catch(e){}
 </script>
 <header>
   <div>
@@ -7446,6 +7466,14 @@ function openImprSheet(existing) {
 renderClock();
 renderHoy();
 updateFab('hoy');
+// PWA: registrar el service worker solo cuando la app corre servida por
+// http/https (GitHub Pages, etc). En el APK (file://) no aplica.
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
 // Abrir una pestaña concreta (lo invoca el nativo desde los widgets)
 window.openTab = function(tab) {
   const btn = document.querySelector('nav button[data-tab="' + tab + '"]');
