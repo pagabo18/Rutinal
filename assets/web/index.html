@@ -1839,7 +1839,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.1 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try {
@@ -2674,48 +2674,11 @@ const parseKey = k => { const [y,m,d] = k.split('-').map(Number); return new Dat
 // ============================================================
 // DATA
 // ============================================================
-const DEFAULT_WEEKDAY = [
-  { id:'w1', start:'06:15', end:'07:00', label:'Ropa gym + salir', cat:'gym' },
-  { id:'w2', start:'07:00', end:'08:30', label:'Gym', cat:'gym' },
-  { id:'w3', start:'08:30', end:'09:00', label:'Baño + arreglarse', cat:'personal' },
-  { id:'w4', start:'09:00', end:'13:00', label:'Trabajo mañana', cat:'trabajo' },
-  { id:'w5', start:'13:00', end:'13:30', label:'Comida', cat:'personal' },
-  { id:'w6', start:'13:30', end:'14:00', label:'Curso teórico', cat:'hobby' },
-  { id:'w7', start:'14:00', end:'19:30', label:'Trabajo tarde', cat:'trabajo' },
-  { id:'w8', start:'19:30', end:'19:40', label:'Traslado', cat:'personal' },
-  { id:'w9', start:'19:40', end:'22:00', label:'Vida personal / pareja', cat:'pareja' },
-  { id:'w10', start:'22:00', end:'22:15', label:'Cierre del día', cat:'personal' },
-  { id:'w11', start:'22:15', end:'22:45', label:'Hobby del día', cat:'hobby' },
-  { id:'w12', start:'22:45', end:'23:00', label:'Dormir', cat:'personal' }
-];
-const DEFAULT_SAT = [
-  { id:'s1', start:'07:30', end:'09:00', label:'Despertar tranquilo', cat:'personal' },
-  { id:'s2', start:'09:00', end:'11:30', label:'Videojuegos práctico', cat:'hobby' },
-  { id:'s3', start:'11:30', end:'13:00', label:'Gym opcional', cat:'gym' },
-  { id:'s4', start:'13:00', end:'23:00', label:'Vida social / pareja', cat:'pareja' }
-];
-const DEFAULT_SUN = [
-  { id:'d1', start:'07:30', end:'09:00', label:'Despertar tranquilo', cat:'personal' },
-  { id:'d2', start:'09:00', end:'11:30', label:'Dibujo práctico', cat:'hobby' },
-  { id:'d3', start:'11:30', end:'12:00', label:'Revisión semanal', cat:'personal' },
-  { id:'d4', start:'12:00', end:'22:00', label:'Descanso / familia', cat:'personal' },
-  { id:'d5', start:'22:00', end:'22:45', label:'Cierre + prep semana', cat:'personal' }
-];
-const DEFAULT_HABITS = [
-  { id:'h1', name:'Gym 7:00 am', meta:'Lun a Vie · 90 min', cat:'gym' },
-  { id:'h2', name:'Celular fuera del cuarto', meta:'Todas las noches · 22:00', cat:'personal' },
-  { id:'h3', name:'Dormir 22:45', meta:'8 horas · sin pantalla', cat:'personal' }
-];
-const PLAN_DEFAULT = [
-  { week:1, title:'Rutina base', tasks:['Comprar reloj despertador','Preparar ropa de gym la noche anterior','Gym 7:00 am cada día (lun-vie)','Celular fuera del cuarto desde las 22:00','Dormir 22:45 en punto'] },
-  { week:2, title:'Consolidar rutina base', tasks:['Mantener los 3 hábitos de semana 1','Notar qué día se rompió y por qué','Ajustar horario si algo no cuadra','Configurar Modo Enfoque en Android'] },
-  { week:3, title:'Agregar lectura', tasks:['Elegir 1 libro físico','Ponerlo sobre la almohada','Leer 15-30 min antes de dormir (lun/mié/vie)','Meta: 3 sesiones esta semana'] },
-  { week:4, title:'Curso teórico en comida', tasks:['Descargar clases de Udemy offline','Ver 1 clase durante la comida (lun/mié/vie)','Al terminar: escribir 2 líneas de lo aprendido'] },
-  { week:5, title:'Agregar dibujo', tasks:['Comprar cuaderno + set de lápices','Dibujar 30 min martes y jueves','Empezar curso 21 Draw · lección 1'] },
-  { week:6, title:'Bloques largos', tasks:['Sábado 9:00-11:30 · Videojuegos práctico','Domingo 9:00-11:30 · Dibujo práctico','Domingo 11:30 · Revisión semanal 30 min'] },
-  { week:7, title:'Ajuste fino', tasks:['Identificar qué hábitos se rompieron y por qué','Reducir o eliminar lo que no funciona','Confirmar días con pareja (mar, jue, sáb)'] },
-  { week:8, title:'Piloto automático', tasks:['Hábitos base sin recordatorios','Revisar avance en cursos','Contar libros leídos + sesiones de dibujo','Definir siguiente ciclo de 8 semanas'] }
-];
+const DEFAULT_WEEKDAY = []; // la app inicia en blanco: sin rutinas de ejemplo;
+const DEFAULT_SAT = [];
+const DEFAULT_SUN = [];
+const DEFAULT_HABITS = [];
+const PLAN_DEFAULT = [];
 function loadPlan() { return S.get('plan', PLAN_DEFAULT); }
 function savePlan(p) { S.set('plan', p); }
 // PLAN is now dynamic
