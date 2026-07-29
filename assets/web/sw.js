@@ -9,6 +9,7 @@ const SHELL = [
   './manifest.webmanifest',
   './icon-192.png',
   './apple-touch-icon.png',
+  './privacy.html',
 ];
 
 self.addEventListener('install', (e) => {
