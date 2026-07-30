@@ -1839,7 +1839,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.2 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.3 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try {
@@ -2214,7 +2214,7 @@ try {
           </svg>
           <div class="macro-ring-center">
             <div class="macro-ring-center-num" id="food-total-kcal">0</div>
-            <div class="macro-ring-center-lbl">kcal hoy</div>
+            <div class="macro-ring-center-lbl" id="food-total-lbl">kcal hoy</div>
             <div class="macro-ring-center-goal" id="food-total-goal"></div>
           </div>
           <div class="macro-pill macro-pill-kcal" id="pill-kcal" style="display:none;">0%</div>
@@ -8172,13 +8172,30 @@ function saveMealLog(m) { S.set('meal_log', m); }
 function offCache() { return S.get('off_cache', {}); }
 function saveOffCache(c) { S.set('off_cache', c); }
 
+// Día visualizado en la pestaña Comida: se puede navegar a cualquier día
+// para ver y EDITAR el registro histórico. Por defecto, hoy.
+let foodViewDate = keyDate();
+let _foodViewPinned = false; // true cuando el usuario navegó manualmente
+function foodViewIsToday() { return foodViewDate === keyDate(); }
+function setFoodViewDate(dateKey) {
+  foodViewDate = dateKey;
+  _foodViewPinned = dateKey !== keyDate();
+  renderComida();
+}
+function shiftFoodViewDate(days) {
+  const d = new Date(foodViewDate + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  setFoodViewDate(keyDate(d));
+}
+// Nota: pese al nombre histórico, estas dos funciones operan sobre el día
+// visualizado (que por defecto es hoy). Toda la UI de Comida pasa por aquí.
 function todaysMeals() {
-  const k = keyDate();
   const log = mealLog();
-  return log[k] || { breakfast: [], lunch: [], dinner: [], snack: [] };
+  return log[foodViewDate] || { breakfast: [], lunch: [], dinner: [], snack: [] };
 }
 function yesterdayMeals() {
-  const d = new Date(); d.setDate(d.getDate() - 1);
+  const d = new Date(foodViewDate + 'T00:00:00');
+  d.setDate(d.getDate() - 1);
   return mealLog()[keyDate(d)] || null;
 }
 function yesterdayHasMeal(mealId) {
@@ -8374,12 +8391,14 @@ function openNutriTrends() {
   });
 }
 function saveTodaysMeals(meals) {
-  const k = keyDate();
   const log = mealLog();
-  log[k] = meals;
+  log[foodViewDate] = meals;
   saveMealLog(log);
-  // Avisar al nativo que hoy sí se registró comida (para el recordatorio)
-  try { window.Android && window.Android.setLastMealLog && window.Android.setLastMealLog(k); } catch (e) {}
+  // Avisar al nativo que hoy sí se registró comida (para el recordatorio) —
+  // solo cuando lo editado es el día de hoy, no un registro histórico.
+  if (foodViewIsToday()) {
+    try { window.Android && window.Android.setLastMealLog && window.Android.setLastMealLog(foodViewDate); } catch (e) {}
+  }
 }
 
 function calcItemMacros(item) {
@@ -9053,14 +9072,48 @@ function renderComida() {
   });
   totalP = Math.round(totalP); totalC = Math.round(totalC); totalG = Math.round(totalG);
   document.getElementById('food-total-kcal').textContent = totalK;
+  const totalLbl = document.getElementById('food-total-lbl');
+  if (totalLbl) totalLbl.textContent = foodViewIsToday() ? 'kcal hoy' : 'kcal del día';
 
-  // Fila de acciones del día: repetir ayer (si hoy está vacío) + tendencias
+  // Encabezado del día: navegación ‹ › por fechas (ver/editar cualquier día),
+  // salto rápido a hoy, selector de fecha, repetir día anterior y tendencias.
   const dateLbl = document.getElementById('food-date-label');
   if (dateLbl) {
+    // Al reabrir la pestaña sin navegación manual, seguir al día real
+    // (cubre el cambio de fecha a medianoche con la app abierta).
+    if (!_foodViewPinned && !foodViewIsToday()) foodViewDate = keyDate();
+    const isToday = foodViewIsToday();
+    const d = new Date(foodViewDate + 'T00:00:00');
+    const days = ['dom','lun','mar','mié','jue','vie','sáb'];
+    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const yest = new Date(); yest.setDate(yest.getDate() - 1);
+    const tomo = new Date(); tomo.setDate(tomo.getDate() + 1);
+    const label = isToday ? 'Hoy'
+      : foodViewDate === keyDate(yest) ? 'Ayer'
+      : foodViewDate === keyDate(tomo) ? 'Mañana'
+      : `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
     const canCopyDay = totalK === 0 && !!yesterdayMeals();
-    dateLbl.innerHTML = `Hoy
-      ${canCopyDay ? ` · <span class="food-inline-link" id="food-copy-yday"><svg class="mini-ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Repetir todo ayer</span>` : ''}
-      · <span class="food-inline-link" id="food-trends-link"><svg class="mini-ico" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg> Tendencias</span>`;
+    dateLbl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;position:relative;">
+        <button class="food-edit-btn" id="food-day-prev" title="Día anterior" style="margin:0;">‹</button>
+        <span id="food-day-label" style="font-weight:600;color:${isToday ? 'var(--text-3)' : 'var(--accent,#2563EB)'};cursor:pointer;min-width:70px;text-align:center;">${label}</span>
+        <button class="food-edit-btn" id="food-day-next" title="Día siguiente" style="margin:0;">›</button>
+        ${!isToday ? '<span class="food-inline-link" id="food-day-today" style="font-size:12px;">Volver a hoy</span>' : ''}
+        <input type="date" id="food-day-pick" value="${foodViewDate}" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;"/>
+      </div>
+      <div>
+        ${canCopyDay ? `<span class="food-inline-link" id="food-copy-yday"><svg class="mini-ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Repetir día anterior</span> · ` : ''}
+        <span class="food-inline-link" id="food-trends-link"><svg class="mini-ico" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg> Tendencias</span>
+      </div>`;
+    document.getElementById('food-day-prev').addEventListener('click', () => shiftFoodViewDate(-1));
+    document.getElementById('food-day-next').addEventListener('click', () => shiftFoodViewDate(1));
+    const todayBtn = document.getElementById('food-day-today');
+    if (todayBtn) todayBtn.addEventListener('click', () => setFoodViewDate(keyDate()));
+    const pick = document.getElementById('food-day-pick');
+    document.getElementById('food-day-label').addEventListener('click', () => {
+      try { pick.showPicker(); } catch (e) { pick.style.pointerEvents = 'auto'; pick.style.opacity = '0.01'; pick.click(); }
+    });
+    pick.addEventListener('change', () => { if (pick.value) setFoodViewDate(pick.value); });
     const cd = document.getElementById('food-copy-yday');
     if (cd) cd.addEventListener('click', () => copyMealsFromYesterday(null));
     document.getElementById('food-trends-link').addEventListener('click', openNutriTrends);
