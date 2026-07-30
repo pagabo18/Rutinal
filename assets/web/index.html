@@ -1839,7 +1839,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.3 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.4 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try {
@@ -2462,7 +2462,7 @@ try {
         <div style="display:flex; flex-direction:column; gap:8px;">
           <button class="btn-secondary" id="btn-export">Exportar datos (JSON)</button>
           <button class="btn-secondary" id="btn-import">Importar datos (JSON)</button>
-          <input type="file" id="file-import" accept="application/json" style="display:none;">
+          <input type="file" id="file-import" accept="application/json,text/plain,*/*" style="display:none;">
           <button class="btn-secondary" id="btn-undo-import" style="display:none;">Deshacer última importación</button>
           <button class="btn-danger" id="btn-reset">Restablecer todo</button>
         </div>
@@ -5048,8 +5048,8 @@ function bindAjustesOnce() {
       try {
         const data = JSON.parse(reader.result);
         // Validación básica: al menos una key conocida
-        const known = ['sch_weekday','sch_saturday','sch_sunday','habits','cats','plan','imprevistos','habitLog','diary','pomo_state','pomo_settings','pomo_sessions'];
-        const hasKnown = Object.keys(data).some(k => known.includes(k));
+        const known = ['sch_weekday','sch_saturday','sch_sunday','habits','cats','plan','imprevistos','habitLog','diary','pomo_state','pomo_settings','pomo_sessions','meal_log','weight_log','custom_foods','nutri_profile','food_goal_kcal','dishes','planTasks','timer_state'];
+        const hasKnown = !!(data.__exportedAt || data.__version) || Object.keys(data).some(k => known.includes(k));
         if (!hasKnown) { alert('Este archivo no parece un backup válido de Rutinal.'); e.target.value = ''; return; }
         // Resumen para el usuario
         const n = Object.keys(data).filter(k => !k.startsWith('__')).length;
