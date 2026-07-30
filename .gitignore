@@ -8,10 +8,15 @@ build/aligned.apk
 build/classes.dex
 build/sources.txt
 
-# Keystore (NUNCA subir a repo público)
+# Keystores
+# keys/debug.keystore SÍ se versiona: es la llave de distribución de los
+# builds de GitHub (instalación directa). Sin una llave estable, cada build
+# tendría firma distinta y Android rechazaría las actualizaciones.
+# La versión de Play Store usará una llave privada aparte (Play App Signing).
 build/debug.keystore
 *.keystore
 *.jks
+!keys/debug.keystore
 
 # OS / editores
 .DS_Store
