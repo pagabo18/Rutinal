@@ -1839,7 +1839,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.1 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.2 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try {
@@ -2028,10 +2028,17 @@ try {
       </div>
       <div class="week-grid" id="week-grid"></div>
       <div class="section-hint">Toca un día para ver detalle</div>
+      <div class="chart-card" id="weekly-goals-card" style="margin-top:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <div class="chart-title" style="margin-bottom:0;" id="weekly-goals-title">Metas semanales</div>
+          <div class="chart-val" id="weekly-goals-count"></div>
+        </div>
+        <div id="weekly-goals-body" style="margin-top:10px;"></div>
+      </div>
       <div class="chart-card" id="week-cat-card" style="margin-top:20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
           <div class="chart-title" style="margin-bottom:0;">Tiempo por categoría</div>
-          <button class="btn-secondary" id="edit-goals-btn" style="padding:4px 10px;font-size:12px;">Metas</button>
+          <button class="btn-secondary" id="edit-goals-btn" style="padding:4px 10px;font-size:12px;">Metas de tiempo</button>
         </div>
         <div class="cat-bars" id="week-cat-bars" style="margin-top:12px;"></div>
       </div>
@@ -2058,7 +2065,7 @@ try {
   <section id="tab-plan">
     <div class="plan-progress">
       <div class="plan-progress-row">
-        <div class="plan-progress-title">Plan 8 semanas</div>
+        <div class="plan-progress-title">Metas semanales</div>
         <div class="plan-progress-pct" id="plan-pct">0%</div>
       </div>
       <div class="plan-progress-track"><div class="plan-progress-fill" id="plan-fill" style="width:0"></div></div>
@@ -2293,7 +2300,7 @@ try {
       <div class="chip" data-v="imprs">Imprevistos</div>
       <div class="chip" data-v="cats">Categorías</div>
       <div class="chip" data-v="nutri">Nutrición</div>
-      <div class="chip" data-v="plan">Plan 8 sem.</div>
+      <div class="chip" data-v="plan">Metas semanales</div>
       <div class="chip" data-v="ajustes">Ajustes</div>
     </div>
 
@@ -2337,7 +2344,7 @@ try {
     </div>
 
     <div id="edit-plan" class="edit-panel" style="display:none;">
-      <h2>Plan 8 semanas <span class="h2-btn" id="edit-add-week">+ Semana</span></h2>
+      <h2>Metas semanales <span class="h2-btn" id="edit-add-week">+ Semana</span></h2>
       <div id="edit-plan-list"></div>
     </div>
 
@@ -3487,7 +3494,7 @@ function renderSemana() {
         return b.total - a.total;
       });
     if (rows.length === 0) {
-      bars.innerHTML = '<div style="color:var(--text-3); font-size:13px; text-align:center; padding:8px;">Sin bloques ni metas esta semana. Toca “Metas” para definirlas.</div>';
+      bars.innerHTML = '<div style="color:var(--text-3); font-size:13px; text-align:center; padding:8px;">Sin bloques ni metas esta semana. Toca “Metas de tiempo” para definirlas.</div>';
     } else {
       const maxWithoutGoal = Math.max(1, ...rows.filter(c => !c.goal).map(c => c.total));
       rows.forEach(c => {
@@ -3518,6 +3525,100 @@ function renderSemana() {
       });
     }
   }
+
+  renderWeeklyGoals(monday);
+}
+
+// ---------- Metas semanales (el plan por semanas, con checkboxes) ----------
+// Usa el MISMO almacenamiento que el editor de Editar → Metas semanales
+// ('plan' + 'planTasks'), así ambas vistas quedan sincronizadas.
+function renderWeeklyGoals(viewMonday) {
+  const card = document.getElementById('weekly-goals-card');
+  const body = document.getElementById('weekly-goals-body');
+  const title = document.getElementById('weekly-goals-title');
+  const count = document.getElementById('weekly-goals-count');
+  if (!card || !body) return;
+  const plan = loadPlan();
+
+  if (!plan.length) {
+    title.textContent = 'Metas semanales';
+    count.textContent = '';
+    body.innerHTML = `<div style="color:var(--text-3);font-size:13px;text-align:center;padding:6px 0 2px;">
+      Define tus metas por semana y aparecerán aquí con casillas para palomearlas.</div>
+      <button class="btn-secondary" id="wg-create" style="width:100%;margin-top:10px;font-size:13px;">Crear mis metas semanales</button>`;
+    document.getElementById('wg-create').addEventListener('click', () => {
+      window.openTab('editar');
+      setTimeout(() => { document.querySelector('#edit-mode .chip[data-v="plan"]')?.click(); }, 200);
+    });
+    return;
+  }
+
+  // Ancla del plan: lunes de la semana 1
+  const startKey = S.get('plan_start', null);
+  if (!startKey) {
+    title.textContent = 'Metas semanales';
+    count.textContent = plan.length + ' semanas';
+    body.innerHTML = `<div style="color:var(--text-3);font-size:13px;text-align:center;padding:6px 0 2px;">
+      Tienes un plan de ${plan.length} semana(s) listo. ¿Cuándo empieza?</div>
+      <button class="btn-primary" id="wg-start" style="width:100%;margin-top:10px;font-size:13px;">▶ Empezar el plan esta semana</button>`;
+    document.getElementById('wg-start').addEventListener('click', () => {
+      const now = new Date();
+      const mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7)); mon.setHours(0,0,0,0);
+      S.set('plan_start', keyDate(mon));
+      renderSemana();
+    });
+    return;
+  }
+
+  // Número de semana del plan correspondiente a la semana visualizada
+  const start = new Date(startKey + 'T00:00:00');
+  const weekNum = Math.floor((viewMonday - start) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  const restartBtn = `<button class="btn-ghost" id="wg-restart" style="margin-top:8px;font-size:11px;color:var(--text-3);background:none;border:none;padding:4px;cursor:pointer;width:100%;">↻ Cambiar semana de inicio del plan</button>`;
+
+  if (weekNum < 1) {
+    title.textContent = 'Metas semanales';
+    count.textContent = '';
+    body.innerHTML = `<div style="color:var(--text-3);font-size:13px;text-align:center;padding:6px 0;">El plan empieza la semana del ${startKey}.</div>` + restartBtn;
+  } else if (weekNum > plan.length) {
+    const done = S.get('planTasks', {});
+    let total = 0, dn = 0;
+    plan.forEach(w => w.tasks.forEach((_, ti) => { total++; if (done[`${w.week}_${ti}`]) dn++; }));
+    title.textContent = 'Metas semanales · plan terminado';
+    count.textContent = `${dn}/${total}`;
+    body.innerHTML = `<div style="color:var(--text-3);font-size:13px;text-align:center;padding:6px 0;">
+      Completaste ${dn} de ${total} tareas del plan. ¡Define el siguiente ciclo en Editar → Metas semanales!</div>` + restartBtn;
+  } else {
+    const w = plan[weekNum - 1];
+    const done = S.get('planTasks', {});
+    const dc = w.tasks.filter((_, ti) => done[`${w.week}_${ti}`]).length;
+    title.textContent = `Metas · Semana ${w.week}${w.title ? ': ' + w.title : ''}`;
+    count.textContent = `${dc}/${w.tasks.length}`;
+    body.innerHTML = w.tasks.map((t, ti) => {
+      const k = `${w.week}_${ti}`;
+      const isD = !!done[k];
+      return `<div class="task${isD ? ' done' : ''}" data-wgk="${k}" style="display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;${isD ? 'opacity:0.55;' : ''}">
+        <div class="mini" style="width:20px;height:20px;border-radius:6px;border:1.5px solid ${isD ? 'var(--accent,#2563EB)' : 'var(--border)'};background:${isD ? 'var(--accent,#2563EB)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          ${isD ? '<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+        </div>
+        <div style="font-size:13px;color:var(--text-2);${isD ? 'text-decoration:line-through;' : ''}">${escapeHtml(t)}</div>
+      </div>`;
+    }).join('') + restartBtn;
+    body.querySelectorAll('[data-wgk]').forEach(el => {
+      el.addEventListener('click', () => {
+        const st = S.get('planTasks', {});
+        st[el.dataset.wgk] = !st[el.dataset.wgk];
+        S.set('planTasks', st);
+        if (navigator.vibrate) navigator.vibrate(10);
+        renderSemana();
+      });
+    });
+  }
+  const rb = document.getElementById('wg-restart');
+  if (rb) rb.addEventListener('click', () => {
+    if (!confirm('¿Cambiar la semana de inicio del plan? Las tareas palomeadas se conservan.')) return;
+    S.del('plan_start');
+    renderSemana();
+  });
 }
 document.getElementById('wk-prev').addEventListener('click', () => { weekOffset--; renderSemana(); });
 document.getElementById('wk-next').addEventListener('click', () => { weekOffset++; renderSemana(); });

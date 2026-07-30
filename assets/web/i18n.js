@@ -525,10 +525,10 @@
     "pt-BR": "Ver no Dia",
     "fr": "Voir dans Jour"
   },
-  "Plan 8 semanas": {
-    "en": "8-Week Plan",
-    "pt-BR": "Plano 8 semanas",
-    "fr": "Plan 8 semaines"
+  "Metas semanales": {
+    "en": "Weekly goals",
+    "pt-BR": "Metas semanais",
+    "fr": "Objectifs hebdo"
   },
   "Título de la semana:": {
     "en": "Week title:",
@@ -684,11 +684,6 @@
     "en": "Blocks",
     "pt-BR": "Blocos",
     "fr": "Blocs"
-  },
-  "Plan 8 sem.": {
-    "en": "8-wk Plan",
-    "pt-BR": "Plano 8 sem.",
-    "fr": "Plan 8 sem."
   },
   "Ajustes": {
     "en": "Settings",
