@@ -10,8 +10,8 @@ android {
         applicationId "com.pagabo18.rutinal"
         minSdk 24
         targetSdk 34
-        versionCode 17
-        versionName "1.9.4"
+        versionCode 18
+        versionName "1.9.5"
         resConfigs "es", "en", "pt-rBR", "fr"
     }
 

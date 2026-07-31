@@ -1839,7 +1839,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.4 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.5 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try {
@@ -1944,7 +1944,8 @@ try {
 
     </div>
     <div class="split-col split-col-b">
-    <h2 style="margin-top:4px;">Hoy <span class="h2-btn" id="add-habit">+ Nuevo</span></h2>
+    <h2 style="margin-top:4px;"><span id="habit-day-title">Hoy</span> <span class="h2-btn" id="add-habit">+ Nuevo</span></h2>
+    <div id="habit-day-nav"></div>
     <div id="habits-list"></div>
     </div>
     <div class="split-full">
@@ -3679,12 +3680,29 @@ document.getElementById('edit-goals-btn').addEventListener('click', openGoalsShe
 // ============================================================
 tabRenderers.habitos = renderHabitos;
 
-function toggleHabit(id) {
+// Día visible en la pestaña Hábitos (permite llenar días pasados)
+let habitViewDate = keyDate();
+let _habitViewPinned = false;
+function habitViewIsToday() { return habitViewDate === keyDate(); }
+function setHabitViewDate(dateKey) {
+  habitViewDate = dateKey;
+  _habitViewPinned = dateKey !== keyDate();
+  renderHabitos();
+}
+function shiftHabitViewDate(days) {
+  const d = new Date(habitViewDate + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  const k = keyDate(d);
+  if (k > keyDate()) return; // los hábitos no se marcan a futuro
+  setHabitViewDate(k);
+}
+function toggleHabit(id, dateKey) {
   // El hábito nutricional es automático: lo marca/desmarca updateNutriHabitAuto
   // según los totales del día; un toggle manual sería sobrescrito y confunde.
   if (id === 'nutri_goal') return;
+  const k = dateKey || habitViewDate;
+  if (k > keyDate()) return; // no marcar días futuros
   const log = habitLog();
-  const k = keyDate();
   if (!log[k]) log[k] = {};
   log[k][id] = !log[k][id];
   setHabitLog(log);
@@ -4164,8 +4182,43 @@ function renderHabitos() {
   bindHydrationOnce();
   const habits = loadHabitsWithVirtual();
   const log = habitLog();
-  const k = keyDate();
+  // Al reabrir sin navegación manual, seguir al día real (cambio de fecha a medianoche)
+  if (!_habitViewPinned && !habitViewIsToday()) habitViewDate = keyDate();
+  const k = habitViewDate;
   const today = log[k] || {};
+
+  // Encabezado de navegación por días (llenar hábitos de días pasados)
+  const isTodayView = habitViewIsToday();
+  const dv = new Date(k + 'T00:00:00');
+  const dayN = ['dom','lun','mar','mié','jue','vie','sáb'];
+  const monN = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const yest = new Date(); yest.setDate(yest.getDate() - 1);
+  const dayLbl = isTodayView ? 'Hoy'
+    : k === keyDate(yest) ? 'Ayer'
+    : `${dayN[dv.getDay()]} ${dv.getDate()} ${monN[dv.getMonth()]}`;
+  const titleEl = document.getElementById('habit-day-title');
+  if (titleEl) titleEl.textContent = dayLbl;
+  const navEl = document.getElementById('habit-day-nav');
+  if (navEl) {
+    navEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin:2px 0 10px;position:relative;">
+        <button class="food-edit-btn" id="habit-day-prev" title="Día anterior" style="margin:0;">‹</button>
+        <span id="habit-day-label" style="font-weight:600;color:${isTodayView ? 'var(--text-3)' : 'var(--accent,#2563EB)'};cursor:pointer;min-width:70px;text-align:center;">${dayLbl}</span>
+        <button class="food-edit-btn" id="habit-day-next" title="Día siguiente" style="margin:0;${isTodayView ? 'opacity:.35;' : ''}">›</button>
+        ${!isTodayView ? '<span class="food-inline-link" id="habit-day-today" style="font-size:12px;">Volver a hoy</span>' : ''}
+        <input type="date" id="habit-day-pick" value="${k}" max="${keyDate()}" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;"/>
+      </div>`;
+    document.getElementById('habit-day-prev').addEventListener('click', () => shiftHabitViewDate(-1));
+    document.getElementById('habit-day-next').addEventListener('click', () => shiftHabitViewDate(1));
+    const tb = document.getElementById('habit-day-today');
+    if (tb) tb.addEventListener('click', () => setHabitViewDate(keyDate()));
+    const pick = document.getElementById('habit-day-pick');
+    document.getElementById('habit-day-label').addEventListener('click', () => {
+      try { pick.showPicker(); } catch (e) { pick.style.pointerEvents = 'auto'; pick.style.opacity = '0.01'; pick.click(); }
+    });
+    pick.addEventListener('change', () => { if (pick.value && pick.value <= keyDate()) setHabitViewDate(pick.value); });
+  }
+
   const cont = document.getElementById('habits-list');
   cont.innerHTML = '';
   let doneT = 0;
@@ -4205,7 +4258,8 @@ function renderHabitos() {
       if (info) info.appendChild(badge);
       div.querySelector('.check').addEventListener('click', (e) => {
         e.stopPropagation();
-        // Al tocar, navegar a la pestaña Comida
+        // Al tocar, navegar a la pestaña Comida (en el día que se está viendo)
+        try { setFoodViewDate(habitViewDate); } catch (err) {}
         const btn = document.querySelector('nav button[data-tab="comida"]');
         if (btn) btn.click();
       });
@@ -4224,8 +4278,12 @@ function renderHabitos() {
   });
   enableHabitosDrag(cont);
 
-  document.getElementById('st-today').textContent = `${doneT}/${habits.length}`;
-  document.getElementById('st-today-sub').textContent = habits.length ? `${Math.round(doneT/habits.length*100)}% hoy` : '—';
+  // Las estadísticas siempre hablan de HOY, aunque se esté viendo otro día
+  const todayLogStats = log[keyDate()] || {};
+  let doneToday = 0;
+  habits.forEach(h => { if (todayLogStats[h.id]) doneToday++; });
+  document.getElementById('st-today').textContent = `${doneToday}/${habits.length}`;
+  document.getElementById('st-today-sub').textContent = habits.length ? `${Math.round(doneToday/habits.length*100)}% hoy` : '—';
 
   // Semana
   let wP = 0, wD = 0;
@@ -4573,10 +4631,12 @@ function renderCal() {
   }).join('');
 
   let doneC = 0;
+  const isFutureSel = calSel > todayKey;
   const rows = habits.map(h => {
     const dn = log[calSel] && log[calSel][h.id];
     if (dn) doneC++;
-    return `<div class="cal-item${dn?' done':''}">
+    const canToggle = !isFutureSel;
+    return `<div class="cal-item${dn?' done':''}${canToggle ? ' cal-item-toggle' : ''}" data-hid="${h.id}"${canToggle ? ' style="cursor:pointer;"' : ''} title="${canToggle ? 'Toca para marcar/desmarcar' : ''}">
       <div class="mini"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div>${h.name}</div>
     </div>`;
@@ -4589,6 +4649,36 @@ function renderCal() {
       <div style="flex:1;">${i.what} <span style="color:var(--text-3);font-size:11px;">· ${i.start}–${i.end} · ${c.label}</span></div>
     </div>`;
   }).join('');
+  // Comida, peso y pomodoro del día seleccionado
+  const mtSel = (typeof dayMealTotals === 'function') ? dayMealTotals(calSel) : null;
+  const mealsSel = (typeof mealLog === 'function') ? mealLog()[calSel] : null;
+  let mealLines = '';
+  if (mealsSel && typeof MEALS !== 'undefined') {
+    mealLines = MEALS.map(m => {
+      const arr = mealsSel[m.id] || [];
+      if (!arr.length) return '';
+      const names = arr.map(x => x.n).join(', ');
+      return `<div style="font-size:12px;color:var(--text-3);margin-top:2px;"><span style="color:var(--text-2);font-weight:600;">${esc(m.name)}:</span> ${esc(names.length > 80 ? names.slice(0, 80) + '…' : names)}</div>`;
+    }).join('');
+  }
+  const foodHtml = `<div class="cal-detail-section-title">Comida</div>
+    <div style="padding:2px 0 4px;">
+      ${mtSel ? `<div style="font-size:13px;color:var(--text-2);font-weight:600;">${Math.round(mtSel.kcal)} kcal · P ${Math.round(mtSel.protein)} · C ${Math.round(mtSel.carbs)} · G ${Math.round(mtSel.fat)}</div>${mealLines}` : '<div style="font-size:13px;color:var(--text-3);">Sin registro de comida</div>'}
+      <span class="food-inline-link" id="cal-edit-food" style="font-size:12px;">${mtSel ? 'Ver / editar comida de este día' : 'Registrar comida de este día'}</span>
+    </div>`;
+  const wSel = (S.get('weight_log', {}) || {})[calSel];
+  const weightHtml = (wSel != null) ? `<div class="cal-detail-section-title">Peso</div>
+    <div style="font-size:13px;color:var(--text-2);padding:2px 0 4px;">${wSel} kg <span class="food-inline-link" id="cal-edit-weight" style="font-size:12px;margin-left:6px;">Corregir</span></div>` : '';
+  let pomoHtml = '';
+  try {
+    const sesSel = pomoSavedSessions().filter(s => s && s.phase === 'focus' && keyDate(new Date(s.ts)) === calSel);
+    if (sesSel.length) {
+      const mins = sesSel.reduce((a, s) => a + (s.minutes || 0), 0);
+      pomoHtml = `<div class="cal-detail-section-title">Pomodoro</div>
+        <div style="font-size:13px;color:var(--text-2);padding:2px 0 4px;">${sesSel.length} ${sesSel.length === 1 ? 'sesión' : 'sesiones'} · ${mins} min de enfoque</div>`;
+    }
+  } catch (e) {}
+
   const dt = document.getElementById('cal-detail');
   const diary = getDiaryDay(calSel);
   const hasDiary = diary.text || Object.keys(diary.blocks).length || Object.keys(diary.habits).length;
@@ -4604,6 +4694,9 @@ function renderCal() {
     <div class="cal-detail-section-title">Hábitos</div>
     ${rows || '<div class="empty" style="padding:8px 0;">Sin hábitos</div>'}
     ${imprRows ? `<div class="cal-detail-section-title" style="color:var(--impr);">Imprevistos</div>${imprRows}` : ''}
+    ${foodHtml}
+    ${weightHtml}
+    ${pomoHtml}
     ${diaryPreview}
     <div style="display:flex;gap:8px;margin-top:12px;">
       <button class="btn-secondary" id="open-diary-btn" style="flex:1;">
@@ -4613,6 +4706,31 @@ function renderCal() {
       <button class="btn-secondary" id="cal-goto-day" style="flex:1;">Ver en Día</button>
     </div>
   </div>`;
+  // Hábitos toggleables en el detalle (llenar cualquier día pasado)
+  dt.querySelectorAll('.cal-item-toggle').forEach(el => {
+    el.addEventListener('click', () => {
+      toggleHabit(el.dataset.hid, calSel);
+      renderCal();
+    });
+  });
+  const efb = document.getElementById('cal-edit-food');
+  if (efb) efb.addEventListener('click', () => {
+    try { setFoodViewDate(calSel); } catch (e) {}
+    const btn = document.querySelector('nav button[data-tab="comida"]');
+    if (btn) btn.click();
+  });
+  const ewb = document.getElementById('cal-edit-weight');
+  if (ewb) ewb.addEventListener('click', () => {
+    const cur = (S.get('weight_log', {}) || {})[calSel];
+    const v = prompt('Peso del día en kg (escribe 0 para borrarlo):', cur != null ? String(cur) : '');
+    if (v === null) return;
+    const num = parseFloat(String(v).replace(',', '.'));
+    if (isNaN(num) || num < 0 || num > 400) { alert('Valor no válido.'); return; }
+    const wl = S.get('weight_log', {});
+    if (num === 0) delete wl[calSel]; else wl[calSel] = num;
+    S.set('weight_log', wl);
+    renderCal();
+  });
   const dbtn = document.getElementById('open-diary-btn');
   if (dbtn) dbtn.addEventListener('click', () => openDiarySheet(calSel));
   const gbtn = document.getElementById('cal-goto-day');
