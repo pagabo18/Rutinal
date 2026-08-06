@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invitación</title>
+<meta name="description" content="Acceso exclusivo para personas invitadas.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<!-- ===================== PUERTA DE ACCESO ===================== -->
+<div class="gate" id="gate" hidden>
+  <div class="gate__card">
+    <p class="gate__eyebrow" data-bind="edicion"></p>
+    <h1 class="gate__title" data-bind="nombre"></h1>
+    <p class="gate__lead">Esta invitación es personal. Escribe la clave que recibiste para ver los detalles y confirmar tu asistencia.</p>
+
+    <form class="gate__form" id="gate-form" novalidate>
+      <label class="field">
+        <span class="field__label" id="gate-label">Clave de acceso</span>
+        <span class="field__control">
+          <input type="password" id="gate-input" name="clave" autocomplete="off"
+                 autocapitalize="none" spellcheck="false" required
+                 aria-describedby="gate-error" placeholder="••••••••">
+          <button type="button" class="field__toggle" id="gate-toggle"
+                  aria-label="Mostrar la clave" aria-pressed="false">Ver</button>
+        </span>
+      </label>
+
+      <p class="gate__error" id="gate-error" role="alert" hidden></p>
+
+      <button type="submit" class="btn btn--primary btn--block">Entrar</button>
+    </form>
+
+    <p class="gate__help">
+      ¿Perdiste tu clave? <a id="gate-contacto" href="#">Escríbenos</a>.
+    </p>
+  </div>
+</div>
+
+<!-- ===================== SITIO ===================== -->
+<div class="site" id="site" hidden>
+
+  <header class="hero">
+    <div class="hero__inner">
+      <p class="hero__eyebrow" data-bind="edicion"></p>
+      <h1 class="hero__title" data-bind="nombre"></h1>
+      <p class="hero__lema" data-bind="lema"></p>
+
+      <p class="hero__saludo" id="hero-saludo" hidden></p>
+
+      <dl class="hero__meta">
+        <div><dt>Fecha</dt><dd data-bind="fechaTexto"></dd></div>
+        <div><dt>Hora</dt><dd data-bind="horaTexto"></dd></div>
+        <div><dt>Lugar</dt><dd data-bind="lugarNombre"></dd></div>
+      </dl>
+
+      <div class="hero__acciones">
+        <a class="btn btn--primary" href="#confirmar">Confirmar asistencia</a>
+        <a class="btn btn--ghost" id="btn-calendario" href="#">Añadir al calendario</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Cuenta regresiva -->
+  <section class="countdown" id="countdown" aria-live="off">
+    <h2 class="countdown__title" id="countdown-title">Faltan</h2>
+    <ol class="countdown__grid">
+      <li><span id="cd-dias">--</span><small>días</small></li>
+      <li><span id="cd-horas">--</span><small>horas</small></li>
+      <li><span id="cd-min">--</span><small>min</small></li>
+      <li><span id="cd-seg">--</span><small>seg</small></li>
+    </ol>
+  </section>
+
+  <main>
+    <!-- Detalles -->
+    <section class="section" id="detalles">
+      <h2 class="section__title">Los detalles</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Cuándo</h3>
+          <p data-bind="fechaTexto"></p>
+          <p class="muted" data-bind="horaTexto"></p>
+        </article>
+        <article class="card">
+          <h3>Dónde</h3>
+          <p data-bind="lugarNombre"></p>
+          <p class="muted" data-bind="lugarDireccion"></p>
+          <p><a class="link" id="link-mapa" href="#" target="_blank" rel="noopener">Ver en el mapa</a></p>
+        </article>
+        <article class="card">
+          <h3>Código de vestimenta</h3>
+          <p data-bind="dressCode"></p>
+        </article>
+        <article class="card">
+          <h3>Confirma antes del</h3>
+          <p data-bind="limiteRSVPTexto"></p>
+          <p class="muted">Necesitamos tu respuesta para cerrar la lista.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Programa -->
+    <section class="section" id="programa">
+      <h2 class="section__title">Programa</h2>
+      <ol class="programa" id="programa-lista"></ol>
+    </section>
+
+    <!-- RSVP -->
+    <section class="section section--rsvp" id="confirmar">
+      <h2 class="section__title">Confirma tu asistencia</h2>
+
+      <!-- Aviso de respuesta previa -->
+      <div class="aviso aviso--info" id="rsvp-previo" hidden></div>
+
+      <!-- Aviso de plazo cerrado -->
+      <div class="aviso aviso--warn" id="rsvp-cerrado" hidden>
+        El plazo para confirmar terminó el <strong data-bind="limiteRSVPTexto"></strong>.
+        Si necesitas avisarnos de un cambio, <a id="cerrado-contacto" href="#">contáctanos directamente</a>.
+      </div>
+
+      <form class="form" id="rsvp-form" novalidate>
+        <fieldset class="form__group">
+          <legend class="form__legend">¿Nos acompañas?</legend>
+          <div class="choice">
+            <label class="choice__opt">
+              <input type="radio" name="asistencia" value="si" required>
+              <span>Sí, ahí estaré</span>
+            </label>
+            <label class="choice__opt">
+              <input type="radio" name="asistencia" value="no" required>
+              <span>No podré ir</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <label class="field">
+          <span class="field__label">Nombre completo</span>
+          <input type="text" name="nombre" id="rsvp-nombre" autocomplete="name" required>
+        </label>
+
+        <label class="field">
+          <span class="field__label">Correo electrónico</span>
+          <input type="email" name="email" autocomplete="email" required>
+        </label>
+
+        <label class="field" id="campo-telefono">
+          <span class="field__label">Teléfono <em class="opt">(opcional)</em></span>
+          <input type="tel" name="telefono" autocomplete="tel">
+        </label>
+
+        <div class="solo-si" id="solo-si" hidden>
+          <label class="field">
+            <span class="field__label">Acompañantes</span>
+            <select name="acompanantes" id="rsvp-acompanantes"></select>
+            <span class="field__hint" id="hint-acompanantes"></span>
+          </label>
+
+          <label class="field" id="campo-nombres-acomp" hidden>
+            <span class="field__label">Nombre de tus acompañantes</span>
+            <input type="text" name="nombresAcompanantes" placeholder="Separados por comas">
+          </label>
+
+          <label class="field" id="campo-alergias">
+            <span class="field__label">Restricciones alimentarias <em class="opt">(opcional)</em></span>
+            <input type="text" name="alergias" placeholder="Vegetariano, sin gluten, alergias…">
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="field__label">Mensaje para el comité <em class="opt">(opcional)</em></span>
+          <textarea name="mensaje" rows="3"></textarea>
+        </label>
+
+        <p class="form__error" id="rsvp-error" role="alert" hidden></p>
+        <p id="rsvp-error-manual" hidden>
+          <a class="btn btn--ghost btn--block" id="rsvp-error-enlace" href="#" target="_blank" rel="noopener"></a>
+        </p>
+
+        <button type="submit" class="btn btn--primary btn--block" id="rsvp-submit">Enviar confirmación</button>
+
+        <p class="form__nota" id="rsvp-nota"></p>
+      </form>
+
+      <!-- Éxito -->
+      <div class="exito" id="rsvp-exito" hidden>
+        <h3 id="exito-titulo"></h3>
+        <p id="exito-texto"></p>
+        <p id="exito-manual" hidden>
+          <a class="btn btn--primary" id="exito-enlace" href="#" target="_blank" rel="noopener">Enviar ahora</a>
+        </p>
+        <p><button type="button" class="link link--btn" id="btn-editar">Modificar mi respuesta</button></p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <h2 class="section__title">Preguntas frecuentes</h2>
+      <div class="faq" id="faq-lista"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p data-bind="nombre"></p>
+    <p class="muted">
+      ¿Dudas? Escribe a <a class="link" id="footer-contacto" href="#"></a>.
+    </p>
+    <p><button type="button" class="link link--btn" id="btn-salir">Cerrar sesión</button></p>
+  </footer>
+</div>
+
+<noscript>
+  <div class="noscript">Esta invitación necesita JavaScript activado para mostrarse.</div>
+</noscript>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
