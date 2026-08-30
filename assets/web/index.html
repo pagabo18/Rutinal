@@ -1839,7 +1839,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.6 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.7 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try {
@@ -2015,6 +2015,10 @@ try {
         <div class="chip" data-v="hours">Por horas</div>
       </div>
       <div id="day-container"></div>
+      <div class="chart-card" id="day-cat-card" style="margin-top:20px;display:none;">
+        <div class="chart-title">Tiempo por categoría</div>
+        <div class="cat-bars" id="day-cat-bars" style="margin-top:12px;"></div>
+      </div>
     </div>
 
     <!-- Sub-vista: Semana -->
@@ -3099,6 +3103,14 @@ function renderDia() {
   } else {
     renderDiaHours(container, events, affected, isToday, list, dayImprs);
   }
+
+  // Tiempo por categoría de este día
+  const dayCatCard = document.getElementById('day-cat-card');
+  if (dayCatCard) {
+    const barsHtml = catBarsHTML([dayView], false);
+    dayCatCard.style.display = barsHtml ? '' : 'none';
+    document.getElementById('day-cat-bars').innerHTML = barsHtml;
+  }
 }
 
 function renderDiaList(container, events, affected, isToday, kind) {
@@ -3397,6 +3409,57 @@ document.querySelectorAll('#day-mode .chip').forEach(chip => {
 // ============================================================
 tabRenderers.semana = renderSemana;
 let weekOffset = 0;
+// Barras de "Tiempo por categoría" para un conjunto de fechas (Día, Semana, Mes).
+// withGoals=true compara contra las metas de tiempo, que son semanales.
+function catBarsHTML(dates, withGoals) {
+  const catTotals = {};
+  CATS.forEach(c => { catTotals[c.id] = 0; });
+  dates.forEach(d => {
+    const blocks = scheduleForDate(d) || [];
+    blocks.forEach(b => {
+      if (!b.start || !b.end) return;
+      const dur = timeToMin(b.end) - timeToMin(b.start);
+      if (dur <= 0) return;
+      if (catTotals[b.cat] == null) catTotals[b.cat] = 0;
+      catTotals[b.cat] += dur;
+    });
+  });
+  const goals = withGoals ? S.get('catGoals', {}) : {}; // { catId: minutosPorSemana }
+  const rows = CATS.map(c => ({
+    ...c,
+    total: catTotals[c.id] || 0,
+    goal: goals[c.id] || 0
+  })).filter(c => c.total > 0 || c.goal > 0)
+    .sort((a, b) => {
+      // Con meta primero, luego por tiempo total
+      if ((b.goal > 0) !== (a.goal > 0)) return (b.goal > 0) - (a.goal > 0);
+      return b.total - a.total;
+    });
+  if (rows.length === 0) return '';
+  const maxWithoutGoal = Math.max(1, ...rows.filter(c => !c.goal).map(c => c.total));
+  return rows.map(c => {
+    if (c.goal > 0) {
+      const pct = Math.min(100, (c.total / c.goal) * 100);
+      const reached = c.total >= c.goal;
+      return `<div class="cat-bar-row">
+        <div class="cat-bar-lbl" style="color:${c.color}">${c.label}</div>
+        <div class="cat-bar-track">
+          <div class="cat-bar-fill" style="width:${pct}%; background:${c.color}; ${reached ? 'box-shadow: 0 0 0 1px '+c.color+' inset;' : ''}"></div>
+        </div>
+        <div class="cat-bar-val" style="${reached ? 'color:'+c.color+';font-weight:600;' : ''}">
+          ${fmtDur(c.total)} <span style="color:var(--text-3);font-weight:400;font-size:11px;">/ ${fmtDur(c.goal)}</span>
+        </div>
+      </div>`;
+    }
+    const pct = (c.total / maxWithoutGoal) * 100;
+    return `<div class="cat-bar-row">
+      <div class="cat-bar-lbl" style="color:${c.color}">${c.label}</div>
+      <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%; background:${c.color};"></div></div>
+      <div class="cat-bar-val">${fmtDur(c.total)}</div>
+    </div>`;
+  }).join('');
+}
+
 function renderSemana() {
   const now = new Date();
   const monday = new Date(now);
@@ -3465,65 +3528,11 @@ function renderSemana() {
     });
   });
 
-  // Tiempo por categoría (min totales de la semana)
-  const catTotals = {};
-  CATS.forEach(c => { catTotals[c.id] = 0; });
-  dayDates.forEach(d => {
-    const blocks = scheduleForDate(d) || [];
-    blocks.forEach(b => {
-      if (!b.start || !b.end) return;
-      const dur = timeToMin(b.end) - timeToMin(b.start);
-      if (dur <= 0) return;
-      if (catTotals[b.cat] == null) catTotals[b.cat] = 0;
-      catTotals[b.cat] += dur;
-    });
-  });
+  // Tiempo por categoría (min totales de la semana, con metas)
   const bars = document.getElementById('week-cat-bars');
-  const goals = S.get('catGoals', {}); // { catId: minutosPorSemana }
   if (bars) {
-    bars.innerHTML = '';
-    // Incluir todas las categorías que tengan tiempo O meta
-    const rows = CATS.map(c => ({
-      ...c,
-      total: catTotals[c.id] || 0,
-      goal: goals[c.id] || 0
-    })).filter(c => c.total > 0 || c.goal > 0)
-      .sort((a,b) => {
-        // Con meta primero, luego por tiempo total
-        if ((b.goal > 0) !== (a.goal > 0)) return (b.goal > 0) - (a.goal > 0);
-        return b.total - a.total;
-      });
-    if (rows.length === 0) {
-      bars.innerHTML = '<div style="color:var(--text-3); font-size:13px; text-align:center; padding:8px;">Sin bloques ni metas esta semana. Toca “Metas de tiempo” para definirlas.</div>';
-    } else {
-      const maxWithoutGoal = Math.max(1, ...rows.filter(c => !c.goal).map(c => c.total));
-      rows.forEach(c => {
-        const row = document.createElement('div');
-        row.className = 'cat-bar-row';
-        if (c.goal > 0) {
-          const pct = Math.min(100, (c.total / c.goal) * 100);
-          const reached = c.total >= c.goal;
-          const overflowPct = c.total > c.goal ? ((c.total - c.goal) / c.goal) * 100 : 0;
-          row.innerHTML = `
-            <div class="cat-bar-lbl" style="color:${c.color}">${c.label}</div>
-            <div class="cat-bar-track">
-              <div class="cat-bar-fill" style="width:${pct}%; background:${c.color}; ${reached ? 'box-shadow: 0 0 0 1px '+c.color+' inset;' : ''}"></div>
-            </div>
-            <div class="cat-bar-val" style="${reached ? 'color:'+c.color+';font-weight:600;' : ''}">
-              ${fmtDur(c.total)} <span style="color:var(--text-3);font-weight:400;font-size:11px;">/ ${fmtDur(c.goal)}</span>
-            </div>
-          `;
-        } else {
-          const pct = (c.total / maxWithoutGoal) * 100;
-          row.innerHTML = `
-            <div class="cat-bar-lbl" style="color:${c.color}">${c.label}</div>
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%; background:${c.color};"></div></div>
-            <div class="cat-bar-val">${fmtDur(c.total)}</div>
-          `;
-        }
-        bars.appendChild(row);
-      });
-    }
+    const html = catBarsHTML(dayDates, true);
+    bars.innerHTML = html || '<div style="color:var(--text-3); font-size:13px; text-align:center; padding:8px;">Sin bloques ni metas esta semana. Toca “Metas de tiempo” para definirlas.</div>';
   }
 
   renderWeeklyGoals(monday);
@@ -4676,6 +4685,12 @@ function renderCal() {
     }
   } catch (e) {}
 
+  // Tiempo por categoría del día seleccionado
+  const catBarsSel = catBarsHTML([sel], false);
+  const catBarsSelHtml = catBarsSel
+    ? `<div class="cal-detail-section-title">Tiempo por categoría</div><div class="cat-bars" style="padding:2px 0 4px;">${catBarsSel}</div>`
+    : '';
+
   const dt = document.getElementById('cal-detail');
   const diary = getDiaryDay(calSel);
   const hasDiary = diary.text || Object.keys(diary.blocks).length || Object.keys(diary.habits).length;
@@ -4691,6 +4706,7 @@ function renderCal() {
     <div class="cal-detail-section-title">Hábitos</div>
     ${rows || '<div class="empty" style="padding:8px 0;">Sin hábitos</div>'}
     ${imprRows ? `<div class="cal-detail-section-title" style="color:var(--impr);">Imprevistos</div>${imprRows}` : ''}
+    ${catBarsSelHtml}
     ${foodHtml}
     ${weightHtml}
     ${pomoHtml}
