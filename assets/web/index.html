@@ -1839,7 +1839,7 @@
 </head>
 <body>
 
-<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.5 · los datos no se guardan al recargar</div>
+<div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.6 · los datos no se guardan al recargar</div>
 <script>
 // Ocultar banner en APK Android (solo visible en preview web)
 try {
@@ -2649,15 +2649,15 @@ function timePickerHTML(id, value) {
   const [h, m] = (value || '08:00').split(':').map(Number);
   return `<div class="time-picker" data-id="${id}" data-h="${pad(h)}" data-m="${pad(m)}">
     <div class="tp-col">
-      <button type="button" class="tp-btn" data-act="h-">−</button>
-      <div class="tp-val tp-val-h">${pad(h)}</div>
       <button type="button" class="tp-btn" data-act="h+">+</button>
+      <div class="tp-val tp-val-h">${pad(h)}</div>
+      <button type="button" class="tp-btn" data-act="h-">−</button>
     </div>
     <span class="tp-sep">:</span>
     <div class="tp-col">
-      <button type="button" class="tp-btn" data-act="m-">−</button>
-      <div class="tp-val tp-val-m">${pad(m)}</div>
       <button type="button" class="tp-btn" data-act="m+">+</button>
+      <div class="tp-val tp-val-m">${pad(m)}</div>
+      <button type="button" class="tp-btn" data-act="m-">−</button>
     </div>
   </div>`;
 }
@@ -2912,7 +2912,8 @@ function renderClock() {
 tabRenderers.hoy = renderHoy;
 function renderHoy() {
   const kind = scheduleKindForDate();
-  const list = loadSchedules()[kind];
+  // scheduleForDate respeta los días elegidos por bloque (L, Mi, V…)
+  const list = scheduleForDate();
   const todayKey = keyDate();
   const todayImprs = imprsForDate(todayKey);
   const merged = [
@@ -3073,7 +3074,7 @@ function renderDia() {
   document.getElementById('day-sub').textContent = `${dayView.getDate()} ${months[dayView.getMonth()]} ${dayView.getFullYear()}`;
 
   const kind = scheduleKindForDate(dayView);
-  const list = loadSchedules()[kind];
+  const list = scheduleForDate(dayView);
   const dayKey = keyDate(dayView);
   const dayImprs = imprsForDate(dayKey);
   const affected = new Set();
@@ -3442,8 +3443,7 @@ function renderSemana() {
       const cell = document.createElement('div');
       const isToday = keyDate(d) === todayKey;
       cell.className = 'week-cell' + (isToday ? ' today' : '');
-      const kind = scheduleKindForDate(d);
-      const blocks = loadSchedules()[kind];
+      const blocks = scheduleForDate(d);
       const imprs = imprsForDate(keyDate(d));
       const nextH = HOURS[hi+1] || 24;
       const rangeStart = h*60, rangeEnd = nextH*60;
@@ -3469,8 +3469,7 @@ function renderSemana() {
   const catTotals = {};
   CATS.forEach(c => { catTotals[c.id] = 0; });
   dayDates.forEach(d => {
-    const kind = scheduleKindForDate(d);
-    const blocks = loadSchedules()[kind] || [];
+    const blocks = scheduleForDate(d) || [];
     blocks.forEach(b => {
       if (!b.start || !b.end) return;
       const dur = timeToMin(b.end) - timeToMin(b.start);
@@ -3725,13 +3724,12 @@ function calcStreak(id) {
 // RACHA GLOBAL ESTRICTA (todos los hábitos del día = día perfecto)
 // ============================================================
 function isDayPerfect(dateKey, habits, log) {
-  if (!habits || habits.length === 0) return false;
+  // Los hábitos automáticos/virtuales (p. ej. la meta nutricional) NO cuentan
+  // para la racha: se marcan solos y romperían la racha por comer distinto.
+  const real = (habits || []).filter(h => !h.virtual && !h.auto);
+  if (real.length === 0) return false;
   if (!log[dateKey]) return false;
-  for (const h of habits) {
-    // Los hábitos virtuales (nutri_goal) solo se exigen en días donde la
-    // auto-evaluación llegó a registrar una entrada; si no existía perfil
-    // ese día, no debe romper el día perfecto ni resetear la racha.
-    if (h.virtual && !(h.id in log[dateKey])) continue;
+  for (const h of real) {
     if (!log[dateKey][h.id]) return false;
   }
   return true;
@@ -3745,7 +3743,8 @@ function isStreakPaused(dateKey) {
 
 // Cuenta días perfectos consecutivos hasta hoy (o ayer si hoy aún no está completo)
 function calcGlobalStreak() {
-  const habits = loadHabitsWithVirtual();
+  // Sin hábitos virtuales: la meta nutricional no debe influir en la racha
+  const habits = loadHabits();
   const log = habitLog();
   if (!habits.length) return 0;
   let streak = 0;
@@ -4166,7 +4165,7 @@ function loadHabitsWithVirtual() {
         habits.push({
           id: 'nutri_goal',
           name: 'Cumplí mi meta nutricional',
-          meta: `${targets.kcal} kcal · ${targets.protein}g proteína`,
+          meta: `${targets.kcal} kcal · ${targets.protein}g proteína · no cuenta para la racha`,
           cat: 'personal',
           virtual: true,
           auto: true,
@@ -4579,9 +4578,8 @@ function renderCal() {
     const k = keyDate(dObj);
     const c = document.createElement('div');
     c.className = 'cal-cell' + (k === todayKey ? ' today' : '') + (k === calSel ? ' selected' : '') + (dObj > todayObj ? ' future' : '');
-    // Dots = categorías únicas de bloques de ese día
-    const kind = scheduleKindForDate(dObj);
-    const blocks = scs[kind] || [];
+    // Dots = categorías únicas de bloques de ese día (respetando días elegidos)
+    const blocks = scheduleForDate(dObj) || [];
     const uniqCats = [];
     blocks.forEach(b => { if (!uniqCats.includes(b.cat)) uniqCats.push(b.cat); });
     let dots = '';
@@ -4604,8 +4602,7 @@ function renderCal() {
   // Detalle
   const dNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const sel = parseKey(calSel);
-  const kind = scheduleKindForDate(sel);
-  const blocks = (scs[kind] || []).slice().sort((a,b) => a.start.localeCompare(b.start));
+  const blocks = (scheduleForDate(sel) || []).slice().sort((a,b) => a.start.localeCompare(b.start));
 
   const diaryForBlocks = getDiaryDay(calSel);
   const esc = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
