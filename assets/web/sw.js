@@ -1,6 +1,6 @@
 // Service worker de Rutinal (PWA): app shell offline-first.
 // Sube la versión del caché en cada release para forzar actualización.
-const CACHE = 'rutinal-v1.9.7';
+const CACHE = 'rutinal-v1.9.8';
 const SHELL = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const SHELL = [
   './food_db.js',
   './manifest.webmanifest',
   './icon-192.png',
+  './icon-512.png',
   './apple-touch-icon.png',
   './privacy.html',
 ];
