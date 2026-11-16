@@ -1,6 +1,7 @@
 // ===== Rutinal Runtime i18n =====
 // Detecta idioma del sistema, aplica traducciones al HTML/DOM en tiempo de renderizado.
-// Auto-generado desde strings-*.json. NO editar a mano.
+// Las traducciones base viven aquí (MAP/TEMPLATES); las añadidas después están
+// en i18n_extra.js (window.__I18N_EXTRA), que se carga antes y se fusiona abajo.
 // Uso:
 //   window.i18n.t(esString)  → devuelve traducción (o esString si no hay match)
 //   window.i18n.setLang('en')
@@ -2076,6 +2077,21 @@
   }
 };
 
+  // Fusionar traducciones adicionales (i18n_extra.js). Las de extra ganan:
+  // ahí se corrigen claves ambiguas o mal traducidas del mapa base.
+  const EXTRA = window.__I18N_EXTRA || {};
+  Object.assign(MAP, EXTRA.map || {});
+  Object.assign(TEMPLATES, EXTRA.tpl || {});
+  // Claves con contexto: un elemento con data-i18n-ctx="nav" busca primero
+  // "nav:<texto>" (p. ej. "Comida" es "Lunch" como tiempo de comida pero
+  // "Meal" en la barra de navegación).
+  const CTX = EXTRA.ctx || {};
+  // Índice normalizado (espacios colapsados) para que textos del HTML con
+  // saltos de línea internos también encuentren su traducción.
+  const norm = s => s.replace(/\s+/g, ' ').trim();
+  const NMAP = {};
+  Object.keys(MAP).forEach(k => { NMAP[norm(k)] = MAP[k]; });
+
   // Compilar templates a regex ordenados por longitud (más largos primero)
   const TEMPLATE_LIST = Object.keys(TEMPLATES)
     .sort((a,b) => b.length - a.length)
@@ -2087,13 +2103,14 @@
       // salgan mezclas tipo "Crear habits"), y {{plural}} captura 's' opcional
       // (con (.+?) el singular "1 hábito" jamás matcheaba).
       const NUMERIC_VARS = ['count', 'done', 'total', 'h', 'm', 'current', 'goal'];
-      const regexStr = esTpl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{\\\{(\w+)\\\}\\\}/g, (_, name) => {
+      const isNum = name => NUMERIC_VARS.includes(name) || /^n\d*$/.test(name);
+      const regexStr = norm(esTpl).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\\\{\\\{(\w+)\\\}\\\}/g, (_, name) => {
         varNames.push(name);
         if (name === 'plural') return '(s?)';
-        if (NUMERIC_VARS.includes(name)) return '(\\d+)';
+        if (isNum(name)) return '(-?\\d+(?:[.,]\\d+)?)';
         return '(.+?)';
       });
-      return { esTpl, regex: new RegExp('^' + regexStr + '$'), varNames };
+      return { esTpl, regex: new RegExp('^' + regexStr.replace(/ /g, '\\s+') + '$'), varNames, numeric: varNames.map(isNum) };
     });
 
   function detectSystemLang() {
@@ -2111,13 +2128,18 @@
   if (!SUPPORTED.includes(currentLang)) currentLang = FALLBACK;
 
   // Traducir un string ES → idioma actual
-  function translate(str) {
+  function translate(str, depth, ctx) {
     if (!str || currentLang === FALLBACK) return str;
-    const trimmed = str.trim();
+    depth = depth || 0;
+    const trimmed = norm(str);
     if (!trimmed) return str;
+    // 0. Clave con contexto
+    if (ctx && CTX[ctx + ':' + trimmed] && CTX[ctx + ':' + trimmed][currentLang]) {
+      return str.match(/^\s*/)[0] + CTX[ctx + ':' + trimmed][currentLang] + str.match(/\s*$/)[0];
+    }
     // 1. Match exacto en mapa simple
-    if (MAP[trimmed]) {
-      const tr = MAP[trimmed][currentLang];
+    if (NMAP[trimmed]) {
+      const tr = NMAP[trimmed][currentLang];
       if (tr) {
         // Preservar espacios/saltos originales del inicio/final
         const leading = str.match(/^\s*/)[0];
@@ -2126,7 +2148,8 @@
       }
     }
     // 2. Match de template
-    for (const {esTpl, regex, varNames} of TEMPLATE_LIST) {
+    if (depth > 2) return str;
+    for (const {esTpl, regex, varNames, numeric} of TEMPLATE_LIST) {
       const m = trimmed.match(regex);
       if (m) {
         const trTpl = TEMPLATES[esTpl][currentLang];
@@ -2134,7 +2157,10 @@
         // Reemplazar {{var}} con valores capturados
         let out = trTpl;
         varNames.forEach((name, i) => {
-          out = out.replace(new RegExp('\\{\\{' + name + '\\}\\}', 'g'), m[i+1]);
+          // Las variables de texto también se traducen si están en el mapa
+          // (categorías, días, nombres de plantillas…)
+          const val = numeric[i] ? m[i+1] : translate(m[i+1], depth + 1);
+          out = out.split('{{' + name + '}}').join(val);
         });
         const leading = str.match(/^\s*/)[0];
         const trailing = str.match(/\s*$/)[0];
@@ -2147,12 +2173,37 @@
   // Traducir un nodo de texto
   function translateNode(node) {
     if (!node || node.nodeType !== Node.TEXT_NODE) return;
-    const orig = node.__origText || node.nodeValue;
+    // Si la app cambió el texto después de traducirlo, ese es el nuevo original
+    if (node.__origText != null && node.nodeValue !== node.__trText && node.nodeValue !== node.__origText) {
+      node.__origText = node.nodeValue;
+    }
+    const orig = node.__origText != null ? node.__origText : node.nodeValue;
     if (!orig || !orig.trim()) return;
     // Guardar el original para poder cambiar de idioma varias veces
-    if (!node.__origText) node.__origText = orig;
-    const tr = translate(node.__origText);
+    if (node.__origText == null) node.__origText = orig;
+    const p = node.parentElement;
+    const ctxEl = p && p.closest && p.closest('[data-i18n-ctx]');
+    const tr = translate(node.__origText, 0, ctxEl ? ctxEl.getAttribute('data-i18n-ctx') : null);
+    node.__trText = tr;
     if (tr !== node.nodeValue) node.nodeValue = tr;
+  }
+
+  function attrKey(attr) {
+    return attr.replace(/-([a-z])/g, (_,c)=>c.toUpperCase()).replace(/^./, s=>s.toUpperCase());
+  }
+  function translateAttr(el, attr) {
+    const v = el.getAttribute && el.getAttribute(attr);
+    if (!v) return;
+    const k = attrKey(attr);
+    try {
+      const orig = el.dataset['orig' + k], last = el.dataset['tr' + k];
+      // La app reescribió el atributo: tomar el nuevo valor como original
+      if (orig && v !== last && v !== orig) el.dataset['orig' + k] = v;
+      if (!el.dataset['orig' + k]) el.dataset['orig' + k] = v;
+      const tr = translate(el.dataset['orig' + k]);
+      el.dataset['tr' + k] = tr;
+      if (tr !== v) el.setAttribute(attr, tr);
+    } catch(e){}
   }
 
   // Recorrer todos los text nodes de un subtree
@@ -2160,22 +2211,14 @@
     if (!root) return;
     // Traducir atributos comunes: placeholder, title, aria-label, alt, value (solo botones)
     if (root.nodeType === Node.ELEMENT_NODE) {
-      ['placeholder','title','aria-label','alt'].forEach(attr => {
-        const v = root.getAttribute && root.getAttribute(attr);
-        if (v) {
-          const key = 'orig' + attr.replace(/-([a-z])/g, (_,c)=>c.toUpperCase()).replace(/^./, s=>s.toUpperCase());
-          try {
-            if (!root.dataset[key]) root.dataset[key] = v;
-            const tr = translate(root.dataset[key]);
-            if (tr !== v) root.setAttribute(attr, tr);
-          } catch(e){}
-        }
-      });
+      ['placeholder','title','aria-label','alt'].forEach(attr => translateAttr(root, attr));
       // value de <input type="button|submit">
       if (root.tagName === 'INPUT' && ['button','submit','reset'].includes(root.type)) {
         if (root.value) {
+          if (root.dataset.origValue && root.value !== root.dataset.trValue && root.value !== root.dataset.origValue) root.dataset.origValue = root.value;
           if (!root.dataset.origValue) root.dataset.origValue = root.value;
           const tr = translate(root.dataset.origValue);
+          root.dataset.trValue = tr;
           if (tr !== root.value) root.value = tr;
         }
       }
@@ -2201,8 +2244,9 @@
   }
   function restoreAll(root) {
     if (!root) return;
-    if (root.nodeType === Node.TEXT_NODE && root.__origText) {
+    if (root.nodeType === Node.TEXT_NODE && root.__origText != null) {
       root.nodeValue = root.__origText;
+      root.__trText = root.__origText;
       return;
     }
     if (root.nodeType === Node.ELEMENT_NODE) {
@@ -2226,17 +2270,7 @@
         if (mut.type === 'characterData' && mut.target) translateNode(mut.target);
         if (mut.type === 'attributes' && mut.target && mut.target.getAttribute) {
           const attr = mut.attributeName;
-          if (['placeholder','title','aria-label','alt'].includes(attr)) {
-            const v = mut.target.getAttribute(attr);
-            if (v) {
-              const key = 'orig' + attr.replace(/-([a-z])/g, (_,c)=>c.toUpperCase()).replace(/^./, s=>s.toUpperCase());
-              try {
-                if (!mut.target.dataset[key]) mut.target.dataset[key] = v;
-                const tr = translate(mut.target.dataset[key]);
-                if (tr !== v) mut.target.setAttribute(attr, tr);
-              } catch(e){}
-            }
-          }
+          if (['placeholder','title','aria-label','alt'].includes(attr)) translateAttr(mut.target, attr);
         }
       }
     });
@@ -2271,10 +2305,65 @@
     }));
   }
 
+  // Locale BCP-47 para Intl / toLocale*String
+  const LOCALES = { 'es': 'es-MX', 'en': 'en-US', 'pt-BR': 'pt-BR', 'fr': 'fr-FR' };
+  function locale() { return LOCALES[currentLang] || 'es-MX'; }
+
+  // Nombres de días/meses en el idioma actual. Recibe el arreglo original en
+  // español y devuelve uno equivalente (mismo largo, orden y mayúsculas); en
+  // español devuelve el original tal cual.
+  function capFirst(x) { return x.charAt(0).toUpperCase() + x.slice(1); }
+  function shapeLike(orig, list) {
+    return list.map((x, i) => {
+      x = x.replace(/\.$/, '');
+      const o = orig[i] || orig[0];
+      if (o === o.toUpperCase() && o.length > 1) return x.toUpperCase();
+      if (o.charAt(0) === o.charAt(0).toUpperCase() || currentLang === 'en') return capFirst(x);
+      return x.toLowerCase();
+    });
+  }
+  function dayNames(orig) {
+    if (currentLang === FALLBACK || !window.Intl) return orig;
+    const len = orig[0].length;
+    const style = len <= 2 ? 'narrow' : (len <= 4 ? 'short' : 'long');
+    const mondayFirst = /^l/i.test(orig[0]);
+    const f = new Intl.DateTimeFormat(locale(), { weekday: style });
+    // 2023-01-01 fue domingo
+    const list = [];
+    for (let i = 0; i < 7; i++) list.push(f.format(new Date(2023, 0, 1 + i + (mondayFirst ? 1 : 0))));
+    return shapeLike(orig, list);
+  }
+  function monthNames(orig) {
+    if (currentLang === FALLBACK || !window.Intl) return orig;
+    const style = orig[0].length <= 4 ? 'short' : 'long';
+    const f = new Intl.DateTimeFormat(locale(), { month: style });
+    const list = [];
+    for (let i = 0; i < 12; i++) list.push(f.format(new Date(2023, i, 15)));
+    return shapeLike(orig, list);
+  }
+
+  // alert/confirm/prompt nativos: traducir el mensaje
+  ['alert', 'confirm', 'prompt'].forEach(fn => {
+    const native = window[fn];
+    if (typeof native !== 'function') return;
+    window[fn] = function(msg, ...rest) {
+      try {
+        if (typeof msg === 'string' && currentLang !== FALLBACK) {
+          // Mensajes multilínea: traducir completo o, si no, línea por línea
+          let tr = translate(msg);
+          if (tr === msg && msg.indexOf('\n') >= 0) tr = msg.split('\n').map(l => translate(l)).join('\n');
+          msg = tr;
+        }
+      } catch(e) {}
+      return native.call(window, msg, ...rest);
+    };
+  });
+
   // API pública
   window.i18n = {
     t: translate,
     setLang, getLang, getSupportedLangs, applyAll,
+    locale, dayNames, monthNames,
     SUPPORTED, FALLBACK
   };
 

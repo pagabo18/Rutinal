@@ -2197,7 +2197,7 @@ try {
 
   <!-- COMIDA -->
   <section id="tab-comida">
-    <h1 class="h-title" style="margin-bottom:4px;">Comida</h1>
+    <h1 class="h-title" style="margin-bottom:4px;" data-i18n-ctx="nav">Comida</h1>
     <div style="color:var(--text-3); font-size:13px; margin-bottom:16px;" id="food-date-label">Hoy</div>
 
     <!-- Anillos de macros y kcal -->
@@ -2515,7 +2515,7 @@ try {
     <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
     Reloj
   </button>
-  <button data-tab="comida">
+  <button data-tab="comida" data-i18n-ctx="nav">
     <svg class="icon" viewBox="0 0 24 24"><path d="M4 3v7c0 2 1 3 3 3h1v9"/><path d="M8 3v10"/><path d="M18 3v18M16 3c0 4 2 5 2 8h-4c0-3 2-4 2-8"/></svg>
     Comida
   </button>
@@ -2542,6 +2542,7 @@ try {
 </div>
 
 <script src="food_db.js"></script>
+<script src="i18n_extra.js"></script>
 <script src="i18n.js"></script>
 <script>
 // ============================================================
@@ -2608,6 +2609,10 @@ function __syncWidgets() {
 // Sincronizar al arranque: sin esto los widgets quedan vacíos hasta que el
 // usuario edita algo (state_json nunca se llenaba tras instalar/actualizar).
 setTimeout(__syncWidgets, 800);
+// Nombres de días/meses en el idioma activo (en español devuelve el arreglo tal cual)
+function _dn(a) { return (window.i18n && window.i18n.dayNames) ? window.i18n.dayNames(a) : a; }
+function _mn(a) { return (window.i18n && window.i18n.monthNames) ? window.i18n.monthNames(a) : a; }
+function _loc() { return (window.i18n && window.i18n.locale) ? window.i18n.locale() : 'es-MX'; }
 const S = {
   get(k, d) {
     if (__hasLS) {
@@ -2713,6 +2718,10 @@ const DEFAULT_CATS = [
   { id:'pareja', label:'Pareja', color:'#7C3AED' },
   { id:'personal', label:'Personal', color:'#52525B' }
 ];
+// Etiqueta visible de una categoría a partir de su id (los ids no se muestran)
+function catLabelOf(id) {
+  try { const c = CATS.find(x => x.id === id); return c ? c.label : id; } catch (e) { return id; }
+}
 function loadCats() {
   const saved = S.get('cats', null);
   if (Array.isArray(saved) && saved.length > 0) return saved;
@@ -2904,8 +2913,8 @@ function updateFab(tab) {
 // ============================================================
 function renderClock() {
   const d = new Date();
-  const days = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
-  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const days = _dn(['domingo','lunes','martes','miércoles','jueves','viernes','sábado']);
+  const months = _mn(['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']);
   document.getElementById('today-date').textContent = `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
   document.getElementById('today-time').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
@@ -3003,7 +3012,7 @@ function renderHoy() {
     const isPast = nm >= e;
     const isAffected = !isImpr && affected.has(b.id);
     const durTxt = fmtDur(e - s);
-    const catLabel = isImpr ? 'Imprevisto' : (b.cat || 'personal');
+    const catLabel = isImpr ? 'Imprevisto' : catLabelOf(b.cat || 'personal');
     const card = document.createElement('div');
     card.className = 'day-card ' + b.cat
       + (isActive ? ' active' : '')
@@ -3070,8 +3079,8 @@ document.querySelectorAll('#cal-mode-chips .chip').forEach(chip => {
 let dayMode = 'list'; // 'list' | 'hours'
 let expandedId = null;
 function renderDia() {
-  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const days = _dn(['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']);
+  const months = _mn(['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']);
   const now = new Date();
   const isToday = keyDate(dayView) === keyDate(now);
   document.getElementById('day-title').textContent = isToday ? 'Hoy' : days[dayView.getDay()];
@@ -3128,7 +3137,7 @@ function renderDiaList(container, events, affected, isToday, kind) {
     const isAffected = !isImpr && affected.has(ev.id);
     const durMin = e - s;
     const durTxt = fmtDur(durMin);
-    const catLabel = isImpr ? 'Imprevisto' : (ev.cat || 'personal');
+    const catLabel = isImpr ? 'Imprevisto' : catLabelOf(ev.cat || 'personal');
     const expanded = expandedId === ev.id;
     const card = document.createElement('div');
     card.className = 'day-card ' + ev.cat + (isActive ? ' active' : '') + (isAffected ? ' affected' : '') + (expanded ? ' expanded' : '');
@@ -3255,7 +3264,7 @@ function renderDiaHours(container, events, affected, isToday, list, dayImprs) {
       el.style.width = `calc(${colW}% - 12px)`;
       el.style.right = 'auto';
     }
-    const catLabel = isImpr ? 'Imprevisto' : (ev.cat || 'personal');
+    const catLabel = isImpr ? 'Imprevisto' : catLabelOf(ev.cat || 'personal');
     const durMin = e - s;
     const durTxt = fmtDur(durMin);
     el.innerHTML = `
@@ -3467,7 +3476,7 @@ function renderSemana() {
   monday.setDate(now.getDate() - ((dow+6)%7) + weekOffset*7);
   monday.setHours(0,0,0,0);
 
-  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const months = _mn(['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']);
   const end = new Date(monday); end.setDate(monday.getDate()+6);
   const label = weekOffset === 0 ? 'Esta semana' : weekOffset === -1 ? 'Semana pasada' : weekOffset === 1 ? 'Próxima semana' : `${monday.getDate()} ${months[monday.getMonth()]}`;
   document.getElementById('wk-title').textContent = label;
@@ -3477,7 +3486,7 @@ function renderSemana() {
   grid.innerHTML = '';
 
   // Header con días
-  const dayNames = ['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'];
+  const dayNames = _dn(['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM']);
   const emptyHead = document.createElement('div');
   emptyHead.className = 'week-head';
   emptyHead.innerHTML = ' ';
@@ -4198,8 +4207,8 @@ function renderHabitos() {
   // Encabezado de navegación por días (llenar hábitos de días pasados)
   const isTodayView = habitViewIsToday();
   const dv = new Date(k + 'T00:00:00');
-  const dayN = ['dom','lun','mar','mié','jue','vie','sáb'];
-  const monN = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const dayN = _dn(['dom','lun','mar','mié','jue','vie','sáb']);
+  const monN = _mn(['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']);
   const yest = new Date(); yest.setDate(yest.getDate() - 1);
   const dayLbl = isTodayView ? 'Hoy'
     : k === keyDate(yest) ? 'Ayer'
@@ -4365,7 +4374,7 @@ function renderCrossStats(habits, log) {
       }
     }
     if (worst >= 0 && worstRate > 0.3) {
-      const names = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+      const names = _dn(['domingo','lunes','martes','miércoles','jueves','viernes','sábado']);
       rows.push(`📉 El día que más se te escapan los hábitos es el <b>${names[worst]}</b> (${Math.round(worstRate * 100)}% de las veces).`);
     }
   }
@@ -4540,8 +4549,8 @@ function renderImprSection() {
   cont.innerHTML = '';
   const sorted = [...list].sort((a,b) => (b.date+b.start).localeCompare(a.date+a.start)).slice(0, 15);
   if (sorted.length === 0) { cont.innerHTML = '<div class="empty">Sin imprevistos. Bien ahí.</div>'; return; }
-  const days = ['dom','lun','mar','mié','jue','vie','sáb'];
-  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const days = _dn(['dom','lun','mar','mié','jue','vie','sáb']);
+  const months = _mn(['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']);
   sorted.forEach(i => {
     const c = IMPR_CATS.find(c => c.id === i.cat) || IMPR_CATS[IMPR_CATS.length-1];
     const d = parseKey(i.date);
@@ -4562,7 +4571,7 @@ tabRenderers.cal = () => setCalSubView(calSubView);
 let calMonth = new Date(); calMonth.setDate(1);
 let calSel = keyDate();
 function renderCal() {
-  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const months = _mn(['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']);
   document.getElementById('cal-title').textContent = `${months[calMonth.getMonth()]} ${calMonth.getFullYear()}`;
 
   const habits = loadHabits();
@@ -4609,7 +4618,7 @@ function renderCal() {
   }
 
   // Detalle
-  const dNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const dNames = _dn(['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']);
   const sel = parseKey(calSel);
   const blocks = (scheduleForDate(sel) || []).slice().sort((a,b) => a.start.localeCompare(b.start));
 
@@ -4667,7 +4676,7 @@ function renderCal() {
       return `<div style="font-size:12px;color:var(--text-3);margin-top:2px;"><span style="color:var(--text-2);font-weight:600;">${esc(m.name)}:</span> ${esc(names.length > 80 ? names.slice(0, 80) + '…' : names)}</div>`;
     }).join('');
   }
-  const foodHtml = `<div class="cal-detail-section-title">Comida</div>
+  const foodHtml = `<div class="cal-detail-section-title" data-i18n-ctx="nav">Comida</div>
     <div style="padding:2px 0 4px;">
       ${mtSel ? `<div style="font-size:13px;color:var(--text-2);font-weight:600;">${Math.round(mtSel.kcal)} kcal · P ${Math.round(mtSel.protein)} · C ${Math.round(mtSel.carbs)} · G ${Math.round(mtSel.fat)}</div>${mealLines}` : '<div style="font-size:13px;color:var(--text-3);">Sin registro de comida</div>'}
       <span class="food-inline-link" id="cal-edit-food" style="font-size:12px;">${mtSel ? 'Ver / editar comida de este día' : 'Registrar comida de este día'}</span>
@@ -4939,7 +4948,7 @@ function renderAjustes() {
       const abSt = document.getElementById('auto-backup-status');
       abTog.checked = !!S.get('auto_backup', true);
       const abLast = S.get('auto_backup_last', 0);
-      if (abSt) abSt.textContent = abLast ? ('Último respaldo automático: ' + new Date(abLast).toLocaleDateString('es-MX')) : 'Aún sin respaldos automáticos.';
+      if (abSt) abSt.textContent = abLast ? ('Último respaldo automático: ' + new Date(abLast).toLocaleDateString(_loc())) : 'Aún sin respaldos automáticos.';
       if (!abTog.dataset.bound) {
         abTog.dataset.bound = '1';
         abTog.addEventListener('change', () => { S.set('auto_backup', abTog.checked); if (abTog.checked) maybeAutoBackup(); });
@@ -5144,8 +5153,9 @@ function bindAjustesOnce() {
       document.querySelectorAll('#lang-picker .chip').forEach(x => x.classList.remove('selected'));
       el.classList.add('selected');
       window.i18n.setLang(lang);
-      // Re-render de la vista actual para regenerar strings dinámicos
-      try { if (typeof render === 'function') render(); } catch(e) {}
+      // Recargar para regenerar en el nuevo idioma todo lo dinámico
+      // (fechas, listas, gráficas). El idioma ya quedó guardado.
+      setTimeout(() => location.reload(), 150);
     });
   });
   document.getElementById('btn-export').addEventListener('click', () => {
@@ -5184,7 +5194,7 @@ function bindAjustesOnce() {
         if (!hasKnown) { alert('Este archivo no parece un backup válido de Rutinal.'); e.target.value = ''; return; }
         // Resumen para el usuario
         const n = Object.keys(data).filter(k => !k.startsWith('__')).length;
-        const when = data.__exportedAt ? new Date(data.__exportedAt).toLocaleString('es-MX') : 'fecha desconocida';
+        const when = data.__exportedAt ? new Date(data.__exportedAt).toLocaleString(_loc()) : 'fecha desconocida';
         if (!confirm(`Reemplazar tus datos actuales con este backup?\n\nBackup: ${when}\nCampos: ${n}\n\nEsta acción no se puede deshacer.`)) { e.target.value = ''; return; }
         // Guardar un backup automatico del estado actual antes de importar
         try {
@@ -5216,7 +5226,7 @@ function bindAjustesOnce() {
     const pre = S.get('__lastPreImportBackup', null);
     if (pre && pre.data) {
       undoBtn.style.display = '';
-      undoBtn.textContent = 'Deshacer importación (' + new Date(pre.at).toLocaleDateString('es-MX') + ')';
+      undoBtn.textContent = 'Deshacer importación (' + new Date(pre.at).toLocaleDateString(_loc()) + ')';
     }
     undoBtn.addEventListener('click', () => {
       const pre2 = S.get('__lastPreImportBackup', null);
@@ -5573,8 +5583,8 @@ document.querySelectorAll('#edit-mode .chip').forEach(chip => {
 function daysLabel(b) {
   if (b.onceDate) {
     const d = new Date(b.onceDate + 'T00:00:00');
-    const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const dias = _dn(['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']);
+    const meses = _mn(['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']);
     return `Solo ${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}`;
   }
   if (Array.isArray(b.days) && b.days.length > 0) {
@@ -5583,7 +5593,7 @@ function daysLabel(b) {
     if (s.length === 7) return 'Todos los días';
     if (s.length === 5 && s.join(',') === '1,2,3,4,5') return 'Lun–Vie';
     if (s.length === 2 && s.join(',') === '0,6') return 'Fin de semana';
-    const short = ['D','L','M','Mi','J','V','S'];
+    const short = _dn(['D','L','M','Mi','J','V','S']);
     return s.map(x => short[x]).join(' · ');
   }
   // Legacy: no tiene days, se muestra segun el balde donde vive
@@ -6386,7 +6396,7 @@ function renderEditImprs() {
       <div class="edit-row-time">${i.date.slice(5)}</div>
       <div class="edit-row-body">
         <div class="edit-row-label">${i.what}</div>
-        <div class="edit-row-meta">${i.cat} · ${i.start}–${i.end}</div>
+        <div class="edit-row-meta">${((CATS.find(c => c.id === i.cat) || {}).label) || i.cat} · ${i.start}–${i.end}</div>
       </div>
       <button class="edit-row-edit" title="Editar">
         <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
@@ -7385,8 +7395,8 @@ function openDiarySheet(dateKey) {
   const doneHabits = habits.filter(h => log[k] && log[k][h.id]);
   const blocks = scheduleForDate(d);
   const imprs = imprsForDate(k);
-  const dNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const dNames = _dn(['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']);
+  const months = _mn(['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']);
   const title = `${dNames[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
 
   const esc = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -7532,8 +7542,8 @@ function openDiarySheet(dateKey) {
 function openDiaryHistorySheet() {
   const diary = loadDiary();
   const habits = loadHabits();
-  const dNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const dNames = _dn(['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']);
+  const months = _mn(['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']);
   const esc = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const today = keyDate();
 
@@ -7883,7 +7893,7 @@ function openPomoStatsSheet() {
     rows.forEach(r => {
       html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;">' +
         '<div style="display:flex;align-items:center;gap:10px;min-width:0;"><span style="width:10px;height:10px;border-radius:50%;background:' + r.color + ';flex-shrink:0;"></span><span style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + r.label + '</span></div>' +
-        '<div style="text-align:right;"><div style="font-weight:600;font-size:14px;">' + fmtH(r.minutes) + '</div><div style="font-size:11px;color:var(--text-3);">' + r.count + ' sesión' + (r.count === 1 ? '' : 'es') + '</div></div>' +
+        '<div style="text-align:right;"><div style="font-weight:600;font-size:14px;">' + fmtH(r.minutes) + '</div><div style="font-size:11px;color:var(--text-3);">' + r.count + (r.count === 1 ? ' sesión' : ' sesiones') + '</div></div>' +
         '</div>';
     });
     html += '</div>';
@@ -8043,7 +8053,7 @@ function renderPomoStats() {
     return arr.filter(s => s.phase === 'focus' && s.ts >= start && s.ts < end).length;
   });
   const maxC = Math.max(1, ...counts);
-  const dayNames = ['D','L','M','X','J','V','S'];
+  const dayNames = _dn(['D','L','M','X','J','V','S']);
   bars.innerHTML = '';
   labelsEl.innerHTML = '';
   daysAgo.forEach((d, i) => {
@@ -9215,8 +9225,8 @@ function renderComida() {
     if (!_foodViewPinned && !foodViewIsToday()) foodViewDate = keyDate();
     const isToday = foodViewIsToday();
     const d = new Date(foodViewDate + 'T00:00:00');
-    const days = ['dom','lun','mar','mié','jue','vie','sáb'];
-    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    const days = _dn(['dom','lun','mar','mié','jue','vie','sáb']);
+    const months = _mn(['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']);
     const yest = new Date(); yest.setDate(yest.getDate() - 1);
     const tomo = new Date(); tomo.setDate(tomo.getDate() + 1);
     const label = isToday ? 'Hoy'
@@ -10118,7 +10128,7 @@ function openPortionEditor(item, mealId, index) {
     </div>
     <div class="portion-form">
       <div>
-        <label style="font-size:12px;color:var(--text-3);display:block;margin-bottom:6px;">Comida</label>
+        <label style="font-size:12px;color:var(--text-3);display:block;margin-bottom:6px;" data-i18n-ctx="nav">Comida</label>
         <div class="portion-meal-picker">
           ${MEALS.map(m => `<div class="portion-meal-chip${m.id === mealId ? ' selected' : ''}" data-meal="${m.id}">${m.name}</div>`).join('')}
         </div>
