@@ -8617,16 +8617,19 @@ function buildReviewDoc(data) {
     </div>`;
 
   const G = reviewGoals(data);
-  const ringRow = (k, lbl, unit) => {
-    const pctV = G[k] > 0 ? Math.round(data.avg[k] / G[k] * 100) : 0;
+  const ringRow = (k, lbl, unit, vals) => {
+    vals = vals || data.avg;
+    const v = Math.round(vals[k]);
+    const pctV = G[k] > 0 ? Math.round(vals[k] / G[k] * 100) : 0;
     return `<div class="rp-ring-item">
       <div class="rp-ring-lbl"><i style="background:${REVIEW_RING_COLORS[k]}"></i><span>${lbl}</span></div>
-      <div class="rp-ring-val">${data.avg[k]}${unit} <span>/ ${G[k]}${unit}</span></div>
+      <div class="rp-ring-val">${v}${unit} <span>/ ${G[k]}${unit}</span></div>
       <div class="rp-ring-bar"><div style="width:${Math.min(100, pctV)}%;background:${pctV > 105 ? '#EF4444' : REVIEW_RING_COLORS[k]}"></div></div>
       <div class="rp-ring-pct${pctV > 105 ? ' over' : ''}">${pctV}%</div>
     </div>`;
   };
-  const ringLegend = ringRow('kcal', 'kcal', '') + ringRow('protein', 'Proteína', 'g') + ringRow('carbs', 'Carbohidratos', 'g') + ringRow('fat', 'Grasa', 'g')
+  const ringRows = (vals) => ringRow('kcal', 'kcal', '', vals) + ringRow('protein', 'Proteína', 'g', vals) + ringRow('carbs', 'Carbohidratos', 'g', vals) + ringRow('fat', 'Grasa', 'g', vals);
+  const ringLegend = ringRows(data.avg)
     + (data.targets ? '' : `<div class="rp-muted" style="margin-top:4px">Meta sugerida: configura tu perfil en Editar → Nutrición.</div>`);
   const slots = MEALS.map(m => `<tr><td>${e(m.name)}</td><td class="num">${data.slotAvg[m.id]}</td></tr>`).join('');
   const top = data.topFoods.length
@@ -8649,13 +8652,14 @@ function buildReviewDoc(data) {
   let detail = '';
   if (data.period === 'week') {
     detail = data.days.map(d => {
-      const head = `<div class="rp-dayhead">${d.logged ? reviewRingsSvg(d.tot, G, 34, false) : ''}<b>${e(cap(fmtDayLong.format(d.date)))}</b><span>${d.logged ? Math.round(d.tot.kcal) + ' kcal · P' + Math.round(d.tot.protein) + ' C' + Math.round(d.tot.carbs) + ' G' + Math.round(d.tot.fat) : ''}${d.met ? ' · ✓' : ''}</span></div>`;
+      const head = `<div class="rp-dayhead"><b>${e(cap(fmtDayLong.format(d.date)))}</b><span>${d.logged ? Math.round(d.tot.kcal) + ' kcal · P' + Math.round(d.tot.protein) + ' C' + Math.round(d.tot.carbs) + ' G' + Math.round(d.tot.fat) : ''}${d.met ? ' · ✓' : ''}</span></div>`;
       if (!d.logged) return `<div class="rp-day">${head}<div class="rp-muted">${d.future ? 'Día futuro' : 'Sin registro'}</div></div>`;
       const rows = MEALS.filter(m => d.meals[m.id].items.length).map(m => {
         const its = d.meals[m.id].items;
         return its.map((it, i) => `<tr>${i === 0 ? `<td rowspan="${its.length}" class="rp-slot">${e(m.name)}</td>` : ''}<td>${e(it.name)}${it.brand ? ` <span class="rp-muted">· ${e(it.brand)}</span>` : ''}</td><td class="num">${it.grams}</td><td class="num">${it.kcal}</td><td class="num">${n1(it.protein)}</td><td class="num">${n1(it.carbs)}</td><td class="num">${n1(it.fat)}</td></tr>`).join('');
       }).join('');
-      return `<div class="rp-day">${head}<table class="rp-table"><thead><tr><th><span>Tiempo</span></th><th><span>Alimento</span></th><th class="num">g</th><th class="num">kcal</th><th class="num" data-i18n-ctx="macro">P</th><th class="num" data-i18n-ctx="macro">C</th><th class="num" data-i18n-ctx="macro">G</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      const dayRings = `<div class="rp-rings rp-day-rings">${reviewRingsSvg(d.tot, G, 200, true)}<div class="rp-ring-legend">${ringRows(d.tot)}</div></div>`;
+      return `<div class="rp-day">${head}${dayRings}<table class="rp-table"><thead><tr><th><span>Tiempo</span></th><th><span>Alimento</span></th><th class="num">g</th><th class="num">kcal</th><th class="num" data-i18n-ctx="macro">P</th><th class="num" data-i18n-ctx="macro">C</th><th class="num" data-i18n-ctx="macro">G</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     }).join('');
   } else if (data.period === 'month') {
     const rows = data.days.filter(d => !d.future || d.logged).map(d => {
@@ -8762,7 +8766,6 @@ const REVIEW_CSS = `
   .rp-ring-bar { grid-column: 1 / span 2; height: 5px; border-radius: 3px; background: #F1F2F4; overflow: hidden; margin-top: 4px; }
   .rp-ring-bar div { height: 100%; border-radius: 3px; }
   .rp-dayhead { align-items: center; }
-  .rp-dayhead > svg { flex: 0 0 auto; margin-right: -2px; }
   .rp-dayhead b { flex: 1; }
   .rp-macrobar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: #F3F4F6; }
   .rp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
@@ -8776,7 +8779,9 @@ const REVIEW_CSS = `
   .rp-foods { color: #4B5563; }
   .rp-empty td { color: #9CA3AF; }
   .rp-muted { color: #9CA3AF; }
-  .rp-day { margin-bottom: 14px; break-inside: avoid; page-break-inside: avoid; }
+  .rp-day { margin-bottom: 22px; }
+  .rp-day-rings { margin: 10px 0 12px; }
+  .rp-dayhead { break-after: avoid; page-break-after: avoid; }
   .rp-dayhead { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid #111827; margin-bottom: 4px; font-size: 12px; }
   .rp-dayhead span { color: #4B5563; }
   .rp-table tr { break-inside: avoid; page-break-inside: avoid; }
