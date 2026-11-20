@@ -1734,6 +1734,57 @@
   .ge-ex-btns { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
   .ge-ex-btns .food-edit-btn { margin: 0; }
   .ge-ex-btns .ge-del { margin-left: auto; color: var(--danger, #B91C1C); }
+  /* Gym v2: más directo */
+  .gym-today { padding: 16px; }
+  .gym-today-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .gym-today-count { text-align: right; font-size: 13px; color: var(--text-3); white-space: nowrap; }
+  .gym-today-count b { font-size: 22px; color: var(--text); font-weight: 800; }
+  .gym-today-count span { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+  .gym-prev-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .gym-prev { display: grid; grid-template-columns: 36px 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+  .gym-prev-n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .gym-prev-s { color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .gym-prev.ok .gym-prev-n { color: var(--text-3); text-decoration: line-through; }
+  .gym-prev.ok .gym-prev-s { color: #22C55E; font-weight: 700; }
+  .gym-cta { width: 100%; margin-top: 14px; padding: 14px; font-size: 16px; }
+  .gym-h2-hint { font-size: 10px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text-3); opacity: .8; }
+  .gym-h2-btns { display: flex; gap: 6px; }
+  .gym-routine { padding: 10px 12px; }
+  .gym-icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text-2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex: 0 0 auto; }
+  .gym-icon-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .gym-wo-bar { position: sticky; top: -1px; z-index: 2; background: var(--surface); padding: 6px 0 10px; margin-bottom: 4px; }
+  .gym-wo-prog { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-3); white-space: nowrap; }
+  .gym-wo-prog .gym-prog { flex: 1; margin: 0; }
+  .gym-wo-prog b { color: var(--text); font-size: 14px; }
+  .gym-rest { margin-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; color: #fff;
+    background: linear-gradient(90deg, #16A34A var(--p, 0%), #111827 var(--p, 0%)); font-size: 14px; }
+  .gym-rest b { font-size: 18px; font-variant-numeric: tabular-nums; margin-left: 4px; }
+  .gym-rest-btns { display: flex; gap: 6px; }
+  .gym-rest-btn { border: 1px solid rgba(255,255,255,.4); background: transparent; color: #fff; border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .gym-rest-go { font-weight: 700; }
+  .gym-wo-date { font-size: 13px; color: var(--text-2); text-transform: none; }
+  .gym-wo-date::first-letter { text-transform: uppercase; }
+  .gym-ex { padding: 10px 12px; }
+  .gym-ex-head { align-items: center; cursor: pointer; }
+  .gym-ex-sets { font-size: 12px; }
+  .gym-ex-sets b { font-weight: 700; color: var(--text); }
+  .gym-ex-state { font-size: 12px; font-weight: 700; color: var(--text-3); min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
+  .gym-ex-state.ok { color: #22C55E; font-size: 18px; }
+  .gym-ex.complete:not(.open) { opacity: .6; }
+  .gym-ex.open { border-color: var(--text); }
+  .gym-ex.open .gym-ex-name { font-size: 16px; }
+  .gym-set { grid-template-columns: 1fr 70px 60px 44px; gap: 8px; padding: 5px 0; }
+  .gym-set-target { font-size: 13px; }
+  .gym-set-target b { display: inline-block; width: 18px; color: var(--text-3); }
+  .gym-in { padding: 10px 6px; font-size: 16px; }
+  .gym-check { height: 40px; font-size: 17px; }
+  .gym-wo-btns { margin-top: 14px; }
+  .ge-mini { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 10px; }
+  .ge-mini-body { flex: 1; min-width: 0; }
+  .ge-mini-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ge-mini-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .ge-circ { display: inline-block; min-width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 6px; background: var(--text); color: var(--bg); font-size: 11px; font-weight: 700; margin-right: 6px; }
+  .ge-ex-btns .ge-done { background: var(--text); color: var(--bg); border-color: var(--text); }
   .ge-ex-btns .food-edit-btn, .gym-wo .food-edit-btn { width: auto; padding: 0 10px; }
 
   /* ---------- FAB ---------- */
@@ -10130,11 +10181,51 @@ function renderGym() {
   const sched = gymSchedule();
   const todayKey = keyDate();
   const today = gymTodayRoutine();
-  const log = gymLogs()[todayKey];
+  const logs = gymLogs();
+  const log = logs[todayKey];
   const dows = GYM_DOW();
   const order = [1, 2, 3, 4, 5, 6, 0];
   const todayDow = new Date().getDay();
 
+  // ---- Tarjeta de hoy ----
+  let todayCard;
+  if (today) {
+    const lg = log && log.routineId === today.id ? log : null;
+    const totalSets = today.exercises.reduce((a, ex) => a + Math.max(1, gymTotalSets(ex)), 0);
+    const doneSets = lg ? Object.values(lg.ex || {}).reduce((a, arr) => a + arr.filter(s => s.done).length, 0) : 0;
+    const state = lg && lg.done ? 'done' : (doneSets ? 'going' : 'new');
+    const preview = today.exercises.map(ex => {
+      const exDone = lg && (lg.ex[ex.id] || []).filter(s => s.done).length >= Math.max(1, gymTotalSets(ex));
+      return `<div class="gym-prev${exDone ? ' ok' : ''}">
+        ${gymMediaHtml(ex, 36)}
+        <div class="gym-prev-n">${escapeHtml(ex.name)}</div>
+        <div class="gym-prev-s">${exDone ? '✓' : escapeHtml(gymSetsShort(ex))}</div>
+      </div>`;
+    }).join('');
+    todayCard = `<div class="gym-today">
+      <div class="gym-today-row">
+        <div>
+          <div class="gym-today-k">Hoy toca</div>
+          <div class="gym-today-name">${escapeHtml(today.name)}</div>
+        </div>
+        <div class="gym-today-count"><b>${doneSets}</b>/${totalSets}<span>series</span></div>
+      </div>
+      <div class="gym-prog"><div style="width:${Math.round(doneSets / Math.max(1, totalSets) * 100)}%"></div></div>
+      <div class="gym-prev-list">${preview}</div>
+      <button class="btn-primary gym-cta" id="gym-start">${state === 'done' ? 'Ver entrenamiento' : (state === 'going' ? 'Continuar' : 'Empezar')}</button>
+    </div>`;
+  } else {
+    todayCard = `<div class="gym-today rest">
+      <div class="gym-today-k">Hoy</div>
+      <div class="gym-today-name">${routines.length ? 'Descanso' : 'Empieza aquí'}</div>
+      <div class="gym-today-meta">${routines.length ? 'No tienes rutina asignada para hoy.' : 'Importa el PDF de tu coach o arma tu rutina.'}</div>
+      ${routines.length
+        ? '<button class="btn-secondary" id="gym-pick-today" style="margin-top:14px;">Entrenar otra rutina hoy</button>'
+        : '<div class="gym-actions" style="margin-top:14px;"><button class="btn-primary" id="gym-import-big" style="flex:1">Importar PDF</button><button class="btn-secondary" id="gym-new-big" style="flex:1">+ Nueva rutina</button></div>'}
+    </div>`;
+  }
+
+  // ---- Semana ----
   const week = order.map(d => {
     const r = sched[String(d)] ? gymRoutineById(sched[String(d)]) : null;
     return `<div class="gym-day${d === todayDow ? ' today' : ''}${r ? ' has' : ''}" data-gym-dow="${d}">
@@ -10143,59 +10234,41 @@ function renderGym() {
     </div>`;
   }).join('');
 
-  let todayCard;
-  if (today) {
-    const total = today.exercises.length;
-    const doneEx = log && log.routineId === today.id && log.ex ? Object.keys(log.ex).filter(k => (log.ex[k] || []).some(s => s.done)).length : 0;
-    todayCard = `<div class="gym-today">
-      <div class="gym-today-k">Hoy toca</div>
-      <div class="gym-today-name">${escapeHtml(today.name)}</div>
-      <div class="gym-today-meta">${today.meta && today.meta.musculos ? escapeHtml(today.meta.musculos) + ' · ' : ''}${total} ejercicios${log && log.done ? ' · ✓' : ''}</div>
-      ${doneEx ? `<div class="gym-prog"><div style="width:${Math.round(doneEx / Math.max(1, total) * 100)}%"></div></div>` : ''}
-      <button class="btn-primary" id="gym-start" style="width:100%;margin-top:14px;">${log && log.done ? 'Ver entrenamiento' : (doneEx ? 'Continuar' : 'Empezar')}</button>
-    </div>`;
-  } else {
-    todayCard = `<div class="gym-today rest">
-      <div class="gym-today-k">Hoy</div>
-      <div class="gym-today-name">Descanso</div>
-      <div class="gym-today-meta">${routines.length ? 'No tienes rutina asignada para hoy.' : 'Crea o importa una rutina para empezar.'}</div>
-      ${routines.length ? '<button class="btn-secondary" id="gym-pick-today" style="margin-top:14px;">Entrenar otra rutina hoy</button>' : ''}
-    </div>`;
-  }
-
-  const list = routines.length ? routines.map(r => {
+  // ---- Rutinas ----
+  const list = routines.map(r => {
     const days = order.filter(d => sched[String(d)] === r.id).map(d => dows[d]).join(', ');
-    const thumbs = r.exercises.slice(0, 4).map(ex => gymMediaHtml(ex, 34)).join('');
     return `<div class="gym-routine" data-gym-open="${r.id}">
-      <div class="gym-routine-thumbs">${thumbs}</div>
+      ${gymMediaHtml(r.exercises[0] || {}, 44)}
       <div class="gym-routine-body">
         <div class="gym-routine-name">${escapeHtml(r.name)}</div>
-        <div class="gym-routine-meta">${r.exercises.length} ejercicios${r.meta && r.meta.musculos ? ' · ' + escapeHtml(r.meta.musculos) : ''}</div>
-        ${days ? `<div class="gym-routine-days">${escapeHtml(days)}</div>` : ''}
+        <div class="gym-routine-meta">${r.exercises.length} ejercicios${days ? ' · ' + escapeHtml(days) : ''}</div>
       </div>
-      <div class="gym-routine-chev">›</div>
+      <button class="gym-icon-btn" data-gym-edit="${r.id}" aria-label="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
     </div>`;
-  }).join('') : '<div class="empty">Aún no tienes rutinas.</div>';
+  }).join('');
 
   el.innerHTML = `
     ${todayCard}
-    <h2>Semana</h2>
+    ${routines.length ? `
+    <h2>Semana <span class="gym-h2-hint">toca un día para cambiarlo</span></h2>
     <div class="gym-week">${week}</div>
-    <h2>Mis rutinas</h2>
+    <h2>Mis rutinas
+      <span class="gym-h2-btns"><button class="h2-btn" id="gym-import">Importar PDF</button><button class="h2-btn" id="gym-new">+ Nueva</button></span>
+    </h2>
     ${list}
-    <div class="gym-actions">
-      <button class="btn-secondary" id="gym-new">+ Nueva rutina</button>
-      <button class="btn-secondary" id="gym-import">Importar PDF</button>
-    </div>
-    <input type="file" id="gym-pdf-input" accept="application/pdf,.pdf" style="display:none">
     <h2>Historial</h2>
-    ${gymHistoryHtml()}
+    ${gymHistoryHtml()}` : ''}
+    <input type="file" id="gym-pdf-input" accept="application/pdf,.pdf" style="display:none">
     <div class="gym-credit">Ejercicios e imágenes: free-exercise-db (dominio público)</div>`;
 
-  const st = document.getElementById('gym-start');
-  if (st) st.addEventListener('click', () => openGymWorkout(today.id, todayKey));
-  const pt = document.getElementById('gym-pick-today');
-  if (pt) pt.addEventListener('click', () => gymPickRoutine('Elige la rutina de hoy', id => openGymWorkout(id, todayKey)));
+  const on = (id, fn) => { const b = document.getElementById(id); if (b) b.addEventListener('click', fn); };
+  on('gym-start', () => openGymWorkout(today.id, todayKey));
+  on('gym-pick-today', () => gymPickRoutine('Elige la rutina de hoy', id => openGymWorkout(id, todayKey)));
+  const inp = document.getElementById('gym-pdf-input');
+  const pickPdf = () => inp.click();
+  on('gym-import', pickPdf); on('gym-import-big', pickPdf);
+  on('gym-new', () => openGymEditor(null)); on('gym-new-big', () => openGymEditor(null));
+  inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; inp.value = ''; if (f) gymImportPdf(f); });
   el.querySelectorAll('[data-gym-dow]').forEach(d => d.addEventListener('click', () => {
     const dow = d.dataset.gymDow;
     gymPickRoutine(`${GYM_DOW()[dow]}: ¿qué rutina toca?`, id => {
@@ -10204,17 +10277,32 @@ function renderGym() {
       saveGymSchedule(s); renderGym();
     }, true);
   }));
-  el.querySelectorAll('[data-gym-open]').forEach(c => c.addEventListener('click', () => openGymWorkout(c.dataset.gymOpen, todayKey)));
-  document.getElementById('gym-new').addEventListener('click', () => openGymEditor(null));
-  const inp = document.getElementById('gym-pdf-input');
-  document.getElementById('gym-import').addEventListener('click', () => inp.click());
-  inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; inp.value = ''; if (f) gymImportPdf(f); });
+  el.querySelectorAll('[data-gym-open]').forEach(c => c.addEventListener('click', (ev) => {
+    if (ev.target.closest('[data-gym-edit]')) return;
+    openGymWorkout(c.dataset.gymOpen, todayKey);
+  }));
+  el.querySelectorAll('[data-gym-edit]').forEach(b => b.addEventListener('click', () => openGymEditor(b.dataset.gymEdit)));
   el.querySelectorAll('[data-gym-hist]').forEach(h => h.addEventListener('click', () => {
     const lg = gymLogs()[h.dataset.gymHist];
     if (lg && gymRoutineById(lg.routineId)) openGymWorkout(lg.routineId, h.dataset.gymHist);
   }));
-  // Cargar la base en segundo plano para que aparezcan las imágenes
   if (!window.GYM_DB) loadGymDb().then(() => { if (document.getElementById('tab-gym').classList.contains('active')) renderGym(); }).catch(() => {});
+}
+// "2×10-15 · 1×15-20" → "3 × 10-20"
+function gymSetsShort(ex) {
+  const n = gymTotalSets(ex);
+  if (!n) return '';
+  const nums = (ex.sets || []).flatMap(s => String(s.reps).split('-').map(Number)).filter(x => !isNaN(x));
+  const reps = nums.length ? (Math.min(...nums) === Math.max(...nums) ? String(nums[0]) : Math.min(...nums) + '-' + Math.max(...nums)) : '';
+  return `${n} × ${reps}`;
+}
+// "2 mins", "90 s", "1:30" → segundos
+function gymRestSeconds(txt) {
+  const s = String(txt || '').toLowerCase();
+  let m = s.match(/(\d+)\s*:\s*(\d{2})/); if (m) return +m[1] * 60 + +m[2];
+  m = s.match(/(\d+(?:[.,]\d+)?)\s*(?:min|m\b)/); if (m) return Math.round(parseFloat(m[1].replace(',', '.')) * 60);
+  m = s.match(/(\d+)\s*(?:s|seg|sec)/); if (m) return +m[1];
+  return 0;
 }
 
 function gymHistoryHtml() {
@@ -10246,7 +10334,8 @@ function gymPickRoutine(title, cb, allowRest) {
   document.querySelectorAll('[data-pick]').forEach(p => p.addEventListener('click', () => { closeSheet(); cb(p.dataset.pick || null); }));
 }
 
-// ---------- Entrenamiento (ver rutina + registrar cargas) ----------
+// ---------- Entrenamiento ----------
+let _gymRest = null; // { end, total, timer }
 function openGymWorkout(routineId, dateKey) {
   const r = gymRoutineById(routineId);
   if (!r) return;
@@ -10255,117 +10344,196 @@ function openGymWorkout(routineId, dateKey) {
   const lg = (logs[dateKey] && logs[dateKey].routineId === r.id) ? logs[dateKey] : { routineId: r.id, ex: {} };
   const m = r.meta || {};
   const fmtD = new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' });
+  const restDefault = gymRestSeconds(m.descanso) || 90;
+  const exDoneCount = ex => (lg.ex[ex.id] || []).filter(s => s.done).length;
+  const exComplete = ex => exDoneCount(ex) >= Math.max(1, gymTotalSets(ex));
+  let openId = (r.exercises.find(ex => !exComplete(ex)) || {}).id || null;
 
-  // Agrupar por circuito consecutivo (mismo número = alternar)
+  const chip = (k, v) => v ? `<span class="gym-chip"><b>${k}</b> ${escapeHtml(v)}</span>` : '';
+  const exCard = (ex) => {
+    const n = Math.max(1, gymTotalSets(ex));
+    const cur = lg.ex[ex.id] || [];
+    const done = exDoneCount(ex);
+    const complete = done >= n;
+    const isOpen = ex.id === openId;
+    const last = gymLastLog(ex.id, dateKey);
+    const head = `<div class="gym-ex-head" data-gym-toggle="${ex.id}">
+        <div class="gym-ex-media" data-gym-info="${ex.id}">${gymMediaHtml(ex, isOpen ? 64 : 44)}</div>
+        <div class="gym-ex-body">
+          <div class="gym-ex-name">${escapeHtml(ex.name)}</div>
+          <div class="gym-ex-sets">${escapeHtml(gymSetsText(ex.sets))}${ex.rir ? ' · <b>RIR</b> ' + escapeHtml(ex.rir) : ''}${ex.rpe ? ' · <b>RPE</b> ' + escapeHtml(ex.rpe) : ''}</div>
+        </div>
+        <div class="gym-ex-state${complete ? ' ok' : ''}">${complete ? '✓' : `${done}/${n}`}</div>
+      </div>`;
+    if (!isOpen) return `<div class="gym-ex${complete ? ' complete' : ''}" data-ex-card="${ex.id}">${head}</div>`;
+    const rows = Array.from({ length: n }, (_, i) => {
+      const s = cur[i] || {};
+      const prev = last && last.sets[i];
+      return `<div class="gym-set${s.done ? ' done' : ''}" data-ex="${ex.id}" data-i="${i}">
+        <div class="gym-set-target"><b>${i + 1}</b> ${escapeHtml(gymSetRepsForIndex(ex, i))}</div>
+        <input class="gym-in" inputmode="decimal" data-f="kg" value="${escapeHtml(s.kg || '')}" placeholder="${prev && prev.kg ? escapeHtml(prev.kg) : 'kg'}">
+        <input class="gym-in" inputmode="numeric" data-f="reps" value="${escapeHtml(s.reps || '')}" placeholder="${prev && prev.reps ? escapeHtml(prev.reps) : 'reps'}">
+        <button class="gym-check" aria-label="✓">✓</button>
+      </div>`;
+    }).join('');
+    const tempo = ex.tempo || r.tempo;
+    const extra = [chip('Tempo', tempo), chip('Descanso', ex.rest)].join('');
+    const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${s.kg || '?'}×${s.reps || '?'}`).join('  '))}</div>` : '';
+    return `<div class="gym-ex open${complete ? ' complete' : ''}" data-ex-card="${ex.id}">${head}
+      ${extra ? `<div class="gym-chips">${extra}</div>` : ''}
+      ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
+      ${lastTxt}
+      <div class="gym-sets"><div class="gym-set gym-set-h"><div data-i18n-ctx="set">Objetivo</div><div>kg</div><div>reps</div><div></div></div>${rows}</div>
+    </div>`;
+  };
+
   const groups = [];
   r.exercises.forEach(ex => {
     const g = groups[groups.length - 1];
     if (g && ex.circuit != null && g.circuit === ex.circuit) g.items.push(ex);
     else groups.push({ circuit: ex.circuit, items: [ex] });
   });
-
-  const chip = (k, v) => v ? `<span class="gym-chip"><b>${k}</b> ${escapeHtml(v)}</span>` : '';
-  const exCard = (ex) => {
-    const n = Math.max(1, gymTotalSets(ex));
-    const cur = lg.ex[ex.id] || [];
-    const last = gymLastLog(ex.id, dateKey);
-    const rows = Array.from({ length: n }, (_, i) => {
-      const s = cur[i] || {};
-      const prev = last && last.sets[i];
-      return `<div class="gym-set${s.done ? ' done' : ''}" data-ex="${ex.id}" data-i="${i}">
-        <div class="gym-set-n">${i + 1}</div>
-        <div class="gym-set-target">${escapeHtml(gymSetRepsForIndex(ex, i))}</div>
-        <input class="gym-in" inputmode="decimal" data-f="kg" value="${escapeHtml(s.kg || '')}" placeholder="${prev && prev.kg ? escapeHtml(prev.kg) : 'kg'}">
-        <input class="gym-in" inputmode="numeric" data-f="reps" value="${escapeHtml(s.reps || '')}" placeholder="${prev && prev.reps ? escapeHtml(prev.reps) : 'reps'}">
-        <button class="gym-check" data-f="done" aria-label="✓">✓</button>
-      </div>`;
-    }).join('');
-    const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> (${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}): ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${s.kg || '?'}kg×${s.reps || '?'}`).join(', '))}</div>` : '';
-    return `<div class="gym-ex">
-      <div class="gym-ex-head">
-        <div class="gym-ex-media" data-gym-info="${ex.id}">${gymMediaHtml(ex, 72)}</div>
-        <div class="gym-ex-body">
-          <div class="gym-ex-name">${escapeHtml(ex.name)}</div>
-          <div class="gym-ex-sets">${escapeHtml(gymSetsText(ex.sets))}</div>
-          <div class="gym-chips">${chip('RIR', ex.rir)}${chip('RPE', ex.rpe)}${chip('Tempo', ex.tempo || r.tempo)}${chip('Descanso', ex.rest)}</div>
-          ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
-        </div>
-      </div>
-      ${lastTxt}
-      <div class="gym-sets"><div class="gym-set gym-set-h"><div></div><div data-i18n-ctx="set">Objetivo</div><div>kg</div><div>reps</div><div></div></div>${rows}</div>
-    </div>`;
-  };
-  const body = groups.map(g => {
-    const head = g.circuit != null ? `<div class="gym-circ"><span>Circuito</span> ${g.circuit}${g.items.length > 1 ? ' · <span>alternar ejercicios</span>' : ''}</div>` : '';
-    return `<div class="gym-group${g.items.length > 1 ? ' multi' : ''}">${head}${g.items.map(exCard).join('')}</div>`;
-  }).join('');
-
   const info = [['Objetivo', m.objetivo], ['Periodo', m.periodo], ['Calentamiento', m.calentamiento], ['Descanso', m.descanso], ['Notas', m.notas]]
     .filter(x => x[1]).map(x => `<div class="gym-info-row"><b>${x[0]}</b><span>${escapeHtml(x[1])}</span></div>`).join('')
     + (m.extra ? `<div class="gym-info-extra">${escapeHtml(m.extra).replace(/\n/g, '<br>')}</div>` : '');
   const dLabel = dateKey === keyDate() ? 'Hoy' : new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(dateKey + 'T00:00:00'));
 
-  openSheet(r.name, `
-    <div class="gym-wo">
+  const draw = () => {
+    const totalSets = r.exercises.reduce((a, ex) => a + Math.max(1, gymTotalSets(ex)), 0);
+    const doneSets = r.exercises.reduce((a, ex) => a + exDoneCount(ex), 0);
+    const body = groups.map(g => {
+      const head = g.circuit != null && g.items.length > 1 ? `<div class="gym-circ"><span>Circuito</span> ${g.circuit} · <span>alternar ejercicios</span></div>` : '';
+      return `<div class="gym-group${g.items.length > 1 ? ' multi' : ''}">${head}${g.items.map(exCard).join('')}</div>`;
+    }).join('');
+    const sb = document.getElementById('sheet-body');
+    const keepScroll = sb ? sb.scrollTop : 0;
+    sb.innerHTML = `<div class="gym-wo">
+      <div class="gym-wo-bar">
+        <div class="gym-wo-prog"><div class="gym-prog"><div style="width:${Math.round(doneSets / Math.max(1, totalSets) * 100)}%"></div></div>
+          <span><b>${doneSets}</b>/${totalSets} <span>series</span></span></div>
+        <div class="gym-rest" id="gym-rest" style="display:none"></div>
+      </div>
       <div class="gym-wo-top">
-        <div class="gym-wo-date">${escapeHtml(dLabel)}</div>
-        <div class="gym-chips">${chip('Músculos', m.musculos)}${chip('Tempo', r.tempo)}</div>
-        ${info ? `<details class="gym-info"><summary>Indicaciones</summary>${info}</details>` : ''}
-        <div class="gym-wo-btns">
-          <button class="btn-secondary" id="gym-edit">Editar</button>
-          <button class="btn-secondary" id="gym-share">Compartir cargas</button>
-        </div>
+        <div class="gym-wo-date">${escapeHtml(dLabel)}${m.musculos ? ' · ' + escapeHtml(m.musculos) : ''}${r.tempo ? ' · <b>Tempo</b> ' + escapeHtml(r.tempo) : ''}</div>
+        ${info ? `<details class="gym-info"><summary>Indicaciones del coach</summary>${info}</details>` : ''}
       </div>
       ${body}
-      <button class="btn-primary" id="gym-finish" style="width:100%;margin-top:8px;">${lg.done ? '✓ Entrenamiento terminado' : 'Terminar entrenamiento'}</button>
-    </div>`);
-  document.getElementById('sheet-body').scrollTop = 0;
-
-  const sb = document.getElementById('sheet-body');
-  const persist = () => {
-    const all = gymLogs();
-    lg.ts = Date.now();
-    all[dateKey] = lg;
-    saveGymLogs(all);
+      <div class="gym-wo-btns">
+        <button class="btn-secondary" id="gym-share">Compartir cargas</button>
+        <button class="btn-secondary" id="gym-edit">Editar rutina</button>
+      </div>
+      <button class="btn-primary gym-cta" id="gym-finish">${lg.done ? '✓ Entrenamiento terminado' : 'Terminar entrenamiento'}</button>
+    </div>`;
+    sb.scrollTop = keepScroll;
+    bind(sb);
+    gymRestPaint();
   };
+
+  const persist = () => { const all = gymLogs(); lg.ts = Date.now(); all[dateKey] = lg; saveGymLogs(all); };
   const setVal = (exId, i, f, v) => {
     const arr = lg.ex[exId] || (lg.ex[exId] = []);
     while (arr.length <= i) arr.push({});
     arr[i][f] = v;
     persist();
   };
-  sb.querySelectorAll('.gym-set[data-ex] .gym-in').forEach(inp => inp.addEventListener('input', () => {
-    const row = inp.closest('.gym-set');
-    setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.value.replace(',', '.').trim());
-  }));
-  sb.querySelectorAll('.gym-set[data-ex] .gym-check').forEach(btn => btn.addEventListener('click', () => {
-    const row = btn.closest('.gym-set');
-    const exId = row.dataset.ex, i = +row.dataset.i;
-    const arr = lg.ex[exId] || [];
-    const was = !!(arr[i] && arr[i].done);
-    // Al marcar sin datos, usar los del placeholder (última vez)
-    if (!was) {
-      row.querySelectorAll('.gym-in').forEach(inp => { if (!inp.value && inp.placeholder && !/^(kg|reps)$/.test(inp.placeholder)) { inp.value = inp.placeholder; setVal(exId, i, inp.dataset.f, inp.value); } });
-    }
-    setVal(exId, i, 'done', !was);
-    row.classList.toggle('done', !was);
-    if (!was && navigator.vibrate) navigator.vibrate(15);
-  }));
-  sb.querySelectorAll('[data-gym-info]').forEach(m2 => m2.addEventListener('click', () => {
-    const ex = r.exercises.find(e => e.id === m2.dataset.gymInfo);
-    if (ex) openGymExerciseInfo(r.id, ex.id, () => openGymWorkout(r.id, dateKey));
-  }));
-  document.getElementById('gym-edit').addEventListener('click', () => openGymEditor(r.id));
-  document.getElementById('gym-share').addEventListener('click', () => gymShareLoads(r, dateKey));
-  document.getElementById('gym-finish').addEventListener('click', () => {
-    lg.done = !lg.done; persist(); closeSheet(); renderGym();
-  });
-  if (!window.GYM_DB) loadGymDb().then(() => {
-    sb.querySelectorAll('[data-gym-info]').forEach(m2 => {
-      const ex = r.exercises.find(e => e.id === m2.dataset.gymInfo);
-      if (ex && !ex.photo && ex.dbId) m2.innerHTML = gymMediaHtml(ex, 72);
+  const bind = (sb) => {
+    sb.querySelectorAll('[data-gym-toggle]').forEach(h => h.addEventListener('click', (ev) => {
+      if (ev.target.closest('[data-gym-info]') && h.closest('.gym-ex.open')) return;
+      openId = openId === h.dataset.gymToggle ? null : h.dataset.gymToggle;
+      draw();
+      const card = sb.querySelector(`[data-ex-card="${h.dataset.gymToggle}"]`);
+      if (card && openId) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }));
+    sb.querySelectorAll('.gym-ex.open [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => {
+      openGymExerciseInfo(r.id, m2.dataset.gymInfo, () => openGymWorkout(r.id, dateKey));
+    }));
+    sb.querySelectorAll('.gym-set[data-ex] .gym-in').forEach(inp => inp.addEventListener('input', () => {
+      const row = inp.closest('.gym-set');
+      setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.value.replace(',', '.').trim());
+    }));
+    sb.querySelectorAll('.gym-set[data-ex] .gym-check').forEach(btn => btn.addEventListener('click', () => {
+      const row = btn.closest('.gym-set');
+      const exId = row.dataset.ex, i = +row.dataset.i;
+      const was = !!((lg.ex[exId] || [])[i] || {}).done;
+      if (!was) {
+        // Sin datos: usar lo de la última vez (placeholder)
+        row.querySelectorAll('.gym-in').forEach(inp => { if (!inp.value && inp.placeholder && !/^(kg|reps)$/.test(inp.placeholder)) { inp.value = inp.placeholder; setVal(exId, i, inp.dataset.f, inp.value); } });
+      }
+      setVal(exId, i, 'done', !was);
+      if (!was) {
+        if (navigator.vibrate) navigator.vibrate(15);
+        const ex = r.exercises.find(e => e.id === exId);
+        gymRestStart(gymRestSeconds(ex && ex.rest) || restDefault);
+        // Circuito con varios ejercicios: alternar al siguiente del circuito.
+        // Ejercicio completo: abrir el siguiente pendiente.
+        const grp = ex && groups.find(g => g.items.includes(ex));
+        if (grp && grp.items.length > 1) {
+          const k = grp.items.indexOf(ex);
+          const order = grp.items.slice(k + 1).concat(grp.items.slice(0, k + 1)).filter(e => !exComplete(e));
+          if (order.length) {
+            const min = Math.min(...order.map(exDoneCount));
+            openId = order.find(e => exDoneCount(e) === min).id;
+          } else {
+            const next = r.exercises.find(e => !exComplete(e));
+            openId = next ? next.id : null;
+          }
+        } else if (ex && exComplete(ex)) {
+          const next = r.exercises.find(e => !exComplete(e));
+          openId = next ? next.id : null;
+        }
+      }
+      draw();
+    }));
+    sb.querySelector('#gym-edit').addEventListener('click', () => openGymEditor(r.id));
+    sb.querySelector('#gym-share').addEventListener('click', () => gymShareLoads(r, dateKey));
+    sb.querySelector('#gym-finish').addEventListener('click', () => {
+      lg.done = !lg.done; persist(); gymRestStop(); closeSheet(); renderGym();
     });
-  }).catch(() => {});
+  };
+
+  openSheet(r.name, '<div></div>');
+  document.getElementById('sheet-body').scrollTop = 0;
+  draw();
+  if (!window.GYM_DB) loadGymDb().then(() => { if (document.querySelector('.gym-wo')) draw(); }).catch(() => {});
+}
+
+// ---------- Temporizador de descanso ----------
+function gymRestStart(sec) {
+  gymRestStop();
+  _gymRest = { end: Date.now() + sec * 1000, total: sec };
+  _gymRest.timer = setInterval(gymRestPaint, 250);
+  gymRestPaint();
+}
+function gymRestStop() {
+  if (_gymRest && _gymRest.timer) clearInterval(_gymRest.timer);
+  _gymRest = null;
+  const el = document.getElementById('gym-rest');
+  if (el) el.style.display = 'none';
+}
+function gymRestPaint() {
+  const el = document.getElementById('gym-rest');
+  if (!el) return;
+  if (!_gymRest) { el.style.display = 'none'; return; }
+  const left = Math.ceil((_gymRest.end - Date.now()) / 1000);
+  if (left <= 0) {
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    el.innerHTML = `<span class="gym-rest-go">¡A la siguiente serie!</span><button class="gym-rest-btn" id="gym-rest-x">OK</button>`;
+    clearInterval(_gymRest.timer); _gymRest = null;
+    el.style.display = '';
+    el.querySelector('#gym-rest-x').addEventListener('click', gymRestStop);
+    return;
+  }
+  const mm = Math.floor(left / 60), ss = String(left % 60).padStart(2, '0');
+  const pct = Math.max(0, Math.min(100, (1 - left / _gymRest.total) * 100));
+  el.style.display = '';
+  el.style.setProperty('--p', pct + '%');
+  if (!el.querySelector('.gym-rest-t')) {
+    el.innerHTML = `<span><span>Descanso</span> <b class="gym-rest-t"></b></span>
+      <span class="gym-rest-btns"><button class="gym-rest-btn" id="gym-rest-plus">+30 s</button><button class="gym-rest-btn" id="gym-rest-x">Saltar</button></span>`;
+    el.querySelector('#gym-rest-x').addEventListener('click', gymRestStop);
+    el.querySelector('#gym-rest-plus').addEventListener('click', () => { if (_gymRest) { _gymRest.end += 30000; _gymRest.total += 30; gymRestPaint(); } });
+  }
+  el.querySelector('.gym-rest-t').textContent = `${mm}:${ss}`;
 }
 
 function gymShareLoads(r, dateKey) {
@@ -10506,7 +10674,7 @@ function gymEditorSync() {
   if (v('ge-tempo') !== undefined) _gymEdit.tempo = v('ge-tempo').trim();
   sb.querySelectorAll('.ge-ex').forEach(row => {
     const ex = _gymEdit.exercises.find(e => e.id === row.dataset.id);
-    if (!ex) return;
+    if (!ex || !row.querySelector('[data-f="name"]')) return;
     const g = f => row.querySelector(`[data-f="${f}"]`).value;
     ex.name = g('name').trim();
     const c = g('circuit').trim(); ex.circuit = c === '' ? null : parseInt(c, 10);
@@ -10518,7 +10686,15 @@ function gymDrawEditor(isNew) {
   const e = _gymEdit;
   const dows = GYM_DOW();
   const order = [1, 2, 3, 4, 5, 6, 0];
-  const exRows = e.exercises.map((ex, i) => `
+  const exRows = e.exercises.map((ex, i) => ex.id !== e._open ? `
+    <div class="ge-ex ge-mini" data-id="${ex.id}" data-ge-open="${ex.id}">
+      ${gymMediaHtml(ex, 40)}
+      <div class="ge-mini-body">
+        <div class="ge-mini-name">${ex.circuit != null ? `<span class="ge-circ">${ex.circuit}</span>` : ''}${escapeHtml(ex.name || '—')}</div>
+        <div class="ge-mini-meta">${escapeHtml(gymSetsText(ex.sets) || '—')}${ex.rir ? ' · RIR ' + escapeHtml(ex.rir) : ''}${ex.rpe ? ' · RPE ' + escapeHtml(ex.rpe) : ''}</div>
+      </div>
+      <div class="gym-routine-chev">›</div>
+    </div>` : `
     <div class="ge-ex" data-id="${ex.id}">
       <div class="ge-ex-top">
         <div class="ge-ex-media" data-ge-link="${ex.id}">${gymMediaHtml(ex, 52)}</div>
@@ -10538,6 +10714,7 @@ function gymDrawEditor(isNew) {
         <button class="food-edit-btn" data-ge-mv="${i}" data-d="1" ${i === e.exercises.length - 1 ? 'disabled' : ''}>↓</button>
         <button class="food-edit-btn" data-ge-link="${ex.id}">${ex.dbId ? 'Cambiar imagen' : 'Vincular'}</button>
         <button class="food-edit-btn ge-del" data-ge-del="${i}">Quitar</button>
+        <button class="food-edit-btn ge-done" data-ge-close="1">Listo</button>
       </div>
     </div>`).join('');
   const body = `
@@ -10555,7 +10732,7 @@ function gymDrawEditor(isNew) {
         <label class="ge-full"><span>Descanso entre series</span><input class="field-input" id="ge-descanso" value="${escapeHtml(e.meta.descanso || '')}"></label>
         <label class="ge-full"><span>Notas</span><textarea class="field-input" id="ge-notas" rows="2">${escapeHtml(e.meta.notas || '')}</textarea></label>
       </div>
-      <h2>Ejercicios (${e.exercises.length})</h2>
+      <h2>Ejercicios (${e.exercises.length}) <span class="gym-h2-hint">toca uno para editarlo</span></h2>
       ${exRows || '<div class="empty">Agrega tu primer ejercicio.</div>'}
       <button class="btn-secondary" id="ge-add" style="margin-top:8px;">+ Agregar ejercicio</button>
       ${!isNew ? '<button class="btn-secondary" id="ge-dup" style="margin-top:8px;">Duplicar rutina</button><button class="btn-danger" id="ge-delete" style="margin-top:8px;width:100%;padding:12px;">Eliminar rutina</button>' : ''}
@@ -10567,7 +10744,7 @@ function gymDrawEditor(isNew) {
     if (!_gymEdit.exercises.length) { alert(t('Agrega al menos un ejercicio.')); return; }
     _gymEdit.exercises.forEach(ex => { if (!ex.name) ex.name = '—'; });
     const days = _gymEdit._days;
-    const clean = JSON.parse(JSON.stringify(_gymEdit)); delete clean._days;
+    const clean = JSON.parse(JSON.stringify(_gymEdit)); delete clean._days; delete clean._open;
     const all = gymRoutines();
     const i = all.findIndex(x => x.id === clean.id);
     if (i >= 0) all[i] = clean; else all.push(clean);
@@ -10585,6 +10762,14 @@ function gymDrawEditor(isNew) {
     const k = _gymEdit._days.indexOf(d);
     if (k >= 0) _gymEdit._days.splice(k, 1); else _gymEdit._days.push(d);
     c.classList.toggle('selected');
+  }));
+  sb.querySelectorAll('[data-ge-open]').forEach(r => r.addEventListener('click', () => {
+    gymEditorSync(); _gymEdit._open = r.dataset.geOpen; gymDrawEditor(isNew);
+    const el = document.querySelector(`.ge-ex[data-id="${r.dataset.geOpen}"]`);
+    if (el) el.scrollIntoView({ block: 'nearest' });
+  }));
+  sb.querySelectorAll('[data-ge-close]').forEach(b => b.addEventListener('click', () => {
+    gymEditorSync(); _gymEdit._open = null; gymDrawEditor(isNew);
   }));
   sb.querySelectorAll('[data-ge-mv]').forEach(b => b.addEventListener('click', () => {
     gymEditorSync();
@@ -10604,7 +10789,8 @@ function gymDrawEditor(isNew) {
     gymEditorSync();
     openGymExercisePicker('', (dbEx) => {
       const last = _gymEdit.exercises[_gymEdit.exercises.length - 1];
-      _gymEdit.exercises.push({ id: uid(), name: dbEx.n, dbId: dbEx.i, circuit: last && last.circuit != null ? last.circuit + 1 : null,
+      const nid = uid(); _gymEdit._open = nid;
+      _gymEdit.exercises.push({ id: nid, name: dbEx.n, dbId: dbEx.i, circuit: last && last.circuit != null ? last.circuit + 1 : null,
         sets: [{ count: 3, reps: '10-12', note: '' }], rir: '', rpe: '', tempo: '', rest: '', notes: '' });
       gymDrawEditor(isNew);
     }, () => gymDrawEditor(isNew));

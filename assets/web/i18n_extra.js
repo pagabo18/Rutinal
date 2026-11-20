@@ -2940,6 +2940,66 @@ window.__I18N_EXTRA = {
    "en": "Other",
    "pt-BR": "Outro",
    "fr": "Autre"
+  },
+  "Empieza aquí": {
+   "en": "Start here",
+   "pt-BR": "Comece aqui",
+   "fr": "Commencez ici"
+  },
+  "Importa el PDF de tu coach o arma tu rutina.": {
+   "en": "Import your coach's PDF or build your own routine.",
+   "pt-BR": "Importe o PDF do seu coach ou monte sua rotina.",
+   "fr": "Importez le PDF de votre coach ou créez votre routine."
+  },
+  "toca un día para cambiarlo": {
+   "en": "tap a day to change it",
+   "pt-BR": "toque um dia para mudar",
+   "fr": "touchez un jour pour le changer"
+  },
+  "+ Nueva": {
+   "en": "+ New",
+   "pt-BR": "+ Nova",
+   "fr": "+ Nouvelle"
+  },
+  "series": {
+   "en": "sets",
+   "pt-BR": "séries",
+   "fr": "séries"
+  },
+  "Indicaciones del coach": {
+   "en": "Coach's instructions",
+   "pt-BR": "Orientações do coach",
+   "fr": "Consignes du coach"
+  },
+  "¡A la siguiente serie!": {
+   "en": "Next set!",
+   "pt-BR": "Próxima série!",
+   "fr": "Série suivante !"
+  },
+  "OK": {
+   "en": "OK",
+   "pt-BR": "OK",
+   "fr": "OK"
+  },
+  "+30 s": {
+   "en": "+30 s",
+   "pt-BR": "+30 s",
+   "fr": "+30 s"
+  },
+  "Saltar": {
+   "en": "Skip",
+   "pt-BR": "Pular",
+   "fr": "Passer"
+  },
+  "toca uno para editarlo": {
+   "en": "tap one to edit it",
+   "pt-BR": "toque um para editar",
+   "fr": "touchez-en un pour le modifier"
+  },
+  "Listo": {
+   "en": "Done",
+   "pt-BR": "Pronto",
+   "fr": "OK"
   }
  },
  "tpl": {
@@ -3437,6 +3497,21 @@ window.__I18N_EXTRA = {
    "en": "{{x}}, {{y}}",
    "pt-BR": "{{x}}, {{y}}",
    "fr": "{{x}}, {{y}}"
+  },
+  "Hoy · {{x}}": {
+   "en": "Today · {{x}}",
+   "pt-BR": "Hoje · {{x}}",
+   "fr": "Aujourd'hui · {{x}}"
+  },
+  "Hoy · {{x}} ·": {
+   "en": "Today · {{x}} ·",
+   "pt-BR": "Hoje · {{x}} ·",
+   "fr": "Aujourd'hui · {{x}} ·"
+  },
+  "{{n}} / {{n2}} series": {
+   "en": "{{n}} / {{n2}} sets",
+   "pt-BR": "{{n}} / {{n2}} séries",
+   "fr": "{{n}} / {{n2}} séries"
   }
  },
  "ctx": {
