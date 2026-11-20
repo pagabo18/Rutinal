@@ -2440,6 +2440,16 @@ window.__I18N_EXTRA = {
    "en": "Logged weight",
    "pt-BR": "Peso registrado",
    "fr": "Poids enregistré"
+  },
+  "Promedio diario vs meta": {
+   "en": "Daily average vs goal",
+   "pt-BR": "Média diária vs meta",
+   "fr": "Moyenne quotidienne vs objectif"
+  },
+  "Meta sugerida: configura tu perfil en Editar → Nutrición.": {
+   "en": "Suggested goal: set up your profile in Edit → Nutrition.",
+   "pt-BR": "Meta sugerida: configure seu perfil em Editar → Nutrição.",
+   "fr": "Objectif suggéré : configurez votre profil dans Modifier → Nutrition."
   }
  },
  "tpl": {

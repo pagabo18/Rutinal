@@ -8561,6 +8561,34 @@ function reviewKcalChart(data) {
   </svg>`;
 }
 
+// Anillos concéntricos (mismos colores que la pestaña Comida): kcal, proteína,
+// carbohidratos y grasa promedio vs meta. size = lado en px del SVG.
+const REVIEW_RING_COLORS = { kcal: '#EF4444', protein: '#22C55E', carbs: '#7C9CFF', fat: '#F59E0B' };
+function reviewGoals(data) {
+  if (data.targets) return { kcal: data.targets.kcal, protein: data.targets.protein, carbs: data.targets.carbs, fat: data.targets.fat };
+  // Sin perfil: meta sugerida con reparto balanceado 30/40/30
+  const k = data.goalK;
+  return { kcal: k, protein: Math.round(k * 0.3 / 4), carbs: Math.round(k * 0.4 / 4), fat: Math.round(k * 0.3 / 9) };
+}
+function reviewRingsSvg(vals, goals, size, withCenter) {
+  const keys = ['kcal', 'protein', 'carbs', 'fat'];
+  const radii = [110, 88, 66, 44];
+  const rings = keys.map((k, i) => {
+    const r = radii[i], circ = 2 * Math.PI * r;
+    const pct = goals[k] > 0 ? vals[k] / goals[k] : 0;
+    const off = circ * (1 - Math.min(1, pct));
+    // Lo que pasa de 100% se dibuja como segunda vuelta más oscura
+    const extra = pct > 1 ? `<circle cx="130" cy="130" r="${r}" fill="none" stroke="#111827" stroke-opacity=".35" stroke-width="14" stroke-linecap="round"
+        stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${(circ * (1 - Math.min(0.5, pct - 1))).toFixed(1)}" transform="rotate(-90 130 130)"/>` : '';
+    return `<circle cx="130" cy="130" r="${r}" fill="none" stroke="#F1F2F4" stroke-width="14"/>
+      ${pct > 0 ? `<circle cx="130" cy="130" r="${r}" fill="none" stroke="${REVIEW_RING_COLORS[k]}" stroke-width="14" stroke-linecap="round"
+        stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 130 130)"/>` : ''}${extra}`;
+  }).join('');
+  const center = withCenter ? `<text x="130" y="128" text-anchor="middle" font-size="34" font-weight="800" fill="#111827">${Math.round(vals.kcal)}</text>
+    <text x="130" y="150" text-anchor="middle" font-size="11" font-weight="600" fill="#6B7280" letter-spacing="1">KCAL</text>` : '';
+  return `<svg viewBox="0 0 260 260" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">${rings}${center}</svg>`;
+}
+
 function buildReviewDoc(data) {
   const e = escapeHtml;
   const loc = _loc();
@@ -8580,14 +8608,26 @@ function buildReviewDoc(data) {
   const mk = pk + ck + fk || 1;
   const pct = v => Math.round(v / mk * 100);
   const macroBar = `<div class="rp-macrobar">
-      <div style="width:${pct(pk)}%;background:#F59E0B"></div><div style="width:${pct(ck)}%;background:#3B82F6"></div><div style="width:${pct(fk)}%;background:#A855F7"></div>
+      <div style="width:${pct(pk)}%;background:#22C55E"></div><div style="width:${pct(ck)}%;background:#7C9CFF"></div><div style="width:${pct(fk)}%;background:#F59E0B"></div>
     </div>
     <div class="rp-legend">
-      <span><i style="background:#F59E0B"></i><span>Proteína</span> ${pct(pk)}%</span>
-      <span><i style="background:#3B82F6"></i><span>Carbohidratos</span> ${pct(ck)}%</span>
-      <span><i style="background:#A855F7"></i><span>Grasa</span> ${pct(fk)}%</span>
+      <span><i style="background:#22C55E"></i><span>Proteína</span> ${pct(pk)}%</span>
+      <span><i style="background:#7C9CFF"></i><span>Carbohidratos</span> ${pct(ck)}%</span>
+      <span><i style="background:#F59E0B"></i><span>Grasa</span> ${pct(fk)}%</span>
     </div>`;
 
+  const G = reviewGoals(data);
+  const ringRow = (k, lbl, unit) => {
+    const pctV = G[k] > 0 ? Math.round(data.avg[k] / G[k] * 100) : 0;
+    return `<div class="rp-ring-item">
+      <div class="rp-ring-lbl"><i style="background:${REVIEW_RING_COLORS[k]}"></i><span>${lbl}</span></div>
+      <div class="rp-ring-val">${data.avg[k]}${unit} <span>/ ${G[k]}${unit}</span></div>
+      <div class="rp-ring-bar"><div style="width:${Math.min(100, pctV)}%;background:${pctV > 105 ? '#EF4444' : REVIEW_RING_COLORS[k]}"></div></div>
+      <div class="rp-ring-pct${pctV > 105 ? ' over' : ''}">${pctV}%</div>
+    </div>`;
+  };
+  const ringLegend = ringRow('kcal', 'kcal', '') + ringRow('protein', 'Proteína', 'g') + ringRow('carbs', 'Carbohidratos', 'g') + ringRow('fat', 'Grasa', 'g')
+    + (data.targets ? '' : `<div class="rp-muted" style="margin-top:4px">Meta sugerida: configura tu perfil en Editar → Nutrición.</div>`);
   const slots = MEALS.map(m => `<tr><td>${e(m.name)}</td><td class="num">${data.slotAvg[m.id]}</td></tr>`).join('');
   const top = data.topFoods.length
     ? data.topFoods.map(f => `<tr><td>${e(f.name)}</td><td class="num">${f.count}×</td><td class="num">${Math.round(f.grams)} g</td><td class="num">${Math.round(f.kcal)}</td></tr>`).join('')
@@ -8609,7 +8649,7 @@ function buildReviewDoc(data) {
   let detail = '';
   if (data.period === 'week') {
     detail = data.days.map(d => {
-      const head = `<div class="rp-dayhead"><b>${e(cap(fmtDayLong.format(d.date)))}</b><span>${d.logged ? Math.round(d.tot.kcal) + ' kcal · P' + Math.round(d.tot.protein) + ' C' + Math.round(d.tot.carbs) + ' G' + Math.round(d.tot.fat) : ''}${d.met ? ' · ✓' : ''}</span></div>`;
+      const head = `<div class="rp-dayhead">${d.logged ? reviewRingsSvg(d.tot, G, 34, false) : ''}<b>${e(cap(fmtDayLong.format(d.date)))}</b><span>${d.logged ? Math.round(d.tot.kcal) + ' kcal · P' + Math.round(d.tot.protein) + ' C' + Math.round(d.tot.carbs) + ' G' + Math.round(d.tot.fat) : ''}${d.met ? ' · ✓' : ''}</span></div>`;
       if (!d.logged) return `<div class="rp-day">${head}<div class="rp-muted">${d.future ? 'Día futuro' : 'Sin registro'}</div></div>`;
       const rows = MEALS.filter(m => d.meals[m.id].items.length).map(m => {
         const its = d.meals[m.id].items;
@@ -8649,6 +8689,13 @@ function buildReviewDoc(data) {
         ${stat('Carbohidratos prom.', `${data.avg.carbs} g${T ? goalSub(T.carbs + ' g') : ''}`)}
         ${stat('Grasa prom.', `${data.avg.fat} g${T ? goalSub(T.fat + ' g') : ''}`)}
         ${data.hasProfile ? stat('Días con meta cumplida', `${data.met}<span>/${data.logged.length}</span>`) : stat('kcal totales', data.total.toLocaleString(loc))}
+      </div>
+    </section>
+    <section>
+      <h2>Promedio diario vs meta</h2>
+      <div class="rp-rings">
+        ${reviewRingsSvg(data.avg, G, 200, true)}
+        <div class="rp-ring-legend">${ringLegend}</div>
       </div>
     </section>
     <section>
@@ -8700,6 +8747,23 @@ const REVIEW_CSS = `
   .rp-chart { width: 100%; height: auto; display: block; }
   .rp-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11px; color: #4B5563; margin-top: 6px; }
   .rp-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+  .rp-rings { display: flex; align-items: center; gap: 24px; }
+  .rp-cols, .rp-rings, .rp-stats, .rp-row3, .rp-chart { break-inside: avoid; page-break-inside: avoid; }
+  .rp-doc h2 { break-after: avoid; page-break-after: avoid; }
+  .rp-rings > svg { flex: 0 0 auto; }
+  .rp-ring-legend { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .rp-ring-item { display: grid; grid-template-columns: 1fr auto 44px; grid-template-rows: auto auto; column-gap: 10px; align-items: center; }
+  .rp-ring-lbl { font-weight: 600; font-size: 12px; }
+  .rp-ring-lbl i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .rp-ring-val { font-size: 13px; font-weight: 700; text-align: right; }
+  .rp-ring-val span { font-weight: 500; color: #6B7280; font-size: 11px; }
+  .rp-ring-pct { grid-row: 1 / span 2; grid-column: 3; text-align: right; font-weight: 700; font-size: 13px; color: #374151; }
+  .rp-ring-pct.over { color: #EF4444; }
+  .rp-ring-bar { grid-column: 1 / span 2; height: 5px; border-radius: 3px; background: #F1F2F4; overflow: hidden; margin-top: 4px; }
+  .rp-ring-bar div { height: 100%; border-radius: 3px; }
+  .rp-dayhead { align-items: center; }
+  .rp-dayhead > svg { flex: 0 0 auto; margin-right: -2px; }
+  .rp-dayhead b { flex: 1; }
   .rp-macrobar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: #F3F4F6; }
   .rp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   .rp-table { width: 100%; border-collapse: collapse; font-size: 11px; }
@@ -8723,6 +8787,8 @@ const REVIEW_CSS = `
     .rp-stats { grid-template-columns: repeat(2, 1fr); }
     .rp-cols { grid-template-columns: 1fr; }
     .rp-title { font-size: 20px; }
+    .rp-rings { gap: 14px; }
+    .rp-rings > svg { width: 130px; height: 130px; }
   }
   @page { size: A4; margin: 12mm; }
 `;
