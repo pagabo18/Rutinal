@@ -36,6 +36,7 @@ Timer con historial por categoría.
 - **Importar PDF del coach**: lee la tabla (Circuito / Ejercicio / Series/Reps / Peso), las indicaciones (objetivo, calentamiento, descanso, cadencia) y recorta la foto de cada ejercicio del PDF. Usa pdf.js 3.11 (`lib/pdfjs`, Apache-2.0) en el hilo principal para funcionar en el WebView
 - **Semana**: asigna una rutina a cada día y la pestaña muestra la de hoy
 - **Registro de cargas** por serie (kg × reps, ✓), "última vez", temporizador de descanso, alternancia automática en circuitos, historial y "Compartir cargas" para mandárselas al coach
+- **Seguimiento (criterios de fisioterapia)**: frecuencia, intensidad (%1RM con 1RM estimado por Epley, RIR, RPE) y volumen; descanso 2–3 min; densidad (kg/min); dolor por ejercicio y por sesión con escala NPRS y fatiga con RPE; "¿cómo te sentiste?" al terminar; sugerencia de progresar / mantener / regresar (cada 2–3 semanas, una sola variable) y aviso si cambias más de una variable; pantalla de Progreso con gráficas
 - **Base de ejercicios**: [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (873 ejercicios, dominio público) en `gym_db.js`, con búsqueda en español o inglés, músculos, equipo, instrucciones e imágenes inicio/fin animadas (se cachean para verlas sin conexión)
 
 ### Calendario

@@ -3045,6 +3045,291 @@ window.__I18N_EXTRA = {
    "en": "with:",
    "pt-BR": "por:",
    "fr": "par :"
+  },
+  "Primera vez": {
+   "en": "First time",
+   "pt-BR": "Primeira vez",
+   "fr": "Première fois"
+  },
+  "Elige una carga con la que llegues al RIR indicado y regístrala.": {
+   "en": "Pick a load that gets you to the target RIR and log it.",
+   "pt-BR": "Escolha uma carga com a qual você chegue ao RIR indicado e registre.",
+   "fr": "Choisissez une charge qui vous amène au RIR indiqué et enregistrez-la."
+  },
+  "Regresar": {
+   "en": "Regress",
+   "pt-BR": "Regredir",
+   "fr": "Régresser"
+  },
+  "Progresar": {
+   "en": "Progress",
+   "pt-BR": "Progredir",
+   "fr": "Progresser"
+  },
+  "Mantén la carga.": {
+   "en": "Keep the load.",
+   "pt-BR": "Mantenha a carga.",
+   "fr": "Gardez la charge."
+  },
+  "Dolor (NPRS)": {
+   "en": "Pain (NPRS)",
+   "pt-BR": "Dor (NPRS)",
+   "fr": "Douleur (NPRS)"
+  },
+  "Esfuerzo (RPE)": {
+   "en": "Effort (RPE)",
+   "pt-BR": "Esforço (RPE)",
+   "fr": "Effort (RPE)"
+  },
+  "Sin dolor": {
+   "en": "No pain",
+   "pt-BR": "Sem dor",
+   "fr": "Pas de douleur"
+  },
+  "Leve": {
+   "en": "Mild",
+   "pt-BR": "Leve",
+   "fr": "Légère"
+  },
+  "Severo": {
+   "en": "Severe",
+   "pt-BR": "Grave",
+   "fr": "Sévère"
+  },
+  "Muy mal": {
+   "en": "Very bad",
+   "pt-BR": "Muito mal",
+   "fr": "Très mal"
+  },
+  "Mal": {
+   "en": "Bad",
+   "pt-BR": "Mal",
+   "fr": "Mal"
+  },
+  "Normal": {
+   "en": "Okay",
+   "pt-BR": "Normal",
+   "fr": "Normal"
+  },
+  "Bien": {
+   "en": "Good",
+   "pt-BR": "Bem",
+   "fr": "Bien"
+  },
+  "Excelente": {
+   "en": "Great",
+   "pt-BR": "Excelente",
+   "fr": "Excellent"
+  },
+  "¿Cómo te sentiste?": {
+   "en": "How did you feel?",
+   "pt-BR": "Como você se sentiu?",
+   "fr": "Comment vous êtes-vous senti ?"
+  },
+  "kg de volumen": {
+   "en": "kg of volume",
+   "pt-BR": "kg de volume",
+   "fr": "kg de volume"
+  },
+  "kg/min (densidad)": {
+   "en": "kg/min (density)",
+   "pt-BR": "kg/min (densidade)",
+   "fr": "kg/min (densité)"
+  },
+  "Al terminar, ¿cómo te sentiste?": {
+   "en": "When you finished, how did you feel?",
+   "pt-BR": "Ao terminar, como você se sentiu?",
+   "fr": "À la fin, comment vous êtes-vous senti ?"
+  },
+  "0 sin dolor · 1–3 leve · 4–6 moderado · 7–10 severo": {
+   "en": "0 no pain · 1–3 mild · 4–6 moderate · 7–10 severe",
+   "pt-BR": "0 sem dor · 1–3 leve · 4–6 moderada · 7–10 grave",
+   "fr": "0 pas de douleur · 1–3 légère · 4–6 modérée · 7–10 sévère"
+  },
+  "Fatiga de la sesión: 10 = esfuerzo máximo": {
+   "en": "Session fatigue: 10 = maximum effort",
+   "pt-BR": "Fadiga da sessão: 10 = esforço máximo",
+   "fr": "Fatigue de la séance : 10 = effort maximal"
+  },
+  "Notas (opcional)": {
+   "en": "Notes (optional)",
+   "pt-BR": "Notas (opcional)",
+   "fr": "Notes (facultatif)"
+  },
+  "Ej. molestia en hombro derecho en el press": {
+   "en": "e.g. right shoulder discomfort on the press",
+   "pt-BR": "Ex. incômodo no ombro direito no supino",
+   "fr": "Ex. gêne à l'épaule droite au développé"
+  },
+  "Guardar y terminar": {
+   "en": "Save and finish",
+   "pt-BR": "Salvar e terminar",
+   "fr": "Enregistrer et terminer"
+  },
+  "Progreso": {
+   "en": "Progress",
+   "pt-BR": "Progresso",
+   "fr": "Progrès"
+  },
+  "Esta semana": {
+   "en": "This week",
+   "pt-BR": "Esta semana",
+   "fr": "Cette semaine"
+  },
+  "Frecuencia (sesiones)": {
+   "en": "Frequency (sessions)",
+   "pt-BR": "Frequência (sessões)",
+   "fr": "Fréquence (séances)"
+  },
+  "Series (volumen)": {
+   "en": "Sets (volume)",
+   "pt-BR": "Séries (volume)",
+   "fr": "Séries (volume)"
+  },
+  "RPE promedio (intensidad)": {
+   "en": "Avg RPE (intensity)",
+   "pt-BR": "RPE médio (intensidade)",
+   "fr": "RPE moyen (intensité)"
+  },
+  "Dolor NPRS promedio": {
+   "en": "Avg NPRS pain",
+   "pt-BR": "Dor NPRS média",
+   "fr": "Douleur NPRS moyenne"
+  },
+  "Dolor, fatiga y cómo te sentiste": {
+   "en": "Pain, fatigue and how you felt",
+   "pt-BR": "Dor, fadiga e como você se sentiu",
+   "fr": "Douleur, fatigue et ressenti"
+  },
+  "RPE sesión": {
+   "en": "Session RPE",
+   "pt-BR": "RPE da sessão",
+   "fr": "RPE de la séance"
+  },
+  "Cómo te sentiste": {
+   "en": "How you felt",
+   "pt-BR": "Como você se sentiu",
+   "fr": "Ressenti"
+  },
+  "Al terminar cada entrenamiento registra cómo te sentiste para ver la gráfica.": {
+   "en": "Log how you felt after each workout to see the chart.",
+   "pt-BR": "Registre como você se sentiu ao terminar cada treino para ver o gráfico.",
+   "fr": "Notez votre ressenti après chaque séance pour voir le graphique."
+  },
+  "Volumen por semana (kg)": {
+   "en": "Volume per week (kg)",
+   "pt-BR": "Volume por semana (kg)",
+   "fr": "Volume par semaine (kg)"
+  },
+  "Series por músculo esta semana": {
+   "en": "Sets per muscle this week",
+   "pt-BR": "Séries por músculo nesta semana",
+   "fr": "Séries par muscle cette semaine"
+  },
+  "Sin series esta semana.": {
+   "en": "No sets this week.",
+   "pt-BR": "Nenhuma série nesta semana.",
+   "fr": "Aucune série cette semaine."
+  },
+  "1RM estimado": {
+   "en": "Estimated 1RM",
+   "pt-BR": "1RM estimado",
+   "fr": "1RM estimé"
+  },
+  "Registra cargas para ver tu 1RM estimado.": {
+   "en": "Log loads to see your estimated 1RM.",
+   "pt-BR": "Registre cargas para ver seu 1RM estimado.",
+   "fr": "Enregistrez des charges pour voir votre 1RM estimé."
+  },
+  "Criterios": {
+   "en": "Criteria",
+   "pt-BR": "Critérios",
+   "fr": "Critères"
+  },
+  "Progresión": {
+   "en": "Progression",
+   "pt-BR": "Progressão",
+   "fr": "Progression"
+  },
+  "Cada 2–3 semanas, modificando solo 1 variable (carga, reps, series o tempo) para no aumentar el riesgo de lesión.": {
+   "en": "Every 2–3 weeks, changing only 1 variable (load, reps, sets or tempo) so you don't raise the risk of injury.",
+   "pt-BR": "A cada 2–3 semanas, mudando só 1 variável (carga, reps, séries ou cadência) para não aumentar o risco de lesão.",
+   "fr": "Toutes les 2–3 semaines, en ne modifiant qu'une variable (charge, rép., séries ou tempo) pour ne pas augmenter le risque de blessure."
+  },
+  "Regresión": {
+   "en": "Regression",
+   "pt-BR": "Regressão",
+   "fr": "Régression"
+  },
+  "Si el dolor (NPRS) llega a 4/10 o sube 2 puntos, baja ~10% la carga o 1 serie.": {
+   "en": "If pain (NPRS) reaches 4/10 or rises 2 points, lower the load ~10% or drop 1 set.",
+   "pt-BR": "Se a dor (NPRS) chegar a 4/10 ou subir 2 pontos, reduza ~10% a carga ou 1 série.",
+   "fr": "Si la douleur (NPRS) atteint 4/10 ou augmente de 2 points, baissez la charge d'~10 % ou retirez 1 série."
+  },
+  "2–3 min entre series.": {
+   "en": "2–3 min between sets.",
+   "pt-BR": "2–3 min entre séries.",
+   "fr": "2–3 min entre les séries."
+  },
+  "Intensidad": {
+   "en": "Intensity",
+   "pt-BR": "Intensidade",
+   "fr": "Intensité"
+  },
+  "%1RM, RIR y RPE. El 1RM se estima con tus series (fórmula de Epley).": {
+   "en": "%1RM, RIR and RPE. Your 1RM is estimated from your sets (Epley formula).",
+   "pt-BR": "%1RM, RIR e RPE. O 1RM é estimado com suas séries (fórmula de Epley).",
+   "fr": "%1RM, RIR et RPE. Le 1RM est estimé à partir de vos séries (formule d'Epley)."
+  },
+  "Frecuencia": {
+   "en": "Frequency",
+   "pt-BR": "Frequência",
+   "fr": "Fréquence"
+  },
+  "1RM est.": {
+   "en": "Est. 1RM",
+   "pt-BR": "1RM est.",
+   "fr": "1RM est."
+  },
+  "✓ Entrenamiento terminado · editar cómo me sentí": {
+   "en": "✓ Workout finished · edit how I felt",
+   "pt-BR": "✓ Treino concluído · editar como me senti",
+   "fr": "✓ Séance terminée · modifier mon ressenti"
+  },
+  "Para reducir el riesgo de lesión, progresa cada 2–3 semanas y cambia solo 1 variable a la vez.": {
+   "en": "To reduce injury risk, progress every 2–3 weeks and change only 1 variable at a time.",
+   "pt-BR": "Para reduzir o risco de lesão, progrida a cada 2–3 semanas e mude só 1 variável por vez.",
+   "fr": "Pour réduire le risque de blessure, progressez toutes les 2–3 semaines et ne changez qu'une variable à la fois."
+  },
+  "¿Guardar de todos modos?": {
+   "en": "Save anyway?",
+   "pt-BR": "Salvar mesmo assim?",
+   "fr": "Enregistrer quand même ?"
+  },
+  "cambio hace": {
+   "en": "changed",
+   "pt-BR": "mudança há",
+   "fr": "modifié il y a"
+  },
+  "días": {
+   "en": "days ago",
+   "pt-BR": "dias",
+   "fr": "jours"
+  },
+  "Dolor": {
+   "en": "Pain",
+   "pt-BR": "Dor",
+   "fr": "Douleur"
+  },
+  "Al terminar": {
+   "en": "Afterwards",
+   "pt-BR": "Ao terminar",
+   "fr": "À la fin"
+  },
+  "kg totales": {
+   "en": "total kg",
+   "pt-BR": "kg totais",
+   "fr": "kg au total"
   }
  },
  "tpl": {
@@ -3538,11 +3823,6 @@ window.__I18N_EXTRA = {
    "pt-BR": "Exercícios ({{n}})",
    "fr": "Exercices ({{n}})"
   },
-  "{{x}}, {{y}}": {
-   "en": "{{x}}, {{y}}",
-   "pt-BR": "{{x}}, {{y}}",
-   "fr": "{{x}}, {{y}}"
-  },
   "Hoy · {{x}}": {
    "en": "Today · {{x}}",
    "pt-BR": "Hoje · {{x}}",
@@ -3557,6 +3837,36 @@ window.__I18N_EXTRA = {
    "en": "{{n}} / {{n2}} sets",
    "pt-BR": "{{n}} / {{n2}} séries",
    "fr": "{{n}} / {{n2}} séries"
+  },
+  "Dolor {{n}}/10 la última vez: baja ~10% la carga (≈ {{x}} kg) o quita 1 serie. Cambia solo una cosa.": {
+   "en": "Pain {{n}}/10 last time: lower the load ~10% (≈ {{x}} kg) or drop 1 set. Change only one thing.",
+   "pt-BR": "Dor {{n}}/10 na última vez: reduza ~10% a carga (≈ {{x}} kg) ou tire 1 série. Mude só uma coisa.",
+   "fr": "Douleur {{n}}/10 la dernière fois : baissez la charge d'~10 % (≈ {{x}} kg) ou retirez 1 série. Ne changez qu'une chose."
+  },
+  "El dolor subió de {{n}} a {{n2}}/10: baja ~10% la carga o el volumen.": {
+   "en": "Pain went up from {{n}} to {{n2}}/10: lower the load or volume ~10%.",
+   "pt-BR": "A dor subiu de {{n}} para {{n2}}/10: reduza ~10% a carga ou o volume.",
+   "fr": "La douleur est passée de {{n}} à {{n2}}/10 : baissez la charge ou le volume d'~10 %."
+  },
+  "Semana {{n}} con esta prescripción: progresa a las 2–3 semanas.": {
+   "en": "Week {{n}} on this prescription: progress at 2–3 weeks.",
+   "pt-BR": "Semana {{n}} com esta prescrição: progrida em 2–3 semanas.",
+   "fr": "Semaine {{n}} avec cette prescription : progressez au bout de 2–3 semaines."
+  },
+  "Cumpliste el tope de reps: sube solo 1 variable, ej. +{{x}} kg (≈ {{y}} kg).": {
+   "en": "You hit the top of the rep range: raise only 1 variable, e.g. +{{x}} kg (≈ {{y}} kg).",
+   "pt-BR": "Você atingiu o máximo de reps: suba só 1 variável, ex. +{{x}} kg (≈ {{y}} kg).",
+   "fr": "Haut de la fourchette atteint : augmentez une seule variable, ex. +{{x}} kg (≈ {{y}} kg)."
+  },
+  "Mantén la carga hasta llegar a {{n}} reps en todas las series.": {
+   "en": "Keep the load until you reach {{n}} reps on every set.",
+   "pt-BR": "Mantenha a carga até chegar a {{n}} reps em todas as séries.",
+   "fr": "Gardez la charge jusqu'à {{n}} rép. sur toutes les séries."
+  },
+  "{{n}}×/sem": {
+   "en": "{{n}}×/wk",
+   "pt-BR": "{{n}}×/sem",
+   "fr": "{{n}}×/sem"
   }
  },
  "ctx": {

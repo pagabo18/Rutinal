@@ -1779,6 +1779,43 @@
   .gym-in { padding: 10px 6px; font-size: 16px; }
   .gym-check { height: 40px; font-size: 17px; }
   .gym-wo-btns { margin-top: 14px; }
+  .gym-adv { margin-top: 8px; font-size: 12px; padding: 7px 10px; border-radius: 10px; background: var(--surface-2); color: var(--text-2); line-height: 1.35; }
+  .gym-adv b { margin-right: 4px; }
+  .gym-adv.up { background: rgba(34,197,94,.12); } .gym-adv.up b { color: #16A34A; }
+  .gym-adv.down { background: rgba(239,68,68,.12); } .gym-adv.down b { color: #DC2626; }
+  .gym-adv.hold b { color: #D97706; }
+  .gym-exfeel { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .gym-scale-l { font-size: 11px; color: var(--text-3); font-weight: 600; margin-bottom: 4px; }
+  .gym-scale-b { display: grid; grid-template-columns: repeat(11, 1fr); gap: 3px; }
+  .gym-sc { height: 30px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; }
+  .gym-sc.on { color: #fff; border-color: transparent; }
+  .gym-sc.p0.on { background: #22C55E; } .gym-sc.p1.on { background: #84CC16; } .gym-sc.p2.on { background: #F59E0B; } .gym-sc.p3.on { background: #EF4444; }
+  .gym-sc.r1.on { background: #3B82F6; } .gym-sc.r2.on { background: #6366F1; } .gym-sc.r3.on { background: #111827; }
+  .gym-scale-hint { font-size: 10px; color: var(--text-3); margin: 2px 0 8px; }
+  .gym-finish { display: flex; flex-direction: column; gap: 6px; }
+  .gym-fin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 8px; margin-bottom: 10px; }
+  .gym-fin-stats div, .gym-kpi { background: var(--surface-2); border-radius: 12px; padding: 10px; text-align: center; }
+  .gym-fin-stats b, .gym-kpi b { display: block; font-size: 18px; font-weight: 800; }
+  .gym-kpi b small { font-size: 12px; color: var(--text-3); font-weight: 500; }
+  .gym-fin-stats span, .gym-kpi span { font-size: 10px; color: var(--text-3); }
+  .gym-moods { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 10px; }
+  .gym-mood { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 8px 2px; cursor: pointer; font: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .gym-mood span { font-size: 22px; } .gym-mood small { font-size: 10px; color: var(--text-3); }
+  .gym-mood.on { border-color: var(--text); background: var(--surface-2); }
+  .gym-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .gym-leg { display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px; color: var(--text-2); margin-top: 4px; }
+  .gym-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .gym-mus { display: grid; grid-template-columns: 110px 1fr 28px; gap: 8px; align-items: center; font-size: 12px; margin: 4px 0; }
+  .gym-mus-bar { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .gym-mus-bar div { height: 100%; background: #3B82F6; border-radius: 4px; }
+  .gym-mus b { text-align: right; }
+  .gym-e1 { font-size: 13px; color: var(--text-3); margin-top: 4px; } .gym-e1 b { color: var(--text); }
+  .gym-progress .field-select { width: 100%; margin-bottom: 6px; }
+  .gym-criteria { display: flex; flex-direction: column; gap: 8px; font-size: 12px; }
+  .gym-criteria div { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .gym-criteria span { color: var(--text-2); }
+  .gym-hist-pain { display: inline-block; min-width: 16px; text-align: center; border-radius: 5px; color: #fff; font-size: 10px; font-weight: 700; padding: 1px 3px; }
+  .gym-hist-pain.p0 { background: #22C55E; } .gym-hist-pain.p1 { background: #84CC16; } .gym-hist-pain.p2 { background: #F59E0B; } .gym-hist-pain.p3 { background: #EF4444; }
   .gym-ex-swapped { font-size: 11px; color: #D97706; margin-top: 1px; font-weight: 600; }
   .gym-swap-btn { display: block; width: 100%; margin-top: 10px; padding: 9px; border-radius: 10px; border: 1px dashed var(--border-strong); background: transparent; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
   .gym-swap-from { font-size: 14px; margin-bottom: 10px; }
@@ -10263,7 +10300,7 @@ function renderGym() {
       <span class="gym-h2-btns"><button class="h2-btn" id="gym-import">Importar PDF</button><button class="h2-btn" id="gym-new">+ Nueva</button></span>
     </h2>
     ${list}
-    <h2>Historial</h2>
+    <h2>Historial <span class="gym-h2-btns"><button class="h2-btn" id="gym-progress">Progreso</button></span></h2>
     ${gymHistoryHtml()}` : ''}
     <input type="file" id="gym-pdf-input" accept="application/pdf,.pdf" style="display:none">
     <div class="gym-credit">Ejercicios e imágenes: free-exercise-db (dominio público)</div>`;
@@ -10274,6 +10311,7 @@ function renderGym() {
   const inp = document.getElementById('gym-pdf-input');
   const pickPdf = () => inp.click();
   on('gym-import', pickPdf); on('gym-import-big', pickPdf);
+  on('gym-progress', () => openGymProgress());
   on('gym-new', () => openGymEditor(null)); on('gym-new-big', () => openGymEditor(null));
   inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; inp.value = ''; if (f) gymImportPdf(f); });
   el.querySelectorAll('[data-gym-dow]').forEach(d => d.addEventListener('click', () => {
@@ -10325,7 +10363,7 @@ function gymHistoryHtml() {
     return `<div class="gym-hist" data-gym-hist="${k}">
       <div class="gym-hist-d">${escapeHtml(f.format(new Date(k + 'T00:00:00')))}</div>
       <div class="gym-hist-n">${escapeHtml(r ? r.name : '—')}</div>
-      <div class="gym-hist-v">${sets} series${vol ? ' · ' + Math.round(vol).toLocaleString(_loc()) + ' kg' : ''}</div>
+      <div class="gym-hist-v">${sets} series${vol ? ' · ' + Math.round(vol).toLocaleString(_loc()) + ' kg' : ''}${lg.feel && lg.feel.mood ? ' ' + GYM_MOODS[lg.feel.mood - 1][0] : ''}${lg.feel && lg.feel.pain != null ? ` <span class="gym-hist-pain p${lg.feel.pain === 0 ? 0 : lg.feel.pain <= 3 ? 1 : lg.feel.pain <= 6 ? 2 : 3}">${lg.feel.pain}</span>` : ''}</div>
     </div>`;
   }).join('');
 }
@@ -10351,7 +10389,9 @@ function openGymWorkout(routineId, dateKey, focusId) {
   const lg = (logs[dateKey] && logs[dateKey].routineId === r.id) ? logs[dateKey] : { routineId: r.id, ex: {} };
   const m = r.meta || {};
   const fmtD = new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' });
-  const restDefault = gymRestSeconds(m.descanso) || 90;
+  // Descanso entre series: 2–3 min (si la rutina dice otra cosa, se ajusta a ese rango)
+  const restDefault = Math.min(GYM_REST_MAX, Math.max(GYM_REST_MIN, gymRestSeconds(m.descanso) || 150));
+  const freq = Object.values(gymSchedule()).filter(id => id === r.id).length;
   const exDoneCount = ex => (lg.ex[ex.id] || []).filter(s => s.done).length;
   const exComplete = ex => exDoneCount(ex) >= Math.max(1, gymTotalSets(ex));
   let openId = focusId || (r.exercises.find(ex => !exComplete(ex)) || {}).id || null;
@@ -10387,7 +10427,14 @@ function openGymWorkout(routineId, dateKey, focusId) {
       </div>`;
     }).join('');
     const tempo = ex.tempo || r.tempo;
-    const extra = [chip('Tempo', tempo), chip('Descanso', ex.rest)].join('');
+    const best1rm = gymBestE1RM(ex.id, dateKey);
+    const pr = gymRange(ex.pct1rm);
+    const pctTxt = pr ? (best1rm ? `${ex.pct1rm}% ≈ ${gymFmtKg(gymRound(best1rm * pr[0] / 100))}${pr[1] !== pr[0] ? '–' + gymFmtKg(gymRound(best1rm * pr[1] / 100)) : ''} kg` : `${ex.pct1rm}%`) : '';
+    const extra = [chip('%1RM', pctTxt), chip('Tempo', tempo), chip('Descanso', ex.rest), best1rm ? chip('1RM est.', gymFmtKg(best1rm) + ' kg') : ''].join('');
+    const adv = sw ? null : gymAdvice(r, ex, dateKey);
+    const advHtml = adv ? `<div class="gym-adv ${adv.kind}"><b>${adv.title}</b> <span>${escapeHtml(adv.text)}</span></div>` : '';
+    const ef = (lg.exFeel && lg.exFeel[ex.id]) || {};
+    const feelHtml = done ? `<div class="gym-exfeel">${gymScaleHtml('pain', ex.id, ef.pain)}${gymScaleHtml('rpe', ex.id, ef.rpe)}</div>` : '';
     const swapBtn = sw
       ? `<button class="gym-swap-btn" data-gym-unswap="${ex.id}">↺ Volver al original</button>`
       : `<button class="gym-swap-btn" data-gym-swap="${ex.id}">⇄ Reemplazar ejercicio</button>`;
@@ -10395,8 +10442,10 @@ function openGymWorkout(routineId, dateKey, focusId) {
     return `<div class="gym-ex open${complete ? ' complete' : ''}" data-ex-card="${ex.id}">${head}
       ${extra ? `<div class="gym-chips">${extra}</div>` : ''}
       ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
+      ${advHtml}
       ${lastTxt}
       <div class="gym-sets"><div class="gym-set gym-set-h"><div data-i18n-ctx="set">Objetivo</div><div>kg</div><div>reps</div><div></div></div>${rows}</div>
+      ${feelHtml}
       ${swapBtn}
     </div>`;
   };
@@ -10428,7 +10477,8 @@ function openGymWorkout(routineId, dateKey, focusId) {
         <div class="gym-rest" id="gym-rest" style="display:none"></div>
       </div>
       <div class="gym-wo-top">
-        <div class="gym-wo-date">${escapeHtml(dLabel)}${m.musculos ? ' · ' + escapeHtml(m.musculos) : ''}${r.tempo ? ' · <b>Tempo</b> ' + escapeHtml(r.tempo) : ''}</div>
+        <div class="gym-wo-date">${escapeHtml(dLabel)}${m.musculos ? ' · ' + escapeHtml(m.musculos) : ''}</div>
+        <div class="gym-chips">${freq ? chip('Frecuencia', freq + '×/sem') : ''}${chip('Descanso', '2–3 min')}${chip('Tempo', r.tempo)}</div>
         ${info ? `<details class="gym-info"><summary>Indicaciones del coach</summary>${info}</details>` : ''}
       </div>
       ${body}
@@ -10436,7 +10486,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
         <button class="btn-secondary" id="gym-share">Compartir cargas</button>
         <button class="btn-secondary" id="gym-edit">Editar rutina</button>
       </div>
-      <button class="btn-primary gym-cta" id="gym-finish">${lg.done ? '✓ Entrenamiento terminado' : 'Terminar entrenamiento'}</button>
+      <button class="btn-primary gym-cta" id="gym-finish">${lg.done ? '✓ Entrenamiento terminado · editar cómo me sentí' : 'Terminar entrenamiento'}</button>
     </div>`;
     sb.scrollTop = keepScroll;
     bind(sb);
@@ -10474,6 +10524,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
         row.querySelectorAll('.gym-in').forEach(inp => { if (!inp.value && inp.placeholder && !/^(kg|reps)$/.test(inp.placeholder)) { inp.value = inp.placeholder; setVal(exId, i, inp.dataset.f, inp.value); } });
       }
       setVal(exId, i, 'done', !was);
+      if (!was && !lg.start) { lg.start = Date.now(); persist(); }
       if (!was) {
         if (navigator.vibrate) navigator.vibrate(15);
         const ex = r.exercises.find(e => e.id === exId);
@@ -10497,6 +10548,13 @@ function openGymWorkout(routineId, dateKey, focusId) {
         }
       }
       draw();
+    }));
+    sb.querySelectorAll('.gym-exfeel [data-sc]').forEach(b => b.addEventListener('click', () => {
+      lg.exFeel = lg.exFeel || {};
+      const f = lg.exFeel[b.dataset.ex] || (lg.exFeel[b.dataset.ex] = {});
+      f[b.dataset.sc] = +b.dataset.v;
+      persist();
+      b.parentElement.querySelectorAll('.gym-sc').forEach(x => x.classList.toggle('on', x === b));
     }));
     sb.querySelectorAll('[data-gym-swap]').forEach(b => b.addEventListener('click', () => {
       const ex = r.exercises.find(e => e.id === b.dataset.gymSwap);
@@ -10525,7 +10583,8 @@ function openGymWorkout(routineId, dateKey, focusId) {
     sb.querySelector('#gym-edit').addEventListener('click', () => openGymEditor(r.id));
     sb.querySelector('#gym-share').addEventListener('click', () => gymShareLoads(r, dateKey));
     sb.querySelector('#gym-finish').addEventListener('click', () => {
-      lg.done = !lg.done; persist(); gymRestStop(); closeSheet(); renderGym();
+      gymRestStop();
+      openGymFinish(r, dateKey, lg, persist, () => { closeSheet(); renderGym(); });
     });
   };
 
@@ -10595,6 +10654,15 @@ function gymShareLoads(r, dateKey) {
     lines.push(`${nm}: ${sets.map(s => `${s.kg || '?'} kg × ${s.reps || '?'}`).join(', ')}`);
   });
   if (!any) { alert(t('Todavía no registras cargas en este entrenamiento.')); return; }
+  const fe = (lg && lg.feel) || {};
+  r.exercises.forEach(ex => { const f = lg.exFeel && lg.exFeel[ex.id]; if (f && (f.pain != null || f.rpe != null)) lines.push(`  ${ex.name}: ${f.pain != null ? t('Dolor') + ' ' + f.pain + '/10' : ''}${f.pain != null && f.rpe != null ? ', ' : ''}${f.rpe != null ? 'RPE ' + f.rpe : ''}`); });
+  if (fe.mood || fe.pain != null || fe.rpe != null || fe.note) {
+    lines.push('');
+    if (fe.mood) lines.push(`${t('Al terminar')}: ${GYM_MOODS[fe.mood - 1][0]} ${t(GYM_MOODS[fe.mood - 1][1])}`);
+    if (fe.pain != null) lines.push(`${t('Dolor (NPRS)')}: ${fe.pain}/10`);
+    if (fe.rpe != null) lines.push(`${t('RPE sesión')}: ${fe.rpe}/10`);
+    if (fe.note) lines.push(`${t('Notas')}: ${fe.note}`);
+  }
   const text = lines.join('\n');
   if (window.Android && window.Android.shareText) { try { window.Android.shareText(r.name, text); return; } catch (e) {} }
   if (navigator.share) { navigator.share({ title: r.name, text }).catch(() => {}); return; }
@@ -10609,8 +10677,9 @@ function openGymExerciseInfo(routineId, exId, back) {
   if (!ex) return;
   loadGymDb().catch(() => {}).then(() => {
     const db = ex.dbId ? gymDbById(ex.dbId) : null;
-    const mus = db ? [...db.p.map(x => GYM_MUSCLE_ES[x] || x)].join(', ') : '';
-    const sec = db ? db.s.map(x => GYM_MUSCLE_ES[x] || x).join(', ') : '';
+    const tr = x => (window.i18n && window.i18n.t) ? window.i18n.t(x) : x;
+    const mus = db ? db.p.map(x => tr(GYM_MUSCLE_ES[x] || x)).join(', ') : '';
+    const sec = db ? db.s.map(x => tr(GYM_MUSCLE_ES[x] || x)).join(', ') : '';
     const fr = ex.dbId ? gymDbFrames(ex.dbId) : [];
     openSheet(ex.name, `
       <div class="gym-info-sheet">
@@ -10660,6 +10729,279 @@ function gymResizeImage(file, max) {
     };
     img.onerror = reject;
     img.src = url;
+  });
+}
+
+// ===== Métricas de entrenamiento y seguimiento (frecuencia, intensidad, volumen, dolor, fatiga) =====
+// Criterios (sugeridos por fisioterapia):
+//  - Descanso entre series: 2–3 min.
+//  - Dolor: escala NPRS 0–10. Fatiga / esfuerzo: RPE.
+//  - Progresión cada 2–3 semanas, modificando solo 1 variable para no aumentar el riesgo de lesión.
+//  - Registro de cómo te sentiste al terminar, para graficarlo.
+const GYM_REST_MIN = 120, GYM_REST_MAX = 180;
+const GYM_PROGRESS_WEEKS = 2;
+const GYM_RX_FIELDS = ['sets', 'rir', 'rpe', 'tempo', 'rest', 'pct1rm'];
+const GYM_RX_LABELS = { sets: 'Series × reps', rir: 'RIR', rpe: 'RPE', tempo: 'Tempo', rest: 'Descanso', pct1rm: '%1RM' };
+
+function gymNum(x) { const m = String(x == null ? '' : x).replace(',', '.').match(/-?\d+(?:\.\d+)?/); return m ? parseFloat(m[0]) : NaN; }
+function gymRange(x) {
+  const m = String(x == null ? '' : x).replace(/,/g, '.').match(/(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?/);
+  if (!m) return null;
+  const a = parseFloat(m[1]), b = m[2] != null ? parseFloat(m[2]) : a;
+  return [Math.min(a, b), Math.max(a, b)];
+}
+// 1RM estimado (Epley). Con RIR registrado se suman las reps en reserva.
+function gymE1RM(kg, reps) {
+  kg = gymNum(kg); reps = gymNum(reps);
+  if (!(kg > 0) || !(reps > 0)) return 0;
+  return reps <= 1 ? kg : kg * (1 + reps / 30);
+}
+function gymRound(kg, step) { step = step || 0.5; return Math.round(kg / step) * step; }
+function gymFmtKg(kg) { return (Math.round(kg * 10) / 10).toLocaleString(_loc()); }
+
+// Historial de un ejercicio (sin días en que se reemplazó por otro)
+function gymExHistory(exId, beforeKey) {
+  const logs = gymLogs();
+  return Object.keys(logs).sort().filter(k => (!beforeKey || k < beforeKey)).map(k => {
+    const lg = logs[k];
+    if (lg.swap && lg.swap[exId]) return null;
+    const sets = ((lg.ex && lg.ex[exId]) || []).filter(s => s.done && (s.kg || s.reps));
+    if (!sets.length) return null;
+    const e1rm = Math.max(0, ...sets.map(s => gymE1RM(s.kg, s.reps)));
+    const vol = sets.reduce((a, s) => a + (gymNum(s.kg) || 0) * (gymNum(s.reps) || 0), 0);
+    const maxKg = Math.max(0, ...sets.map(s => gymNum(s.kg) || 0));
+    const f = (lg.exFeel && lg.exFeel[exId]) || {};
+    return { date: k, sets, e1rm, vol, maxKg, pain: f.pain, rpe: f.rpe, sessPain: lg.feel && lg.feel.pain };
+  }).filter(Boolean);
+}
+function gymBestE1RM(exId, beforeKey) {
+  const h = gymExHistory(exId, beforeKey).slice(-6);
+  return h.length ? Math.max(...h.map(x => x.e1rm)) : 0;
+}
+function gymRepRange(ex) {
+  const nums = (ex.sets || []).flatMap(s => String(s.reps).split('-').map(Number)).filter(n => !isNaN(n));
+  return nums.length ? [Math.min(...nums), Math.max(...nums)] : null;
+}
+// Reps objetivo de la serie i (tope del rango)
+function gymTopRepsFor(ex, i) { const r = gymRange(gymSetRepsForIndex(ex, i)); return r ? r[1] : null; }
+
+// ¿Progresar, mantener o regresar? Devuelve { kind, title, text }
+function gymAdvice(r, ex, dateKey) {
+  const hist = gymExHistory(ex.id, dateKey);
+  if (!hist.length) return { kind: 'new', title: 'Primera vez', text: 'Elige una carga con la que llegues al RIR indicado y regístrala.' };
+  const last = hist[hist.length - 1];
+  const prev = hist.length > 1 ? hist[hist.length - 2] : null;
+  const pain = last.pain != null ? last.pain : last.sessPain;
+  if (pain != null && pain >= 4) return { kind: 'down', title: 'Regresar', text: `Dolor ${pain}/10 la última vez: baja ~10% la carga (≈ ${gymFmtKg(gymRound(last.maxKg * 0.9))} kg) o quita 1 serie. Cambia solo una cosa.` };
+  if (prev && pain != null && prev.pain != null && pain - prev.pain >= 2) return { kind: 'down', title: 'Regresar', text: `El dolor subió de ${prev.pain} a ${pain}/10: baja ~10% la carga o el volumen.` };
+  const since = ex.changedAt || r.createdAt || 0;
+  const weeks = Math.floor((Date.now() - since) / (7 * 864e5));
+  if (weeks < GYM_PROGRESS_WEEKS) return { kind: 'hold', title: 'Mantener', text: `Semana ${weeks + 1} con esta prescripción: progresa a las 2–3 semanas.` };
+  // ¿Completó el tope de reps en todas las series?
+  const n = Math.max(1, gymTotalSets(ex));
+  const top = last.sets.slice(0, n).every((s, i) => { const t = gymTopRepsFor(ex, i); return t == null || gymNum(s.reps) >= t; }) && last.sets.length >= n;
+  const rpeT = gymRange(ex.rpe);
+  const rpeOk = last.rpe == null || !rpeT || last.rpe <= rpeT[1];
+  if (top && rpeOk && (pain == null || pain <= 2)) {
+    const inc = last.maxKg >= 20 ? 2.5 : 1;
+    return { kind: 'up', title: 'Progresar', text: `Cumpliste el tope de reps: sube solo 1 variable, ej. +${gymFmtKg(inc)} kg (≈ ${gymFmtKg(last.maxKg + inc)} kg).` };
+  }
+  const rr = gymRepRange(ex);
+  return { kind: 'hold', title: 'Mantener', text: rr ? `Mantén la carga hasta llegar a ${rr[1]} reps en todas las series.` : 'Mantén la carga.' };
+}
+
+// Escala 0–10 (dolor NPRS o RPE) como fila de botones
+function gymScaleHtml(kind, exId, val) {
+  const label = kind === 'pain' ? 'Dolor (NPRS)' : 'Esfuerzo (RPE)';
+  const btns = Array.from({ length: 11 }, (_, i) => {
+    const cls = kind === 'pain' ? (i === 0 ? 'p0' : i <= 3 ? 'p1' : i <= 6 ? 'p2' : 'p3') : (i <= 4 ? 'r1' : i <= 7 ? 'r2' : 'r3');
+    return `<button class="gym-sc ${cls}${val === i ? ' on' : ''}" data-sc="${kind}" data-ex="${exId || ''}" data-v="${i}">${i}</button>`;
+  }).join('');
+  return `<div class="gym-scale"><div class="gym-scale-l">${label}</div><div class="gym-scale-b">${btns}</div></div>`;
+}
+function gymPainLabel(v) { return v == null ? '' : v === 0 ? 'Sin dolor' : v <= 3 ? 'Leve' : v <= 6 ? 'Moderado' : 'Severo'; }
+const GYM_MOODS = [['😫', 'Muy mal'], ['🙁', 'Mal'], ['😐', 'Normal'], ['🙂', 'Bien'], ['💪', 'Excelente']];
+
+// Métricas de una sesión
+function gymSessionStats(lg, r) {
+  const sets = Object.values(lg.ex || {}).reduce((a, arr) => a + arr.filter(s => s.done).length, 0);
+  const vol = Object.values(lg.ex || {}).reduce((a, arr) => a + arr.filter(s => s.done).reduce((b, s) => b + (gymNum(s.kg) || 0) * (gymNum(s.reps) || 0), 0), 0);
+  const mins = lg.start && lg.end && lg.end > lg.start ? (lg.end - lg.start) / 60000 : 0;
+  return { sets, vol, mins, density: mins >= 5 ? vol / mins : 0 };
+}
+
+// Cierre de la sesión: ¿cómo te sentiste?
+function openGymFinish(r, dateKey, lg, persist, onDone) {
+  const f = lg.feel || {};
+  const st = gymSessionStats(Object.assign({}, lg, { end: lg.end || Date.now() }), r);
+  const moods = GYM_MOODS.map((m, i) => `<button class="gym-mood${f.mood === i + 1 ? ' on' : ''}" data-mood="${i + 1}"><span>${m[0]}</span><small>${m[1]}</small></button>`).join('');
+  openSheet('¿Cómo te sentiste?', `<div class="gym-finish">
+    <div class="gym-fin-stats">
+      <div><b>${st.sets}</b><span>series</span></div>
+      <div><b>${Math.round(st.vol).toLocaleString(_loc())}</b><span>kg de volumen</span></div>
+      ${st.mins >= 1 ? `<div><b>${Math.round(st.mins)}</b><span>min</span></div>` : ''}
+      ${st.density ? `<div><b>${Math.round(st.density)}</b><span>kg/min (densidad)</span></div>` : ''}
+    </div>
+    <div class="fe-lbl">Al terminar, ¿cómo te sentiste?</div>
+    <div class="gym-moods">${moods}</div>
+    ${gymScaleHtml('pain', '', f.pain)}
+    <div class="gym-scale-hint">0 sin dolor · 1–3 leve · 4–6 moderado · 7–10 severo</div>
+    ${gymScaleHtml('rpe', '', f.rpe)}
+    <div class="gym-scale-hint">Fatiga de la sesión: 10 = esfuerzo máximo</div>
+    <label class="fe-lbl" style="margin-top:10px;">Notas (opcional)</label>
+    <textarea class="field-input" id="gym-fin-note" rows="2" placeholder="Ej. molestia en hombro derecho en el press">${escapeHtml(f.note || '')}</textarea>
+    <button class="btn-primary gym-cta" id="gym-fin-save">Guardar y terminar</button>
+  </div>`);
+  document.getElementById('sheet-body').scrollTop = 0;
+  const feel = Object.assign({}, f);
+  const sb = document.getElementById('sheet-body');
+  sb.querySelectorAll('[data-mood]').forEach(b => b.addEventListener('click', () => {
+    feel.mood = +b.dataset.mood; sb.querySelectorAll('[data-mood]').forEach(x => x.classList.toggle('on', x === b));
+  }));
+  sb.querySelectorAll('[data-sc]').forEach(b => b.addEventListener('click', () => {
+    feel[b.dataset.sc] = +b.dataset.v;
+    sb.querySelectorAll(`[data-sc="${b.dataset.sc}"]`).forEach(x => x.classList.toggle('on', x === b));
+  }));
+  document.getElementById('gym-fin-save').addEventListener('click', () => {
+    feel.note = document.getElementById('gym-fin-note').value.trim();
+    lg.feel = feel; lg.done = true; lg.end = lg.end || Date.now();
+    persist(); onDone();
+  });
+}
+
+// ---------- Progreso: gráficas y resumen ----------
+function gymWeekStart(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+function gymLineSvg(series, opts) {
+  // series: [{ color, pts:[{x(0..1), y}] }], opts: { min, max, labels:[...], h }
+  const W = 320, H = opts.h || 120, pad = 18;
+  const min = opts.min, max = opts.max;
+  const Y = v => H - pad - (v - min) / Math.max(1e-9, max - min) * (H - pad * 2);
+  const lines = series.map(s => {
+    if (!s.pts.length) return '';
+    const p = s.pts.map(pt => `${(pt.x * (W - 30) + 22).toFixed(1)},${Y(pt.y).toFixed(1)}`);
+    return `<polyline points="${p.join(' ')}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round"/>`
+      + s.pts.map(pt => `<circle cx="${(pt.x * (W - 30) + 22).toFixed(1)}" cy="${Y(pt.y).toFixed(1)}" r="2.6" fill="${s.color}"/>`).join('');
+  }).join('');
+  const grid = (opts.ticks || [min, max]).map(v => `<line x1="20" x2="${W}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--border)" stroke-width="1"/>
+    <text x="0" y="${(Y(v) + 3).toFixed(1)}" font-size="9" fill="var(--text-3)">${v}</text>`).join('');
+  const labels = (opts.labels || []).map(l => `<text x="${(l.x * (W - 30) + 22).toFixed(1)}" y="${H - 2}" font-size="8" text-anchor="middle" fill="var(--text-3)">${escapeHtml(l.t)}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${grid}${lines}${labels}</svg>`;
+}
+function gymBarsSvg(vals, labels, color, h) {
+  const W = 320, H = h || 110, n = vals.length, max = Math.max(1, ...vals);
+  const bw = (W - 10) / n;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${vals.map((v, i) => {
+    const bh = v ? Math.max(2, v / max * (H - 30)) : 0;
+    return `<rect x="${(i * bw + 6).toFixed(1)}" y="${(H - 16 - bh).toFixed(1)}" width="${(bw - 8).toFixed(1)}" height="${bh.toFixed(1)}" rx="3" fill="${color}"/>
+      ${v ? `<text x="${(i * bw + 6 + (bw - 8) / 2).toFixed(1)}" y="${(H - 19 - bh).toFixed(1)}" font-size="8" text-anchor="middle" fill="var(--text-2)">${v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v)}</text>` : ''}
+      <text x="${(i * bw + 6 + (bw - 8) / 2).toFixed(1)}" y="${H - 4}" font-size="8" text-anchor="middle" fill="var(--text-3)">${escapeHtml(labels[i])}</text>`;
+  }).join('')}</svg>`;
+}
+
+function openGymProgress(selExId) {
+  loadGymDb().catch(() => {}).then(() => {
+    const logs = gymLogs();
+    const keys = Object.keys(logs).filter(k => Object.values(logs[k].ex || {}).some(a => a.some(s => s.done))).sort();
+    const fmt = new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' });
+    const now = new Date();
+    const ws = gymWeekStart(now);
+    const wkKey = d => keyDate(gymWeekStart(new Date(d + 'T00:00:00')));
+    const thisWeek = keys.filter(k => wkKey(k) === keyDate(ws));
+    const planned = Object.keys(gymSchedule()).length;
+    // Resumen de la semana
+    let wSets = 0, wVol = 0, wDens = [], wPain = [], wRpe = [];
+    thisWeek.forEach(k => {
+      const st = gymSessionStats(logs[k]);
+      wSets += st.sets; wVol += st.vol; if (st.density) wDens.push(st.density);
+      const f = logs[k].feel || {}; if (f.pain != null) wPain.push(f.pain); if (f.rpe != null) wRpe.push(f.rpe);
+    });
+    const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+    const card = (v, l) => `<div class="gym-kpi"><b>${v}</b><span>${l}</span></div>`;
+    const kpis = `<div class="gym-kpis">
+      ${card(`${thisWeek.length}<small>/${planned || '—'}</small>`, 'Frecuencia (sesiones)')}
+      ${card(wSets, 'Series (volumen)')}
+      ${card(Math.round(wVol).toLocaleString(_loc()), 'kg totales')}
+      ${card(avg(wRpe) != null ? avg(wRpe).toFixed(1) : '—', 'RPE promedio (intensidad)')}
+      ${card(avg(wDens) != null ? Math.round(avg(wDens)) : '—', 'kg/min (densidad)')}
+      ${card(avg(wPain) != null ? avg(wPain).toFixed(1) : '—', 'Dolor NPRS promedio')}
+    </div>`;
+
+    // Dolor, RPE y cómo te sentiste por sesión (últimas 20)
+    const lastK = keys.slice(-20);
+    const n = Math.max(1, lastK.length - 1);
+    const pts = (fn) => lastK.map((k, i) => ({ x: lastK.length === 1 ? 0.5 : i / n, y: fn(logs[k]) })).filter(p => p.y != null);
+    const painPts = pts(l => l.feel && l.feel.pain != null ? l.feel.pain : null);
+    const rpePts = pts(l => l.feel && l.feel.rpe != null ? l.feel.rpe : null);
+    const moodPts = pts(l => l.feel && l.feel.mood ? l.feel.mood * 2 : null);
+    const labels = lastK.length ? [0, Math.floor((lastK.length - 1) / 2), lastK.length - 1].filter((v, i, a) => a.indexOf(v) === i)
+      .map(i => ({ x: lastK.length === 1 ? 0.5 : i / n, t: fmt.format(new Date(lastK[i] + 'T00:00:00')) })) : [];
+    const feelChart = (painPts.length || rpePts.length || moodPts.length)
+      ? gymLineSvg([{ color: '#EF4444', pts: painPts }, { color: '#3B82F6', pts: rpePts }, { color: '#22C55E', pts: moodPts }], { min: 0, max: 10, ticks: [0, 5, 10], labels, h: 130 })
+        + `<div class="gym-leg"><span><i style="background:#EF4444"></i><span>Dolor (NPRS)</span></span><span><i style="background:#3B82F6"></i><span>RPE sesión</span></span><span><i style="background:#22C55E"></i><span>Cómo te sentiste</span></span></div>`
+      : '<div class="empty">Al terminar cada entrenamiento registra cómo te sentiste para ver la gráfica.</div>';
+
+    // Volumen por semana (8 semanas)
+    const weeks = Array.from({ length: 8 }, (_, i) => { const d = new Date(ws); d.setDate(d.getDate() - (7 - i) * 7); return d; });
+    const wVals = weeks.map(w => keys.filter(k => wkKey(k) === keyDate(w)).reduce((a, k) => a + gymSessionStats(logs[k]).vol, 0));
+    const wLbl = weeks.map(w => fmt.format(w));
+
+    // Series por músculo esta semana
+    const mus = {};
+    thisWeek.forEach(k => {
+      const lg = logs[k]; const r = gymRoutineById(lg.routineId);
+      Object.keys(lg.ex || {}).forEach(exId => {
+        const ex = r && r.exercises.find(e => e.id === exId);
+        const sw = lg.swap && lg.swap[exId];
+        const db = gymDbById(sw ? sw.dbId : ex && ex.dbId);
+        const c = (lg.ex[exId] || []).filter(s => s.done).length;
+        if (!db || !c) return;
+        (db.p || []).forEach(m => { mus[m] = (mus[m] || 0) + c; });
+      });
+    });
+    const musRows = Object.entries(mus).sort((a, b) => b[1] - a[1]).map(([m, c]) => {
+      const max = Math.max(...Object.values(mus));
+      return `<div class="gym-mus"><span>${escapeHtml(GYM_MUSCLE_ES[m] || m)}</span><div class="gym-mus-bar"><div style="width:${c / max * 100}%"></div></div><b>${c}</b></div>`;
+    }).join('') || '<div class="empty">Sin series esta semana.</div>';
+
+    // 1RM estimado por ejercicio
+    const exOpts = [];
+    gymRoutines().forEach(r => r.exercises.forEach(ex => { if (gymExHistory(ex.id).length) exOpts.push({ id: ex.id, name: ex.name, r }); }));
+    const sel = exOpts.find(o => o.id === selExId) || exOpts[0];
+    let e1Chart = '<div class="empty">Registra cargas para ver tu 1RM estimado.</div>';
+    if (sel) {
+      const h = gymExHistory(sel.id).slice(-15);
+      const vals = h.map(x => x.e1rm);
+      const lo = Math.floor(Math.min(...vals) * 0.95), hi = Math.ceil(Math.max(...vals) * 1.05);
+      const nn = Math.max(1, h.length - 1);
+      e1Chart = gymLineSvg([{ color: '#A855F7', pts: h.map((x, i) => ({ x: h.length === 1 ? 0.5 : i / nn, y: x.e1rm })) }],
+        { min: lo, max: Math.max(hi, lo + 1), ticks: [lo, Math.max(hi, lo + 1)], labels: [0, h.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(i => ({ x: h.length === 1 ? 0.5 : i / nn, t: fmt.format(new Date(h[i].date + 'T00:00:00')) })), h: 120 })
+        + `<div class="gym-e1">${h.length ? `<span>1RM estimado</span> <b>${gymFmtKg(vals[vals.length - 1])} kg</b>` : ''}</div>`;
+    }
+    const exSelect = exOpts.length ? `<select class="field-select" id="gym-e1-sel">${exOpts.map(o => `<option value="${o.id}"${sel && o.id === sel.id ? ' selected' : ''}>${escapeHtml(o.name)}</option>`).join('')}</select>` : '';
+
+    openSheet('Progreso', `<div class="gym-progress">
+      <h2 style="margin-top:4px;">Esta semana</h2>
+      ${kpis}
+      <h2>Dolor, fatiga y cómo te sentiste</h2>
+      ${feelChart}
+      <h2>Volumen por semana (kg)</h2>
+      ${gymBarsSvg(wVals, wLbl, '#3B82F6', 120)}
+      <h2>Series por músculo esta semana</h2>
+      ${musRows}
+      <h2>1RM estimado</h2>
+      ${exSelect}
+      ${e1Chart}
+      <h2>Criterios</h2>
+      <div class="gym-criteria">
+        <div><b>Progresión</b><span>Cada 2–3 semanas, modificando solo 1 variable (carga, reps, series o tempo) para no aumentar el riesgo de lesión.</span></div>
+        <div><b>Regresión</b><span>Si el dolor (NPRS) llega a 4/10 o sube 2 puntos, baja ~10% la carga o 1 serie.</span></div>
+        <div><b>Descanso</b><span>2–3 min entre series.</span></div>
+        <div><b>Intensidad</b><span>%1RM, RIR y RPE. El 1RM se estima con tus series (fórmula de Epley).</span></div>
+      </div>
+    </div>`);
+    document.getElementById('sheet-body').scrollTop = 0;
+    const s = document.getElementById('gym-e1-sel');
+    if (s) s.addEventListener('change', () => openGymProgress(s.value));
   });
 }
 
@@ -10791,6 +11133,7 @@ function gymEditorSync() {
     const c = g('circuit').trim(); ex.circuit = c === '' ? null : parseInt(c, 10);
     ex.sets = gymParseSetsText(g('sets'));
     ex.rir = g('rir').trim(); ex.rpe = g('rpe').trim(); ex.tempo = g('tempo').trim(); ex.rest = g('rest').trim(); ex.notes = g('notes').trim();
+    ex.pct1rm = g('pct1rm').trim();
   });
 }
 function gymDrawEditor(isNew) {
@@ -10816,6 +11159,7 @@ function gymDrawEditor(isNew) {
         <label class="ge-wide"><span>Series × reps</span><input class="field-input" data-f="sets" value="${escapeHtml(gymSetsText(ex.sets).replace(/ · /g, ', ').replace(/×/g, 'x'))}" placeholder="2x10-15, 1x15-20"></label>
         <label><span>RIR</span><input class="field-input" data-f="rir" value="${escapeHtml(ex.rir || '')}"></label>
         <label><span>RPE</span><input class="field-input" data-f="rpe" value="${escapeHtml(ex.rpe || '')}"></label>
+        <label><span>%1RM</span><input class="field-input" data-f="pct1rm" inputmode="numeric" value="${escapeHtml(ex.pct1rm || '')}" placeholder="70-75"></label>
         <label><span>Tempo</span><input class="field-input" data-f="tempo" value="${escapeHtml(ex.tempo || '')}" placeholder="${escapeHtml(e.tempo || '3-1-2')}"></label>
         <label><span>Descanso</span><input class="field-input" data-f="rest" value="${escapeHtml(ex.rest || '')}" placeholder="90 s"></label>
         <label class="ge-full"><span>Notas</span><input class="field-input" data-f="notes" value="${escapeHtml(ex.notes || '')}"></label>
@@ -10856,6 +11200,27 @@ function gymDrawEditor(isNew) {
     _gymEdit.exercises.forEach(ex => { if (!ex.name) ex.name = '—'; });
     const days = _gymEdit._days;
     const clean = JSON.parse(JSON.stringify(_gymEdit)); delete clean._days; delete clean._open;
+    // Control de cambios: progresar cada 2–3 semanas y solo 1 variable a la vez
+    const prevR = gymRoutineById(clean.id);
+    if (prevR) {
+      const warns = [];
+      clean.exercises.forEach(ex => {
+        const old = prevR.exercises.find(e => e.id === ex.id);
+        if (!old) return;
+        const norm = (f, o) => f === 'sets' ? JSON.stringify((o.sets || []).map(x => [x.count, x.reps, x.note || ''])) : String(o[f] || '');
+        const changed = GYM_RX_FIELDS.filter(f => norm(f, ex) !== norm(f, old));
+        if (!changed.length) return;
+        const since = old.changedAt || prevR.createdAt || 0;
+        const days = Math.floor((Date.now() - since) / 864e5);
+        if (changed.length > 1) warns.push(`${ex.name}: ${changed.map(f => t(GYM_RX_LABELS[f])).join(', ')}`);
+        else if (days < GYM_PROGRESS_WEEKS * 7 && gymExHistory(ex.id).length) warns.push(`${ex.name}: ${t('cambio hace')} ${days} ${t('días')}`);
+        ex.changedAt = Date.now();
+      });
+      if (warns.length && !confirm(t('Para reducir el riesgo de lesión, progresa cada 2–3 semanas y cambia solo 1 variable a la vez.') + '\n\n' + warns.join('\n') + '\n\n' + t('¿Guardar de todos modos?'))) {
+        clean.exercises.forEach(ex => { const old = prevR.exercises.find(e => e.id === ex.id); if (old) ex.changedAt = old.changedAt; });
+        return;
+      }
+    }
     const all = gymRoutines();
     const i = all.findIndex(x => x.id === clean.id);
     if (i >= 0) all[i] = clean; else all.push(clean);
