@@ -2450,6 +2450,496 @@ window.__I18N_EXTRA = {
    "en": "Suggested goal: set up your profile in Edit → Nutrition.",
    "pt-BR": "Meta sugerida: configure seu perfil em Editar → Nutrição.",
    "fr": "Objectif suggéré : configurez votre profil dans Modifier → Nutrition."
+  },
+  "Gym": {
+   "en": "Gym",
+   "pt-BR": "Academia",
+   "fr": "Salle"
+  },
+  "Hoy toca": {
+   "en": "Today's workout",
+   "pt-BR": "Treino de hoje",
+   "fr": "Séance du jour"
+  },
+  "Empezar": {
+   "en": "Start",
+   "pt-BR": "Começar",
+   "fr": "Commencer"
+  },
+  "Continuar": {
+   "en": "Continue",
+   "pt-BR": "Continuar",
+   "fr": "Continuer"
+  },
+  "Ver entrenamiento": {
+   "en": "View workout",
+   "pt-BR": "Ver treino",
+   "fr": "Voir la séance"
+  },
+  "Descanso": {
+   "en": "Rest",
+   "pt-BR": "Descanso",
+   "fr": "Repos"
+  },
+  "No tienes rutina asignada para hoy.": {
+   "en": "You don't have a routine assigned for today.",
+   "pt-BR": "Você não tem rotina para hoje.",
+   "fr": "Aucune routine prévue aujourd'hui."
+  },
+  "Crea o importa una rutina para empezar.": {
+   "en": "Create or import a routine to get started.",
+   "pt-BR": "Crie ou importe uma rotina para começar.",
+   "fr": "Créez ou importez une routine pour commencer."
+  },
+  "Entrenar otra rutina hoy": {
+   "en": "Train another routine today",
+   "pt-BR": "Treinar outra rotina hoje",
+   "fr": "Faire une autre routine aujourd'hui"
+  },
+  "Mis rutinas": {
+   "en": "My routines",
+   "pt-BR": "Minhas rotinas",
+   "fr": "Mes routines"
+  },
+  "Aún no tienes rutinas.": {
+   "en": "You don't have any routines yet.",
+   "pt-BR": "Você ainda não tem rotinas.",
+   "fr": "Vous n'avez pas encore de routines."
+  },
+  "+ Nueva rutina": {
+   "en": "+ New routine",
+   "pt-BR": "+ Nova rotina",
+   "fr": "+ Nouvelle routine"
+  },
+  "Nueva rutina": {
+   "en": "New routine",
+   "pt-BR": "Nova rotina",
+   "fr": "Nouvelle routine"
+  },
+  "Editar rutina": {
+   "en": "Edit routine",
+   "pt-BR": "Editar rotina",
+   "fr": "Modifier la routine"
+  },
+  "Importar PDF": {
+   "en": "Import PDF",
+   "pt-BR": "Importar PDF",
+   "fr": "Importer un PDF"
+  },
+  "Historial": {
+   "en": "History",
+   "pt-BR": "Histórico",
+   "fr": "Historique"
+  },
+  "Aquí aparecerán tus entrenamientos.": {
+   "en": "Your workouts will show up here.",
+   "pt-BR": "Seus treinos aparecerão aqui.",
+   "fr": "Vos séances apparaîtront ici."
+  },
+  "Ejercicios e imágenes: free-exercise-db (dominio público)": {
+   "en": "Exercises and images: free-exercise-db (public domain)",
+   "pt-BR": "Exercícios e imagens: free-exercise-db (domínio público)",
+   "fr": "Exercices et images : free-exercise-db (domaine public)"
+  },
+  "Elige la rutina de hoy": {
+   "en": "Choose today's routine",
+   "pt-BR": "Escolha a rotina de hoje",
+   "fr": "Choisissez la routine du jour"
+  },
+  "Circuito": {
+   "en": "Circuit",
+   "pt-BR": "Circuito",
+   "fr": "Circuit"
+  },
+  "alternar ejercicios": {
+   "en": "alternate exercises",
+   "pt-BR": "alternar exercícios",
+   "fr": "alterner les exercices"
+  },
+  "Periodo": {
+   "en": "Phase",
+   "pt-BR": "Período",
+   "fr": "Période"
+  },
+  "Calentamiento": {
+   "en": "Warm-up",
+   "pt-BR": "Aquecimento",
+   "fr": "Échauffement"
+  },
+  "Notas": {
+   "en": "Notes",
+   "pt-BR": "Notas",
+   "fr": "Notes"
+  },
+  "Indicaciones": {
+   "en": "Instructions",
+   "pt-BR": "Orientações",
+   "fr": "Consignes"
+  },
+  "Músculos": {
+   "en": "Muscles",
+   "pt-BR": "Músculos",
+   "fr": "Muscles"
+  },
+  "Tempo": {
+   "en": "Tempo",
+   "pt-BR": "Cadência",
+   "fr": "Tempo"
+  },
+  "Compartir cargas": {
+   "en": "Share loads",
+   "pt-BR": "Compartilhar cargas",
+   "fr": "Partager les charges"
+  },
+  "Terminar entrenamiento": {
+   "en": "Finish workout",
+   "pt-BR": "Terminar treino",
+   "fr": "Terminer la séance"
+  },
+  "✓ Entrenamiento terminado": {
+   "en": "✓ Workout finished",
+   "pt-BR": "✓ Treino concluído",
+   "fr": "✓ Séance terminée"
+  },
+  "Última vez": {
+   "en": "Last time",
+   "pt-BR": "Última vez",
+   "fr": "Dernière fois"
+  },
+  "reps": {
+   "en": "reps",
+   "pt-BR": "reps",
+   "fr": "rép."
+  },
+  "Todavía no registras cargas en este entrenamiento.": {
+   "en": "You haven't logged any loads in this workout yet.",
+   "pt-BR": "Você ainda não registrou cargas neste treino.",
+   "fr": "Vous n'avez encore enregistré aucune charge pour cette séance."
+  },
+  "Músculo": {
+   "en": "Muscle",
+   "pt-BR": "Músculo",
+   "fr": "Muscle"
+  },
+  "Secundarios": {
+   "en": "Secondary",
+   "pt-BR": "Secundários",
+   "fr": "Secondaires"
+  },
+  "Equipo": {
+   "en": "Equipment",
+   "pt-BR": "Equipamento",
+   "fr": "Équipement"
+  },
+  "Este ejercicio no está vinculado a la base. Vincúlalo para ver su animación y músculos.": {
+   "en": "This exercise isn't linked to the database. Link it to see its animation and muscles.",
+   "pt-BR": "Este exercício não está vinculado à base. Vincule-o para ver a animação e os músculos.",
+   "fr": "Cet exercice n'est pas lié à la base. Liez-le pour voir son animation et ses muscles."
+  },
+  "Cambiar ejercicio vinculado": {
+   "en": "Change linked exercise",
+   "pt-BR": "Trocar exercício vinculado",
+   "fr": "Changer l'exercice lié"
+  },
+  "Vincular con la base": {
+   "en": "Link to database",
+   "pt-BR": "Vincular à base",
+   "fr": "Lier à la base"
+  },
+  "Agregar foto": {
+   "en": "Add photo",
+   "pt-BR": "Adicionar foto",
+   "fr": "Ajouter une photo"
+  },
+  "Quitar foto": {
+   "en": "Remove photo",
+   "pt-BR": "Remover foto",
+   "fr": "Retirer la photo"
+  },
+  "‹ Volver": {
+   "en": "‹ Back",
+   "pt-BR": "‹ Voltar",
+   "fr": "‹ Retour"
+  },
+  "Sin imagen": {
+   "en": "No image",
+   "pt-BR": "Sem imagem",
+   "fr": "Pas d'image"
+  },
+  "Buscar ejercicio": {
+   "en": "Find exercise",
+   "pt-BR": "Buscar exercício",
+   "fr": "Chercher un exercice"
+  },
+  "Busca en español o inglés (ej. press inclinado, remo)": {
+   "en": "Search in Spanish or English (e.g. incline press, row)",
+   "pt-BR": "Busque em espanhol ou inglês (ex. incline press, row)",
+   "fr": "Cherchez en espagnol ou en anglais (ex. incline press, row)"
+  },
+  "Cargando ejercicios…": {
+   "en": "Loading exercises…",
+   "pt-BR": "Carregando exercícios…",
+   "fr": "Chargement des exercices…"
+  },
+  "Escribe el nombre del ejercicio.": {
+   "en": "Type the exercise name.",
+   "pt-BR": "Digite o nome do exercício.",
+   "fr": "Saisissez le nom de l'exercice."
+  },
+  "No se pudo cargar la base de ejercicios.": {
+   "en": "Couldn't load the exercise database.",
+   "pt-BR": "Não foi possível carregar a base de exercícios.",
+   "fr": "Impossible de charger la base d'exercices."
+  },
+  "Nombre del ejercicio": {
+   "en": "Exercise name",
+   "pt-BR": "Nome do exercício",
+   "fr": "Nom de l'exercice"
+  },
+  "Series × reps": {
+   "en": "Sets × reps",
+   "pt-BR": "Séries × reps",
+   "fr": "Séries × rép."
+  },
+  "Descanso entre series": {
+   "en": "Rest between sets",
+   "pt-BR": "Descanso entre séries",
+   "fr": "Repos entre les séries"
+  },
+  "Cambiar imagen": {
+   "en": "Change image",
+   "pt-BR": "Trocar imagem",
+   "fr": "Changer l'image"
+  },
+  "Vincular": {
+   "en": "Link",
+   "pt-BR": "Vincular",
+   "fr": "Lier"
+  },
+  "Quitar": {
+   "en": "Remove",
+   "pt-BR": "Remover",
+   "fr": "Retirer"
+  },
+  "Nombre de la rutina": {
+   "en": "Routine name",
+   "pt-BR": "Nome da rotina",
+   "fr": "Nom de la routine"
+  },
+  "Ej. Día 1 · Pecho / espalda": {
+   "en": "e.g. Day 1 · Chest / back",
+   "pt-BR": "Ex. Dia 1 · Peito / costas",
+   "fr": "Ex. Jour 1 · Pectoraux / dos"
+  },
+  "Días de la semana": {
+   "en": "Days of the week",
+   "pt-BR": "Dias da semana",
+   "fr": "Jours de la semaine"
+  },
+  "Agrega tu primer ejercicio.": {
+   "en": "Add your first exercise.",
+   "pt-BR": "Adicione seu primeiro exercício.",
+   "fr": "Ajoutez votre premier exercice."
+  },
+  "+ Agregar ejercicio": {
+   "en": "+ Add exercise",
+   "pt-BR": "+ Adicionar exercício",
+   "fr": "+ Ajouter un exercice"
+  },
+  "Duplicar rutina": {
+   "en": "Duplicate routine",
+   "pt-BR": "Duplicar rotina",
+   "fr": "Dupliquer la routine"
+  },
+  "Eliminar rutina": {
+   "en": "Delete routine",
+   "pt-BR": "Excluir rotina",
+   "fr": "Supprimer la routine"
+  },
+  "Ponle nombre a la rutina.": {
+   "en": "Give the routine a name.",
+   "pt-BR": "Dê um nome à rotina.",
+   "fr": "Donnez un nom à la routine."
+  },
+  "Agrega al menos un ejercicio.": {
+   "en": "Add at least one exercise.",
+   "pt-BR": "Adicione pelo menos um exercício.",
+   "fr": "Ajoutez au moins un exercice."
+  },
+  "¿Eliminar esta rutina? Tu historial de cargas se conserva.": {
+   "en": "Delete this routine? Your load history is kept.",
+   "pt-BR": "Excluir esta rotina? Seu histórico de cargas é mantido.",
+   "fr": "Supprimer cette routine ? Votre historique de charges est conservé."
+  },
+  "Leyendo el PDF…": {
+   "en": "Reading the PDF…",
+   "pt-BR": "Lendo o PDF…",
+   "fr": "Lecture du PDF…"
+  },
+  "Extrayendo fotos de los ejercicios…": {
+   "en": "Extracting exercise photos…",
+   "pt-BR": "Extraindo fotos dos exercícios…",
+   "fr": "Extraction des photos des exercices…"
+  },
+  "No encontré ejercicios en este PDF. Puedes crear la rutina a mano.": {
+   "en": "I couldn't find any exercises in this PDF. You can create the routine manually.",
+   "pt-BR": "Não encontrei exercícios neste PDF. Você pode criar a rotina manualmente.",
+   "fr": "Aucun exercice trouvé dans ce PDF. Vous pouvez créer la routine à la main."
+  },
+  "No se pudo leer el PDF.": {
+   "en": "Couldn't read the PDF.",
+   "pt-BR": "Não foi possível ler o PDF.",
+   "fr": "Impossible de lire le PDF."
+  },
+  "Revisa lo que encontré en el PDF y guarda.": {
+   "en": "Check what I found in the PDF and save.",
+   "pt-BR": "Revise o que encontrei no PDF e salve.",
+   "fr": "Vérifiez ce que j'ai trouvé dans le PDF et enregistrez."
+  },
+  "ejercicios": {
+   "en": "exercises",
+   "pt-BR": "exercícios",
+   "fr": "exercices"
+  },
+  "Abdomen": {
+   "en": "Abs",
+   "pt-BR": "Abdômen",
+   "fr": "Abdominaux"
+  },
+  "Abductores": {
+   "en": "Abductors",
+   "pt-BR": "Abdutores",
+   "fr": "Abducteurs"
+  },
+  "Aductores": {
+   "en": "Adductors",
+   "pt-BR": "Adutores",
+   "fr": "Adducteurs"
+  },
+  "Bíceps": {
+   "en": "Biceps",
+   "pt-BR": "Bíceps",
+   "fr": "Biceps"
+  },
+  "Pantorrillas": {
+   "en": "Calves",
+   "pt-BR": "Panturrilhas",
+   "fr": "Mollets"
+  },
+  "Pecho": {
+   "en": "Chest",
+   "pt-BR": "Peito",
+   "fr": "Pectoraux"
+  },
+  "Antebrazos": {
+   "en": "Forearms",
+   "pt-BR": "Antebraços",
+   "fr": "Avant-bras"
+  },
+  "Glúteos": {
+   "en": "Glutes",
+   "pt-BR": "Glúteos",
+   "fr": "Fessiers"
+  },
+  "Isquiotibiales": {
+   "en": "Hamstrings",
+   "pt-BR": "Posteriores da coxa",
+   "fr": "Ischio-jambiers"
+  },
+  "Dorsales": {
+   "en": "Lats",
+   "pt-BR": "Dorsais",
+   "fr": "Dorsaux"
+  },
+  "Espalda baja": {
+   "en": "Lower back",
+   "pt-BR": "Lombar",
+   "fr": "Bas du dos"
+  },
+  "Espalda media": {
+   "en": "Middle back",
+   "pt-BR": "Meio das costas",
+   "fr": "Milieu du dos"
+  },
+  "Cuello": {
+   "en": "Neck",
+   "pt-BR": "Pescoço",
+   "fr": "Cou"
+  },
+  "Cuádriceps": {
+   "en": "Quads",
+   "pt-BR": "Quadríceps",
+   "fr": "Quadriceps"
+  },
+  "Hombros": {
+   "en": "Shoulders",
+   "pt-BR": "Ombros",
+   "fr": "Épaules"
+  },
+  "Trapecios": {
+   "en": "Traps",
+   "pt-BR": "Trapézios",
+   "fr": "Trapèzes"
+  },
+  "Tríceps": {
+   "en": "Triceps",
+   "pt-BR": "Tríceps",
+   "fr": "Triceps"
+  },
+  "Barra": {
+   "en": "Barbell",
+   "pt-BR": "Barra",
+   "fr": "Barre"
+  },
+  "Mancuernas": {
+   "en": "Dumbbells",
+   "pt-BR": "Halteres",
+   "fr": "Haltères"
+  },
+  "Polea": {
+   "en": "Cable",
+   "pt-BR": "Polia",
+   "fr": "Poulie"
+  },
+  "Máquina": {
+   "en": "Machine",
+   "pt-BR": "Máquina",
+   "fr": "Machine"
+  },
+  "Kettlebell": {
+   "en": "Kettlebell",
+   "pt-BR": "Kettlebell",
+   "fr": "Kettlebell"
+  },
+  "Bandas": {
+   "en": "Bands",
+   "pt-BR": "Elásticos",
+   "fr": "Élastiques"
+  },
+  "Balón medicinal": {
+   "en": "Medicine ball",
+   "pt-BR": "Medicine ball",
+   "fr": "Médecine-ball"
+  },
+  "Fitball": {
+   "en": "Exercise ball",
+   "pt-BR": "Bola suíça",
+   "fr": "Ballon de gym"
+  },
+  "Foam roller": {
+   "en": "Foam roller",
+   "pt-BR": "Rolo de liberação",
+   "fr": "Rouleau de massage"
+  },
+  "Barra Z": {
+   "en": "EZ bar",
+   "pt-BR": "Barra W",
+   "fr": "Barre EZ"
+  },
+  "Otro": {
+   "en": "Other",
+   "pt-BR": "Outro",
+   "fr": "Autre"
   }
  },
  "tpl": {
@@ -2877,6 +3367,76 @@ window.__I18N_EXTRA = {
    "en": "Rutinal - Meal review - {{x}}",
    "pt-BR": "Rutinal - Revisão de refeições - {{x}}",
    "fr": "Rutinal - Bilan des repas - {{x}}"
+  },
+  "{{n}} ejercicios": {
+   "en": "{{n}} exercises",
+   "pt-BR": "{{n}} exercícios",
+   "fr": "{{n}} exercices"
+  },
+  "{{x}} · {{n}} ejercicios": {
+   "en": "{{x}} · {{n}} exercises",
+   "pt-BR": "{{x}} · {{n}} exercícios",
+   "fr": "{{x}} · {{n}} exercices"
+  },
+  "{{n}} ejercicios · {{x}}": {
+   "en": "{{n}} exercises · {{x}}",
+   "pt-BR": "{{n}} exercícios · {{x}}",
+   "fr": "{{n}} exercices · {{x}}"
+  },
+  "{{x}} · {{n}} ejercicios · ✓": {
+   "en": "{{x}} · {{n}} exercises · ✓",
+   "pt-BR": "{{x}} · {{n}} exercícios · ✓",
+   "fr": "{{x}} · {{n}} exercices · ✓"
+  },
+  "{{n}} ejercicios · ✓": {
+   "en": "{{n}} exercises · ✓",
+   "pt-BR": "{{n}} exercícios · ✓",
+   "fr": "{{n}} exercices · ✓"
+  },
+  "{{n}} series": {
+   "en": "{{n}} sets",
+   "pt-BR": "{{n}} séries",
+   "fr": "{{n}} séries"
+  },
+  "{{n}} series · {{x}} kg": {
+   "en": "{{n}} sets · {{x}} kg",
+   "pt-BR": "{{n}} séries · {{x}} kg",
+   "fr": "{{n}} séries · {{x}} kg"
+  },
+  "{{x}}: ¿qué rutina toca?": {
+   "en": "{{x}}: which routine?",
+   "pt-BR": "{{x}}: qual rotina?",
+   "fr": "{{x}} : quelle routine ?"
+  },
+  "({{x}}): {{y}}": {
+   "en": "({{x}}): {{y}}",
+   "pt-BR": "({{x}}): {{y}}",
+   "fr": "({{x}}) : {{y}}"
+  },
+  "Día {{n}}": {
+   "en": "Day {{n}}",
+   "pt-BR": "Dia {{n}}",
+   "fr": "Jour {{n}}"
+  },
+  "{{x}} (copia)": {
+   "en": "{{x}} (copy)",
+   "pt-BR": "{{x}} (cópia)",
+   "fr": "{{x}} (copie)"
+  },
+  "· {{x}} · alternar ejercicios": {
+   "en": "· {{x}} · alternate exercises",
+   "pt-BR": "· {{x}} · alternar exercícios",
+   "fr": "· {{x}} · alterner les exercices"
+  },
+  "Ejercicios ({{n}})": {
+   "en": "Exercises ({{n}})",
+   "pt-BR": "Exercícios ({{n}})",
+   "fr": "Exercices ({{n}})"
+  },
+  "{{x}}, {{y}}": {
+   "en": "{{x}}, {{y}}",
+   "pt-BR": "{{x}}, {{y}}",
+   "fr": "{{x}}, {{y}}"
   }
  },
  "ctx": {
@@ -2899,6 +3459,11 @@ window.__I18N_EXTRA = {
    "en": "F",
    "pt-BR": "G",
    "fr": "L"
+  },
+  "set:Objetivo": {
+   "en": "Target",
+   "pt-BR": "Alvo",
+   "fr": "Cible"
   }
  }
 };

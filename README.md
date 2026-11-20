@@ -31,6 +31,13 @@ Timer con historial por categoría.
 - **Mis alimentos (v1.6)**: crea alimentos propios con macros y categoría, renombra los que no tienen foto, y compártelos/impórtalos en JSON entre dispositivos
 - Editor de porción con macros por gramo
 
+### Gym
+- **Rutinas** con ejercicios, circuitos (mismo número = alternar), series×reps por bloque (`2x10-15, 1x15-20`), RIR, RPE, tempo, descanso y notas
+- **Importar PDF del coach**: lee la tabla (Circuito / Ejercicio / Series/Reps / Peso), las indicaciones (objetivo, calentamiento, descanso, cadencia) y recorta la foto de cada ejercicio del PDF. Usa pdf.js 3.11 (`lib/pdfjs`, Apache-2.0) en el hilo principal para funcionar en el WebView
+- **Semana**: asigna una rutina a cada día y la pestaña muestra la de hoy
+- **Registro de cargas** por serie (kg × reps, ✓), "última vez", historial y "Compartir cargas" para mandárselas al coach
+- **Base de ejercicios**: [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (873 ejercicios, dominio público) en `gym_db.js`, con búsqueda en español o inglés, músculos, equipo, instrucciones e imágenes inicio/fin animadas (se cachean para verlas sin conexión)
+
 ### Calendario
 Vista mensual con bloques, hábitos e imprevistos.
 

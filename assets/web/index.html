@@ -1642,6 +1642,100 @@
   nav button.active { color: var(--text); }
   nav button.active .icon { stroke-width: 2; }
 
+  /* ---------- GYM ---------- */
+  .gym-today { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 4px; }
+  .gym-today.rest { background: var(--surface-2); }
+  .gym-today-k { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+  .gym-today-name { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; }
+  .gym-today-meta { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+  .gym-prog { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; margin-top: 10px; }
+  .gym-prog div { height: 100%; background: #22C55E; border-radius: 3px; }
+  .gym-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .gym-day { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 4px; text-align: center; cursor: pointer; min-width: 0; }
+  .gym-day.today { border-color: var(--text); }
+  .gym-day.has { background: var(--surface-2); }
+  .gym-day-k { font-size: 11px; font-weight: 700; color: var(--text-2); }
+  .gym-day-v { font-size: 10px; color: var(--text-3); margin-top: 4px; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; word-break: break-word; }
+  .gym-day.has .gym-day-v { color: var(--text); font-weight: 600; }
+  .gym-routine { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+  .gym-routine-thumbs { display: grid; grid-template-columns: repeat(2, 34px); gap: 3px; flex: 0 0 auto; }
+  .gym-routine-body { flex: 1; min-width: 0; }
+  .gym-routine-name { font-weight: 600; font-size: 15px; }
+  .gym-routine-meta, .gym-routine-days { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .gym-routine-days { color: var(--text-2); font-weight: 500; }
+  .gym-routine-chev { color: var(--text-3); font-size: 20px; }
+  .gym-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .gym-media { border-radius: 8px; object-fit: cover; background: var(--surface-2); display: block; flex: 0 0 auto; }
+  .gym-media-err { opacity: .2; }
+  .gym-media-empty { display: flex; align-items: center; justify-content: center; }
+  .gym-media-empty svg { width: 55%; height: 55%; fill: none; stroke: var(--text-3); stroke-width: 1.8; stroke-linecap: round; }
+  .gym-hist { display: grid; grid-template-columns: 90px 1fr auto; gap: 8px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--border); font-size: 13px; cursor: pointer; }
+  .gym-hist-d { color: var(--text-3); text-transform: capitalize; }
+  .gym-hist-n { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gym-hist-v { color: var(--text-2); font-size: 12px; }
+  .gym-credit { font-size: 10px; color: var(--text-3); text-align: center; margin: 24px 0 8px; }
+  .gym-pick-item { padding: 14px 4px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+  .gym-pick-item span { font-size: 12px; color: var(--text-3); }
+  .gym-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .gym-chip { font-size: 11px; background: var(--surface-2); border-radius: 999px; padding: 3px 9px; color: var(--text-2); }
+  .gym-chip b { font-weight: 700; color: var(--text); }
+  .gym-wo-date { font-size: 13px; color: var(--text-3); text-transform: capitalize; }
+  .gym-wo-btns { display: flex; gap: 8px; margin: 12px 0 6px; }
+  .gym-info { margin-top: 10px; background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-size: 13px; }
+  .gym-info summary { cursor: pointer; font-weight: 600; }
+  .gym-info-row { display: grid; grid-template-columns: 110px 1fr; gap: 8px; margin-top: 8px; }
+  .gym-info-row b { color: var(--text-3); font-weight: 600; font-size: 12px; }
+  .gym-info-extra { margin-top: 10px; color: var(--text-2); font-size: 12px; line-height: 1.5; }
+  .gym-group { margin-top: 14px; }
+  .gym-group.multi { border-left: 3px solid var(--text); padding-left: 10px; }
+  .gym-circ { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+  .gym-ex { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
+  .gym-ex-head { display: flex; gap: 12px; }
+  .gym-ex-media { cursor: pointer; }
+  .gym-ex-body { flex: 1; min-width: 0; }
+  .gym-ex-name { font-weight: 700; font-size: 15px; line-height: 1.25; }
+  .gym-ex-sets { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+  .gym-ex-notes { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+  .gym-last { font-size: 12px; color: var(--text-3); margin-top: 10px; }
+  .gym-sets { margin-top: 8px; }
+  .gym-set { display: grid; grid-template-columns: 22px 1fr 64px 56px 38px; gap: 6px; align-items: center; padding: 4px 0; }
+  .gym-set-h { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; padding: 0; }
+  .gym-set-n { font-size: 12px; font-weight: 700; color: var(--text-3); text-align: center; }
+  .gym-set-target { font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gym-in { width: 100%; box-sizing: border-box; padding: 8px 6px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text); font: inherit; font-size: 14px; text-align: center; }
+  .gym-check { height: 34px; border-radius: 8px; border: 1px solid var(--border-strong); background: transparent; color: var(--text-3); font-size: 15px; cursor: pointer; }
+  .gym-set.done .gym-check { background: #22C55E; border-color: #22C55E; color: #fff; }
+  .gym-set.done .gym-in { border-color: rgba(34,197,94,.5); }
+  .gym-search .gym-results { margin-top: 10px; }
+  .gym-res { display: flex; gap: 12px; align-items: center; padding: 8px 2px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .gym-res-body { min-width: 0; }
+  .gym-res-name { font-weight: 600; font-size: 14px; }
+  .gym-res-meta { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .gym-info-sheet { display: flex; flex-direction: column; gap: 10px; }
+  .gym-big-media { display: flex; gap: 8px; justify-content: center; }
+  .gym-big-media img { max-width: 100%; max-height: 260px; border-radius: 12px; object-fit: contain; background: var(--surface-2); min-width: 0; flex: 1 1 0; }
+  .gym-db-name { font-size: 13px; color: var(--text-3); }
+  .gym-steps { font-size: 13px; color: var(--text-2); padding-left: 18px; margin: 4px 0; line-height: 1.5; }
+  .gym-photo-btn { display: block; text-align: center; box-sizing: border-box; }
+  .gym-editor h2 { margin-top: 20px; }
+  .gym-import-ok { background: rgba(34,197,94,.12); color: var(--text); border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; }
+  .ge-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+  .ge-grid label { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .ge-grid label span { font-size: 11px; color: var(--text-3); }
+  .ge-grid .field-input { width: 100%; box-sizing: border-box; min-width: 0; padding: 8px; font-size: 14px; }
+  .ge-grid .ge-wide { grid-column: span 3; }
+  .ge-grid .ge-full { grid-column: 1 / -1; }
+  .gym-editor .ge-grid label:not(.ge-wide):not(.ge-full) { grid-column: span 1; }
+  .ge-ex { background: var(--surface-2); border-radius: 14px; padding: 10px; margin-bottom: 10px; }
+  .ge-ex-top { display: flex; gap: 10px; align-items: center; }
+  .ge-ex-top .field-input { flex: 1; min-width: 0; font-weight: 600; }
+  .ge-ex-media { cursor: pointer; }
+  .ge-ex .ge-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ge-ex-btns { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .ge-ex-btns .food-edit-btn { margin: 0; }
+  .ge-ex-btns .ge-del { margin-left: auto; color: var(--danger, #B91C1C); }
+  .ge-ex-btns .food-edit-btn, .gym-wo .food-edit-btn { width: auto; padding: 0 10px; }
+
   /* ---------- FAB ---------- */
   .fab {
     position: fixed; right: 20px;
@@ -2294,6 +2388,12 @@ try {
     </div>
   </section>
 
+  <!-- GYM -->
+  <section id="tab-gym">
+    <h1 class="h-title" style="margin-bottom:12px;">Gym</h1>
+    <div id="gym-content"></div>
+  </section>
+
   <!-- EDITAR -->
   <section id="tab-editar">
     <h1 class="h-title" style="margin-bottom:4px;">Editar</h1>
@@ -2518,6 +2618,10 @@ try {
   <button data-tab="comida" data-i18n-ctx="nav">
     <svg class="icon" viewBox="0 0 24 24"><path d="M4 3v7c0 2 1 3 3 3h1v9"/><path d="M8 3v10"/><path d="M18 3v18M16 3c0 4 2 5 2 8h-4c0-3 2-4 2-8"/></svg>
     Comida
+  </button>
+  <button data-tab="gym">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>
+    Gym
   </button>
   <button data-tab="cal">
     <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="6"/><line x1="16" y1="3" x2="16" y2="6"/></svg>
@@ -9855,6 +9959,966 @@ function renderComida() {
   }
 }
 tabRenderers.comida = renderComida;
+
+/* ==================== GYM: rutinas, semana, registro de cargas ==================== */
+// Datos (localStorage):
+//  gym_routines: [{ id, name, meta:{objetivo,periodo,musculos,calentamiento,descanso,notas,extra}, tempo,
+//                   exercises:[{ id, name, dbId, photo, circuit, sets:[{count,reps,note}], rir, rpe, tempo, rest, notes }],
+//                   source:'pdf'|'manual', createdAt }]
+//  gym_schedule: { '0'..'6' (getDay): routineId }
+//  gym_logs:     { 'YYYY-MM-DD': { routineId, ex: { exId: [{ kg, reps, done }] }, done, ts } }
+// Base de ejercicios: gym_db.js (free-exercise-db, dominio público), se carga al abrir la pestaña.
+const GYM_IMG_CDN = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
+function gymRoutines() { return S.get('gym_routines', []); }
+function saveGymRoutines(r) { S.set('gym_routines', r); }
+function gymSchedule() { return S.get('gym_schedule', {}); }
+function saveGymSchedule(s) { S.set('gym_schedule', s); }
+function gymLogs() { return S.get('gym_logs', {}); }
+function saveGymLogs(l) { S.set('gym_logs', l); }
+function gymRoutineById(id) { return gymRoutines().find(r => r.id === id) || null; }
+function gymTodayRoutine(dateKey) {
+  const d = dateKey ? new Date(dateKey + 'T00:00:00') : new Date();
+  const id = gymSchedule()[String(d.getDay())];
+  return id ? gymRoutineById(id) : null;
+}
+
+let _gymDbPromise = null;
+function loadGymDb() {
+  if (window.GYM_DB) return Promise.resolve(window.GYM_DB);
+  if (!_gymDbPromise) {
+    _gymDbPromise = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'gym_db.js';
+      s.onload = () => resolve(window.GYM_DB || []);
+      s.onerror = () => { _gymDbPromise = null; reject(new Error('gym_db')); };
+      document.head.appendChild(s);
+    });
+  }
+  return _gymDbPromise;
+}
+function gymDbById(id) { return (window.GYM_DB || []).find(e => e.i === id) || null; }
+function gymDbFrames(id) {
+  const e = gymDbById(id);
+  if (!e || !e.im) return [];
+  return Array.from({ length: e.im }, (_, k) => GYM_IMG_CDN + encodeURI(e.i) + '/' + k + '.jpg');
+}
+// Imagen de un ejercicio: foto propia (PDF/cámara) o animación de la base (alterna inicio/fin)
+function gymMediaHtml(ex, size) {
+  const st = `width:${size}px;height:${size}px;`;
+  if (ex.photo) return `<img class="gym-media" src="${ex.photo}" style="${st}" alt="">`;
+  const fr = ex.dbId ? gymDbFrames(ex.dbId) : [];
+  if (fr.length) return `<img class="gym-media gym-anim" src="${fr[0]}" data-frames="${fr.join('|')}" style="${st}" alt="" loading="lazy" onerror="this.classList.add('gym-media-err')">`;
+  return `<div class="gym-media gym-media-empty" style="${st}"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg></div>`;
+}
+setInterval(() => {
+  document.querySelectorAll('img.gym-anim[data-frames]').forEach(img => {
+    const fr = img.dataset.frames.split('|');
+    if (fr.length < 2) return;
+    const i = (parseInt(img.dataset.f || '0', 10) + 1) % fr.length;
+    img.dataset.f = i;
+    img.src = fr[i];
+  });
+}, 1000);
+
+// ---------- Búsqueda ES/EN sobre la base ----------
+const GYM_ES_EN = [
+  ['elevaciones laterales', 'side lateral raise'], ['elevacion frontal', 'front raise'],
+  ['press militar', 'military press shoulder press'], ['press de hombro', 'shoulder press'], ['press hombro', 'shoulder press'],
+  ['press de banca', 'bench press'], ['press banca', 'bench press'], ['press plano', 'bench press'], ['press inclinado', 'incline press'],
+  ['press declinado', 'decline press'], ['press frances', 'lying triceps extension skullcrusher'], ['rompecraneos', 'skullcrusher lying triceps extension'],
+  ['extension tras nuca', 'overhead triceps extension'], ['extension de triceps', 'triceps extension'], ['extension triceps', 'triceps extension'],
+  ['extension de pierna', 'leg extension'], ['extension de cuadriceps', 'leg extension'], ['extensiones de pierna', 'leg extension'],
+  ['curl femoral', 'leg curl hamstring'], ['curl de pierna', 'leg curl'], ['curl predicador', 'preacher curl'], ['curl martillo', 'hammer curl'],
+  ['curl concentrado', 'concentration curl'], ['peso muerto rumano', 'romanian deadlift'], ['peso muerto', 'deadlift'],
+  ['remo vertical', 'upright row'], ['remo con barra', 'bent over barbell row'], ['remo', 'row'], ['jalon al pecho', 'pulldown'], ['jalon', 'pulldown'],
+  ['dominadas', 'pull-up chin-up'], ['dominada', 'pull-up'], ['fondos', 'dips'], ['sentadilla bulgara', 'split squat'], ['sentadilla', 'squat'],
+  ['zancadas', 'lunge'], ['zancada', 'lunge'], ['desplantes', 'lunge'], ['prensa', 'leg press'], ['hip thrust', 'hip thrust'], ['puente de gluteo', 'glute bridge'],
+  ['pantorrilla', 'calf raise'], ['pantorrillas', 'calf raise'], ['gemelos', 'calf raise'], ['abdominales', 'crunch'], ['abdominal', 'crunch'],
+  ['plancha', 'plank'], ['encogimientos', 'shrug'], ['encogimiento', 'shrug'], ['aperturas', 'fly flyes'], ['apertura', 'fly flyes'], ['flys', 'fly flyes'], ['fly', 'fly flyes'],
+  ['flys maquina', 'butterfly'], ['aperturas maquina', 'butterfly'], ['extension barra plana', 'lying triceps press'], ['extension barra', 'triceps extension barbell'],
+  ['elevacion lateral', 'side lateral raise'],
+  ['cruce de poleas', 'cable crossover'], ['pec deck', 'butterfly'], ['patada de gluteo', 'glute kickback'], ['patada de triceps', 'triceps kickback'],
+  ['face pull', 'face pull'], ['pullover', 'pullover'], ['buenos dias', 'good morning'], ['hiperextensiones', 'hyperextension'],
+  ['mancuernas', 'dumbbell'], ['mancuerna', 'dumbbell'], ['barra z', 'ez bar'], ['barra ez', 'ez bar'], ['barra', 'barbell'],
+  ['polea', 'cable'], ['poleas', 'cable'], ['maquina', 'machine leverage'], ['smith', 'smith'], ['kettlebell', 'kettlebell'], ['pesa rusa', 'kettlebell'],
+  ['banda', 'band'], ['liga', 'band'], ['sentado', 'seated'], ['de pie', 'standing'], ['acostado', 'lying'], ['inclinado', 'incline'], ['declinado', 'decline'],
+  ['agarre cerrado', 'close grip'], ['agarre abierto', 'wide grip'], ['agarre neutro', 'neutral grip'], ['un brazo', 'one arm'], ['unilateral', 'one arm'],
+  ['triceps', 'triceps'], ['biceps', 'biceps'], ['pecho', 'chest'], ['espalda', 'back'], ['hombro', 'shoulder'], ['hombros', 'shoulder'],
+  ['gluteo', 'glute'], ['gluteos', 'glute'], ['pierna', 'leg'], ['piernas', 'leg'], ['cuadriceps', 'quadriceps'], ['femoral', 'hamstring'],
+  ['curl', 'curl'], ['press', 'press'], ['extension', 'extension'], ['elevacion', 'raise'], ['pulldown', 'pulldown'], ['doble d', 'v-bar'],
+];
+const GYM_MUSCLE_ES = { abdominals: 'Abdomen', abductors: 'Abductores', adductors: 'Aductores', biceps: 'Bíceps', calves: 'Pantorrillas',
+  chest: 'Pecho', forearms: 'Antebrazos', glutes: 'Glúteos', hamstrings: 'Isquiotibiales', lats: 'Dorsales', 'lower back': 'Espalda baja',
+  'middle back': 'Espalda media', neck: 'Cuello', quadriceps: 'Cuádriceps', shoulders: 'Hombros', traps: 'Trapecios', triceps: 'Tríceps' };
+const GYM_EQUIP_ES = { barbell: 'Barra', dumbbell: 'Mancuernas', cable: 'Polea', machine: 'Máquina', 'body only': 'Peso corporal',
+  kettlebells: 'Kettlebell', bands: 'Bandas', 'medicine ball': 'Balón medicinal', 'exercise ball': 'Fitball', 'foam roll': 'Foam roller',
+  'e-z curl bar': 'Barra Z', other: 'Otro' };
+function gymFold(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 -]/g, ' ').replace(/\s+/g, ' ').trim(); }
+function gymQueryTokens(q) {
+  let s = ' ' + gymFold(q) + ' ';
+  const en = [];
+  // primero frases largas
+  GYM_ES_EN.slice().sort((a, b) => b[0].length - a[0].length).forEach(([es, eng]) => {
+    const k = ' ' + es + ' ';
+    if (s.includes(k)) { en.push(...eng.split(' ')); s = s.split(k).join(' '); }
+  });
+  s.split(' ').filter(w => w.length > 2 && !['con', 'para', 'del', 'las', 'los', 'una', 'the', 'and', 'with'].includes(w)).forEach(w => en.push(w));
+  return [...new Set(en)];
+}
+function gymSearch(q, limit) {
+  const db = window.GYM_DB || [];
+  const toks = gymQueryTokens(q);
+  if (!toks.length) return [];
+  const scored = [];
+  db.forEach(e => {
+    const name = ' ' + gymFold(e.n).replace(/-/g, ' ') + ' ';
+    const extra = ' ' + gymFold([e.e, ...(e.p || [])].join(' ')) + ' ';
+    let sc = 0, hits = 0;
+    toks.forEach(t => {
+      const tt = t.replace(/-/g, ' ');
+      if (name.includes(' ' + tt + ' ') || name.includes(' ' + tt + 's ')) { sc += /^(smith|cable|dumbbell|barbell|kettlebell|band|leverage)$/.test(tt) ? 4 : 3; hits++; }
+      else if (name.includes(tt)) { sc += 1.5; hits++; }
+      else if (extra.includes(tt)) { sc += 1; }
+    });
+    if (!hits) return;
+    // Penalizar palabras del nombre que no pidió la búsqueda (prefiere el nombre más exacto)
+    const qs = ' ' + toks.join(' ').replace(/-/g, ' ') + ' ';
+    const extraWords = name.trim().split(' ').filter(w => w.length > 2 && !qs.includes(' ' + w.replace(/s$/, '')) && !qs.includes(' ' + w + ' '));
+    const VARIANT = /^(reverse|rear|lying|incline|decline|kneeling|one|single|alternating|alternate|seated|standing|bent|close|wide|reverse-grip|side|jm)$/;
+    extraWords.forEach(w => { sc -= VARIANT.test(w) ? 0.9 : 0.35; });
+    sc += hits / toks.length * 2;
+    if (e.c === 'strength') sc += 0.3;
+    scored.push([sc, e]);
+  });
+  scored.sort((a, b) => b[0] - a[0]);
+  return scored.slice(0, limit || 30).map(x => x[1]);
+}
+function gymBestMatch(name) { const r = gymSearch(name, 1); return r[0] ? r[0].i : null; }
+
+// ---------- Utilidades de formato ----------
+function gymSetsText(sets) { return (sets || []).map(s => `${s.count}×${s.reps}${s.note ? ' ' + s.note : ''}`).join(' · '); }
+function gymParseSetsText(txt) {
+  const out = [];
+  String(txt || '').split(/[,;\n·]+/).forEach(part => {
+    const m = part.trim().match(/^(\d{1,2})\s*[x×X]\s*(\d{1,3}(?:\s*[-–]\s*\d{1,3})?)\s*(.*)$/);
+    if (m) out.push({ count: parseInt(m[1], 10), reps: m[2].replace(/\s+/g, '').replace('–', '-'), note: m[3].trim() });
+  });
+  return out;
+}
+function gymTotalSets(ex) { return (ex.sets || []).reduce((a, s) => a + (s.count || 0), 0); }
+function gymSetRepsForIndex(ex, idx) {
+  let i = idx;
+  for (const s of ex.sets || []) { if (i < s.count) return s.reps + (s.note ? ' ' + s.note : ''); i -= s.count; }
+  return '';
+}
+function gymLastLog(exId, beforeKey) {
+  const logs = gymLogs();
+  const keys = Object.keys(logs).filter(k => k < beforeKey).sort().reverse();
+  for (const k of keys) {
+    const sets = logs[k].ex && logs[k].ex[exId];
+    if (sets && sets.some(s => s.kg || s.reps)) return { date: k, sets };
+  }
+  return null;
+}
+const GYM_DOW = () => _dn(['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']);
+
+// ---------- Pestaña ----------
+function renderGym() {
+  const el = document.getElementById('gym-content');
+  if (!el) return;
+  const routines = gymRoutines();
+  const sched = gymSchedule();
+  const todayKey = keyDate();
+  const today = gymTodayRoutine();
+  const log = gymLogs()[todayKey];
+  const dows = GYM_DOW();
+  const order = [1, 2, 3, 4, 5, 6, 0];
+  const todayDow = new Date().getDay();
+
+  const week = order.map(d => {
+    const r = sched[String(d)] ? gymRoutineById(sched[String(d)]) : null;
+    return `<div class="gym-day${d === todayDow ? ' today' : ''}${r ? ' has' : ''}" data-gym-dow="${d}">
+      <div class="gym-day-k">${escapeHtml(dows[d])}</div>
+      <div class="gym-day-v">${r ? escapeHtml(r.name.split(' · ')[0]) : '—'}</div>
+    </div>`;
+  }).join('');
+
+  let todayCard;
+  if (today) {
+    const total = today.exercises.length;
+    const doneEx = log && log.routineId === today.id && log.ex ? Object.keys(log.ex).filter(k => (log.ex[k] || []).some(s => s.done)).length : 0;
+    todayCard = `<div class="gym-today">
+      <div class="gym-today-k">Hoy toca</div>
+      <div class="gym-today-name">${escapeHtml(today.name)}</div>
+      <div class="gym-today-meta">${today.meta && today.meta.musculos ? escapeHtml(today.meta.musculos) + ' · ' : ''}${total} ejercicios${log && log.done ? ' · ✓' : ''}</div>
+      ${doneEx ? `<div class="gym-prog"><div style="width:${Math.round(doneEx / Math.max(1, total) * 100)}%"></div></div>` : ''}
+      <button class="btn-primary" id="gym-start" style="width:100%;margin-top:14px;">${log && log.done ? 'Ver entrenamiento' : (doneEx ? 'Continuar' : 'Empezar')}</button>
+    </div>`;
+  } else {
+    todayCard = `<div class="gym-today rest">
+      <div class="gym-today-k">Hoy</div>
+      <div class="gym-today-name">Descanso</div>
+      <div class="gym-today-meta">${routines.length ? 'No tienes rutina asignada para hoy.' : 'Crea o importa una rutina para empezar.'}</div>
+      ${routines.length ? '<button class="btn-secondary" id="gym-pick-today" style="margin-top:14px;">Entrenar otra rutina hoy</button>' : ''}
+    </div>`;
+  }
+
+  const list = routines.length ? routines.map(r => {
+    const days = order.filter(d => sched[String(d)] === r.id).map(d => dows[d]).join(', ');
+    const thumbs = r.exercises.slice(0, 4).map(ex => gymMediaHtml(ex, 34)).join('');
+    return `<div class="gym-routine" data-gym-open="${r.id}">
+      <div class="gym-routine-thumbs">${thumbs}</div>
+      <div class="gym-routine-body">
+        <div class="gym-routine-name">${escapeHtml(r.name)}</div>
+        <div class="gym-routine-meta">${r.exercises.length} ejercicios${r.meta && r.meta.musculos ? ' · ' + escapeHtml(r.meta.musculos) : ''}</div>
+        ${days ? `<div class="gym-routine-days">${escapeHtml(days)}</div>` : ''}
+      </div>
+      <div class="gym-routine-chev">›</div>
+    </div>`;
+  }).join('') : '<div class="empty">Aún no tienes rutinas.</div>';
+
+  el.innerHTML = `
+    ${todayCard}
+    <h2>Semana</h2>
+    <div class="gym-week">${week}</div>
+    <h2>Mis rutinas</h2>
+    ${list}
+    <div class="gym-actions">
+      <button class="btn-secondary" id="gym-new">+ Nueva rutina</button>
+      <button class="btn-secondary" id="gym-import">Importar PDF</button>
+    </div>
+    <input type="file" id="gym-pdf-input" accept="application/pdf,.pdf" style="display:none">
+    <h2>Historial</h2>
+    ${gymHistoryHtml()}
+    <div class="gym-credit">Ejercicios e imágenes: free-exercise-db (dominio público)</div>`;
+
+  const st = document.getElementById('gym-start');
+  if (st) st.addEventListener('click', () => openGymWorkout(today.id, todayKey));
+  const pt = document.getElementById('gym-pick-today');
+  if (pt) pt.addEventListener('click', () => gymPickRoutine('Elige la rutina de hoy', id => openGymWorkout(id, todayKey)));
+  el.querySelectorAll('[data-gym-dow]').forEach(d => d.addEventListener('click', () => {
+    const dow = d.dataset.gymDow;
+    gymPickRoutine(`${GYM_DOW()[dow]}: ¿qué rutina toca?`, id => {
+      const s = gymSchedule();
+      if (id) s[dow] = id; else delete s[dow];
+      saveGymSchedule(s); renderGym();
+    }, true);
+  }));
+  el.querySelectorAll('[data-gym-open]').forEach(c => c.addEventListener('click', () => openGymWorkout(c.dataset.gymOpen, todayKey)));
+  document.getElementById('gym-new').addEventListener('click', () => openGymEditor(null));
+  const inp = document.getElementById('gym-pdf-input');
+  document.getElementById('gym-import').addEventListener('click', () => inp.click());
+  inp.addEventListener('change', () => { const f = inp.files && inp.files[0]; inp.value = ''; if (f) gymImportPdf(f); });
+  el.querySelectorAll('[data-gym-hist]').forEach(h => h.addEventListener('click', () => {
+    const lg = gymLogs()[h.dataset.gymHist];
+    if (lg && gymRoutineById(lg.routineId)) openGymWorkout(lg.routineId, h.dataset.gymHist);
+  }));
+  // Cargar la base en segundo plano para que aparezcan las imágenes
+  if (!window.GYM_DB) loadGymDb().then(() => { if (document.getElementById('tab-gym').classList.contains('active')) renderGym(); }).catch(() => {});
+}
+
+function gymHistoryHtml() {
+  const logs = gymLogs();
+  const keys = Object.keys(logs).filter(k => logs[k] && logs[k].ex && Object.values(logs[k].ex).some(a => a.some(s => s.done))).sort().reverse().slice(0, 8);
+  if (!keys.length) return '<div class="empty">Aquí aparecerán tus entrenamientos.</div>';
+  const f = new Intl.DateTimeFormat(_loc(), { weekday: 'short', day: 'numeric', month: 'short' });
+  return keys.map(k => {
+    const lg = logs[k];
+    const r = gymRoutineById(lg.routineId);
+    const sets = Object.values(lg.ex).reduce((a, arr) => a + arr.filter(s => s.done).length, 0);
+    const vol = Object.values(lg.ex).reduce((a, arr) => a + arr.filter(s => s.done).reduce((b, s) => b + (parseFloat(s.kg) || 0) * (parseInt(s.reps, 10) || 0), 0), 0);
+    return `<div class="gym-hist" data-gym-hist="${k}">
+      <div class="gym-hist-d">${escapeHtml(f.format(new Date(k + 'T00:00:00')))}</div>
+      <div class="gym-hist-n">${escapeHtml(r ? r.name : '—')}</div>
+      <div class="gym-hist-v">${sets} series${vol ? ' · ' + Math.round(vol).toLocaleString(_loc()) + ' kg' : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function gymPickRoutine(title, cb, allowRest) {
+  const rs = gymRoutines();
+  const body = `<div class="gym-pick">
+    ${allowRest ? '<div class="gym-pick-item" data-pick=""><b>Descanso</b></div>' : ''}
+    ${rs.map(r => `<div class="gym-pick-item" data-pick="${r.id}"><b>${escapeHtml(r.name)}</b><span>${r.exercises.length} ejercicios${r.meta && r.meta.musculos ? ' · ' + escapeHtml(r.meta.musculos) : ''}</span></div>`).join('')}
+    ${rs.length ? '' : '<div class="empty">Aún no tienes rutinas.</div>'}
+  </div>`;
+  openSheet(title, body);
+  document.querySelectorAll('[data-pick]').forEach(p => p.addEventListener('click', () => { closeSheet(); cb(p.dataset.pick || null); }));
+}
+
+// ---------- Entrenamiento (ver rutina + registrar cargas) ----------
+function openGymWorkout(routineId, dateKey) {
+  const r = gymRoutineById(routineId);
+  if (!r) return;
+  dateKey = dateKey || keyDate();
+  const logs = gymLogs();
+  const lg = (logs[dateKey] && logs[dateKey].routineId === r.id) ? logs[dateKey] : { routineId: r.id, ex: {} };
+  const m = r.meta || {};
+  const fmtD = new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' });
+
+  // Agrupar por circuito consecutivo (mismo número = alternar)
+  const groups = [];
+  r.exercises.forEach(ex => {
+    const g = groups[groups.length - 1];
+    if (g && ex.circuit != null && g.circuit === ex.circuit) g.items.push(ex);
+    else groups.push({ circuit: ex.circuit, items: [ex] });
+  });
+
+  const chip = (k, v) => v ? `<span class="gym-chip"><b>${k}</b> ${escapeHtml(v)}</span>` : '';
+  const exCard = (ex) => {
+    const n = Math.max(1, gymTotalSets(ex));
+    const cur = lg.ex[ex.id] || [];
+    const last = gymLastLog(ex.id, dateKey);
+    const rows = Array.from({ length: n }, (_, i) => {
+      const s = cur[i] || {};
+      const prev = last && last.sets[i];
+      return `<div class="gym-set${s.done ? ' done' : ''}" data-ex="${ex.id}" data-i="${i}">
+        <div class="gym-set-n">${i + 1}</div>
+        <div class="gym-set-target">${escapeHtml(gymSetRepsForIndex(ex, i))}</div>
+        <input class="gym-in" inputmode="decimal" data-f="kg" value="${escapeHtml(s.kg || '')}" placeholder="${prev && prev.kg ? escapeHtml(prev.kg) : 'kg'}">
+        <input class="gym-in" inputmode="numeric" data-f="reps" value="${escapeHtml(s.reps || '')}" placeholder="${prev && prev.reps ? escapeHtml(prev.reps) : 'reps'}">
+        <button class="gym-check" data-f="done" aria-label="✓">✓</button>
+      </div>`;
+    }).join('');
+    const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> (${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}): ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${s.kg || '?'}kg×${s.reps || '?'}`).join(', '))}</div>` : '';
+    return `<div class="gym-ex">
+      <div class="gym-ex-head">
+        <div class="gym-ex-media" data-gym-info="${ex.id}">${gymMediaHtml(ex, 72)}</div>
+        <div class="gym-ex-body">
+          <div class="gym-ex-name">${escapeHtml(ex.name)}</div>
+          <div class="gym-ex-sets">${escapeHtml(gymSetsText(ex.sets))}</div>
+          <div class="gym-chips">${chip('RIR', ex.rir)}${chip('RPE', ex.rpe)}${chip('Tempo', ex.tempo || r.tempo)}${chip('Descanso', ex.rest)}</div>
+          ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
+        </div>
+      </div>
+      ${lastTxt}
+      <div class="gym-sets"><div class="gym-set gym-set-h"><div></div><div data-i18n-ctx="set">Objetivo</div><div>kg</div><div>reps</div><div></div></div>${rows}</div>
+    </div>`;
+  };
+  const body = groups.map(g => {
+    const head = g.circuit != null ? `<div class="gym-circ"><span>Circuito</span> ${g.circuit}${g.items.length > 1 ? ' · <span>alternar ejercicios</span>' : ''}</div>` : '';
+    return `<div class="gym-group${g.items.length > 1 ? ' multi' : ''}">${head}${g.items.map(exCard).join('')}</div>`;
+  }).join('');
+
+  const info = [['Objetivo', m.objetivo], ['Periodo', m.periodo], ['Calentamiento', m.calentamiento], ['Descanso', m.descanso], ['Notas', m.notas]]
+    .filter(x => x[1]).map(x => `<div class="gym-info-row"><b>${x[0]}</b><span>${escapeHtml(x[1])}</span></div>`).join('')
+    + (m.extra ? `<div class="gym-info-extra">${escapeHtml(m.extra).replace(/\n/g, '<br>')}</div>` : '');
+  const dLabel = dateKey === keyDate() ? 'Hoy' : new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(dateKey + 'T00:00:00'));
+
+  openSheet(r.name, `
+    <div class="gym-wo">
+      <div class="gym-wo-top">
+        <div class="gym-wo-date">${escapeHtml(dLabel)}</div>
+        <div class="gym-chips">${chip('Músculos', m.musculos)}${chip('Tempo', r.tempo)}</div>
+        ${info ? `<details class="gym-info"><summary>Indicaciones</summary>${info}</details>` : ''}
+        <div class="gym-wo-btns">
+          <button class="btn-secondary" id="gym-edit">Editar</button>
+          <button class="btn-secondary" id="gym-share">Compartir cargas</button>
+        </div>
+      </div>
+      ${body}
+      <button class="btn-primary" id="gym-finish" style="width:100%;margin-top:8px;">${lg.done ? '✓ Entrenamiento terminado' : 'Terminar entrenamiento'}</button>
+    </div>`);
+  document.getElementById('sheet-body').scrollTop = 0;
+
+  const sb = document.getElementById('sheet-body');
+  const persist = () => {
+    const all = gymLogs();
+    lg.ts = Date.now();
+    all[dateKey] = lg;
+    saveGymLogs(all);
+  };
+  const setVal = (exId, i, f, v) => {
+    const arr = lg.ex[exId] || (lg.ex[exId] = []);
+    while (arr.length <= i) arr.push({});
+    arr[i][f] = v;
+    persist();
+  };
+  sb.querySelectorAll('.gym-set[data-ex] .gym-in').forEach(inp => inp.addEventListener('input', () => {
+    const row = inp.closest('.gym-set');
+    setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.value.replace(',', '.').trim());
+  }));
+  sb.querySelectorAll('.gym-set[data-ex] .gym-check').forEach(btn => btn.addEventListener('click', () => {
+    const row = btn.closest('.gym-set');
+    const exId = row.dataset.ex, i = +row.dataset.i;
+    const arr = lg.ex[exId] || [];
+    const was = !!(arr[i] && arr[i].done);
+    // Al marcar sin datos, usar los del placeholder (última vez)
+    if (!was) {
+      row.querySelectorAll('.gym-in').forEach(inp => { if (!inp.value && inp.placeholder && !/^(kg|reps)$/.test(inp.placeholder)) { inp.value = inp.placeholder; setVal(exId, i, inp.dataset.f, inp.value); } });
+    }
+    setVal(exId, i, 'done', !was);
+    row.classList.toggle('done', !was);
+    if (!was && navigator.vibrate) navigator.vibrate(15);
+  }));
+  sb.querySelectorAll('[data-gym-info]').forEach(m2 => m2.addEventListener('click', () => {
+    const ex = r.exercises.find(e => e.id === m2.dataset.gymInfo);
+    if (ex) openGymExerciseInfo(r.id, ex.id, () => openGymWorkout(r.id, dateKey));
+  }));
+  document.getElementById('gym-edit').addEventListener('click', () => openGymEditor(r.id));
+  document.getElementById('gym-share').addEventListener('click', () => gymShareLoads(r, dateKey));
+  document.getElementById('gym-finish').addEventListener('click', () => {
+    lg.done = !lg.done; persist(); closeSheet(); renderGym();
+  });
+  if (!window.GYM_DB) loadGymDb().then(() => {
+    sb.querySelectorAll('[data-gym-info]').forEach(m2 => {
+      const ex = r.exercises.find(e => e.id === m2.dataset.gymInfo);
+      if (ex && !ex.photo && ex.dbId) m2.innerHTML = gymMediaHtml(ex, 72);
+    });
+  }).catch(() => {});
+}
+
+function gymShareLoads(r, dateKey) {
+  const lg = gymLogs()[dateKey];
+  const t = s => (window.i18n && window.i18n.t) ? window.i18n.t(s) : s;
+  const f = new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' });
+  const lines = [`${r.name} — ${f.format(new Date(dateKey + 'T00:00:00'))}`, ''];
+  let any = false;
+  r.exercises.forEach(ex => {
+    const sets = (lg && lg.ex && lg.ex[ex.id] || []).filter(s => s.kg || s.reps);
+    if (!sets.length) return;
+    any = true;
+    lines.push(`${ex.name}: ${sets.map(s => `${s.kg || '?'} kg × ${s.reps || '?'}`).join(', ')}`);
+  });
+  if (!any) { alert(t('Todavía no registras cargas en este entrenamiento.')); return; }
+  const text = lines.join('\n');
+  if (window.Android && window.Android.shareText) { try { window.Android.shareText(r.name, text); return; } catch (e) {} }
+  if (navigator.share) { navigator.share({ title: r.name, text }).catch(() => {}); return; }
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => alert(t('Copiado al portapapeles.'))).catch(() => prompt(t('Copia el texto:'), text));
+  else prompt(t('Copia el texto:'), text);
+}
+
+// ---------- Ficha del ejercicio (imagen, músculos, instrucciones, vincular) ----------
+function openGymExerciseInfo(routineId, exId, back) {
+  const r = gymRoutineById(routineId);
+  const ex = r && r.exercises.find(e => e.id === exId);
+  if (!ex) return;
+  loadGymDb().catch(() => {}).then(() => {
+    const db = ex.dbId ? gymDbById(ex.dbId) : null;
+    const mus = db ? [...db.p.map(x => GYM_MUSCLE_ES[x] || x)].join(', ') : '';
+    const sec = db ? db.s.map(x => GYM_MUSCLE_ES[x] || x).join(', ') : '';
+    const fr = ex.dbId ? gymDbFrames(ex.dbId) : [];
+    openSheet(ex.name, `
+      <div class="gym-info-sheet">
+        <div class="gym-big-media">
+          ${ex.photo ? `<img src="${ex.photo}" alt="">` : ''}
+          ${fr.length ? `<img class="gym-anim" src="${fr[0]}" data-frames="${fr.join('|')}" alt="">` : ''}
+          ${!ex.photo && !fr.length ? '<div class="empty">Sin imagen</div>' : ''}
+        </div>
+        ${db ? `<div class="gym-db-name">${escapeHtml(db.n)}</div>
+          <div class="gym-chips">${mus ? `<span class="gym-chip"><b>Músculo</b> ${escapeHtml(mus)}</span>` : ''}${sec ? `<span class="gym-chip"><b>Secundarios</b> ${escapeHtml(sec)}</span>` : ''}${db.e ? `<span class="gym-chip"><b>Equipo</b> ${escapeHtml(GYM_EQUIP_ES[db.e] || db.e)}</span>` : ''}</div>
+          ${db.t && db.t.length ? `<ol class="gym-steps">${db.t.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ol>` : ''}` : '<div class="fe-lbl">Este ejercicio no está vinculado a la base. Vincúlalo para ver su animación y músculos.</div>'}
+        <button class="btn-secondary" id="gym-link">${db ? 'Cambiar ejercicio vinculado' : 'Vincular con la base'}</button>
+        <label class="btn-secondary gym-photo-btn">${ex.photo ? 'Cambiar foto' : 'Agregar foto'}<input type="file" accept="image/*" id="gym-photo" style="display:none"></label>
+        ${ex.photo ? '<button class="btn-secondary" id="gym-photo-del">Quitar foto</button>' : ''}
+        ${back ? '<button class="btn-secondary" id="gym-back">‹ Volver</button>' : ''}
+      </div>`);
+  document.getElementById('sheet-body').scrollTop = 0;
+    const update = (fn) => {
+      const all = gymRoutines();
+      const rr = all.find(x => x.id === routineId);
+      const ee = rr && rr.exercises.find(e => e.id === exId);
+      if (ee) { fn(ee); saveGymRoutines(all); }
+      openGymExerciseInfo(routineId, exId, back);
+    };
+    document.getElementById('gym-link').addEventListener('click', () => openGymExercisePicker(ex.name, (dbEx) => update(ee => { ee.dbId = dbEx.i; }), () => openGymExerciseInfo(routineId, exId, back)));
+    document.getElementById('gym-photo').addEventListener('change', (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (f) gymResizeImage(f, 320).then(url => update(ee => { ee.photo = url; }));
+    });
+    const del = document.getElementById('gym-photo-del');
+    if (del) del.addEventListener('click', () => update(ee => { delete ee.photo; }));
+    const bk = document.getElementById('gym-back');
+    if (bk) bk.addEventListener('click', back);
+  });
+}
+function gymResizeImage(file, max) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', 0.7));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+// ---------- Buscador de ejercicios ----------
+function openGymExercisePicker(initialQuery, onPick, onBack) {
+  const body = `<div class="gym-search">
+    <input type="search" class="field-input" id="gym-q" placeholder="Busca en español o inglés (ej. press inclinado, remo)" value="${escapeHtml(initialQuery || '')}">
+    <div id="gym-results" class="gym-results"><div class="food-loader">Cargando ejercicios…</div></div>
+    ${onBack ? '<button class="btn-secondary" id="gym-q-back" style="margin-top:10px;">‹ Volver</button>' : ''}
+  </div>`;
+  openSheet('Buscar ejercicio', body);
+  document.getElementById('sheet-body').scrollTop = 0;
+  const q = document.getElementById('gym-q');
+  const res = document.getElementById('gym-results');
+  const bk = document.getElementById('gym-q-back');
+  if (bk) bk.addEventListener('click', onBack);
+  const draw = () => {
+    const list = gymSearch(q.value, 40);
+    if (!q.value.trim()) { res.innerHTML = '<div class="fe-lbl">Escribe el nombre del ejercicio.</div>'; return; }
+    if (!list.length) { res.innerHTML = '<div class="empty">Sin resultados</div>'; return; }
+    res.innerHTML = list.map(e => `<div class="gym-res" data-id="${escapeHtml(e.i)}">
+      ${gymMediaHtml({ dbId: e.i }, 56)}
+      <div class="gym-res-body"><div class="gym-res-name">${escapeHtml(e.n)}</div>
+      <div class="gym-res-meta">${escapeHtml([...(e.p || []).map(x => GYM_MUSCLE_ES[x] || x), GYM_EQUIP_ES[e.e] || e.e].filter(Boolean).join(' · '))}</div></div>
+    </div>`).join('');
+    res.querySelectorAll('.gym-res').forEach(it => it.addEventListener('click', () => {
+      const e = gymDbById(it.dataset.id);
+      if (e) onPick(e);
+    }));
+  };
+  let tmr = null;
+  q.addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(draw, 180); });
+  loadGymDb().then(draw).catch(() => { res.innerHTML = '<div class="empty">No se pudo cargar la base de ejercicios.</div>'; });
+  setTimeout(() => q.focus(), 250);
+}
+
+// ---------- Editor de rutina ----------
+let _gymEdit = null;
+function openGymEditor(routineId, draft) {
+  const existing = routineId ? gymRoutineById(routineId) : null;
+  if (draft) _gymEdit = draft;
+  else if (existing) _gymEdit = JSON.parse(JSON.stringify(existing));
+  else _gymEdit = { id: uid(), name: '', meta: {}, tempo: '', exercises: [], source: 'manual', createdAt: Date.now() };
+  if (!_gymEdit.meta) _gymEdit.meta = {};
+  const isNew = !gymRoutineById(_gymEdit.id);
+  if (!_gymEdit._days) {
+    const s = gymSchedule();
+    _gymEdit._days = Object.keys(s).filter(d => s[d] === _gymEdit.id);
+  }
+  gymDrawEditor(isNew);
+}
+function gymEditorSync() {
+  const sb = document.getElementById('sheet-body');
+  if (!sb || !_gymEdit) return;
+  const v = id => { const e = document.getElementById(id); return e ? e.value : undefined; };
+  if (v('ge-name') !== undefined) _gymEdit.name = v('ge-name').trim();
+  ['musculos', 'objetivo', 'periodo', 'calentamiento', 'descanso', 'notas'].forEach(k => { const x = v('ge-' + k); if (x !== undefined) _gymEdit.meta[k] = x.trim(); });
+  if (v('ge-tempo') !== undefined) _gymEdit.tempo = v('ge-tempo').trim();
+  sb.querySelectorAll('.ge-ex').forEach(row => {
+    const ex = _gymEdit.exercises.find(e => e.id === row.dataset.id);
+    if (!ex) return;
+    const g = f => row.querySelector(`[data-f="${f}"]`).value;
+    ex.name = g('name').trim();
+    const c = g('circuit').trim(); ex.circuit = c === '' ? null : parseInt(c, 10);
+    ex.sets = gymParseSetsText(g('sets'));
+    ex.rir = g('rir').trim(); ex.rpe = g('rpe').trim(); ex.tempo = g('tempo').trim(); ex.rest = g('rest').trim(); ex.notes = g('notes').trim();
+  });
+}
+function gymDrawEditor(isNew) {
+  const e = _gymEdit;
+  const dows = GYM_DOW();
+  const order = [1, 2, 3, 4, 5, 6, 0];
+  const exRows = e.exercises.map((ex, i) => `
+    <div class="ge-ex" data-id="${ex.id}">
+      <div class="ge-ex-top">
+        <div class="ge-ex-media" data-ge-link="${ex.id}">${gymMediaHtml(ex, 52)}</div>
+        <input class="field-input" data-f="name" value="${escapeHtml(ex.name)}" placeholder="Nombre del ejercicio">
+      </div>
+      <div class="ge-grid">
+        <label><span>Circuito</span><input class="field-input" data-f="circuit" inputmode="numeric" value="${ex.circuit == null ? '' : ex.circuit}"></label>
+        <label class="ge-wide"><span>Series × reps</span><input class="field-input" data-f="sets" value="${escapeHtml(gymSetsText(ex.sets).replace(/ · /g, ', ').replace(/×/g, 'x'))}" placeholder="2x10-15, 1x15-20"></label>
+        <label><span>RIR</span><input class="field-input" data-f="rir" value="${escapeHtml(ex.rir || '')}"></label>
+        <label><span>RPE</span><input class="field-input" data-f="rpe" value="${escapeHtml(ex.rpe || '')}"></label>
+        <label><span>Tempo</span><input class="field-input" data-f="tempo" value="${escapeHtml(ex.tempo || '')}" placeholder="${escapeHtml(e.tempo || '3-1-2')}"></label>
+        <label><span>Descanso</span><input class="field-input" data-f="rest" value="${escapeHtml(ex.rest || '')}" placeholder="90 s"></label>
+        <label class="ge-full"><span>Notas</span><input class="field-input" data-f="notes" value="${escapeHtml(ex.notes || '')}"></label>
+      </div>
+      <div class="ge-ex-btns">
+        <button class="food-edit-btn" data-ge-mv="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button class="food-edit-btn" data-ge-mv="${i}" data-d="1" ${i === e.exercises.length - 1 ? 'disabled' : ''}>↓</button>
+        <button class="food-edit-btn" data-ge-link="${ex.id}">${ex.dbId ? 'Cambiar imagen' : 'Vincular'}</button>
+        <button class="food-edit-btn ge-del" data-ge-del="${i}">Quitar</button>
+      </div>
+    </div>`).join('');
+  const body = `
+    <div class="gym-editor">
+      <label class="fe-lbl">Nombre de la rutina</label>
+      <input class="field-input" id="ge-name" value="${escapeHtml(e.name)}" placeholder="Ej. Día 1 · Pecho / espalda">
+      <label class="fe-lbl" style="margin-top:12px;">Días de la semana</label>
+      <div class="chips small" id="ge-days">${order.map(d => `<div class="chip ${e._days.includes(String(d)) ? 'selected' : ''}" data-d="${d}">${escapeHtml(dows[d])}</div>`).join('')}</div>
+      <div class="ge-grid" style="margin-top:12px;">
+        <label class="ge-wide"><span>Músculos</span><input class="field-input" id="ge-musculos" value="${escapeHtml(e.meta.musculos || '')}"></label>
+        <label><span>Tempo</span><input class="field-input" id="ge-tempo" value="${escapeHtml(e.tempo || '')}" placeholder="3-2-3"></label>
+        <label class="ge-wide"><span>Objetivo</span><input class="field-input" id="ge-objetivo" value="${escapeHtml(e.meta.objetivo || '')}"></label>
+        <label><span>Periodo</span><input class="field-input" id="ge-periodo" value="${escapeHtml(e.meta.periodo || '')}"></label>
+        <label class="ge-full"><span>Calentamiento</span><input class="field-input" id="ge-calentamiento" value="${escapeHtml(e.meta.calentamiento || '')}"></label>
+        <label class="ge-full"><span>Descanso entre series</span><input class="field-input" id="ge-descanso" value="${escapeHtml(e.meta.descanso || '')}"></label>
+        <label class="ge-full"><span>Notas</span><textarea class="field-input" id="ge-notas" rows="2">${escapeHtml(e.meta.notas || '')}</textarea></label>
+      </div>
+      <h2>Ejercicios (${e.exercises.length})</h2>
+      ${exRows || '<div class="empty">Agrega tu primer ejercicio.</div>'}
+      <button class="btn-secondary" id="ge-add" style="margin-top:8px;">+ Agregar ejercicio</button>
+      ${!isNew ? '<button class="btn-secondary" id="ge-dup" style="margin-top:8px;">Duplicar rutina</button><button class="btn-danger" id="ge-delete" style="margin-top:8px;width:100%;padding:12px;">Eliminar rutina</button>' : ''}
+    </div>`;
+  openSheet(isNew ? 'Nueva rutina' : 'Editar rutina', body, () => {
+    gymEditorSync();
+    const t = s => (window.i18n && window.i18n.t) ? window.i18n.t(s) : s;
+    if (!_gymEdit.name) { alert(t('Ponle nombre a la rutina.')); return; }
+    if (!_gymEdit.exercises.length) { alert(t('Agrega al menos un ejercicio.')); return; }
+    _gymEdit.exercises.forEach(ex => { if (!ex.name) ex.name = '—'; });
+    const days = _gymEdit._days;
+    const clean = JSON.parse(JSON.stringify(_gymEdit)); delete clean._days;
+    const all = gymRoutines();
+    const i = all.findIndex(x => x.id === clean.id);
+    if (i >= 0) all[i] = clean; else all.push(clean);
+    saveGymRoutines(all);
+    const s = gymSchedule();
+    Object.keys(s).forEach(d => { if (s[d] === clean.id && !days.includes(d)) delete s[d]; });
+    days.forEach(d => { s[d] = clean.id; });
+    saveGymSchedule(s);
+    _gymEdit = null;
+    closeSheet(); renderGym();
+  });
+  const sb = document.getElementById('sheet-body');
+  sb.querySelectorAll('#ge-days .chip').forEach(c => c.addEventListener('click', () => {
+    const d = c.dataset.d;
+    const k = _gymEdit._days.indexOf(d);
+    if (k >= 0) _gymEdit._days.splice(k, 1); else _gymEdit._days.push(d);
+    c.classList.toggle('selected');
+  }));
+  sb.querySelectorAll('[data-ge-mv]').forEach(b => b.addEventListener('click', () => {
+    gymEditorSync();
+    const i = +b.dataset.geMv, d = +b.dataset.d, a = _gymEdit.exercises;
+    if (a[i + d]) { [a[i], a[i + d]] = [a[i + d], a[i]]; }
+    gymDrawEditor(isNew);
+  }));
+  sb.querySelectorAll('[data-ge-del]').forEach(b => b.addEventListener('click', () => {
+    gymEditorSync(); _gymEdit.exercises.splice(+b.dataset.geDel, 1); gymDrawEditor(isNew);
+  }));
+  sb.querySelectorAll('[data-ge-link]').forEach(b => b.addEventListener('click', () => {
+    gymEditorSync();
+    const ex = _gymEdit.exercises.find(x => x.id === b.dataset.geLink);
+    openGymExercisePicker(ex ? ex.name : '', (dbEx) => { if (ex) ex.dbId = dbEx.i; gymDrawEditor(isNew); }, () => gymDrawEditor(isNew));
+  }));
+  document.getElementById('ge-add').addEventListener('click', () => {
+    gymEditorSync();
+    openGymExercisePicker('', (dbEx) => {
+      const last = _gymEdit.exercises[_gymEdit.exercises.length - 1];
+      _gymEdit.exercises.push({ id: uid(), name: dbEx.n, dbId: dbEx.i, circuit: last && last.circuit != null ? last.circuit + 1 : null,
+        sets: [{ count: 3, reps: '10-12', note: '' }], rir: '', rpe: '', tempo: '', rest: '', notes: '' });
+      gymDrawEditor(isNew);
+    }, () => gymDrawEditor(isNew));
+  });
+  const dup = document.getElementById('ge-dup');
+  if (dup) dup.addEventListener('click', () => {
+    gymEditorSync();
+    const copy = JSON.parse(JSON.stringify(_gymEdit));
+    copy.id = uid(); copy.name = copy.name + ' (copia)'; copy._days = [];
+    copy.exercises.forEach(x => { x.id = uid(); });
+    openGymEditor(null, copy);
+  });
+  const del = document.getElementById('ge-delete');
+  if (del) del.addEventListener('click', () => {
+    const t = s => (window.i18n && window.i18n.t) ? window.i18n.t(s) : s;
+    if (!confirm(t('¿Eliminar esta rutina? Tu historial de cargas se conserva.'))) return;
+    saveGymRoutines(gymRoutines().filter(x => x.id !== _gymEdit.id));
+    const s = gymSchedule(); Object.keys(s).forEach(d => { if (s[d] === _gymEdit.id) delete s[d]; }); saveGymSchedule(s);
+    _gymEdit = null; closeSheet(); renderGym();
+  });
+}
+
+// ---------- Importar PDF del coach ----------
+let _pdfJsPromise = null;
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (!_pdfJsPromise) {
+    const add = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+    // El worker se carga como script normal: pdf.js lo usa en el hilo principal
+    // (los Worker desde file:// no funcionan en el WebView de Android).
+    _pdfJsPromise = add('lib/pdfjs/pdf.worker.min.js').then(() => add('lib/pdfjs/pdf.min.js')).then(() => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdfjs/pdf.worker.min.js';
+      return window.pdfjsLib;
+    }).catch(e => { _pdfJsPromise = null; throw e; });
+  }
+  return _pdfJsPromise;
+}
+
+async function gymImportPdf(file) {
+  const t = s => (window.i18n && window.i18n.t) ? window.i18n.t(s) : s;
+  openSheet('Importar PDF', '<div class="food-loader">Leyendo el PDF…</div>');
+  try {
+    const pdfjsLib = await loadPdfJs();
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const doc = await pdfjsLib.getDocument({ data: buf, isEvalSupported: false }).promise;
+    const pages = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      const p = await doc.getPage(i);
+      const vp = p.getViewport({ scale: 1 });
+      const tc = await p.getTextContent();
+      pages.push({ w: vp.width, h: vp.height, page: p, items: tc.items.map(it => ({ str: it.str, x: it.transform[4], top: vp.height - it.transform[5] - (it.height || 0), w: it.width, h: it.height })) });
+    }
+    const parsed = gymParsePdfPages(pages);
+    if (!parsed.exercises.length) {
+      openSheet('Importar PDF', `<div class="empty">No encontré ejercicios en este PDF. Puedes crear la rutina a mano.</div>`);
+      return;
+    }
+    // Fotos del PDF: renderizar cada página una vez y recortar la celda del ejercicio
+    document.getElementById('sheet-body').innerHTML = '<div class="food-loader">Extrayendo fotos de los ejercicios…</div>';
+    const canvases = {};
+    const scale = 2;
+    for (const ex of parsed.exercises) {
+      const c = ex.crop;
+      if (!c || c.bottom - c.top < 30) continue;
+      try {
+        if (!canvases[c.page]) {
+          const pg = pages[c.page];
+          const vp = pg.page.getViewport({ scale });
+          const cv = document.createElement('canvas');
+          cv.width = vp.width; cv.height = vp.height;
+          await pg.page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+          canvases[c.page] = cv;
+        }
+        ex.photo = gymCropPhoto(canvases[c.page], c, scale);
+      } catch (e) { /* sin foto */ }
+    }
+    await loadGymDb().catch(() => {});
+    const m = parsed.meta || {};
+    const baseName = (file.name || '').replace(/\.pdf$/i, '').replace(/_/g, ' ');
+    const dayM = baseName.match(/d[ií]a\s*(\d+)/i);
+    const name = (dayM ? `${t('Día')} ${dayM[1]}` : baseName) + (m.musculos ? ' · ' + m.musculos : '');
+    const draft = {
+      id: uid(), name: name.trim(), source: 'pdf', createdAt: Date.now(), tempo: m.tempo || '',
+      meta: { objetivo: m.objetivo || '', periodo: m.periodo || '', musculos: m.musculos || '', calentamiento: m.calentamiento || '',
+        descanso: m.descanso || '', notas: m.notas || '', extra: m.extra || '' },
+      exercises: parsed.exercises.map(ex => ({
+        id: uid(), name: ex.name, dbId: window.GYM_DB ? gymBestMatch(ex.name) : null, photo: ex.photo || null,
+        circuit: ex.circuit, sets: ex.sets, rir: ex.rir, rpe: ex.rpe, tempo: '', rest: '', notes: ex.notes || '',
+      })),
+      _days: [],
+    };
+    openGymEditor(null, draft);
+    const sb = document.getElementById('sheet-body');
+    if (sb) sb.insertAdjacentHTML('afterbegin', `<div class="gym-import-ok">${t('Revisa lo que encontré en el PDF y guarda.')} <b>${draft.exercises.length}</b> ${t('ejercicios')}.</div>`);
+  } catch (e) {
+    openSheet('Importar PDF', `<div class="empty">No se pudo leer el PDF.</div><div class="fe-lbl">${escapeHtml(String(e && e.message || e))}</div>`);
+  }
+}
+// Recorta la celda del ejercicio y quita márgenes blancos; devuelve JPEG pequeño
+function gymCropPhoto(cv, c, scale) {
+  const x0 = Math.max(0, Math.floor(c.x0 * scale)), x1 = Math.min(cv.width, Math.ceil(c.x1 * scale));
+  const y0 = Math.max(0, Math.floor(c.top * scale)), y1 = Math.min(cv.height, Math.ceil(c.bottom * scale));
+  const w = x1 - x0, h = y1 - y0;
+  if (w < 20 || h < 20) return null;
+  const data = cv.getContext('2d').getImageData(x0, y0, w, h).data;
+  const nonWhite = (x, y) => { const k = (y * w + x) * 4; return data[k] < 235 || data[k + 1] < 235 || data[k + 2] < 235; };
+  // Buscar el rectángulo con contenido (ignorando líneas de tabla de 1-3px)
+  const rowHas = y => { let n = 0; for (let x = 0; x < w; x += 2) if (nonWhite(x, y)) n++; return n > w / 2 * 0.25; };
+  const colHas = (x, ya, yb) => { let n = 0; for (let y = ya; y < yb; y += 2) if (nonWhite(x, y)) n++; return n > (yb - ya) / 2 * 0.25; };
+  // Avanza desde un borde saltando espacio en blanco y líneas finas de la tabla (≤5px)
+  const scan = (start, end, step, has) => {
+    let i = start;
+    for (let guard = 0; guard < 8; guard++) {
+      while (i !== end && !has(i)) i += step;
+      let j = i, run = 0;
+      while (j !== end && has(j) && run < 7) { j += step; run++; }
+      if (run <= 5 && j !== end && !has(j)) { i = j; continue; } // era una línea: seguir
+      break;
+    }
+    return i;
+  };
+  const top = scan(0, h - 1, 1, rowHas);
+  const bot = scan(h - 1, top, -1, rowHas);
+  if (bot - top < 20) return null;
+  const left = scan(0, w - 1, 1, x => colHas(x, top, bot));
+  const right = scan(w - 1, left, -1, x => colHas(x, top, bot));
+  const cw = right - left + 1, ch = bot - top + 1;
+  if (cw < 20 || ch < 20) return null;
+  const max = 300, k = Math.min(1, max / Math.max(cw, ch));
+  const out = document.createElement('canvas');
+  out.width = Math.round(cw * k); out.height = Math.round(ch * k);
+  out.getContext('2d').drawImage(cv, x0 + left, y0 + top, cw, ch, 0, 0, out.width, out.height);
+  return out.toDataURL('image/jpeg', 0.66);
+}
+
+/* ---------- Parser de rutinas en PDF (formato tabla de coach) ----------
+ * Entrada: pages = [{ w, h, items: [{ str, x, top, w, h }] }]  (top medido desde arriba)
+ * Salida: { meta: {...}, exercises: [{ name, circuit, sets:[{count,reps,note}], rir, rpe, notes,
+ *           crop: { page, x0, x1, y0, y1 } }] }
+ * Funciona por contenido (no por coordenadas fijas): las líneas tipo "2x10-15" son series,
+ * "RIR"/"RPE" son intensidad, los enteros sueltos a la izquierda son el circuito y el resto
+ * del texto a la izquierda de las series es el nombre del ejercicio. */
+function gymParsePdfPages(pages) {
+  const SETS_RE = /^(\d{1,2})\s*[x×X]\s*(\d{1,3}(?:\s*[-–]\s*\d{1,3})?)\s*(.*)$/;
+  const RIR_RE = /\bRIR\s*[:=]?\s*([\d.,]+(?:\s*[-–]\s*[\d.,]+)?)/i;
+  const RPE_RE = /\bRPE\s*[:=]?\s*([\d.,]+(?:\s*[-–]\s*[\d.,]+)?)/i;
+  const TEMPO_RE = /\b(?:tempo|cadencia)\s*(?:de\s*)?[:=]?\s*(\d)\s*[,\-–:/ ]\s*(\d)\s*[,\-–:/ ]\s*(\d)(?:\s*[,\-–:/ ]\s*(\d))?/i;
+  const HEADER_WORDS = /^(circuito|ejercicio|ejercicios|series\/reps|series|reps|peso|carga|serie|repeticiones|descanso|notas?)$/i;
+  const norm = s => s.replace(/\s+/g, ' ').trim();
+
+  // 1) Agrupar items en líneas por página (misma altura ±3pt, gap horizontal pequeño)
+  const allLines = [];
+  pages.forEach((pg, pi) => {
+    const items = pg.items.filter(it => it.str && it.str.trim()).sort((a, b) => a.top - b.top || a.x - b.x);
+    const rows = [];
+    items.forEach(it => {
+      let row = rows.find(r => Math.abs(r.top - it.top) <= 3);
+      if (!row) { row = { top: it.top, items: [] }; rows.push(row); }
+      row.items.push(it);
+    });
+    rows.forEach(r => {
+      r.items.sort((a, b) => a.x - b.x);
+      // partir la fila en segmentos si hay huecos grandes (columnas distintas)
+      let seg = null;
+      r.items.forEach(it => {
+        if (seg && it.x - (seg.x1) < 18) {
+          seg.str += (it.x - seg.x1 > 1.5 ? ' ' : '') + it.str;
+          seg.x1 = Math.max(seg.x1, it.x + it.w);
+          seg.h = Math.max(seg.h, it.h || 0);
+        } else {
+          if (seg) allLines.push(seg);
+          seg = { page: pi, top: r.top, x: it.x, x1: it.x + it.w, h: it.h || 10, str: it.str };
+        }
+      });
+      if (seg) allLines.push(seg);
+    });
+  });
+  allLines.forEach(l => { l.str = norm(l.str); });
+
+  // 2) Encontrar el inicio de la tabla (fila con "Ejercicio" y "Series")
+  let tableStart = null; // {page, top}
+  const headerCols = {};
+  for (const l of allLines) {
+    if (/^ejercicios?$/i.test(l.str)) {
+      const same = allLines.filter(o => o.page === l.page && Math.abs(o.top - l.top) <= 3);
+      if (same.some(o => /series|reps/i.test(o.str))) {
+        if (!tableStart) tableStart = { page: l.page, top: l.top };
+        same.forEach(o => {
+          const k = o.str.toLowerCase();
+          if (/circuito/.test(k)) headerCols.circ = o;
+          else if (/ejercicio/.test(k)) headerCols.ex = o;
+          else if (/series|reps/.test(k)) headerCols.sets = o;
+          else if (/peso|carga|rir|rpe|intens/.test(k)) headerCols.load = o;
+        });
+      }
+    }
+  }
+  const before = l => tableStart && (l.page < tableStart.page || (l.page === tableStart.page && l.top <= tableStart.top + 2));
+
+  // 3) Metadatos (todo lo anterior a la tabla)
+  const meta = {};
+  const metaKeys = { objetivo: 'objetivo', periodo: 'periodo', 'músculos': 'musculos', musculos: 'musculos', 'grupo muscular': 'musculos',
+    calentamiento: 'calentamiento', descanso: 'descanso', notas: 'notas', nota: 'notas', nombre: 'nombre', 'enfriamiento': 'enfriamiento' };
+  const metaLines = tableStart ? allLines.filter(before) : [];
+  const extraNotes = [];
+  let lastKey = null;
+  metaLines.forEach(l => {
+    const m = l.str.match(/^([A-Za-zÁÉÍÓÚáéíóúñÑ ]{3,20}):\s*(.*)$/);
+    if (m && metaKeys[m[1].toLowerCase().trim()]) {
+      lastKey = metaKeys[m[1].toLowerCase().trim()];
+      meta[lastKey] = (meta[lastKey] ? meta[lastKey] + ' ' : '') + m[2];
+    } else if (/^edad:/i.test(l.str)) {
+      lastKey = null;
+    } else if (l.str.length > 2 && !HEADER_WORDS.test(l.str) && !/ivant|\.fit\b|instagram|@\w/i.test(l.str)) {
+      extraNotes.push(l.str);
+      lastKey = null;
+    }
+  });
+  // "Edad:" puede venir pegado al nombre en la misma línea
+  if (meta.nombre) meta.nombre = meta.nombre.replace(/\s*Edad:.*$/i, '').trim();
+  const fullText = allLines.map(l => l.str).join(' ');
+  const tm = fullText.match(TEMPO_RE);
+  meta.tempo = tm ? [tm[1], tm[2], tm[3], tm[4]].filter(Boolean).join('-') : '';
+  meta.extra = extraNotes.join('\n');
+  // Párrafos: une líneas consecutivas
+  meta.extra = meta.extra.replace(/([^.:\n])\n(?=[a-záéíóúñ(])/g, '$1 ');
+
+  // 4) Líneas de la tabla (sin encabezados repetidos ni pie/cabecera de página)
+  const tbl = allLines.filter(l => {
+    if (tableStart && before(l)) return false;
+    const pg = pages[l.page];
+    if (l.top < pg.h * 0.085 || l.top > pg.h * 0.9) return false;
+    if (HEADER_WORDS.test(l.str)) return false;
+    if (/ivant|\.fit\b|instagram|@\w/i.test(l.str)) return false;
+    return true;
+  });
+  const isSets = s => SETS_RE.test(s);
+  const isLoad = s => RIR_RE.test(s) || RPE_RE.test(s) || /^(RIR|RPE)$/i.test(s);
+  const setsLines = tbl.filter(l => isSets(l.str));
+  if (!setsLines.length) return { meta, exercises: [] };
+  // borde izquierdo de la columna de series
+  const setsX = headerCols.sets ? Math.min(headerCols.sets.x, ...setsLines.map(l => l.x)) : Math.min(...setsLines.map(l => l.x));
+  const circX = headerCols.ex ? headerCols.ex.x - 25 : null;
+
+  // 5) Nombres: texto a la izquierda de las series que no es número suelto
+  const nameLines = tbl.filter(l => l.x1 <= setsX + 4 && !isSets(l.str) && !isLoad(l.str) && !/^\d{1,2}$/.test(l.str));
+  nameLines.sort((a, b) => a.page - b.page || a.top - b.top);
+  const blocks = [];
+  nameLines.forEach(l => {
+    const b = blocks[blocks.length - 1];
+    if (b && b.page === l.page && l.top - b.bottom < 22) {
+      b.lines.push(l); b.bottom = l.top + (l.h || 10);
+    } else {
+      blocks.push({ page: l.page, top: l.top, bottom: l.top + (l.h || 10), lines: [l] });
+    }
+  });
+  if (!blocks.length) return { meta, exercises: [] };
+  const exercises = blocks.map(b => ({
+    name: norm(b.lines.map(l => l.str).join(' ')).replace(/\s*-\s*$/, ''),
+    circuit: null, sets: [], rir: '', rpe: '', notes: [], _b: b,
+  }));
+  // 6) Asignar el resto de líneas al ejercicio cuyo inicio (menos margen) está arriba
+  const startOf = (b) => b.page * 100000 + b.top - 26;
+  const owner = l => {
+    const y = l.page * 100000 + l.top;
+    let best = null;
+    for (const ex of exercises) if (startOf(ex._b) <= y) best = ex;
+    return best || exercises[0];
+  };
+  tbl.forEach(l => {
+    if (nameLines.includes(l)) return;
+    const ex = owner(l);
+    const s = l.str;
+    if (/^\d{1,2}$/.test(s) && (circX == null ? l.x < setsX - 60 : l.x < circX + 20) && l.x1 < setsX) {
+      if (ex.circuit == null) ex.circuit = parseInt(s, 10);
+      return;
+    }
+    const sm = s.match(SETS_RE);
+    if (sm) {
+      ex.sets.push({ count: parseInt(sm[1], 10), reps: sm[2].replace(/\s+/g, '').replace('–', '-'), note: norm(sm[3] || ''), _top: l.top });
+      return;
+    }
+    let used = false;
+    const r1 = s.match(RIR_RE); if (r1) { ex.rir = r1[1].replace(/\s+/g, ''); used = true; }
+    const r2 = s.match(RPE_RE); if (r2) { ex.rpe = r2[1].replace(/\s+/g, ''); used = true; }
+    if (used) return;
+    if (/^(RIR|RPE)$/i.test(s)) return;
+    // Texto en la columna de series sin patrón: nota de la serie más cercana o del ejercicio
+    ex.notes.push(s);
+  });
+  exercises.forEach(ex => {
+    ex.sets.sort((a, b) => a._top - b._top).forEach(s => delete s._top);
+    // Nota en la columna de series ("negativas") → ponerla en la serie de la misma línea si quedó suelta
+    ex.notes = ex.notes.join(' · ');
+    const b = ex._b;
+    ex.crop = { page: b.page, top: b.bottom + 2, nameTop: b.top };
+    delete ex._b;
+  });
+  // Límite inferior del recorte = inicio del siguiente ejercicio en la misma página, o pie de página
+  exercises.forEach((ex, i) => {
+    const nx = exercises[i + 1];
+    const pg = pages[ex.crop.page];
+    let bottom = pg.h * 0.9;
+    if (nx && nx.crop.page === ex.crop.page) bottom = nx.crop.nameTop - 28;
+    ex.crop.bottom = bottom;
+    // columna del ejercicio
+    ex.crop.x0 = headerCols.circ ? headerCols.circ.x1 + 6 : pg.w * 0.2;
+    ex.crop.x1 = (headerCols.sets ? headerCols.sets.x : setsX) - 6;
+  });
+  return { meta, exercises: exercises.filter(e => e.name && (e.sets.length || e.rir || e.rpe)) };
+}
+
+tabRenderers.gym = renderGym;
+
 
 /* ============ USDA FoodData Central (fuente principal) ============ */
 // API pública gratuita, CORS *, ~600K alimentos incluyendo comida latina/mexicana.
