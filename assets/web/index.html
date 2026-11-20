@@ -8423,6 +8423,408 @@ function naturalUnits(item) {
   return [];
 }
 
+/* ---------- Review de comidas: reporte PDF de semana / mes / año ---------- */
+// Se arma el reporte en un overlay dentro de la página (así el traductor del
+// DOM lo pone en el idioma activo y sirve de vista previa). Para el PDF:
+//  - APK: Android.printHtml(nombre, html) abre el diálogo de impresión de
+//    Android → "Guardar como PDF".
+//  - Navegador / PWA: window.print() con una hoja @media print que solo
+//    muestra el reporte.
+let _reviewSel = { period: 'week', offset: 0 };
+
+function reviewRange(period, offset) {
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  let start, end;
+  if (period === 'week') {
+    const dow = (now.getDay() + 6) % 7; // lunes = 0
+    start = new Date(now); start.setDate(now.getDate() - dow + offset * 7);
+    end = new Date(start); end.setDate(start.getDate() + 6);
+  } else if (period === 'month') {
+    start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+  } else {
+    start = new Date(now.getFullYear() + offset, 0, 1);
+    end = new Date(start.getFullYear(), 11, 31);
+  }
+  return { start, end };
+}
+
+function reviewRangeLabel(period, r) {
+  const loc = _loc();
+  if (period === 'year') return String(r.start.getFullYear());
+  if (period === 'month') {
+    const s = new Intl.DateTimeFormat(loc, { month: 'long', year: 'numeric' }).format(r.start);
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  const f = new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'short' });
+  return f.format(r.start) + ' – ' + f.format(r.end) + ' ' + r.end.getFullYear();
+}
+
+function collectReviewData(period, offset) {
+  const r = reviewRange(period, offset);
+  const log = mealLog();
+  const todayKey = keyDate();
+  const hasProfile = typeof hasNutriProfile === 'function' && hasNutriProfile();
+  let targets = hasProfile ? calcNutriTargets(nutriProfile()) : null;
+  if (targets && !(targets.kcal > 0)) targets = null; // perfil incompleto
+  const goalK = targets ? targets.kcal : (parseInt(S.get('food_goal_kcal', 0)) || 2000);
+  const F = ['kcal', 'protein', 'carbs', 'fat'];
+  const zero = () => ({ kcal: 0, protein: 0, carbs: 0, fat: 0 });
+
+  const days = [];
+  const foods = {};
+  const slotTot = {}; MEALS.forEach(m => { slotTot[m.id] = 0; });
+  for (let d = new Date(r.start); d <= r.end; d.setDate(d.getDate() + 1)) {
+    const k = keyDate(d);
+    const day = log[k];
+    const tot = zero();
+    const meals = {};
+    let items = 0;
+    MEALS.forEach(m => {
+      const mt = zero();
+      const list = (day && Array.isArray(day[m.id])) ? day[m.id] : [];
+      const its = list.map(it => {
+        const mm = calcItemMacros(it);
+        F.forEach(f => { mt[f] += mm[f]; tot[f] += mm[f]; });
+        items++;
+        const fk = String(it.name || '').trim().toLowerCase();
+        if (fk) {
+          const a = foods[fk] || (foods[fk] = { name: it.name, count: 0, grams: 0, kcal: 0 });
+          a.count++; a.grams += it.grams || 0; a.kcal += mm.kcal;
+        }
+        return { name: it.name || '', brand: it.brand || '', grams: Math.round(it.grams || 0), ...mm };
+      });
+      slotTot[m.id] += mt.kcal;
+      meals[m.id] = { items: its, tot: mt };
+    });
+    days.push({
+      key: k, date: new Date(d), meals, tot, items,
+      logged: items > 0, future: k > todayKey,
+      met: items > 0 && targets ? nutriMetForDay(k) : false,
+    });
+  }
+  const logged = days.filter(d => d.logged);
+  const elapsed = days.filter(d => !d.future).length;
+  const avg = {};
+  F.forEach(f => { avg[f] = logged.length ? Math.round(logged.reduce((s, d) => s + d.tot[f], 0) / logged.length) : 0; });
+  const total = Math.round(logged.reduce((s, d) => s + d.tot.kcal, 0));
+  const slotAvg = {};
+  MEALS.forEach(m => { slotAvg[m.id] = logged.length ? Math.round(slotTot[m.id] / logged.length) : 0; });
+  const topFoods = Object.values(foods).sort((a, b) => b.count - a.count || b.kcal - a.kcal).slice(0, 10);
+
+  // Peso dentro del periodo
+  const wlog = S.get('weight_log', {});
+  const sk = keyDate(r.start), ek = keyDate(r.end);
+  const wk = Object.keys(wlog).filter(k => k >= sk && k <= ek).sort();
+  const weight = wk.length ? { first: wlog[wk[0]], last: wlog[wk[wk.length - 1]], n: wk.length } : null;
+
+  // Año: resumen por mes
+  let months = null;
+  if (period === 'year') {
+    months = [];
+    for (let m = 0; m < 12; m++) {
+      const md = days.filter(d => d.date.getMonth() === m && d.logged);
+      const ma = {};
+      F.forEach(f => { ma[f] = md.length ? Math.round(md.reduce((s, d) => s + d.tot[f], 0) / md.length) : 0; });
+      months.push({ m, days: md.length, avg: ma, met: md.filter(d => d.met).length });
+    }
+  }
+  return { period, range: r, label: reviewRangeLabel(period, r), days, logged, elapsed, avg, total,
+           targets, goalK, hasProfile: !!targets, slotAvg, topFoods, weight, months,
+           met: logged.filter(d => d.met).length };
+}
+
+function reviewKcalChart(data) {
+  // Barras: por día (semana/mes) o promedio por mes (año)
+  const pts = data.period === 'year'
+    ? data.months.map(mo => ({ v: mo.avg.kcal, lbl: _mn(['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'])[mo.m] }))
+    : data.days.map(d => ({ v: d.logged ? Math.round(d.tot.kcal) : 0, lbl: data.period === 'week'
+        ? _dn(['dom','lun','mar','mié','jue','vie','sáb'])[d.date.getDay()]
+        : String(d.date.getDate()) }));
+  const W = 640, H = 170, top = 10, base = 140;
+  const maxV = Math.max(data.goalK * 1.2, ...pts.map(p => p.v), 1);
+  const bw = W / pts.length;
+  const showLbl = (i) => data.period !== 'month' || i === 0 || (i + 1) % 5 === 0;
+  const bars = pts.map((p, i) => {
+    const x = i * bw;
+    const lbl = showLbl(i) ? `<text x="${(x + bw / 2).toFixed(1)}" y="${base + 16}" font-size="10" text-anchor="middle" fill="#6B7280">${escapeHtml(p.lbl)}</text>` : '';
+    if (!p.v) return lbl;
+    const h = Math.max(2, (p.v / maxV) * (base - top));
+    const over = p.v > data.goalK * 1.05;
+    return `<rect x="${(x + bw * 0.15).toFixed(1)}" y="${(base - h).toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${over ? '#EF4444' : '#3B82F6'}"/>${lbl}`;
+  }).join('');
+  const gy = base - (data.goalK / maxV) * (base - top);
+  return `<svg viewBox="0 0 ${W} ${H}" class="rp-chart" xmlns="http://www.w3.org/2000/svg">
+    <line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="#E5E7EB"/>
+    ${bars}
+    <line x1="0" y1="${gy.toFixed(1)}" x2="${W}" y2="${gy.toFixed(1)}" stroke="#16A34A" stroke-width="1.2" stroke-dasharray="5 4"/>
+  </svg>`;
+}
+
+function buildReviewDoc(data) {
+  const e = escapeHtml;
+  const loc = _loc();
+  const T = data.targets;
+  const periodName = { week: 'Semana', month: 'Mes', year: 'Año' }[data.period];
+  const fmtDay = new Intl.DateTimeFormat(loc, { weekday: 'short', day: 'numeric', month: 'short' });
+  const fmtDayLong = new Intl.DateTimeFormat(loc, { weekday: 'long', day: 'numeric', month: 'long' });
+  const generated = new Intl.DateTimeFormat(loc, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const n1 = v => (Math.round(v * 10) / 10).toString();
+
+  const stat = (lbl, val, sub) => `<div class="rp-stat"><div class="rp-stat-v">${val}</div><div class="rp-stat-l">${lbl}</div>${sub ? `<div class="rp-stat-s">${sub}</div>` : ''}</div>`;
+  const goalSub = (v) => T ? `<span>/ ${v}</span>` : '';
+
+  // Reparto de macros (% de kcal)
+  const pk = data.avg.protein * 4, ck = data.avg.carbs * 4, fk = data.avg.fat * 9;
+  const mk = pk + ck + fk || 1;
+  const pct = v => Math.round(v / mk * 100);
+  const macroBar = `<div class="rp-macrobar">
+      <div style="width:${pct(pk)}%;background:#F59E0B"></div><div style="width:${pct(ck)}%;background:#3B82F6"></div><div style="width:${pct(fk)}%;background:#A855F7"></div>
+    </div>
+    <div class="rp-legend">
+      <span><i style="background:#F59E0B"></i><span>Proteína</span> ${pct(pk)}%</span>
+      <span><i style="background:#3B82F6"></i><span>Carbohidratos</span> ${pct(ck)}%</span>
+      <span><i style="background:#A855F7"></i><span>Grasa</span> ${pct(fk)}%</span>
+    </div>`;
+
+  const slots = MEALS.map(m => `<tr><td>${e(m.name)}</td><td class="num">${data.slotAvg[m.id]}</td></tr>`).join('');
+  const top = data.topFoods.length
+    ? data.topFoods.map(f => `<tr><td>${e(f.name)}</td><td class="num">${f.count}×</td><td class="num">${Math.round(f.grams)} g</td><td class="num">${Math.round(f.kcal)}</td></tr>`).join('')
+    : `<tr><td colspan="4" class="rp-muted">Sin datos</td></tr>`;
+
+  let weight = '';
+  if (data.weight && data.weight.n === 1) {
+    weight = `<div class="rp-row3">${stat('Peso registrado', n1(data.weight.last) + ' kg')}</div>`;
+  } else if (data.weight) {
+    const dw = data.weight.last - data.weight.first;
+    weight = `<div class="rp-row3">
+      ${stat('Peso inicial', n1(data.weight.first) + ' kg')}
+      ${stat('Peso final', n1(data.weight.last) + ' kg')}
+      ${stat('Cambio', (dw > 0 ? '+' : '') + n1(dw) + ' kg')}
+    </div>`;
+  }
+
+  // Detalle
+  let detail = '';
+  if (data.period === 'week') {
+    detail = data.days.map(d => {
+      const head = `<div class="rp-dayhead"><b>${e(cap(fmtDayLong.format(d.date)))}</b><span>${d.logged ? Math.round(d.tot.kcal) + ' kcal · P' + Math.round(d.tot.protein) + ' C' + Math.round(d.tot.carbs) + ' G' + Math.round(d.tot.fat) : ''}${d.met ? ' · ✓' : ''}</span></div>`;
+      if (!d.logged) return `<div class="rp-day">${head}<div class="rp-muted">${d.future ? 'Día futuro' : 'Sin registro'}</div></div>`;
+      const rows = MEALS.filter(m => d.meals[m.id].items.length).map(m => {
+        const its = d.meals[m.id].items;
+        return its.map((it, i) => `<tr>${i === 0 ? `<td rowspan="${its.length}" class="rp-slot">${e(m.name)}</td>` : ''}<td>${e(it.name)}${it.brand ? ` <span class="rp-muted">· ${e(it.brand)}</span>` : ''}</td><td class="num">${it.grams}</td><td class="num">${it.kcal}</td><td class="num">${n1(it.protein)}</td><td class="num">${n1(it.carbs)}</td><td class="num">${n1(it.fat)}</td></tr>`).join('');
+      }).join('');
+      return `<div class="rp-day">${head}<table class="rp-table"><thead><tr><th><span>Tiempo</span></th><th><span>Alimento</span></th><th class="num">g</th><th class="num">kcal</th><th class="num" data-i18n-ctx="macro">P</th><th class="num" data-i18n-ctx="macro">C</th><th class="num" data-i18n-ctx="macro">G</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    }).join('');
+  } else if (data.period === 'month') {
+    const rows = data.days.filter(d => !d.future || d.logged).map(d => {
+      const names = MEALS.flatMap(m => d.meals[m.id].items.map(it => it.name)).filter(Boolean);
+      return `<tr class="${d.logged ? '' : 'rp-empty'}"><td class="rp-nowrap">${e(cap(fmtDay.format(d.date)))}</td>
+        <td class="num">${d.logged ? Math.round(d.tot.kcal) : '–'}</td><td class="num">${d.logged ? Math.round(d.tot.protein) : '–'}</td><td class="num">${d.logged ? Math.round(d.tot.carbs) : '–'}</td><td class="num">${d.logged ? Math.round(d.tot.fat) : '–'}</td>
+        <td class="num">${d.met ? '✓' : ''}</td><td class="rp-foods">${e(names.join(', '))}</td></tr>`;
+    }).join('');
+    detail = `<table class="rp-table"><thead><tr><th><span>Día</span></th><th class="num">kcal</th><th class="num" data-i18n-ctx="macro">P</th><th class="num" data-i18n-ctx="macro">C</th><th class="num" data-i18n-ctx="macro">G</th><th class="num"><span>Meta</span></th><th><span>Alimentos</span></th></tr></thead><tbody>${rows}</tbody></table>`;
+  } else {
+    const mNames = _mn(['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']);
+    const rows = data.months.map(mo => `<tr class="${mo.days ? '' : 'rp-empty'}"><td>${e(cap(mNames[mo.m]))}</td><td class="num">${mo.days}</td>
+      <td class="num">${mo.days ? mo.avg.kcal : '–'}</td><td class="num">${mo.days ? mo.avg.protein : '–'}</td><td class="num">${mo.days ? mo.avg.carbs : '–'}</td><td class="num">${mo.days ? mo.avg.fat : '–'}</td><td class="num">${data.hasProfile ? mo.met : '–'}</td></tr>`).join('');
+    detail = `<table class="rp-table"><thead><tr><th><span>Mes</span></th><th class="num"><span>Días</span></th><th class="num"><span>kcal prom.</span></th><th class="num" data-i18n-ctx="macro">P</th><th class="num" data-i18n-ctx="macro">C</th><th class="num" data-i18n-ctx="macro">G</th><th class="num"><span>Meta</span></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  const detailTitle = { week: 'Detalle por día', month: 'Detalle por día', year: 'Resumen por mes' }[data.period];
+
+  const empty = !data.logged.length;
+  return `<div class="rp-doc">
+    <header class="rp-header">
+      <div><div class="rp-brand">Rutinal</div><div class="rp-title">Review de comidas</div></div>
+      <div class="rp-period"><div class="rp-period-k">${periodName}</div><div class="rp-period-v">${e(data.label)}</div></div>
+    </header>
+    ${empty ? `<div class="rp-empty-msg">No hay comidas registradas en este periodo.</div>` : `
+    <section>
+      <h2>Resumen</h2>
+      <div class="rp-stats">
+        ${stat('Días registrados', `${data.logged.length}<span>/${data.elapsed}</span>`)}
+        ${stat('kcal promedio', `${data.avg.kcal}${goalSub(data.goalK)}`)}
+        ${stat('Proteína prom.', `${data.avg.protein} g${T ? goalSub(T.protein + ' g') : ''}`)}
+        ${stat('Carbohidratos prom.', `${data.avg.carbs} g${T ? goalSub(T.carbs + ' g') : ''}`)}
+        ${stat('Grasa prom.', `${data.avg.fat} g${T ? goalSub(T.fat + ' g') : ''}`)}
+        ${data.hasProfile ? stat('Días con meta cumplida', `${data.met}<span>/${data.logged.length}</span>`) : stat('kcal totales', data.total.toLocaleString(loc))}
+      </div>
+    </section>
+    <section>
+      <h2>${data.period === 'year' ? 'Kcal promedio por mes' : 'Kcal por día'}</h2>
+      ${reviewKcalChart(data)}
+      <div class="rp-legend"><span><i style="background:#3B82F6"></i><span>Dentro de la meta</span></span><span><i style="background:#EF4444"></i><span>Arriba de la meta</span></span><span><i style="background:#16A34A;height:2px"></i><span>Meta</span> ${data.goalK} kcal</span></div>
+    </section>
+    <section class="rp-cols">
+      <div>
+        <h2>Reparto de macros</h2>
+        ${macroBar}
+        <h2 style="margin-top:18px">kcal promedio por tiempo de comida</h2>
+        <table class="rp-table rp-compact"><tbody>${slots}</tbody></table>
+      </div>
+      <div>
+        <h2>Alimentos más frecuentes</h2>
+        <table class="rp-table rp-compact"><thead><tr><th><span>Alimento</span></th><th class="num"><span>Veces</span></th><th class="num"><span>Total</span></th><th class="num">kcal</th></tr></thead><tbody>${top}</tbody></table>
+      </div>
+    </section>
+    ${weight ? `<section><h2>Peso corporal</h2>${weight}</section>` : ''}
+    <section class="rp-detail">
+      <h2>${detailTitle}</h2>
+      ${detail}
+    </section>`}
+    <footer class="rp-footer"><span>Generado con Rutinal</span> · ${e(generated)}</footer>
+  </div>`;
+}
+
+const REVIEW_CSS = `
+  .rp-doc { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #111827; background: #fff;
+    max-width: 820px; margin: 0 auto; padding: 32px 36px; box-sizing: border-box; font-size: 12px; line-height: 1.4; }
+  .rp-doc * { box-sizing: border-box; }
+  .rp-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #111827; padding-bottom: 12px; margin-bottom: 18px; gap: 12px; }
+  .rp-brand { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #6B7280; font-weight: 600; }
+  .rp-title { font-size: 24px; font-weight: 700; }
+  .rp-period { text-align: right; }
+  .rp-period-k { font-size: 11px; color: #6B7280; text-transform: uppercase; letter-spacing: .08em; }
+  .rp-period-v { font-size: 16px; font-weight: 600; }
+  /* la app oculta todo <section> que no sea pestaña activa */
+  .rp-doc section { display: block; margin-bottom: 20px; animation: none; }
+  .rp-doc section.rp-cols { display: grid; }
+  .rp-doc h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: #374151; margin: 0 0 8px; }
+  .rp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .rp-row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .rp-stat { border: 1px solid #E5E7EB; border-radius: 8px; padding: 10px 12px; }
+  .rp-stat-v { font-size: 20px; font-weight: 700; }
+  .rp-stat-v span, .rp-stat-v span span { font-size: 12px; color: #6B7280; font-weight: 500; }
+  .rp-stat-l { font-size: 11px; color: #6B7280; }
+  .rp-chart { width: 100%; height: auto; display: block; }
+  .rp-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11px; color: #4B5563; margin-top: 6px; }
+  .rp-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+  .rp-macrobar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: #F3F4F6; }
+  .rp-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .rp-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .rp-table th { text-align: left; font-weight: 600; color: #6B7280; border-bottom: 1px solid #D1D5DB; padding: 4px 6px; }
+  .rp-table td { border-bottom: 1px solid #F3F4F6; padding: 4px 6px; vertical-align: top; }
+  .rp-table .num { text-align: right; white-space: nowrap; }
+  .rp-compact td, .rp-compact th { padding: 3px 4px; }
+  .rp-slot { font-weight: 600; color: #374151; white-space: nowrap; }
+  .rp-nowrap { white-space: nowrap; }
+  .rp-foods { color: #4B5563; }
+  .rp-empty td { color: #9CA3AF; }
+  .rp-muted { color: #9CA3AF; }
+  .rp-day { margin-bottom: 14px; break-inside: avoid; page-break-inside: avoid; }
+  .rp-dayhead { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid #111827; margin-bottom: 4px; font-size: 12px; }
+  .rp-dayhead span { color: #4B5563; }
+  .rp-table tr { break-inside: avoid; page-break-inside: avoid; }
+  .rp-empty-msg { padding: 40px 0; text-align: center; color: #6B7280; font-size: 14px; }
+  .rp-footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #E5E7EB; font-size: 10px; color: #9CA3AF; text-align: center; }
+  @media (max-width: 600px) {
+    .rp-doc { padding: 18px 14px; }
+    .rp-stats { grid-template-columns: repeat(2, 1fr); }
+    .rp-cols { grid-template-columns: 1fr; }
+    .rp-title { font-size: 20px; }
+  }
+  @page { size: A4; margin: 12mm; }
+`;
+
+function openFoodReview() {
+  const draw = () => {
+    const s = _reviewSel;
+    const data = collectReviewData(s.period, s.offset);
+    const chip = (v, l) => `<div class="chip ${s.period === v ? 'selected' : ''}" data-rv-period="${v}">${l}</div>`;
+    const body = `
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="fe-lbl">Genera un PDF con tus comidas, promedios y alimentos más frecuentes.</div>
+        <div class="chips" style="display:flex;gap:6px;">${chip('week', 'Semana')}${chip('month', 'Mes')}${chip('year', 'Año')}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <button class="food-edit-btn" id="rv-prev" style="margin:0;">‹</button>
+          <div style="font-weight:600;text-align:center;flex:1;">${escapeHtml(data.label)}</div>
+          <button class="food-edit-btn" id="rv-next" style="margin:0;${s.offset >= 0 ? 'opacity:.3;pointer-events:none;' : ''}">›</button>
+        </div>
+        <div class="portion-preview">
+          <div class="portion-preview-item"><div class="portion-preview-num">${data.logged.length}/${data.elapsed}</div><div class="portion-preview-lbl">Días registrados</div></div>
+          <div class="portion-preview-item"><div class="portion-preview-num">${data.avg.kcal}</div><div class="portion-preview-lbl">kcal promedio</div></div>
+          <div class="portion-preview-item"><div class="portion-preview-num">${data.avg.protein}g</div><div class="portion-preview-lbl">Proteína prom.</div></div>
+        </div>
+        <button class="btn-primary" id="rv-generate" ${data.logged.length ? '' : 'disabled style="opacity:.5"'}>Generar PDF</button>
+        ${data.logged.length ? '' : '<div class="food-loader">No hay comidas registradas en este periodo.</div>'}
+      </div>`;
+    openSheet('Review de comidas', body);
+    document.querySelectorAll('[data-rv-period]').forEach(c => c.addEventListener('click', () => {
+      _reviewSel = { period: c.dataset.rvPeriod, offset: 0 }; draw();
+    }));
+    document.getElementById('rv-prev').addEventListener('click', () => { _reviewSel.offset--; draw(); });
+    document.getElementById('rv-next').addEventListener('click', () => { if (_reviewSel.offset < 0) { _reviewSel.offset++; draw(); } });
+    const g = document.getElementById('rv-generate');
+    if (g && data.logged.length) g.addEventListener('click', () => { closeSheet(); showReviewReport(data); });
+  };
+  draw();
+}
+
+function showReviewReport(data) {
+  let ov = document.getElementById('review-print');
+  if (ov) ov.remove();
+  if (!document.getElementById('review-style')) {
+    const st = document.createElement('style');
+    st.id = 'review-style';
+    st.textContent = REVIEW_CSS + `
+      #review-print { position: fixed; inset: 0; z-index: 10000; overflow: auto; background: #E5E7EB; -webkit-overflow-scrolling: touch; }
+      #review-print .rp-toolbar { position: sticky; top: 0; z-index: 1; display: flex; gap: 8px; justify-content: flex-end; align-items: center;
+        padding: 10px 12px; padding-top: max(10px, env(safe-area-inset-top)); background: rgba(17,24,39,.92); }
+      #review-print .rp-toolbar span { color: #fff; font-weight: 600; margin-right: auto; font-size: 14px; }
+      #review-print .rp-toolbar button { border: 0; border-radius: 10px; padding: 9px 14px; font-size: 14px; font-weight: 600; cursor: pointer; }
+      #review-print .rp-save { background: #fff; color: #111827; }
+      #review-print .rp-close { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.4) !important; }
+      #review-print .rp-doc { margin: 16px auto 32px; box-shadow: 0 4px 24px rgba(0,0,0,.12); border-radius: 6px; }
+      @media print {
+        html, body { height: auto !important; overflow: visible !important; background: #fff !important; }
+        body.printing-review > *:not(#review-print) { display: none !important; }
+        body.printing-review #review-print { position: static; overflow: visible; background: #fff; }
+        #review-print .rp-toolbar { display: none !important; }
+        #review-print .rp-doc { margin: 0; box-shadow: none; border-radius: 0; max-width: none; padding: 0; }
+      }`;
+    document.head.appendChild(st);
+  }
+  ov = document.createElement('div');
+  ov.id = 'review-print';
+  ov.innerHTML = `<div class="rp-toolbar"><span>Review de comidas</span>
+      <button class="rp-close" id="rp-close">Cerrar</button>
+      <button class="rp-save" id="rp-save">Guardar PDF</button></div>${buildReviewDoc(data)}`;
+  document.body.appendChild(ov);
+  document.body.classList.add('printing-review');
+  const close = () => { ov.remove(); document.body.classList.remove('printing-review'); };
+  document.getElementById('rp-close').addEventListener('click', close);
+  document.getElementById('rp-save').addEventListener('click', () => saveReviewPdf(data));
+}
+
+function saveReviewPdf(data) {
+  const docEl = document.querySelector('#review-print .rp-doc');
+  if (!docEl) return;
+  const t = (s) => (window.i18n && window.i18n.t) ? window.i18n.t(s) : s;
+  const name = `Rutinal - ${t('Review de comidas')} - ${data.label}`;
+  const isApp = typeof window.Android !== 'undefined';
+  if (isApp) {
+    // El WebView de Android no implementa window.print(): se imprime con el
+    // PrintManager nativo usando el HTML ya traducido de la vista previa.
+    const html = `<!DOCTYPE html><html lang="${(window.i18n && i18n.getLang()) || 'es'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(name)}</title><style>${REVIEW_CSS} body{margin:0;background:#fff;} .rp-doc{padding:0;max-width:none;}</style></head><body>${docEl.outerHTML}</body></html>`;
+    if (window.Android.printHtml) {
+      try { if (window.Android.printHtml(name, html)) return; } catch (e) {}
+    }
+    // APK viejo sin printHtml: guardar el HTML en Descargas
+    if (window.Android.saveTextFile) {
+      const fname = name.replace(/[\\/:*?"<>|]+/g, '-') + '.html';
+      const saved = window.Android.saveTextFile(fname, html);
+      if (saved) { alert(t('Se guardó el reporte en Descargas. Ábrelo y usa Imprimir → Guardar como PDF. Actualiza la app para generar el PDF directamente.')); return; }
+    }
+    alert(t('No se pudo generar el PDF en este dispositivo.'));
+    return;
+  }
+  const prevTitle = document.title;
+  document.title = name; // nombre sugerido del PDF en la mayoría de navegadores
+  window.print();
+  setTimeout(() => { document.title = prevTitle; }, 1000);
+}
+
 /* ---------- Tendencias de nutrición y peso ---------- */
 function dayMealTotals(dateKey) {
   const day = mealLog()[dateKey];
@@ -9244,7 +9646,7 @@ function renderComida() {
       </div>
       <div>
         ${canCopyDay ? `<span class="food-inline-link" id="food-copy-yday"><svg class="mini-ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Repetir día anterior</span> · ` : ''}
-        <span class="food-inline-link" id="food-trends-link"><svg class="mini-ico" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg> Tendencias</span>
+        <span class="food-inline-link" id="food-trends-link"><svg class="mini-ico" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg> Tendencias</span> · <span class="food-inline-link" id="food-review-link"><svg class="mini-ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg> Review</span>
       </div>`;
     document.getElementById('food-day-prev').addEventListener('click', () => shiftFoodViewDate(-1));
     document.getElementById('food-day-next').addEventListener('click', () => shiftFoodViewDate(1));
@@ -9258,6 +9660,7 @@ function renderComida() {
     const cd = document.getElementById('food-copy-yday');
     if (cd) cd.addEventListener('click', () => copyMealsFromYesterday(null));
     document.getElementById('food-trends-link').addEventListener('click', openNutriTrends);
+    document.getElementById('food-review-link').addEventListener('click', openFoodReview);
   }
 
   // Determinar targets: perfil de nutrición si existe, si no food_goal_kcal legacy

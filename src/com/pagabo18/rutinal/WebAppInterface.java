@@ -149,6 +149,46 @@ public class WebAppInterface {
         return false;
     }
 
+    // WebView temporal para imprimir: hay que mantener la referencia hasta
+    // entregar el adaptador al PrintManager.
+    private static android.webkit.WebView printWebView;
+
+    /**
+     * Abre el diálogo de impresión de Android con el HTML dado. Desde ahí el
+     * usuario elige "Guardar como PDF". Devuelve false si no se pudo.
+     */
+    @JavascriptInterface
+    public boolean printHtml(final String jobName, final String html) {
+        if (activity == null || html == null || html.isEmpty()) return false;
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    final String name = (jobName == null || jobName.isEmpty()) ? "Rutinal" : jobName;
+                    final android.webkit.WebView wv = new android.webkit.WebView(activity);
+                    wv.setWebViewClient(new android.webkit.WebViewClient() {
+                        private boolean done = false;
+                        @Override public void onPageFinished(android.webkit.WebView view, String url) {
+                            if (done) return;
+                            done = true;
+                            try {
+                                android.print.PrintManager pm = (android.print.PrintManager)
+                                        activity.getSystemService(Context.PRINT_SERVICE);
+                                android.print.PrintAttributes attrs = new android.print.PrintAttributes.Builder()
+                                        .setMediaSize(android.print.PrintAttributes.MediaSize.ISO_A4)
+                                        .build();
+                                pm.print(name, view.createPrintDocumentAdapter(name), attrs);
+                            } catch (Exception ignored) {}
+                            printWebView = null;
+                        }
+                    });
+                    printWebView = wv;
+                    wv.loadDataWithBaseURL("file:///android_asset/web/", html, "text/html", "UTF-8", null);
+                } catch (Exception ignored) {}
+            }
+        });
+        return true;
+    }
+
     @JavascriptInterface
     public void shareText(final String subject, final String text) {
         if (text == null || text.isEmpty()) return;

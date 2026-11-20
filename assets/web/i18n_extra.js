@@ -1774,7 +1774,7 @@ window.__I18N_EXTRA = {
   "Grasa": {
    "en": "Fat",
    "pt-BR": "Gordura",
-   "fr": "Matière grasse"
+   "fr": "Lipides"
   },
   "Dulce": {
    "en": "Sweet",
@@ -2225,6 +2225,221 @@ window.__I18N_EXTRA = {
    "en": "Every morning ·",
    "pt-BR": "Todas as manhãs ·",
    "fr": "Tous les matins ·"
+  },
+  "Review": {
+   "en": "Review",
+   "pt-BR": "Revisão",
+   "fr": "Bilan"
+  },
+  "Review de comidas": {
+   "en": "Meal review",
+   "pt-BR": "Revisão de refeições",
+   "fr": "Bilan des repas"
+  },
+  "Genera un PDF con tus comidas, promedios y alimentos más frecuentes.": {
+   "en": "Create a PDF with your meals, averages and most frequent foods.",
+   "pt-BR": "Gere um PDF com suas refeições, médias e alimentos mais frequentes.",
+   "fr": "Générez un PDF avec vos repas, vos moyennes et vos aliments les plus fréquents."
+  },
+  "Semana": {
+   "en": "Week",
+   "pt-BR": "Semana",
+   "fr": "Semaine"
+  },
+  "Mes": {
+   "en": "Month",
+   "pt-BR": "Mês",
+   "fr": "Mois"
+  },
+  "Año": {
+   "en": "Year",
+   "pt-BR": "Ano",
+   "fr": "Année"
+  },
+  "Generar PDF": {
+   "en": "Create PDF",
+   "pt-BR": "Gerar PDF",
+   "fr": "Générer le PDF"
+  },
+  "Guardar PDF": {
+   "en": "Save PDF",
+   "pt-BR": "Salvar PDF",
+   "fr": "Enregistrer le PDF"
+  },
+  "No hay comidas registradas en este periodo.": {
+   "en": "No meals logged in this period.",
+   "pt-BR": "Nenhuma refeição registrada neste período.",
+   "fr": "Aucun repas enregistré sur cette période."
+  },
+  "Días registrados": {
+   "en": "Days logged",
+   "pt-BR": "Dias registrados",
+   "fr": "Jours enregistrés"
+  },
+  "kcal promedio": {
+   "en": "avg kcal",
+   "pt-BR": "kcal média",
+   "fr": "kcal moyennes"
+  },
+  "Proteína prom.": {
+   "en": "Avg protein",
+   "pt-BR": "Proteína média",
+   "fr": "Protéines moy."
+  },
+  "Carbohidratos prom.": {
+   "en": "Avg carbs",
+   "pt-BR": "Carboidratos médios",
+   "fr": "Glucides moy."
+  },
+  "Grasa prom.": {
+   "en": "Avg fat",
+   "pt-BR": "Gordura média",
+   "fr": "Lipides moy."
+  },
+  "Días con meta cumplida": {
+   "en": "Days goal met",
+   "pt-BR": "Dias com meta cumprida",
+   "fr": "Jours objectif atteint"
+  },
+  "kcal totales": {
+   "en": "total kcal",
+   "pt-BR": "kcal totais",
+   "fr": "kcal totales"
+  },
+  "Kcal por día": {
+   "en": "Kcal per day",
+   "pt-BR": "Kcal por dia",
+   "fr": "Kcal par jour"
+  },
+  "Kcal promedio por mes": {
+   "en": "Average kcal per month",
+   "pt-BR": "Kcal média por mês",
+   "fr": "Kcal moyennes par mois"
+  },
+  "Dentro de la meta": {
+   "en": "Within goal",
+   "pt-BR": "Dentro da meta",
+   "fr": "Dans l'objectif"
+  },
+  "Arriba de la meta": {
+   "en": "Above goal",
+   "pt-BR": "Acima da meta",
+   "fr": "Au-dessus de l'objectif"
+  },
+  "Meta": {
+   "en": "Goal",
+   "pt-BR": "Meta",
+   "fr": "Objectif"
+  },
+  "Carbohidratos": {
+   "en": "Carbs",
+   "pt-BR": "Carboidratos",
+   "fr": "Glucides"
+  },
+  "kcal promedio por tiempo de comida": {
+   "en": "Average kcal per meal",
+   "pt-BR": "Kcal média por refeição",
+   "fr": "Kcal moyennes par repas"
+  },
+  "Alimentos más frecuentes": {
+   "en": "Most frequent foods",
+   "pt-BR": "Alimentos mais frequentes",
+   "fr": "Aliments les plus fréquents"
+  },
+  "Veces": {
+   "en": "Times",
+   "pt-BR": "Vezes",
+   "fr": "Fois"
+  },
+  "Total": {
+   "en": "Total",
+   "pt-BR": "Total",
+   "fr": "Total"
+  },
+  "Sin datos": {
+   "en": "No data",
+   "pt-BR": "Sem dados",
+   "fr": "Aucune donnée"
+  },
+  "Peso inicial": {
+   "en": "Starting weight",
+   "pt-BR": "Peso inicial",
+   "fr": "Poids initial"
+  },
+  "Peso final": {
+   "en": "Final weight",
+   "pt-BR": "Peso final",
+   "fr": "Poids final"
+  },
+  "Cambio": {
+   "en": "Change",
+   "pt-BR": "Variação",
+   "fr": "Variation"
+  },
+  "Día futuro": {
+   "en": "Future day",
+   "pt-BR": "Dia futuro",
+   "fr": "Jour à venir"
+  },
+  "Sin registro": {
+   "en": "Not logged",
+   "pt-BR": "Sem registro",
+   "fr": "Non enregistré"
+  },
+  "Tiempo": {
+   "en": "Meal",
+   "pt-BR": "Refeição",
+   "fr": "Repas"
+  },
+  "Día": {
+   "en": "Day",
+   "pt-BR": "Dia",
+   "fr": "Jour"
+  },
+  "Alimentos": {
+   "en": "Foods",
+   "pt-BR": "Alimentos",
+   "fr": "Aliments"
+  },
+  "Días": {
+   "en": "Days",
+   "pt-BR": "Dias",
+   "fr": "Jours"
+  },
+  "kcal prom.": {
+   "en": "avg kcal",
+   "pt-BR": "kcal média",
+   "fr": "kcal moy."
+  },
+  "Detalle por día": {
+   "en": "Daily detail",
+   "pt-BR": "Detalhe por dia",
+   "fr": "Détail par jour"
+  },
+  "Resumen por mes": {
+   "en": "Monthly summary",
+   "pt-BR": "Resumo por mês",
+   "fr": "Résumé par mois"
+  },
+  "Generado con Rutinal": {
+   "en": "Generated with Rutinal",
+   "pt-BR": "Gerado com o Rutinal",
+   "fr": "Généré avec Rutinal"
+  },
+  "Se guardó el reporte en Descargas. Ábrelo y usa Imprimir → Guardar como PDF. Actualiza la app para generar el PDF directamente.": {
+   "en": "The report was saved to Downloads. Open it and use Print → Save as PDF. Update the app to create the PDF directly.",
+   "pt-BR": "O relatório foi salvo em Downloads. Abra-o e use Imprimir → Salvar como PDF. Atualize o app para gerar o PDF diretamente.",
+   "fr": "Le rapport a été enregistré dans Téléchargements. Ouvrez-le et utilisez Imprimer → Enregistrer en PDF. Mettez l'application à jour pour générer le PDF directement."
+  },
+  "No se pudo generar el PDF en este dispositivo.": {
+   "en": "Couldn't create the PDF on this device.",
+   "pt-BR": "Não foi possível gerar o PDF neste dispositivo.",
+   "fr": "Impossible de générer le PDF sur cet appareil."
+  },
+  "Peso registrado": {
+   "en": "Logged weight",
+   "pt-BR": "Peso registrado",
+   "fr": "Poids enregistré"
   }
  },
  "tpl": {
@@ -2637,6 +2852,21 @@ window.__I18N_EXTRA = {
    "en": "{{x}} · P{{y}} C{{z}} F{{w}}",
    "pt-BR": "{{x}} · P{{y}} C{{z}} G{{w}}",
    "fr": "{{x}} · P{{y}} G{{z}} L{{w}}"
+  },
+  "{{n}} kcal · P{{n2}} C{{n3}} G{{n4}}": {
+   "en": "{{n}} kcal · P{{n2}} C{{n3}} F{{n4}}",
+   "pt-BR": "{{n}} kcal · P{{n2}} C{{n3}} G{{n4}}",
+   "fr": "{{n}} kcal · P{{n2}} G{{n3}} L{{n4}}"
+  },
+  "{{n}} kcal · P{{n2}} C{{n3}} G{{n4}} · ✓": {
+   "en": "{{n}} kcal · P{{n2}} C{{n3}} F{{n4}} · ✓",
+   "pt-BR": "{{n}} kcal · P{{n2}} C{{n3}} G{{n4}} · ✓",
+   "fr": "{{n}} kcal · P{{n2}} G{{n3}} L{{n4}} · ✓"
+  },
+  "Rutinal - Review de comidas - {{x}}": {
+   "en": "Rutinal - Meal review - {{x}}",
+   "pt-BR": "Rutinal - Revisão de refeições - {{x}}",
+   "fr": "Rutinal - Bilan des repas - {{x}}"
   }
  },
  "ctx": {
@@ -2644,6 +2874,21 @@ window.__I18N_EXTRA = {
    "en": "Meal",
    "pt-BR": "Refeição",
    "fr": "Repas"
+  },
+  "macro:P": {
+   "en": "P",
+   "pt-BR": "P",
+   "fr": "P"
+  },
+  "macro:C": {
+   "en": "C",
+   "pt-BR": "C",
+   "fr": "G"
+  },
+  "macro:G": {
+   "en": "F",
+   "pt-BR": "G",
+   "fr": "L"
   }
  }
 };
