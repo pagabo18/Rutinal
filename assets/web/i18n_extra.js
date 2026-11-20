@@ -3000,6 +3000,51 @@ window.__I18N_EXTRA = {
    "en": "Done",
    "pt-BR": "Pronto",
    "fr": "OK"
+  },
+  "en lugar de": {
+   "en": "instead of",
+   "pt-BR": "no lugar de",
+   "fr": "au lieu de"
+  },
+  "⇄ Reemplazar ejercicio": {
+   "en": "⇄ Replace exercise",
+   "pt-BR": "⇄ Substituir exercício",
+   "fr": "⇄ Remplacer l'exercice"
+  },
+  "↺ Volver al original": {
+   "en": "↺ Back to original",
+   "pt-BR": "↺ Voltar ao original",
+   "fr": "↺ Revenir à l'original"
+  },
+  "Reemplazar ejercicio": {
+   "en": "Replace exercise",
+   "pt-BR": "Substituir exercício",
+   "fr": "Remplacer l'exercice"
+  },
+  "Solo hoy": {
+   "en": "Today only",
+   "pt-BR": "Só hoje",
+   "fr": "Aujourd'hui seulement"
+  },
+  "Cambiar en la rutina": {
+   "en": "Change in routine",
+   "pt-BR": "Mudar na rotina",
+   "fr": "Changer dans la routine"
+  },
+  "Sugerencias para los mismos músculos": {
+   "en": "Suggestions for the same muscles",
+   "pt-BR": "Sugestões para os mesmos músculos",
+   "fr": "Suggestions pour les mêmes muscles"
+  },
+  "Reemplazar": {
+   "en": "Replace",
+   "pt-BR": "Substituir",
+   "fr": "Remplacer"
+  },
+  "por:": {
+   "en": "with:",
+   "pt-BR": "por:",
+   "fr": "par :"
   }
  },
  "tpl": {

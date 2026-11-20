@@ -1779,6 +1779,10 @@
   .gym-in { padding: 10px 6px; font-size: 16px; }
   .gym-check { height: 40px; font-size: 17px; }
   .gym-wo-btns { margin-top: 14px; }
+  .gym-ex-swapped { font-size: 11px; color: #D97706; margin-top: 1px; font-weight: 600; }
+  .gym-swap-btn { display: block; width: 100%; margin-top: 10px; padding: 9px; border-radius: 10px; border: 1px dashed var(--border-strong); background: transparent; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .gym-swap-from { font-size: 14px; margin-bottom: 10px; }
+  .gym-swap-from span { color: var(--text-3); }
   .ge-mini { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 10px; }
   .ge-mini-body { flex: 1; min-width: 0; }
   .ge-mini-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -10162,10 +10166,13 @@ function gymSetRepsForIndex(ex, idx) {
   for (const s of ex.sets || []) { if (i < s.count) return s.reps + (s.note ? ' ' + s.note : ''); i -= s.count; }
   return '';
 }
-function gymLastLog(exId, beforeKey) {
+function gymLastLog(exId, beforeKey, swapName) {
   const logs = gymLogs();
   const keys = Object.keys(logs).filter(k => k < beforeKey).sort().reverse();
   for (const k of keys) {
+    // Solo comparar con días en que se hizo el mismo ejercicio (original o el mismo reemplazo)
+    const sw = logs[k].swap && logs[k].swap[exId];
+    if ((sw ? sw.name : null) !== (swapName || null)) continue;
     const sets = logs[k].ex && logs[k].ex[exId];
     if (sets && sets.some(s => s.kg || s.reps)) return { date: k, sets };
   }
@@ -10336,7 +10343,7 @@ function gymPickRoutine(title, cb, allowRest) {
 
 // ---------- Entrenamiento ----------
 let _gymRest = null; // { end, total, timer }
-function openGymWorkout(routineId, dateKey) {
+function openGymWorkout(routineId, dateKey, focusId) {
   const r = gymRoutineById(routineId);
   if (!r) return;
   dateKey = dateKey || keyDate();
@@ -10347,20 +10354,23 @@ function openGymWorkout(routineId, dateKey) {
   const restDefault = gymRestSeconds(m.descanso) || 90;
   const exDoneCount = ex => (lg.ex[ex.id] || []).filter(s => s.done).length;
   const exComplete = ex => exDoneCount(ex) >= Math.max(1, gymTotalSets(ex));
-  let openId = (r.exercises.find(ex => !exComplete(ex)) || {}).id || null;
+  let openId = focusId || (r.exercises.find(ex => !exComplete(ex)) || {}).id || null;
 
   const chip = (k, v) => v ? `<span class="gym-chip"><b>${k}</b> ${escapeHtml(v)}</span>` : '';
-  const exCard = (ex) => {
+  const exCard = (exOrig) => {
+    const sw = lg.swap && lg.swap[exOrig.id];
+    const ex = sw ? Object.assign({}, exOrig, { name: sw.name, dbId: sw.dbId, photo: null }) : exOrig;
     const n = Math.max(1, gymTotalSets(ex));
     const cur = lg.ex[ex.id] || [];
     const done = exDoneCount(ex);
     const complete = done >= n;
     const isOpen = ex.id === openId;
-    const last = gymLastLog(ex.id, dateKey);
+    const last = gymLastLog(ex.id, dateKey, sw ? sw.name : null);
     const head = `<div class="gym-ex-head" data-gym-toggle="${ex.id}">
-        <div class="gym-ex-media" data-gym-info="${ex.id}">${gymMediaHtml(ex, isOpen ? 64 : 44)}</div>
+        <div class="gym-ex-media"${sw ? '' : ` data-gym-info="${ex.id}"`}>${gymMediaHtml(ex, isOpen ? 64 : 44)}</div>
         <div class="gym-ex-body">
           <div class="gym-ex-name">${escapeHtml(ex.name)}</div>
+          ${sw ? `<div class="gym-ex-swapped">⇄ <span>en lugar de</span> ${escapeHtml(exOrig.name)}</div>` : ''}
           <div class="gym-ex-sets">${escapeHtml(gymSetsText(ex.sets))}${ex.rir ? ' · <b>RIR</b> ' + escapeHtml(ex.rir) : ''}${ex.rpe ? ' · <b>RPE</b> ' + escapeHtml(ex.rpe) : ''}</div>
         </div>
         <div class="gym-ex-state${complete ? ' ok' : ''}">${complete ? '✓' : `${done}/${n}`}</div>
@@ -10378,12 +10388,16 @@ function openGymWorkout(routineId, dateKey) {
     }).join('');
     const tempo = ex.tempo || r.tempo;
     const extra = [chip('Tempo', tempo), chip('Descanso', ex.rest)].join('');
+    const swapBtn = sw
+      ? `<button class="gym-swap-btn" data-gym-unswap="${ex.id}">↺ Volver al original</button>`
+      : `<button class="gym-swap-btn" data-gym-swap="${ex.id}">⇄ Reemplazar ejercicio</button>`;
     const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${s.kg || '?'}×${s.reps || '?'}`).join('  '))}</div>` : '';
     return `<div class="gym-ex open${complete ? ' complete' : ''}" data-ex-card="${ex.id}">${head}
       ${extra ? `<div class="gym-chips">${extra}</div>` : ''}
       ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
       ${lastTxt}
       <div class="gym-sets"><div class="gym-set gym-set-h"><div data-i18n-ctx="set">Objetivo</div><div>kg</div><div>reps</div><div></div></div>${rows}</div>
+      ${swapBtn}
     </div>`;
   };
 
@@ -10484,6 +10498,30 @@ function openGymWorkout(routineId, dateKey) {
       }
       draw();
     }));
+    sb.querySelectorAll('[data-gym-swap]').forEach(b => b.addEventListener('click', () => {
+      const ex = r.exercises.find(e => e.id === b.dataset.gymSwap);
+      if (!ex) return;
+      openGymSwapPicker(ex, (dbEx, scope) => {
+        if (scope === 'routine') {
+          // Cambio permanente en la rutina (mismas series, RIR, RPE y circuito)
+          const all = gymRoutines();
+          const rr = all.find(x => x.id === r.id);
+          const ee = rr && rr.exercises.find(e => e.id === ex.id);
+          if (ee) { ee.name = dbEx.n; ee.dbId = dbEx.i; delete ee.photo; saveGymRoutines(all); }
+          if (lg.swap) delete lg.swap[ex.id];
+          persist();
+        } else {
+          lg.swap = lg.swap || {};
+          lg.swap[ex.id] = { name: dbEx.n, dbId: dbEx.i };
+          persist();
+        }
+        openGymWorkout(r.id, dateKey, ex.id);
+      }, () => openGymWorkout(r.id, dateKey, ex.id));
+    }));
+    sb.querySelectorAll('[data-gym-unswap]').forEach(b => b.addEventListener('click', () => {
+      if (lg.swap) delete lg.swap[b.dataset.gymUnswap];
+      persist(); draw();
+    }));
     sb.querySelector('#gym-edit').addEventListener('click', () => openGymEditor(r.id));
     sb.querySelector('#gym-share').addEventListener('click', () => gymShareLoads(r, dateKey));
     sb.querySelector('#gym-finish').addEventListener('click', () => {
@@ -10494,6 +10532,12 @@ function openGymWorkout(routineId, dateKey) {
   openSheet(r.name, '<div></div>');
   document.getElementById('sheet-body').scrollTop = 0;
   draw();
+  if (focusId) {
+    const card = document.querySelector(`[data-ex-card="${focusId}"]`);
+    const sb = document.getElementById('sheet-body');
+    const bar = sb && sb.querySelector('.gym-wo-bar');
+    if (card && sb) sb.scrollTop += card.getBoundingClientRect().top - sb.getBoundingClientRect().top - (bar ? bar.offsetHeight : 0) - 12;
+  }
   if (!window.GYM_DB) loadGymDb().then(() => { if (document.querySelector('.gym-wo')) draw(); }).catch(() => {});
 }
 
@@ -10546,7 +10590,9 @@ function gymShareLoads(r, dateKey) {
     const sets = (lg && lg.ex && lg.ex[ex.id] || []).filter(s => s.kg || s.reps);
     if (!sets.length) return;
     any = true;
-    lines.push(`${ex.name}: ${sets.map(s => `${s.kg || '?'} kg × ${s.reps || '?'}`).join(', ')}`);
+    const sw = lg.swap && lg.swap[ex.id];
+    const nm = sw ? `${sw.name} (${t('en lugar de')} ${ex.name})` : ex.name;
+    lines.push(`${nm}: ${sets.map(s => `${s.kg || '?'} kg × ${s.reps || '?'}`).join(', ')}`);
   });
   if (!any) { alert(t('Todavía no registras cargas en este entrenamiento.')); return; }
   const text = lines.join('\n');
@@ -10615,6 +10661,71 @@ function gymResizeImage(file, max) {
     img.onerror = reject;
     img.src = url;
   });
+}
+
+// ---------- Reemplazar ejercicio (no hay máquina, molestia, etc.) ----------
+// Sugiere ejercicios de la base que trabajan los mismos músculos; también se puede buscar.
+function gymAlternatives(ex, limit) {
+  const db = window.GYM_DB || [];
+  const base = ex.dbId ? gymDbById(ex.dbId) : (gymSearch(ex.name, 1)[0] || null);
+  if (!base) return [];
+  const prim = new Set(base.p || []);
+  const scored = [];
+  db.forEach(e => {
+    if (e.i === base.i || (e.c && e.c !== 'strength' && e.c !== 'powerlifting')) return;
+    const overlap = (e.p || []).filter(m => prim.has(m)).length;
+    if (!overlap) return;
+    let sc = overlap * 3;
+    if (e.m && e.m === base.m) sc += 1.5;          // misma mecánica (aislado/compuesto)
+    if (e.e && e.e !== base.e) sc += 0.5;          // otro equipo: útil si la máquina está ocupada
+    if (e.l === 'beginner' || e.l === 'intermediate') sc += 0.3;
+    // Nombre parecido al original (mismo patrón de movimiento)
+    const words = gymFold(base.n).split(' ').filter(w => w.length > 3 && !/^(machine|dumbbell|barbell|cable|lever|leverage|smith|seated|standing)$/.test(w));
+    const en = gymFold(e.n);
+    words.forEach(w => { if (en.includes(w)) sc += 1.2; });
+    scored.push([sc, e]);
+  });
+  scored.sort((a, b) => b[0] - a[0]);
+  return scored.slice(0, limit || 12).map(x => x[1]);
+}
+function openGymSwapPicker(ex, onPick, onBack) {
+  let scope = 'today';
+  const row = e => `<div class="gym-res" data-id="${escapeHtml(e.i)}">
+      ${gymMediaHtml({ dbId: e.i }, 56)}
+      <div class="gym-res-body"><div class="gym-res-name">${escapeHtml(e.n)}</div>
+      <div class="gym-res-meta">${escapeHtml([...(e.p || []).map(x => GYM_MUSCLE_ES[x] || x), GYM_EQUIP_ES[e.e] || e.e].filter(Boolean).join(' · '))}</div></div>
+    </div>`;
+  openSheet('Reemplazar ejercicio', `<div class="gym-search">
+    <div class="gym-swap-from"><span>Reemplazar</span> <b>${escapeHtml(ex.name)}</b> <span>por:</span></div>
+    <div class="chips small" id="gym-swap-scope">
+      <div class="chip selected" data-scope="today">Solo hoy</div>
+      <div class="chip" data-scope="routine">Cambiar en la rutina</div>
+    </div>
+    <input type="search" class="field-input" id="gym-q" placeholder="Busca en español o inglés (ej. press inclinado, remo)" style="margin-top:10px;">
+    <div id="gym-results" class="gym-results"><div class="food-loader">Cargando ejercicios…</div></div>
+    <button class="btn-secondary" id="gym-q-back" style="margin-top:10px;">‹ Volver</button>
+  </div>`);
+  document.getElementById('sheet-body').scrollTop = 0;
+  const q = document.getElementById('gym-q');
+  const res = document.getElementById('gym-results');
+  document.getElementById('gym-q-back').addEventListener('click', onBack);
+  document.querySelectorAll('#gym-swap-scope .chip').forEach(c => c.addEventListener('click', () => {
+    scope = c.dataset.scope;
+    document.querySelectorAll('#gym-swap-scope .chip').forEach(x => x.classList.toggle('selected', x === c));
+  }));
+  const draw = () => {
+    const qq = q.value.trim();
+    const list = qq ? gymSearch(qq, 30) : gymAlternatives(ex, 12);
+    res.innerHTML = (qq ? '' : '<div class="fe-lbl" style="margin-top:6px;">Sugerencias para los mismos músculos</div>')
+      + (list.length ? list.map(row).join('') : '<div class="empty">Sin resultados</div>');
+    res.querySelectorAll('.gym-res').forEach(it => it.addEventListener('click', () => {
+      const e = gymDbById(it.dataset.id);
+      if (e) onPick(e, scope);
+    }));
+  };
+  let tmr = null;
+  q.addEventListener('input', () => { clearTimeout(tmr); tmr = setTimeout(draw, 180); });
+  loadGymDb().then(draw).catch(() => { res.innerHTML = '<div class="empty">No se pudo cargar la base de ejercicios.</div>'; });
 }
 
 // ---------- Buscador de ejercicios ----------
