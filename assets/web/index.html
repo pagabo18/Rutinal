@@ -1499,6 +1499,17 @@
   .fit-status.ok { color: #15803D; } .fit-status.over { color: #B91C1C; }
   .fit-status:empty { display: none; }
   .fit-sec-k { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; }
+  .fit-sec-k { color: var(--text-3); }
+  .fit-need { font-size: 12px; font-weight: 600; border-radius: 10px; padding: 8px 10px; line-height: 1.35; }
+  .fit-need:empty { display: none; }
+  .fit-need.good { background: rgba(34,197,94,.12); color: #15803D; }
+  .fit-need.warn { background: rgba(245,158,11,.14); color: #B45309; }
+  .fit-alt { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 12px; margin-top: 6px; cursor: pointer; }
+  .fit-score.sm { width: 34px; height: 34px; border-radius: 10px; font-size: 14px; }
+  .fit-alt-body { flex: 1; min-width: 0; }
+  .fit-alt-n { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fit-alt-m { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .fit-alt-c { color: var(--text-3); font-size: 18px; }
   .fit-sec-k.good { color: #15803D; } .fit-sec-k.bad { color: #B91C1C; }
   .fit-max-k { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); margin-bottom: 2px; }
   .fit-table { border-top: 1px solid var(--border); padding-top: 8px; }
@@ -12550,6 +12561,54 @@ function fitRowsHtml(item, grams, info, totals) {
   }).join('');
 }
 
+// ---- Mejores opciones: qué comer en su lugar cuando el alimento califica bajo ----
+// Por tipo de antojo (lista curada de la base local) o, si no se reconoce, por categoría.
+const FIT_SWAPS = [
+  { re: /\b(papas?|papitas|chips|sabritas|doritos|cheetos|ruffles|takis|totopos?|nachos?|chicharron(es)?|frituras?|botanas?|pretzels?|churritos?|crujientes?|snacks?)\b/,
+    alts: ['Palomitas naturales (aire)', 'Tostada horneada', 'Edamame cocido', 'Jícama', 'Cacahuates', 'Pepino', 'Almendras'] },
+  { re: /\b(refrescos?|soda|cola|jugos?|nectar|limonada|naranjada|energizante|energy|gatorade|powerade|malteada|frappe|te helado)\b/,
+    alts: ['Agua mineral', 'Refresco de cola light', 'Agua de limón con chía', 'Café negro', 'Leche de almendra (sin azúcar)'] },
+  { re: /\b(cereal(es)?|granola|hojuelas|zucaritas|corn flakes|krispis)\b/,
+    alts: ['Avena en hojuelas (cruda)', 'Cereal de trigo integral', 'Yogur griego natural', 'Fresa'] },
+  { re: /\b(yogur|yoghurt|yogurt|danonino|natilla|flan|licuado)\b/,
+    alts: ['Yogur griego natural', 'Queso cottage', 'Yogur natural', 'Yogur light'] },
+  { re: /\b(chocolates?|galletas?|pastel(es)?|pan dulce|donas?|brownies?|muffins?|helados?|dulces?|caramelos?|gomitas?|paletas?|cajeta|mermelada|panque|pay|cookies?|candy|pastelito)\b/,
+    alts: ['Fresa', 'Yogur griego natural', 'Manzana', 'Chocolate amargo 70%', 'Plátano', 'Arándanos', 'Gelatina preparada'] },
+  { re: /\b(salchichas?|jamon|tocino|chorizo|pepperoni|salami|mortadela|embutidos?|nuggets?)\b/,
+    alts: ['Pechuga de pavo', 'Pechuga de pollo (cocida)', 'Atún en agua (drenado)', 'Queso panela', 'Huevo entero'] },
+  { re: /\b(pan blanco|pan de caja|bolillo|pasta|espagueti|tortillas? de harina|arroz blanco)\b/,
+    alts: ['Pan integral', 'Tortilla integral', 'Pasta integral cocida', 'Arroz integral cocido'] },
+];
+let _fitAlts = [];
+function fitLocalItem(f) {
+  return { id: 'local_' + LOCAL_FOODS.indexOf(f), name: f.n, cat: f.g || null, brand: '', image: '', source: 'local', serving_size: '',
+    per100g: { kcal: Math.round(f.k), protein: +(f.p || 0), carbs: +(f.c || 0), fat: +(f.f || 0), fiber: +(f.fb || 0), sugars: +(f.s || 0), sodium: +(f.na || 0) } };
+}
+function fitAlternatives(item, info, totals, score) {
+  if (score == null || score >= 55 || typeof LOCAL_FOODS === 'undefined') return [];
+  const n = normalizeFoodQuery(item.name || '');
+  let cands = [];
+  const grp = FIT_SWAPS.find(g => g.re.test(n));
+  if (grp) cands = grp.alts.map(a => LOCAL_FOODS.find(f => f.n === a)).filter(Boolean);
+  else {
+    const cat = foodCatOf(item);
+    if (cat) cands = LOCAL_FOODS.filter(f => f.g === cat);
+  }
+  const out = [];
+  cands.forEach(f => {
+    const alt = fitLocalItem(f);
+    if (normalizeFoodQuery(alt.name) === n) return;
+    let q = fitQuality(alt, info.kind);
+    if (q.score == null && alt.per100g.kcal <= 5) q = { score: 95, goods: [], bads: [] }; // agua y similares
+    if (q.score == null || q.score < Math.max(55, score + 15)) return;
+    const mx = fitMaxGrams(alt, info, totals, q.score);
+    out.push({ item: alt, score: q.score, lab: fitLabel(q.score), grams: mx ? mx.grams : null, good: q.goods[0] || '' });
+  });
+  // Lista curada: se respeta el orden (lo más parecido al antojo primero). Por categoría: mejores primero.
+  if (!grp) out.sort((a, b) => b.score - a.score);
+  return out.slice(0, 3);
+}
+
 function fitHtml(item, mealId, index) {
   const info = fitGoalInfo();
   const totals = fitDayTotals(mealId, index);
@@ -12586,6 +12645,28 @@ function fitHtml(item, mealId, index) {
            <button class="fit-use" id="fit-use" data-g="${mx.grams}">Usar ${mx.grams} g</button></div>`
       : `<div class="fit-max none"><div class="fit-max-k">Cantidad recomendada</div><div><b>Mejor déjalo para otro día</b></div><div class="fit-why">${whyNone[mx.by]}</div></div>`;
   }
+  // Alimento bueno y con proteína: cantidad sugerida para cubrir lo que te falta
+  const pr = item.per100g || {};
+  const protRem = Math.round(info.t.protein - totals.protein);
+  if (mx && mx.grams > 0 && q.score != null && q.score >= 55 && pr.kcal > 0 && (pr.protein || 0) * 4 / pr.kcal >= 0.18 && protRem > 10) {
+    let g = Math.round(Math.min(protRem, 30) / pr.protein * 100 / 5) * 5;
+    g = Math.min(g, mx.grams, 400);
+    if (g >= 20) {
+      maxHtml = `<div class="fit-max"><div class="fit-max-k">Cantidad recomendada</div>
+        <div><b>${g} g</b><span>${escapeHtml(unitTxt(g))}</span></div>
+        <div class="fit-why">Con ${g} g cubres ${Math.round(pr.protein * g / 100)} g de proteína de los ${protRem} g que te faltan hoy.</div>
+        <button class="fit-use" id="fit-use" data-g="${g}">Usar ${g} g</button></div>`;
+    }
+  }
+  // Mejores opciones (solo al añadir)
+  _fitAlts = index < 0 ? fitAlternatives(item, info, totals, q.score) : [];
+  const altsHtml = _fitAlts.length ? `<div class="fit-sec"><div class="fit-sec-k">Mejores opciones</div>
+    ${_fitAlts.map((a, i) => `<div class="fit-alt" data-fit-alt="${i}">
+      <div class="fit-score sm ${a.lab.c}">${a.score}</div>
+      <div class="fit-alt-body"><div class="fit-alt-n">${escapeHtml(a.item.name)}</div>
+        <div class="fit-alt-m">${a.grams != null && a.grams < 300 ? `${a.item.per100g.kcal} kcal/100 g · hasta ${a.grams} g` : `${a.item.per100g.kcal} kcal/100 g · sin problema`}</div></div>
+      <div class="fit-alt-c">›</div>
+    </div>`).join('')}</div>` : '';
   const chip = (cls, t) => `<span class="fit-chip ${cls}">${escapeHtml(t)}</span>`;
   const goods = q.goods.length ? `<div class="fit-sec"><div class="fit-sec-k good">✓ <span>Sobresale en</span></div><div class="fit-chips">${q.goods.map(t => chip('good', t)).join('')}</div></div>` : '';
   const bads = q.bads.length ? `<div class="fit-sec"><div class="fit-sec-k bad">! <span>Cuidado con</span></div><div class="fit-chips">${q.bads.map(t => chip('bad', t)).join('')}</div></div>` : '';
@@ -12600,6 +12681,8 @@ function fitHtml(item, mealId, index) {
     ${goods}${bads}
     ${maxHtml}
     <div class="fit-status" id="fit-status"></div>
+    <div class="fit-need" id="fit-need"></div>
+    ${altsHtml}
     <div class="fit-table">
       <div class="fit-row fit-head"><div>Tabla nutricional</div><div>100 g</div><div>Tu porción</div><div></div></div>
       <div id="fit-rows"></div>
@@ -12615,6 +12698,24 @@ function fitUpdateStatus(item, mealId, index, grams) {
   const info = fitGoalInfo();
   const totals = fitDayTotals(mealId, index);
   rows.innerHTML = fitRowsHtml(item, grams > 0 ? grams : 0, info, totals);
+  // Lo que te falta hoy y cuánto aporta esta porción
+  const need = document.getElementById('fit-need');
+  if (need) {
+    const pp = item.per100g || {};
+    const g = grams > 0 ? grams : 0;
+    const protRem = Math.round(info.t.protein - totals.protein);
+    const porP = Math.round((pp.protein || 0) * g / 100);
+    const porK = Math.round((pp.kcal || 0) * g / 100);
+    const kcalRem = Math.round(info.t.kcal - totals.kcal);
+    let txt = '', cls = '';
+    const protDense = pp.kcal > 0 && (pp.protein || 0) * 4 / pp.kcal >= 0.15;
+    if (protRem > 5 && porP >= 3 && protDense) { txt = `Te faltan ${protRem} g de proteína hoy · esta porción te da ${porP} g (${Math.min(100, Math.round(porP / protRem * 100))}%)`; cls = 'good'; }
+    else if (protRem > 5 && porK >= 150) { txt = `Te faltan ${protRem} g de proteína hoy y esta porción solo te da ${porP} g`; cls = 'warn'; }
+    else if (protRem <= 5 && (pp.kcal > 0) && (pp.protein || 0) * 4 / pp.kcal >= 0.18) { txt = 'Ya cubriste tu proteína de hoy'; cls = 'good'; }
+    if (info.kind === 'bulk' && kcalRem > 300 && porK > 0) { txt += (txt ? '\n' : '') + `Te faltan ${kcalRem} kcal para tu meta · esta porción te da ${porK}`; if (!cls) cls = 'good'; }
+    need.className = 'fit-need ' + cls;
+    need.innerHTML = txt.split('\n').map(l => `<div>${escapeHtml(l)}</div>`).join('');
+  }
   const el = document.getElementById('fit-status');
   if (!el) return;
   const q = fitQuality(item, info.kind);
@@ -12703,6 +12804,13 @@ function openPortionEditor(item, mealId, index) {
     fitUpdateStatus(item, mealId, index, grams);
   }
   gramsInp.addEventListener('input', updatePreview);
+  document.querySelectorAll('[data-fit-alt]').forEach(el => el.addEventListener('click', () => {
+    const a = _fitAlts[+el.dataset.fitAlt];
+    if (!a) return;
+    const u = naturalUnits(a.item);
+    const g0 = a.grams != null && a.grams > 0 && a.grams < 300 ? a.grams : (u.length ? u[0].g : 100);
+    openPortionEditor(Object.assign({ grams: g0 }, a.item), selectedMeal, -1);
+  }));
   const fitUse = document.getElementById('fit-use');
   if (fitUse) fitUse.addEventListener('click', () => {
     unitSel.value = '1'; _prevUnitMult = 1;

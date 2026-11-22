@@ -3705,6 +3705,16 @@ window.__I18N_EXTRA = {
    "en": "Minimally processed",
    "pt-BR": "Pouco processado",
    "fr": "Peu transformé"
+  },
+  "Mejores opciones": {
+   "en": "Better options",
+   "pt-BR": "Opções melhores",
+   "fr": "Meilleures options"
+  },
+  "Ya cubriste tu proteína de hoy": {
+   "en": "You've already covered today's protein",
+   "pt-BR": "Você já cobriu sua proteína de hoje",
+   "fr": "Vous avez déjà couvert vos protéines du jour"
   }
  },
  "tpl": {
@@ -4252,6 +4262,36 @@ window.__I18N_EXTRA = {
    "en": "(≈ {{x}} × {{y}})",
    "pt-BR": "(≈ {{x}} × {{y}})",
    "fr": "(≈ {{x}} × {{y}})"
+  },
+  "Te faltan {{n}} g de proteína hoy · esta porción te da {{n2}} g ({{n3}}%)": {
+   "en": "You still need {{n}} g of protein today · this serving gives you {{n2}} g ({{n3}}%)",
+   "pt-BR": "Faltam {{n}} g de proteína hoje · esta porção dá {{n2}} g ({{n3}}%)",
+   "fr": "Il vous manque {{n}} g de protéines aujourd'hui · cette portion en apporte {{n2}} g ({{n3}} %)"
+  },
+  "Te faltan {{n}} g de proteína hoy y esta porción solo te da {{n2}} g": {
+   "en": "You still need {{n}} g of protein today and this serving only gives you {{n2}} g",
+   "pt-BR": "Faltam {{n}} g de proteína hoje e esta porção só dá {{n2}} g",
+   "fr": "Il vous manque {{n}} g de protéines aujourd'hui et cette portion n'en apporte que {{n2}} g"
+  },
+  "Te faltan {{n}} kcal para tu meta · esta porción te da {{n2}}": {
+   "en": "You still need {{n}} kcal to reach your goal · this serving gives you {{n2}}",
+   "pt-BR": "Faltam {{n}} kcal para sua meta · esta porção dá {{n2}}",
+   "fr": "Il vous manque {{n}} kcal pour votre objectif · cette portion en apporte {{n2}}"
+  },
+  "Con {{n}} g cubres {{n2}} g de proteína de los {{n3}} g que te faltan hoy.": {
+   "en": "With {{n}} g you cover {{n2}} g of the {{n3}} g of protein you still need today.",
+   "pt-BR": "Com {{n}} g você cobre {{n2}} g de proteína dos {{n3}} g que faltam hoje.",
+   "fr": "Avec {{n}} g, vous couvrez {{n2}} g des {{n3}} g de protéines qu'il vous manque aujourd'hui."
+  },
+  "{{n}} kcal/100 g · hasta {{n2}} g": {
+   "en": "{{n}} kcal/100 g · up to {{n2}} g",
+   "pt-BR": "{{n}} kcal/100 g · até {{n2}} g",
+   "fr": "{{n}} kcal/100 g · jusqu'à {{n2}} g"
+  },
+  "{{n}} kcal/100 g · sin problema": {
+   "en": "{{n}} kcal/100 g · eat freely",
+   "pt-BR": "{{n}} kcal/100 g · sem problema",
+   "fr": "{{n}} kcal/100 g · sans souci"
   }
  },
  "ctx": {
