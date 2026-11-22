@@ -2098,6 +2098,31 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  /* Editor de dieta */
+  .de-meal { padding-bottom: 12px; }
+  .de-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .de-n { flex: 1; min-width: 0; background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .de-n small { display: block; font-size: 11px; font-weight: 400; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; }
+  .de-g { display: flex; align-items: center; gap: 4px; background: var(--surface-2); border-radius: 12px; padding: 0 10px; flex-shrink: 0; }
+  .de-g input { width: 52px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 15px; font-weight: 700; text-align: right; padding: 10px 0; outline: none; }
+  .de-g span { font-size: 13px; color: var(--text-3); }
+  .de-x { width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: var(--text-3); font-size: 20px; cursor: pointer; flex-shrink: 0; padding: 0; }
+  .de-add { display: block; width: 100%; margin-top: 10px; padding: 10px; border-radius: 12px; border: 1px dashed var(--border-strong); background: transparent; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .de-search { margin-top: 10px; }
+  #de-res { margin-top: 6px; max-height: 44vh; overflow-y: auto; }
+  .de-res-i { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); font: inherit; font-size: 14px; padding: 10px 2px; cursor: pointer; }
+  .de-res-i span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .de-res-i small { color: var(--text-3); font-size: 12px; }
+  .de-res-i i { font-style: normal; font-size: 12px; color: var(--text-3); white-space: nowrap; }
+  .de-copy { margin: 4px 0 12px; font-size: 13px; color: var(--text-2); }
+  .de-copy summary { cursor: pointer; font-weight: 600; }
+  .de-total { position: sticky; bottom: -20px; margin: 12px -20px -20px; padding: 14px 20px calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; box-shadow: 0 -6px 20px rgba(0,0,0,.06); z-index: 2; }
+  .de-big { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .de-big small { font-size: 14px; font-weight: 500; color: var(--text-3); }
+  .de-mac { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text-3); margin-top: 4px; }
+  .de-mac b { color: var(--text); }
+  @media (max-width: 639px) { .de-total { bottom: -28px; margin-bottom: -28px; } }
+
   /* Chat entre especialista y entrenado */
   .chat { display: flex; flex-direction: column; min-height: 100%; }
   .chat-sub { text-align: center; margin: -6px 0 8px; }
@@ -9258,7 +9283,102 @@ async function openTemplates(forClient) {
   }));
   document.querySelectorAll('[data-tp-assign]').forEach(b => b.addEventListener('click', () => openAssign(_tpls.find(x => x.id === b.dataset.tpAssign), forClient)));
 }
+// Editor de dieta: comidas con alimentos y gramos, y total del día.
+// target: { tpl } edita o crea una plantilla; { asg, link } edita la copia asignada a un entrenado.
+function openDietEditor(target, forClient) {
+  target = target || {};
+  const src = target.asg || target.tpl || null;
+  const d = { name: src ? src.name || '' : '', meals: {} };
+  ASG_MEALS.forEach(([mid]) => { d.meals[mid] = JSON.parse(JSON.stringify(((src && src.payload && src.payload.meals) || {})[mid] || [])); });
+  let adding = null, seq = 0, timer = null;
+  const today = keyDate();
+  const totals = () => { let k = 0, pr = 0, c = 0, f = 0; ASG_MEALS.forEach(([mid]) => d.meals[mid].forEach(it => { const m = calcItemMacros(it); k += m.kcal; pr += m.protein; c += m.carbs; f += m.fat; })); return { k: Math.round(k), p: Math.round(pr), c: Math.round(c), f: Math.round(f) }; };
+  const sync = () => {
+    const n = document.getElementById('de-name'); if (n) d.name = n.value.trim();
+    document.querySelectorAll('[data-de-g]').forEach(inp => { const [mid, i] = inp.dataset.deG.split(':'); const it = d.meals[mid][+i]; if (it) it.grams = Math.max(0, Math.round(parseFloat(inp.value) || 0)); });
+  };
+  const paintTotals = () => {
+    const t = totals(), el = document.getElementById('de-total'); if (!el) return;
+    el.innerHTML = `<div class="ft-k">Total del día</div><div class="de-big" translate="no">${t.k.toLocaleString(_loc())} <small>kcal</small></div>
+      <div class="de-mac"><span><span>Proteína</span> <b translate="no">${t.p} g</b></span><span><span>Carbos</span> <b translate="no">${t.c} g</b></span><span><span>Grasa</span> <b translate="no">${t.f} g</b></span></div>`;
+    ASG_MEALS.forEach(([mid]) => { const k = document.querySelector(`[data-de-k="${mid}"]`); if (k) k.textContent = Math.round(d.meals[mid].reduce((x, it) => x + calcItemMacros(it).kcal, 0)) + ' kcal'; });
+  };
+  const draw = () => {
+    const sb = document.getElementById('sheet-body'), keep = sb.scrollTop;
+    sb.innerHTML = `<div class="de">
+      ${target.asg ? `<div class="lk-d" style="margin:0 0 10px;"><span>Plan de</span> <b translate="no">${escapeHtml((target.link && target.link.name) || '')}</b> · <span>los cambios solo aplican a esta persona</span></div>` : ''}
+      <label class="auth-field"><span>${target.asg ? 'Nombre del plan' : 'Nombre de la plantilla'}</span><input class="auth-in" id="de-name" type="text" maxlength="80" value="${escapeHtml(d.name)}"></label>
+      ${ASG_MEALS.map(([mid, lab]) => `<div class="mc de-meal"><div class="mc-head"><div class="mc-ic">${FOOD_MEAL_ICONS[mid] || ''}</div><div class="mc-t"><div class="meal-name">${lab}</div></div><div class="mc-sub" data-de-k="${mid}" translate="no"></div></div>
+        ${d.meals[mid].map((it, i) => `<div class="de-row"><div class="de-n" translate="no">${escapeHtml(it.name || '')}${it.brand ? `<small>${escapeHtml(it.brand)}</small>` : ''}</div>
+          <label class="de-g"><input type="number" inputmode="numeric" min="0" max="5000" data-de-g="${mid}:${i}" value="${Math.round(it.grams || 0)}"><span>g</span></label>
+          <button class="de-x" data-de-x="${mid}:${i}" aria-label="Quitar">×</button></div>`).join('')}
+        ${adding === mid ? `<div class="de-search"><input class="auth-in" id="de-q" type="search" placeholder="Busca un alimento…" autocomplete="off"><div id="de-res"><div class="lk-d">Escribe al menos 2 letras para buscar</div></div>
+          <button class="btn-secondary" data-de-cancel="1" style="width:100%;margin-top:8px;padding:8px;">Cancelar</button></div>`
+          : `<button class="de-add" data-de-add="${mid}">+ Añadir alimento</button>`}</div>`).join('')}
+      ${target.asg ? '' : `<details class="de-copy"><summary>Copiar de un día de mi registro</summary>
+        <div style="display:flex;gap:8px;margin-top:8px;"><input class="auth-in" id="de-day" type="date" value="${today}" max="${today}" style="flex:1;"><button class="btn-secondary" id="de-copy-go">Copiar</button></div></details>`}
+      <div class="auth-msg" id="de-msg"></div>
+      <div class="de-total" id="de-total"></div></div>`;
+    sb.scrollTop = keep;
+    paintTotals();
+    sb.querySelectorAll('[data-de-g]').forEach(inp => inp.addEventListener('input', () => { sync(); paintTotals(); }));
+    sb.querySelectorAll('[data-de-x]').forEach(b => b.addEventListener('click', () => { sync(); const [mid, i] = b.dataset.deX.split(':'); d.meals[mid].splice(+i, 1); draw(); }));
+    sb.querySelectorAll('[data-de-add]').forEach(b => b.addEventListener('click', () => { sync(); adding = b.dataset.deAdd; draw(); const q = document.getElementById('de-q'); if (q) q.focus(); }));
+    const cancel = sb.querySelector('[data-de-cancel]'); if (cancel) cancel.addEventListener('click', () => { sync(); adding = null; draw(); });
+    const cg = document.getElementById('de-copy-go');
+    if (cg) cg.addEventListener('click', () => {
+      sync();
+      const day = mealLog()[document.getElementById('de-day').value];
+      if (!day || !asgMealsKcal(day)) { document.getElementById('de-msg').textContent = t('Ese día no tiene comidas registradas.'); return; }
+      ASG_MEALS.forEach(([mid]) => { d.meals[mid] = d.meals[mid].concat((day[mid] || []).map(it => ({ name: it.name, brand: it.brand || '', grams: it.grams, per100g: it.per100g }))); });
+      draw();
+    });
+    const q = document.getElementById('de-q');
+    if (q) q.addEventListener('input', () => {
+      clearTimeout(timer);
+      const term = q.value.trim(), res = document.getElementById('de-res');
+      const show = (list, loading) => {
+        res.innerHTML = list.slice(0, 12).map((p, i) => `<button class="de-res-i" data-de-pick="${i}"><span translate="no">${escapeHtml(p.name || '')}${p.brand ? ` <small>${escapeHtml(p.brand)}</small>` : ''}</span><i translate="no">${Math.round((p.per100g || {}).kcal || 0)} kcal/100 g</i></button>`).join('')
+          + (loading ? '<div class="lk-d">Buscando...</div>' : (list.length ? '' : '<div class="lk-d">Sin resultados. Prueba con otro nombre.</div>'));
+        res.querySelectorAll('[data-de-pick]').forEach(b => b.addEventListener('click', () => {
+          const p = list[+b.dataset.dePick]; sync();
+          d.meals[adding].push({ name: p.name, brand: p.brand || '', grams: 100, per100g: p.per100g || {} });
+          adding = null; draw();
+        }));
+      };
+      if (term.length < 2) { res.innerHTML = `<div class="lk-d">${t('Escribe al menos 2 letras para buscar')}</div>`; return; }
+      let locals = [];
+      try { locals = [...customFoodSearch(term), ...localFoodSearch(term)]; } catch (e) {}
+      show(locals, true);
+      const my = ++seq;
+      timer = setTimeout(async () => {
+        let all = locals;
+        try { all = await foodSearchMulti(term); } catch (e) {}
+        if (my !== seq || !document.getElementById('de-res')) return;
+        show(all && all.length ? all : locals, false);
+      }, 350);
+    });
+  };
+  const done = () => { closeSheet(); if (target.onDone) target.onDone(); else tplDone(forClient); };
+  openSheet(target.asg ? 'Editar plan' : src ? 'Editar dieta' : 'Nueva dieta', '<div></div>', async () => {
+    sync();
+    const msg = document.getElementById('de-msg');
+    const meals = {}; let n = 0;
+    ASG_MEALS.forEach(([mid]) => { meals[mid] = d.meals[mid].filter(it => it.grams > 0); n += meals[mid].length; });
+    if (!d.name) { msg.textContent = t('Ponle un nombre a la plantilla.'); return; }
+    if (!n) { msg.textContent = t('Agrega al menos un alimento.'); return; }
+    try {
+      if (target.asg) await sbRest('assignments?id=eq.' + encodeURIComponent(target.asg.id), { method: 'PATCH', body: { name: d.name, payload: { meals } }, headers: { Prefer: 'return=minimal' } });
+      else if (src) await sbRest('templates?id=eq.' + encodeURIComponent(src.id), { method: 'PATCH', body: { name: d.name, payload: { meals } }, headers: { Prefer: 'return=minimal' } });
+      else await sbRest('templates', { method: 'POST', body: { kind: 'diet', name: d.name, payload: { meals } }, headers: { Prefer: 'return=minimal' } });
+    } catch (e) { msg.textContent = authErr(e.code); return; }
+    if (target.asg && target.link) { try { await ntPost(target.link.id, t('Actualicé tu plan de alimentación.'), { t: 'asg', kind: 'diet', name: d.name }); } catch (e) {} }
+    done();
+  });
+  draw();
+}
 function openTemplateEditor(kind, forClient) {
+  if (kind === 'diet') return openDietEditor({}, forClient);
   let body = '';
   const today = keyDate();
   if (kind === 'routine') {
@@ -9913,7 +10033,7 @@ async function spOpenClient(l) {
       <div class="sp-card-d">${escapeHtml(cdFmtDay(ws[0]))} → ${escapeHtml(cdFmtDay(ws[ws.length - 1]))}</div>${spWeightChart(D.weight_log)}</div>`;
   }
   const plans = asg.map(a => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(a.name)}</div><span class="usr-badge">${ASG_KINDS[a.kind] || a.kind}</span></div>
-      <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><div class="sp-card-btns">${a.kind === 'routine' ? `<button class="btn-secondary" data-asg-loads="${a.id}">Cargas por serie</button>` : ''}<button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
+      <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><div class="sp-card-btns">${a.kind === 'routine' ? `<button class="btn-secondary" data-asg-loads="${a.id}">Cargas por serie</button>` : ''}${a.kind === 'diet' ? `<button class="btn-secondary" data-asg-diet="${a.id}">Editar</button>` : ''}<button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
   // --- Resumen de la semana y gráficas (8 semanas) ---
   const rep = spClientReport(D, l, asg);
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button>',
@@ -9948,6 +10068,10 @@ async function spOpenClient(l) {
       const a = asg.find(x => String(x.id) === b.dataset.asgLoads);
       if (a) openAsgLoads(a, l, () => spOpenClient(l));
     }));
+    el.querySelectorAll('[data-asg-diet]').forEach(b => b.addEventListener('click', () => {
+      const a = asg.find(x => String(x.id) === b.dataset.asgDiet);
+      if (a) openDietEditor({ asg: a, link: l, onDone: () => spOpenClient(l) });
+    }));
     el.querySelectorAll('[data-asg-end]').forEach(b => b.addEventListener('click', async () => {
       if (!confirm('¿Quitar esta asignación? Dejará de aparecerle al entrenado.')) return;
       try { await sbRest('assignments?id=eq.' + b.dataset.asgEnd, { method: 'PATCH', body: { status: 'ended' }, headers: { Prefer: 'return=minimal' } }); } catch (e) {}
@@ -9981,12 +10105,13 @@ tabRenderers['sp-templates'] = async function () {
     <input class="sp-search" id="sp-tq" type="search" placeholder="Buscar plantillas…" value="${escapeHtml(_sp.tq || '')}">
     ${shown.map(tp => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(tp.name)}</div><span class="usr-badge">${ASG_KINDS[tp.kind]}</span></div>
       <div class="sp-card-d">${asgSummary(tp.kind, tp.payload || {})}</div>
-      <div class="sp-card-btns"><button class="btn-secondary" data-tp-del="${tp.id}">Eliminar</button><button class="btn-primary" data-tp-assign="${tp.id}">Asignar</button></div></div>`).join('') || `<div class="sp-empty">${list.length ? 'Ninguna plantilla coincide con la búsqueda.' : 'Aún no tienes plantillas. Crea la primera aquí abajo.'}</div>`}
+      <div class="sp-card-btns"><button class="btn-secondary" data-tp-del="${tp.id}">Eliminar</button>${tp.kind === 'diet' ? `<button class="btn-secondary" data-tp-edit="${tp.id}">Editar</button>` : ''}<button class="btn-primary" data-tp-assign="${tp.id}">Asignar</button></div></div>`).join('') || `<div class="sp-empty">${list.length ? 'Ninguna plantilla coincide con la búsqueda.' : 'Aún no tienes plantillas. Crea la primera aquí abajo.'}</div>`}
     <div class="sp-h">Nueva plantilla</div>
     <div class="sp-actions" style="margin-top:0;">${kinds.map(k => `<button class="sp-act" data-tp-new="${k}">${ASG_KINDS[k]}</button>`).join('')}</div>`;
   const inp = document.getElementById('sp-tq');
   inp.addEventListener('change', () => { _sp.tq = inp.value; tabRenderers['sp-templates'](); });
   el.querySelectorAll('[data-tp-new]').forEach(b => b.addEventListener('click', () => openTemplateEditor(b.dataset.tpNew, null)));
+  el.querySelectorAll('[data-tp-edit]').forEach(b => b.addEventListener('click', () => openDietEditor({ tpl: list.find(x => x.id === b.dataset.tpEdit) }, null)));
   el.querySelectorAll('[data-tp-assign]').forEach(b => b.addEventListener('click', () => openAssign(list.find(x => x.id === b.dataset.tpAssign), null)));
   el.querySelectorAll('[data-tp-del]').forEach(b => b.addEventListener('click', async () => {
     if (!confirm('¿Eliminar esta plantilla? Lo que ya asignaste no cambia.')) return;

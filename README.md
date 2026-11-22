@@ -223,3 +223,7 @@ No se usa un servicio de push. `ChatPollReceiver` se despierta cada ~15 minutos 
 - `Android.chatMeta` pasa los nombres de cada conversación y los textos traducidos; `Android.chatSeen` evita avisar de lo que la app ya mostró. Con la app a la vista no se avisa.
 - Al cerrar sesión se llama `Android.chatDisable()`, que borra la sesión guardada y la cierra en el servidor. Si el servidor rechaza la sesión (cuenta desactivada, etc.), el revisor se apaga solo.
 - Límites: el aviso puede tardar 15 minutos o más (el ahorro de batería de Android retrasa las alarmas) y en la PWA no existe.
+
+### Editor de dieta
+
+Las plantillas de plan de alimentación se arman en un editor propio (`openDietEditor`): nombre, las cuatro comidas con sus alimentos y gramos, buscador integrado (mis alimentos, base local, USDA y Open Food Facts) y el total del día fijo abajo. También permite copiar un día del registro propio como punto de partida, editar plantillas ya guardadas y, desde la ficha del entrenado (**Planes → Editar**), ajustar el plan ya asignado solo para esa persona; ese cambio le llega a su app y queda avisado en el chat.

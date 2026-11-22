@@ -3731,6 +3731,66 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Total del día": {
+   "en": "Day total",
+   "pt-BR": "Total do dia",
+   "fr": "Total du jour"
+  },
+  "Plan de": {
+   "en": "Plan for",
+   "pt-BR": "Plano de",
+   "fr": "Plan de"
+  },
+  "los cambios solo aplican a esta persona": {
+   "en": "changes only apply to this person",
+   "pt-BR": "as mudanças só valem para esta pessoa",
+   "fr": "les changements ne concernent que cette personne"
+  },
+  "Nombre del plan": {
+   "en": "Plan name",
+   "pt-BR": "Nome do plano",
+   "fr": "Nom du plan"
+  },
+  "Busca un alimento…": {
+   "en": "Search for a food…",
+   "pt-BR": "Busque um alimento…",
+   "fr": "Cherchez un aliment…"
+  },
+  "Copiar de un día de mi registro": {
+   "en": "Copy from a day in my log",
+   "pt-BR": "Copiar de um dia do meu registro",
+   "fr": "Copier depuis un jour de mon journal"
+  },
+  "Editar plan": {
+   "en": "Edit plan",
+   "pt-BR": "Editar plano",
+   "fr": "Modifier le plan"
+  },
+  "Editar dieta": {
+   "en": "Edit diet",
+   "pt-BR": "Editar dieta",
+   "fr": "Modifier le régime"
+  },
+  "Nueva dieta": {
+   "en": "New diet",
+   "pt-BR": "Nova dieta",
+   "fr": "Nouveau régime"
+  },
+  "Agrega al menos un alimento.": {
+   "en": "Add at least one food.",
+   "pt-BR": "Adicione pelo menos um alimento.",
+   "fr": "Ajoutez au moins un aliment."
+  },
+  "Actualicé tu plan de alimentación.": {
+   "en": "I updated your meal plan.",
+   "pt-BR": "Atualizei seu plano alimentar.",
+   "fr": "J'ai mis à jour votre plan alimentaire."
+  },
+  "Sin resultados. Prueba con otro nombre.": {
+   "en": "No results. Try another name.",
+   "pt-BR": "Sem resultados. Tente outro nome.",
+   "fr": "Aucun résultat. Essayez un autre nom."
+  },
   "Avisos de mensajes": {
    "en": "Message alerts",
    "pt-BR": "Avisos de mensagens",
