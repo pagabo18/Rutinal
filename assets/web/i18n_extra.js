@@ -3731,6 +3731,131 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Respaldo en la nube": {
+   "en": "Cloud backup",
+   "pt-BR": "Backup na nuvem",
+   "fr": "Sauvegarde dans le cloud"
+  },
+  "activado": {
+   "en": "on",
+   "pt-BR": "ativado",
+   "fr": "activée"
+  },
+  "desactivado": {
+   "en": "off",
+   "pt-BR": "desativado",
+   "fr": "désactivée"
+  },
+  "Con el respaldo activado, tus registros (comidas, entrenamientos, hábitos, peso, rutinas y ajustes de nutrición) se guardan también en el servidor de Rutinal.": {
+   "en": "With backup on, your records (meals, workouts, habits, weight, routines and nutrition settings) are also saved on Rutinal's server.",
+   "pt-BR": "Com o backup ativado, seus registros (refeições, treinos, hábitos, peso, rotinas e ajustes de nutrição) também são salvos no servidor do Rutinal.",
+   "fr": "Avec la sauvegarde activée, vos données (repas, entraînements, habitudes, poids, routines et réglages de nutrition) sont aussi enregistrées sur le serveur de Rutinal."
+  },
+  "No pierdes nada si cambias de celular o reinstalas la app.": {
+   "en": "You lose nothing if you change phones or reinstall the app.",
+   "pt-BR": "Você não perde nada se trocar de celular ou reinstalar o app.",
+   "fr": "Vous ne perdez rien si vous changez de téléphone ou réinstallez l'app."
+  },
+  "Solo tú los ves, hasta que aceptes la invitación de un especialista; él verá solo lo de su área.": {
+   "en": "Only you can see them, until you accept a specialist's invitation; they will see only their own area.",
+   "pt-BR": "Só você os vê, até aceitar o convite de um especialista; ele verá apenas a área dele.",
+   "fr": "Vous seul les voyez, jusqu'à ce que vous acceptiez l'invitation d'un spécialiste ; il ne verra que son domaine."
+  },
+  "Las fotos de alimentos se quedan en tu dispositivo.": {
+   "en": "Food photos stay on your device.",
+   "pt-BR": "As fotos de alimentos ficam no seu dispositivo.",
+   "fr": "Les photos d'aliments restent sur votre appareil."
+  },
+  "Estado: activado.": {
+   "en": "Status: on.",
+   "pt-BR": "Status: ativado.",
+   "fr": "État : activée."
+  },
+  "Última sincronización:": {
+   "en": "Last sync:",
+   "pt-BR": "Última sincronização:",
+   "fr": "Dernière synchronisation :"
+  },
+  "Sincronizar ahora": {
+   "en": "Sync now",
+   "pt-BR": "Sincronizar agora",
+   "fr": "Synchroniser maintenant"
+  },
+  "Desactivar respaldo": {
+   "en": "Turn off backup",
+   "pt-BR": "Desativar backup",
+   "fr": "Désactiver la sauvegarde"
+  },
+  "Al desactivarlo, lo que ya se guardó en el servidor se conserva; para borrarlo, pídeselo a quien administra tu cuenta.": {
+   "en": "When you turn it off, what was already saved on the server is kept; to delete it, ask whoever manages your account.",
+   "pt-BR": "Ao desativar, o que já foi salvo no servidor é mantido; para apagar, peça a quem administra sua conta.",
+   "fr": "Si vous la désactivez, ce qui est déjà sur le serveur est conservé ; pour le supprimer, demandez à la personne qui gère votre compte."
+  },
+  "Activar respaldo": {
+   "en": "Turn on backup",
+   "pt-BR": "Ativar backup",
+   "fr": "Activer la sauvegarde"
+  },
+  "Ahora no": {
+   "en": "Not now",
+   "pt-BR": "Agora não",
+   "fr": "Pas maintenant"
+  },
+  "Puedes cambiarlo cuando quieras en Editar → Ajustes → Cuenta.": {
+   "en": "You can change this any time in Edit → Settings → Account.",
+   "pt-BR": "Você pode mudar isso quando quiser em Editar → Ajustes → Conta.",
+   "fr": "Vous pouvez changer cela à tout moment dans Modifier → Réglages → Compte."
+  },
+  "Sincronizando...": {
+   "en": "Syncing...",
+   "pt-BR": "Sincronizando...",
+   "fr": "Synchronisation..."
+  },
+  "Quedó activado, pero no se pudo conectar. Se sincronizará cuando haya internet.": {
+   "en": "It's on, but we couldn't connect. It will sync when you're online.",
+   "pt-BR": "Ficou ativado, mas não foi possível conectar. Vai sincronizar quando houver internet.",
+   "fr": "C'est activé, mais la connexion a échoué. La synchronisation se fera dès que vous serez en ligne."
+  },
+  "Listo, todo está al día.": {
+   "en": "Done, everything is up to date.",
+   "pt-BR": "Pronto, está tudo em dia.",
+   "fr": "C'est fait, tout est à jour."
+  },
+  "No se pudo conectar. Inténtalo más tarde.": {
+   "en": "Couldn't connect. Try again later.",
+   "pt-BR": "Não foi possível conectar. Tente mais tarde.",
+   "fr": "Connexion impossible. Réessayez plus tard."
+  },
+  "¿Desactivar el respaldo en la nube? Tus datos se quedan en este dispositivo.": {
+   "en": "Turn off cloud backup? Your data stays on this device.",
+   "pt-BR": "Desativar o backup na nuvem? Seus dados ficam neste dispositivo.",
+   "fr": "Désactiver la sauvegarde dans le cloud ? Vos données restent sur cet appareil."
+  },
+  "Este dispositivo tiene datos de otra cuenta": {
+   "en": "This device has data from another account",
+   "pt-BR": "Este dispositivo tem dados de outra conta",
+   "fr": "Cet appareil contient les données d'un autre compte"
+  },
+  "Para usar la tuya hay que borrarlos de este dispositivo.": {
+   "en": "To use yours, they must be deleted from this device.",
+   "pt-BR": "Para usar a sua, é preciso apagá-los deste dispositivo.",
+   "fr": "Pour utiliser le vôtre, il faut les supprimer de cet appareil."
+  },
+  "Esos datos no están respaldados en la nube y se perderán.": {
+   "en": "That data is not backed up to the cloud and will be lost.",
+   "pt-BR": "Esses dados não têm backup na nuvem e serão perdidos.",
+   "fr": "Ces données ne sont pas sauvegardées dans le cloud et seront perdues."
+  },
+  "Esos datos ya están respaldados en la nube.": {
+   "en": "That data is already backed up to the cloud.",
+   "pt-BR": "Esses dados já têm backup na nuvem.",
+   "fr": "Ces données sont déjà sauvegardées dans le cloud."
+  },
+  "¿Borrarlos y continuar?": {
+   "en": "Delete them and continue?",
+   "pt-BR": "Apagá-los e continuar?",
+   "fr": "Les supprimer et continuer ?"
+  },
   "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.": {
    "en": "Too many attempts. Wait a few minutes and try again.",
    "pt-BR": "Muitas tentativas. Espere alguns minutos e tente de novo.",

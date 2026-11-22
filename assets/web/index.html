@@ -2772,6 +2772,7 @@ try {
         <div class="acct-user" id="acct-user"></div>
         <div style="display:flex; flex-direction:column; gap:8px;">
           <button class="btn-secondary" id="btn-acct-users" style="display:none;">Administrar usuarios</button>
+          <button class="btn-secondary" id="btn-acct-sync">Respaldo en la nube</button>
           <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
           <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
         </div>
@@ -2941,17 +2942,23 @@ const S = {
     return k in __mem ? __mem[k] : d;
   },
   set(k, v) {
+    let old; // valor anterior, para que el respaldo en la nube sepa qué cambió
+    if (__hasLS && window.__syncTouch) { try { old = localStorage.getItem(k); } catch(e) {} }
     if (__hasLS) {
       try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) { __mem[k] = v; }
     } else {
       __mem[k] = v;
     }
     if (__WIDGET_TRIGGERS.has(k)) __syncWidgets();
+    if (window.__syncTouch) window.__syncTouch(k, old, v);
   },
   del(k) {
+    let old;
+    if (__hasLS && window.__syncTouch) { try { old = localStorage.getItem(k); } catch(e) {} }
     if (__hasLS) { try { localStorage.removeItem(k); } catch(e) {} }
     delete __mem[k];
     if (__WIDGET_TRIGGERS.has(k)) __syncWidgets();
+    if (window.__syncTouch) window.__syncTouch(k, old, undefined);
   },
   allKeys() {
     if (__hasLS) { try { return Object.keys(localStorage); } catch(e) {} }
@@ -5563,7 +5570,7 @@ function bindAjustesOnce() {
   document.getElementById('btn-reset').addEventListener('click', () => {
     if (!confirm('¿Borrar TODOS los datos y volver a los valores por defecto? Esto no se puede deshacer.')) return;
     if (!confirm('Confirmar de nuevo: se perderán bloques, hábitos, historial, imprevistos y ajustes.')) return;
-    S.allKeys().forEach(k => { if (k !== 'theme' && k !== '__auth') S.del(k); });
+    S.allKeys().forEach(k => { if (k !== 'theme' && k !== '__auth' && k !== '__sync') S.del(k); });
     location.reload();
   });
   // USDA API key config
@@ -8066,7 +8073,7 @@ async function sbFetch(path, opt) {
   let r;
   for (let i = 0; i < 2; i++) {
     const t = await authToken(i === 1);
-    try { r = await fetch(SB_URL + path, { method: opt.method || 'GET', cache: 'no-store', headers: sbHeaders(t), body: opt.body ? JSON.stringify(opt.body) : undefined }); }
+    try { r = await fetch(SB_URL + path, { method: opt.method || 'GET', cache: 'no-store', headers: Object.assign(sbHeaders(t), opt.headers || {}), body: opt.body ? JSON.stringify(opt.body) : undefined }); }
     catch (e) { throw authErrObj('network'); }
     if (r.status !== 401) break;
   }
@@ -8328,9 +8335,254 @@ function openAuthUserEditor(u) {
     authSet({ user: s.user });
     authShowGate('Actualizamos el inicio de sesión. Entra de nuevo con tu misma contraseña.', true);
   } else if (!s || !s.refresh) authShowGate('');
-  else { document.documentElement.classList.add('auth-ok'); authVerify(true).then(() => { if (authLogged() && typeof onAuthReady === 'function') onAuthReady(); }); }
+  else { document.documentElement.classList.add('auth-ok'); authVerify(true); }
   document.addEventListener('visibilitychange', () => { if (!document.hidden && authLogged()) authVerify(false); });
   window.addEventListener('online', () => { if (authLogged()) authVerify(false); });
+})();
+
+// ============================================================
+// RESPALDO EN LA NUBE (sincronización)
+// Con el consentimiento del usuario, sus registros se copian al servidor (tabla user_docs):
+// un documento por clave y, en los registros diarios, uno por día. La app sigue leyendo y
+// escribiendo en el dispositivo; aquí solo se suben los cambios y se bajan los de otros
+// dispositivos. En conflicto gana lo último que llega al servidor, por documento.
+// ============================================================
+const SYNC_DATED = ['meal_log', 'gym_logs', 'habitLog', 'weight_log', 'hydration_log'];
+const SYNC_WHOLE = ['nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'habits', 'habitTimes', 'cats', 'catGoals',
+  'sch_weekday', 'sch_saturday', 'sch_sunday', 'imprevistos', 'plan', 'planTasks', 'plan_start', 'hydration_settings',
+  'custom_foods', 'dishes', 'diary', 'achievements', 'bestStreak', 'streak_pauses', 'pomo_settings', 'pomo_sessions'];
+const SYNC_MAX_DOC = 300000; // caracteres; documentos más grandes (p. ej. con fotos) no se suben
+function syncMeta() { try { return JSON.parse(localStorage.getItem('__sync') || '{}') || {}; } catch (e) { return {}; } }
+function syncSave(m) { try { localStorage.setItem('__sync', JSON.stringify(m)); } catch (e) {} }
+function syncOn() { const m = syncMeta(), s = authGet(); return !!(m.consent === true && s && s.refresh && s.uid && m.uid === s.uid); }
+// JSON con las claves ordenadas, para comparar sin que importe el orden (el servidor las reordena)
+function syncCanon(v) {
+  if (v === undefined) return undefined;
+  return JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x)) ? Object.keys(x).sort().reduce((o, kk) => { o[kk] = x[kk]; return o; }, {}) : x);
+}
+let _syncApplying = false, _syncTimer = null, _syncBusy = false;
+// Lo llama S.set / S.del: anota qué documentos cambiaron
+window.__syncTouch = function (k, oldRaw, v) {
+  if (_syncApplying) return;
+  const dated = SYNC_DATED.includes(k);
+  if (!dated && !SYNC_WHOLE.includes(k)) return;
+  if (!syncOn()) return;
+  const m = syncMeta(), now = Date.now();
+  m.dirty = m.dirty || {};
+  let any = false;
+  if (dated) {
+    let o = {}; try { o = JSON.parse(oldRaw || '{}') || {}; } catch (e) {}
+    const n = (v && typeof v === 'object') ? v : {};
+    new Set(Object.keys(o).concat(Object.keys(n))).forEach(d => { if (JSON.stringify(o[d]) !== JSON.stringify(n[d])) { m.dirty[k + '|' + d] = now; any = true; } });
+  } else if ((oldRaw == null ? undefined : oldRaw) !== JSON.stringify(v)) { m.dirty[k + '|'] = now; any = true; }
+  if (any) { syncSave(m); syncSchedule(4000); }
+};
+function syncSchedule(ms) {
+  if (!syncOn()) return;
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(() => { syncNow(); }, ms == null ? 4000 : ms);
+}
+function syncLocalIds() {
+  const out = [];
+  SYNC_DATED.forEach(k => { const o = S.get(k, null); if (o && typeof o === 'object') Object.keys(o).forEach(d => out.push(k + '|' + d)); });
+  SYNC_WHOLE.forEach(k => { try { if (localStorage.getItem(k) !== null) out.push(k + '|'); } catch (e) {} });
+  return out;
+}
+function syncValueOf(id) {
+  const i = id.indexOf('|'), k = id.slice(0, i), sub = id.slice(i + 1);
+  if (sub) { const o = S.get(k, {}) || {}; return { key: k, sub, value: o[sub] === undefined ? null : o[sub] }; }
+  const v = S.get(k, null);
+  return { key: k, sub: '', value: v === undefined ? null : v };
+}
+async function syncPush() {
+  const m = syncMeta();
+  const ids = Object.keys(m.dirty || {});
+  let sent = 0;
+  for (let i = 0; i < ids.length; i += 100) {
+    const batch = ids.slice(i, i + 100), stamp = {}, rows = [];
+    batch.forEach(id => {
+      stamp[id] = m.dirty[id];
+      const r = syncValueOf(id);
+      if (r.value !== null && JSON.stringify(r.value).length > SYNC_MAX_DOC) return; // demasiado grande: se queda solo en el dispositivo
+      rows.push({ user_id: m.uid, key: r.key, sub: r.sub, value: r.value });
+    });
+    if (rows.length) {
+      const res = await sbFetch('/rest/v1/user_docs?on_conflict=user_id,key,sub', { method: 'POST', body: rows, headers: { Prefer: 'resolution=merge-duplicates,return=minimal' } });
+      if (!res.ok) throw authErrObj('network');
+    }
+    const cur = syncMeta();
+    batch.forEach(id => { if (cur.dirty && cur.dirty[id] === stamp[id]) delete cur.dirty[id]; });
+    syncSave(cur);
+    sent += rows.length;
+  }
+  return sent;
+}
+// Baja lo que cambió en el servidor desde la última vez (o todo, si full) y lo aplica en el dispositivo.
+async function syncPull(full) {
+  const m = syncMeta();
+  let cursor = (!full && m.pulledAt) ? new Date(Date.parse(m.pulledAt) - 5000).toISOString() : null;
+  let max = m.pulledAt || null;
+  const got = [];
+  for (let page = 0; page < 60; page++) {
+    let q = '/rest/v1/user_docs?select=key,sub,value,updated_at&user_id=eq.' + encodeURIComponent(m.uid) + '&order=updated_at.asc&limit=500';
+    if (cursor) q += '&updated_at=gt.' + encodeURIComponent(cursor);
+    const r = await sbFetch(q);
+    if (!r.ok) throw authErrObj('network');
+    const rows = await r.json();
+    got.push.apply(got, rows);
+    if (rows.length < 500) break;
+    cursor = rows[rows.length - 1].updated_at;
+  }
+  const dirty = syncMeta().dirty || {}, byKey = {}, seen = new Set();
+  let changed = false;
+  got.forEach(row => {
+    const id = row.key + '|' + (row.sub || '');
+    seen.add(id);
+    if (!max || Date.parse(row.updated_at) > Date.parse(max)) max = row.updated_at;
+    if (dirty[id]) return; // hay un cambio local pendiente: se sube después y gana
+    (byKey[row.key] = byKey[row.key] || []).push(row);
+  });
+  _syncApplying = true;
+  try {
+    Object.keys(byKey).forEach(k => {
+      if (SYNC_DATED.includes(k)) {
+        const o = S.get(k, {}) || {};
+        let ch = false;
+        byKey[k].forEach(row => {
+          if (!row.sub) return;
+          if (row.value === null) { if (row.sub in o) { delete o[row.sub]; ch = true; } }
+          else if (syncCanon(o[row.sub]) !== syncCanon(row.value)) { o[row.sub] = row.value; ch = true; }
+        });
+        if (ch) { S.set(k, o); changed = true; }
+      } else if (SYNC_WHOLE.includes(k)) {
+        const row = byKey[k][byKey[k].length - 1];
+        const cur = S.get(k, undefined);
+        if (row.value === null) { if (cur !== undefined) { S.del(k); changed = true; } }
+        else if (syncCanon(cur) !== syncCanon(row.value)) { S.set(k, row.value); changed = true; }
+      }
+    });
+  } finally { _syncApplying = false; }
+  const m2 = syncMeta();
+  if (max) m2.pulledAt = max;
+  syncSave(m2);
+  return { changed, seen };
+}
+function syncRefreshUi() {
+  try {
+    const active = (document.querySelector('nav button.active') || { dataset: {} }).dataset.tab;
+    if (active && tabRenderers[active]) tabRenderers[active]();
+    if (active !== 'hoy') renderHoy();
+    __syncWidgets();
+  } catch (e) {}
+}
+async function syncNow() {
+  if (!syncOn() || _syncBusy || navigator.onLine === false) return false;
+  _syncBusy = true;
+  let ok = false;
+  try {
+    const res = await syncPull(false);
+    await syncPush();
+    const m = syncMeta(); m.lastOk = Date.now(); syncSave(m);
+    if (res.changed) syncRefreshUi();
+    ok = true;
+  } catch (e) {
+    if (e && e.code === 'session') authVerify(true);
+  }
+  _syncBusy = false;
+  syncRenderStatus();
+  return ok;
+}
+// Primera sincronización de esta cuenta en este dispositivo: lo que ya está en el servidor gana;
+// lo que solo existe aquí se sube.
+async function syncEnable() {
+  const s = authGet(), m = syncMeta();
+  syncSave({ uid: s.uid, user: s.user, consent: true, dirty: {}, pulledAt: null });
+  _syncBusy = true;
+  let ok = false;
+  try {
+    const res = await syncPull(true);
+    const m2 = syncMeta(), now = Date.now();
+    m2.dirty = m2.dirty || {};
+    syncLocalIds().forEach(id => { if (!res.seen.has(id)) m2.dirty[id] = now; });
+    syncSave(m2);
+    await syncPush();
+    const m3 = syncMeta(); m3.lastOk = Date.now(); syncSave(m3);
+    if (res.changed) syncRefreshUi();
+    ok = true;
+  } catch (e) {}
+  _syncBusy = false;
+  syncRenderStatus();
+  if (!ok) syncSchedule(15000);
+  return ok;
+}
+function syncDisable() { const m = syncMeta(); m.consent = false; m.dirty = {}; syncSave(m); syncRenderStatus(); }
+function syncRenderStatus() {
+  const b = document.getElementById('btn-acct-sync');
+  if (!b) return;
+  const m = syncMeta();
+  b.innerHTML = `<span>Respaldo en la nube</span>: <span>${m.consent === true ? 'activado' : 'desactivado'}</span>`;
+}
+function openSyncSheet(first) {
+  const m = syncMeta(), on = m.consent === true;
+  const last = m.lastOk ? new Date(m.lastOk).toLocaleString(_loc(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  openSheet('Respaldo en la nube', `
+    <p style="color:var(--text-2);font-size:14px;line-height:1.5;margin-bottom:10px;">Con el respaldo activado, tus registros (comidas, entrenamientos, hábitos, peso, rutinas y ajustes de nutrición) se guardan también en el servidor de Rutinal.</p>
+    <ul style="color:var(--text-2);font-size:14px;line-height:1.5;margin:0 0 12px 18px;">
+      <li>No pierdes nada si cambias de celular o reinstalas la app.</li>
+      <li>Solo tú los ves, hasta que aceptes la invitación de un especialista; él verá solo lo de su área.</li>
+      <li>Las fotos de alimentos se quedan en tu dispositivo.</li>
+    </ul>
+    ${on ? `<div class="fit-note" style="margin-bottom:12px;"><span>Estado: activado.</span> ${last ? `<span>Última sincronización:</span> ${escapeHtml(last)}` : ''}</div>
+      <button class="btn-primary" id="sync-now" style="width:100%;margin-bottom:8px;">Sincronizar ahora</button>
+      <button class="btn-secondary" id="sync-off" style="width:100%;">Desactivar respaldo</button>
+      <div class="fit-note" style="margin-top:10px;">Al desactivarlo, lo que ya se guardó en el servidor se conserva; para borrarlo, pídeselo a quien administra tu cuenta.</div>`
+    : `<button class="btn-primary" id="sync-on" style="width:100%;margin-bottom:8px;">Activar respaldo</button>
+      <button class="btn-secondary" id="sync-later" style="width:100%;">Ahora no</button>
+      <div class="fit-note" style="margin-top:10px;">Puedes cambiarlo cuando quieras en Editar → Ajustes → Cuenta.</div>`}
+    <div class="auth-msg info" id="sync-msg" style="margin-top:8px;"></div>`);
+  const msg = document.getElementById('sync-msg');
+  const q = id => document.getElementById(id);
+  if (q('sync-on')) q('sync-on').addEventListener('click', async (ev) => {
+    ev.target.disabled = true; msg.textContent = 'Sincronizando...';
+    const ok = await syncEnable();
+    if (ok) closeSheet(); else { msg.textContent = 'Quedó activado, pero no se pudo conectar. Se sincronizará cuando haya internet.'; ev.target.style.display = 'none'; q('sync-later').textContent = 'Cerrar'; }
+  });
+  if (q('sync-later')) q('sync-later').addEventListener('click', () => { const m2 = syncMeta(); if (m2.consent === undefined) { m2.consent = false; syncSave(m2); } closeSheet(); syncRenderStatus(); });
+  if (q('sync-now')) q('sync-now').addEventListener('click', async (ev) => {
+    ev.target.disabled = true; msg.textContent = 'Sincronizando...';
+    const ok = await syncNow();
+    ev.target.disabled = false;
+    msg.textContent = ok ? 'Listo, todo está al día.' : 'No se pudo conectar. Inténtalo más tarde.';
+  });
+  if (q('sync-off')) q('sync-off').addEventListener('click', () => { if (confirm('¿Desactivar el respaldo en la nube? Tus datos se quedan en este dispositivo.')) { syncDisable(); closeSheet(); } });
+}
+// Se llama cuando hay sesión válida (al entrar o al abrir la app ya con sesión)
+function onAuthReady() {
+  const s = authGet();
+  if (!s || !s.uid) return;
+  let m = syncMeta();
+  if (m.uid && m.uid !== s.uid) {
+    // El dispositivo tiene datos de otra cuenta: no se mezclan
+    const unsaved = m.consent !== true || Object.keys(m.dirty || {}).length > 0;
+    const q = t('Este dispositivo tiene datos de otra cuenta') + (m.user ? ' (' + m.user + ')' : '') + '. ' +
+      t('Para usar la tuya hay que borrarlos de este dispositivo.') + ' ' +
+      (unsaved ? t('Esos datos no están respaldados en la nube y se perderán.') : t('Esos datos ya están respaldados en la nube.'));
+    if (!confirm(q + '\n\n' + t('¿Borrarlos y continuar?'))) { authEndSession(''); return; }
+    _syncApplying = true;
+    try { SYNC_DATED.concat(SYNC_WHOLE).forEach(k => S.del(k)); } finally { _syncApplying = false; }
+    m = {};
+    syncRefreshUi();
+  }
+  if (!m.uid) { m = { uid: s.uid, user: s.user, dirty: {} }; syncSave(m); }
+  syncRenderStatus();
+  if (m.consent === true) syncSchedule(800);
+  else if (m.consent === undefined) setTimeout(() => { if (!document.querySelector('#sheet.show, .sheet.show')) openSyncSheet(true); }, 600);
+}
+(function syncInit() {
+  document.getElementById('btn-acct-sync').addEventListener('click', () => openSyncSheet(false));
+  document.addEventListener('visibilitychange', () => { if (!syncOn()) return; if (document.hidden) { clearTimeout(_syncTimer); syncNow(); } else syncSchedule(1500); });
+  window.addEventListener('online', () => syncSchedule(1500));
+  setInterval(() => { if (!document.hidden) syncSchedule(0); }, 5 * 60000);
 })();
 
 // ============================================================
@@ -8339,6 +8591,7 @@ function openAuthUserEditor(u) {
 renderClock();
 renderHoy();
 updateFab('hoy');
+if (authLogged()) onAuthReady();
 // PWA: registrar el service worker solo cuando la app corre servida por
 // http/https (GitHub Pages, etc). En el APK (file://) no aplica.
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
