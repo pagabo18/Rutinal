@@ -12042,26 +12042,39 @@ function offMxSameCategory(item, limit) {
 /* ---------- Open Food Facts ---------- */
 const OFF_FIELDS = 'code,product_name,product_name_es,generic_name,brands,nutriments,serving_size,image_thumb_url,image_url,nutriscore_grade,nova_group,categories_tags';
 const OFF_APP = 'app_name=Rutinal&app_version=1.10';
+// Nutrimentos por 100 g/ml. Soporta el esquema clásico (`nutriments.<id>_100g`) y el nuevo de
+// Open Food Facts (API 3.5+: `nutrition.aggregated_set.nutrients.<id>.value`, ya en g / kJ / kcal).
+function offNutrients(p) {
+  const n = p.nutriments || {};
+  const agg = p.nutrition && p.nutrition.aggregated_set;
+  const per = agg && /^100\s?(g|ml)$/i.test(agg.per || '') && agg.preparation !== 'prepared' ? (agg.nutrients || {}) : null;
+  let found = false;
+  const get = id => {
+    let v = n[id + '_100g'];
+    if ((v == null || v === '') && per && per[id] && per[id].value != null) v = per[id].value;
+    if (v == null || v === '' || isNaN(+v)) return undefined;
+    found = true;
+    return +v;
+  };
+  let kcal = get('energy-kcal');
+  if (kcal == null) { let kj = get('energy-kj'); if (kj == null) kj = get('energy'); if (kj != null) kcal = Math.round(kj / 4.184); }
+  const out = {
+    kcal: kcal || 0, protein: get('proteins') || 0, carbs: get('carbohydrates') || 0, fat: get('fat') || 0,
+    fiber: get('fiber') || 0, sugars: get('sugars') || 0, sodium: get('sodium') || 0,
+    satFat: get('saturated-fat'), transFat: get('trans-fat'), addedSugars: get('added-sugars'),
+  };
+  return { per100g: out, found };
+}
 function parseOffProduct(p) {
   if (!p) return null;
-  const n = p.nutriments || {};
+  const nt = offNutrients(p);
   return {
     barcode: p.code,
     name: p.product_name_es || p.product_name || p.generic_name || 'Alimento',
     brand: (p.brands || '').split(',')[0].trim(),
     image: p.image_thumb_url || p.image_url || '',
-    per100g: {
-      kcal:    n['energy-kcal_100g']   || (n.energy_100g ? Math.round(n.energy_100g / 4.184) : 0),
-      protein: n.proteins_100g         || 0,
-      carbs:   n.carbohydrates_100g    || 0,
-      fat:     n.fat_100g              || 0,
-      fiber:   n.fiber_100g            || 0,
-      sugars:  n.sugars_100g           || 0,
-      sodium:  n.sodium_100g           || 0,
-      satFat:  n['saturated-fat_100g'] != null ? +n['saturated-fat_100g'] : undefined,
-      transFat: n['trans-fat_100g'] != null ? +n['trans-fat_100g'] : undefined,
-      addedSugars: n['added-sugars_100g'] != null ? +n['added-sugars_100g'] : undefined,
-    },
+    per100g: nt.per100g,
+    noTable: nt.found ? undefined : true,
     cats: (p.categories_tags || []).filter(t => /^en:/.test(t)).slice(-4),
     liquid: (p.categories_tags || []).includes('en:beverages'),
     nutriscore: /^[a-e]$/i.test(p.nutriscore_grade || '') ? p.nutriscore_grade.toLowerCase() : '',
@@ -12076,11 +12089,11 @@ async function offSearch(q) {
   // el endpoint correcto para texto libre es cgi/search.pl.
   const url = 'https://world.openfoodfacts.org/cgi/search.pl?search_terms=' + encodeURIComponent(q)
     + '&search_simple=1&action=process&json=1&page_size=20'
-    + '&fields=' + OFF_FIELDS + '&' + OFF_APP;
+    + '&fields=' + OFF_FIELDS + ',nutrition&' + OFF_APP;
   const r = await fetch(url);
   if (!r.ok) throw new Error('OFF search failed');
   const j = await r.json();
-  return (j.products || []).map(parseOffProduct).filter(p => p && p.per100g.kcal > 0);
+  return (j.products || []).map(parseOffProduct).filter(p => p && p.per100g.kcal > 0).map(p => { delete p.noTable; return p; });
 }
 
 async function offByBarcode(barcode) {
@@ -12093,25 +12106,31 @@ async function offByBarcode(barcode) {
   // Catálogo local de México: instantáneo y sin conexión
   const local = offMxByBarcode(barcode);
   if (local && navigator.onLine === false) return local;
-  // API v3 (la v2 está obsoleta); si falla por red o servidor se usa lo local o la v2
-  let product = null, notFound = false;
-  try {
-    const r3 = await fetch(`https://world.openfoodfacts.org/api/v3/product/${encodeURIComponent(barcode)}?fields=${OFF_FIELDS}&${OFF_APP}`);
-    const j3 = await r3.json().catch(() => null);
-    if (j3 && j3.product && (j3.product.product_name || j3.product.product_name_es || j3.product.nutriments)) product = j3.product;
-    else if (r3.status === 404 || (j3 && j3.result && j3.result.id === 'product_not_found')) notFound = true;
-    else throw new Error('OFF v3 ' + r3.status);
-  } catch (e) {
-    if (local) return local;
+  // API v3 (la v2 está obsoleta). Si falla, o si responde sin tabla por 100 g (el esquema nuevo
+  // puede traerla solo por porción), se usa el catálogo local y, en último caso, la v2.
+  const v2 = async () => {
     const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json?fields=${OFF_FIELDS}&${OFF_APP}`);
     if (!r.ok) throw new Error('OFF barcode failed');
     const j = await r.json();
-    if (j.status !== 1 && !j.product) notFound = true; else product = j.product;
+    return (j.status !== 1 && !j.product) ? null : parseOffProduct(j.product);
+  };
+  let parsed = null;
+  try {
+    const r3 = await fetch(`https://world.openfoodfacts.org/api/v3/product/${encodeURIComponent(barcode)}?fields=${OFF_FIELDS},nutrition&${OFF_APP}`);
+    const j3 = await r3.json().catch(() => null);
+    if (j3 && j3.product && (j3.product.product_name || j3.product.product_name_es || j3.product.nutriments || j3.product.nutrition)) parsed = parseOffProduct(j3.product);
+    else if (r3.status === 404 || (j3 && j3.result && j3.result.id === 'product_not_found')) return local;
+    else throw new Error('OFF v3 ' + r3.status);
+  } catch (e) {
+    if (local) return local;
+    parsed = await v2();
   }
-  if (notFound || !product) return local;
-  let parsed = parseOffProduct(product);
-  if (parsed && !(parsed.per100g.kcal > 0) && local) parsed = local; // en vivo sin tabla: usar el catálogo
-  else if (parsed && local && !parsed.cats.length) { parsed.cats = local.cats; parsed.liquid = local.liquid; }
+  if (parsed && parsed.noTable) {
+    if (local) parsed = local;
+    else { try { const p2 = await v2(); if (p2 && !p2.noTable) parsed = p2; } catch (e) {} }
+  } else if (parsed && local && !parsed.cats.length) { parsed.cats = local.cats; parsed.liquid = local.liquid; }
+  if (parsed) delete parsed.noTable;
+  if (!parsed) return local;
   if (parsed) {
     cache[barcode] = { p: parsed, t: now };
     saveOffCache(cache);
