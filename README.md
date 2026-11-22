@@ -185,3 +185,7 @@ Las cargas se pueden ver en **kg o lb** (selector arriba de la pantalla, clave `
 ## Páginas a pantalla completa
 
 En teléfono (menos de 640 px de ancho) las hojas que antes subían desde abajo ahora son páginas completas: flecha de regreso a la izquierda, título centrado y *Guardar* a la derecha. El botón "atrás" de Android cierra la página en vez de salir de la app (se usa una entrada del historial mientras hay una página abierta). En tableta y escritorio siguen siendo un panel centrado.
+
+### Cargas recomendadas por serie
+
+Cada ejercicio puede llevar `loads`: la carga recomendada de cada serie, en kg (si hay menos cargas que series, la última se repite). Se capturan en el editor de rutina ("Carga recomendada por serie") y, para un entrenado concreto, desde su ficha en modo especialista: **Planes → Cargas por serie** en la rutina asignada. Eso cambia solo la copia de ese entrenado (se guarda en la asignación) y su app actualiza las cargas en la siguiente consulta, sin tocar lo que ya registró. En el entrenamiento aparecen como "Carga recomendada" y como valor sugerido de cada serie.

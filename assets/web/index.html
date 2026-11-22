@@ -2122,6 +2122,14 @@
   .gym-set.done[data-ex] { background: rgba(34,197,94,.10); }
   .gym-set.done .gym-in { border-color: transparent; }
   .gym-setbtns { display: flex; gap: 8px; margin-top: 8px; }
+  .gym-rec { margin-top: 8px; font-size: 12px; padding: 8px 10px; border-radius: 10px; background: rgba(37,99,235,.10); color: var(--text-2); line-height: 1.4; }
+  .gym-rec b { color: #1D4ED8; margin-right: 2px; }
+  .gym-rec-v { display: block; font-size: 14px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; margin-top: 1px; }
+  [data-theme="dark"] .gym-rec b { color: #93C5FD; }
+  @media (prefers-color-scheme: dark) {
+    :root[data-theme="auto"] .gym-rec b, :root[data-theme="auto"] .hd-badge.plan { color: #93C5FD; }
+    :root[data-theme="auto"] .hd-badge.ok { color: #4ADE80; }
+  }
   .gym-addset { flex: 1; padding: 11px; border-radius: 12px; border: 1px dashed var(--border-strong); background: transparent; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
   .gym-addset.rm { flex: 0 0 auto; color: var(--text-3); }
   .gym-swap-btn { border-style: solid; border-color: var(--border); border-radius: 12px; }
@@ -9069,7 +9077,17 @@ function asgApplyRoutines() {
   const kept = rs.filter(r => !r.assigned || want.has(r.id));
   if (kept.length !== rs.length) { rs = kept; changed = true; }
   want.forEach((a, id) => {
-    if (rs.some(r => r.id === id)) return;
+    const cur = rs.find(r => r.id === id);
+    if (cur) {
+      // Ya la tiene: solo se actualizan las cargas recomendadas que ponga el especialista
+      ((a.payload || {}).exercises || []).forEach(pe => {
+        const ce = (cur.exercises || []).find(e => e.id === pe.id);
+        if (!ce || JSON.stringify(ce.loads || []) === JSON.stringify(pe.loads || [])) return;
+        if (pe.loads && pe.loads.length) ce.loads = pe.loads.slice(); else delete ce.loads;
+        changed = true;
+      });
+      return;
+    }
     rs.push(Object.assign({}, JSON.parse(JSON.stringify(a.payload || {})), { id, assigned: { by: a.author_name || '', role: a.role } }));
     changed = true;
   });
@@ -9105,7 +9123,7 @@ function openAssignmentView(a) {
   const p = a.payload || {};
   let body = '';
   if (a.kind === 'routine') {
-    body = `<div class="cd-items">${(p.exercises || []).map(ex => `<b>${escapeHtml(ex.name || '')}</b>${ex.sets ? ` · ${ex.sets}×${escapeHtml(String(ex.reps || ''))}` : ''}`).join('<br>')}</div>
+    body = `<div class="cd-items">${(p.exercises || []).map(ex => `<b>${escapeHtml(ex.name || '')}</b>${Array.isArray(ex.sets) && ex.sets.length ? ' · ' + escapeHtml(gymSetsText(ex.sets)) : ''}${ex.loads && ex.loads.length ? ' · ' + escapeHtml(gymLoadsText(ex)) + ' ' + gymUnit() : ''}`).join('<br>')}</div>
       <div class="fit-note" style="margin:10px 0;">Ya está en tu pestaña Gym, lista para registrar.</div>
       <button class="btn-primary" id="av-go" style="width:100%;">Ir a Gym</button>`;
   } else if (a.kind === 'diet') {
@@ -9130,6 +9148,24 @@ function openAssignmentView(a) {
     b.textContent = t('Registrado'); b.disabled = true;
     syncRefreshUi();
   }));
+}
+
+// Cargas recomendadas por serie de una rutina asignada (cambian solo para ese entrenado)
+function openAsgLoads(a, l, onDone) {
+  const p = JSON.parse(JSON.stringify(a.payload || {})), U = gymUnit();
+  const rows = (p.exercises || []).map((ex, i) => `<label class="auth-field"><span><b translate="no">${escapeHtml(ex.name || '')}</b>${Array.isArray(ex.sets) && ex.sets.length ? ' · <span translate="no">' + escapeHtml(gymSetsText(ex.sets)) + '</span>' : ''}</span>
+      <input class="auth-in" data-al="${i}" type="text" inputmode="text" value="${escapeHtml(gymLoadsText(ex))}" placeholder="${U === 'lb' ? '135, 135, 145' : '60, 60, 62.5'}"></label>`).join('');
+  openSheet('Cargas por serie', `<div class="lk-d" style="margin:0 0 4px;"><b translate="no">${escapeHtml(a.name)}</b> · <span translate="no">${escapeHtml(l.name || '')}</span></div>
+    <p class="fit-note" style="margin:0 0 12px;"><span>Escribe la carga de cada serie separada por comas, en</span> ${U}. <span>Si pones menos cargas que series, la última se repite. Déjalo vacío para no recomendar carga.</span></p>
+    ${rows || '<div class="sp-empty">Esta rutina no tiene ejercicios.</div>'}<div class="auth-msg" id="al-msg"></div>`, async () => {
+    document.querySelectorAll('[data-al]').forEach(inp => {
+      const ex = p.exercises[+inp.dataset.al], ld = gymParseLoads(inp.value);
+      if (ld.length) ex.loads = ld; else delete ex.loads;
+    });
+    try { await sbRest('assignments?id=eq.' + encodeURIComponent(a.id), { method: 'PATCH', body: { payload: p }, headers: { Prefer: 'return=minimal' } }); }
+    catch (e) { document.getElementById('al-msg').textContent = authErr(e.code); return; }
+    closeSheet(); if (onDone) onDone();
+  });
 }
 
 // ============================================================
@@ -9258,7 +9294,7 @@ async function spOpenClient(l) {
     const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(l.client_id) + '&or=(sub.eq.,sub.gte.' + from + ')&limit=2000');
     if (!r.ok) throw authErrObj('network');
     rows = await r.json();
-    asg = await sbRest('assignments?select=id,kind,name,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent(me) + '&role=eq.' + l.role + '&status=eq.active&order=created_at.desc') || [];
+    asg = await sbRest('assignments?select=id,kind,name,payload,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent(me) + '&role=eq.' + l.role + '&status=eq.active&order=created_at.desc') || [];
   } catch (e) { el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Entrenados</span></button><p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); }); return; }
   if (_sp.client !== l) return;
   const D = {};
@@ -9318,7 +9354,7 @@ async function spOpenClient(l) {
       <div class="sp-card-d">${escapeHtml(cdFmtDay(ws[0]))} → ${escapeHtml(cdFmtDay(ws[ws.length - 1]))}</div>${spWeightChart(D.weight_log)}</div>`;
   }
   const plans = asg.map(a => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(a.name)}</div><span class="usr-badge">${ASG_KINDS[a.kind] || a.kind}</span></div>
-      <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><div class="sp-card-btns"><button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
+      <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><div class="sp-card-btns">${a.kind === 'routine' ? `<button class="btn-secondary" data-asg-loads="${a.id}">Cargas por serie</button>` : ''}<button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button>',
     progress: `<div class="sp-kpis">${kpis.join('')}</div>${weight || (l.role === 'fisioterapeuta' ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}`,
     logs: logs.join('') };
@@ -9332,6 +9368,10 @@ async function spOpenClient(l) {
     <button class="btn-secondary" id="sp-c-end" style="width:100%;margin-top:22px;">Terminar vínculo</button>`;
   const wire = () => {
     const as = document.getElementById('sp-assign'); if (as) as.addEventListener('click', () => openTemplates(l));
+    el.querySelectorAll('[data-asg-loads]').forEach(b => b.addEventListener('click', () => {
+      const a = asg.find(x => String(x.id) === b.dataset.asgLoads);
+      if (a) openAsgLoads(a, l, () => spOpenClient(l));
+    }));
     el.querySelectorAll('[data-asg-end]').forEach(b => b.addEventListener('click', async () => {
       if (!confirm('¿Quitar esta asignación? Dejará de aparecerle al entrenado.')) return;
       try { await sbRest('assignments?id=eq.' + b.dataset.asgEnd, { method: 'PATCH', body: { status: 'ended' }, headers: { Prefer: 'return=minimal' } }); } catch (e) {}
@@ -12007,6 +12047,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const isOpen = ex.id === openId;
     const U = gymUnit();
     const last = gymLastLog(ex.id, dateKey, sw ? sw.name : null);
+    const rec = i => (sw ? null : gymRecLoad(exOrig, i));
     const head = `<div class="gym-ex-head" data-gym-toggle="${ex.id}">
         <div class="gym-ex-media"${sw ? '' : ` data-gym-info="${ex.id}"`}>${gymMediaHtml(ex, isOpen ? 64 : 44)}</div>
         <div class="gym-ex-body">
@@ -12022,7 +12063,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
       const prev = last && last.sets[i];
       return `<div class="gym-set${s.done ? ' done' : ''}" data-ex="${ex.id}" data-i="${i}">
         <div class="gym-set-target"><b>${i + 1}</b><small>${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small></div>
-        <input class="gym-in" inputmode="decimal" data-f="kg" value="${escapeHtml(gymDispW(s.kg))}" placeholder="${prev && prev.kg ? escapeHtml(gymDispW(prev.kg)) : U}">
+        <input class="gym-in" inputmode="decimal" data-f="kg" value="${escapeHtml(gymDispW(s.kg))}" placeholder="${rec(i) ? escapeHtml(gymDispW(rec(i))) : prev && prev.kg ? escapeHtml(gymDispW(prev.kg)) : U}">
         <input class="gym-in" inputmode="numeric" data-f="reps" value="${escapeHtml(s.reps || '')}" placeholder="${prev && prev.reps ? escapeHtml(prev.reps) : 'reps'}">
         <button class="gym-check" aria-label="Hecho">✓</button>
       </div>`;
@@ -12043,6 +12084,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
     return `<div class="gym-ex open${complete ? ' complete' : ''}" data-ex-card="${ex.id}">${head}
       ${extra ? `<div class="gym-chips">${extra}</div>` : ''}
       ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
+      ${!sw && exOrig.loads && exOrig.loads.length ? `<div class="gym-rec"><b>Carga recomendada</b>${r.assigned && r.assigned.by ? ` <span translate="no">· ${escapeHtml(r.assigned.by)}</span>` : ''}<span class="gym-rec-v" translate="no">${Array.from({ length: n }, (_, i) => escapeHtml(gymDispW(rec(i)))).join(' · ')} ${U}</span></div>` : ''}
       ${advHtml}
       ${lastTxt}
       <div class="gym-sets"><div class="gym-set gym-set-h"><div>Serie</div><div translate="no">${U}</div><div>Reps</div><div>Hecho</div></div>${rows}</div>
@@ -12396,6 +12438,12 @@ function gymStoreW(v) {
   const n = gymNum(v); return isNaN(n) ? v : String(Math.round(n / GYM_LB * 100) / 100);
 }
 function gymFmtKg(kg) { return (Math.round(gymVolU(kg) * 10) / 10).toLocaleString(_loc()); }
+// Cargas recomendadas por serie (ex.loads, en kg). Si hay menos cargas que series, la última se repite.
+function gymRecLoad(ex, i) { const l = (ex && ex.loads) || []; return l.length ? l[Math.min(i, l.length - 1)] : null; }
+function gymLoadsText(ex) { return ((ex && ex.loads) || []).map(k => gymDispW(k)).join(', '); }
+function gymParseLoads(txt) {
+  return String(txt || '').split(/[,;\/\s]+/).map(x => gymNum(x)).filter(n => n > 0 && n < 2000).slice(0, 20).map(n => gymStoreW(String(n)));
+}
 // Carga sugerida, redondeada a discos reales (0.5 kg o 2.5 lb)
 function gymFmtLoad(kg) {
   return gymUnit() === 'lb' ? (Math.round(kg * GYM_LB / 2.5) * 2.5).toLocaleString(_loc()) : (Math.round(gymRound(kg) * 10) / 10).toLocaleString(_loc());
@@ -12776,6 +12824,7 @@ function gymEditorSync() {
     ex.sets = gymParseSetsText(g('sets'));
     ex.rir = g('rir').trim(); ex.rpe = g('rpe').trim(); ex.tempo = g('tempo').trim(); ex.rest = g('rest').trim(); ex.notes = g('notes').trim();
     ex.pct1rm = g('pct1rm').trim();
+    const ld = gymParseLoads(g('loads')); if (ld.length) ex.loads = ld; else delete ex.loads;
   });
 }
 function gymDrawEditor(isNew) {
@@ -12787,7 +12836,7 @@ function gymDrawEditor(isNew) {
       ${gymMediaHtml(ex, 40)}
       <div class="ge-mini-body">
         <div class="ge-mini-name">${ex.circuit != null ? `<span class="ge-circ">${ex.circuit}</span>` : ''}${escapeHtml(ex.name || '—')}</div>
-        <div class="ge-mini-meta">${escapeHtml(gymSetsText(ex.sets) || '—')}${ex.rir ? ' · RIR ' + escapeHtml(ex.rir) : ''}${ex.rpe ? ' · RPE ' + escapeHtml(ex.rpe) : ''}</div>
+        <div class="ge-mini-meta">${escapeHtml(gymSetsText(ex.sets) || '—')}${ex.rir ? ' · RIR ' + escapeHtml(ex.rir) : ''}${ex.rpe ? ' · RPE ' + escapeHtml(ex.rpe) : ''}${ex.loads && ex.loads.length ? ' · ' + escapeHtml(gymLoadsText(ex)) + ' ' + gymUnit() : ''}</div>
       </div>
       <div class="gym-routine-chev">›</div>
     </div>` : `
@@ -12804,6 +12853,7 @@ function gymDrawEditor(isNew) {
         <label><span>%1RM</span><input class="field-input" data-f="pct1rm" inputmode="numeric" value="${escapeHtml(ex.pct1rm || '')}" placeholder="70-75"></label>
         <label><span>Tempo</span><input class="field-input" data-f="tempo" value="${escapeHtml(ex.tempo || '')}" placeholder="${escapeHtml(e.tempo || '3-1-2')}"></label>
         <label><span>Descanso</span><input class="field-input" data-f="rest" value="${escapeHtml(ex.rest || '')}" placeholder="90 s"></label>
+        <label class="ge-full"><span>Carga recomendada por serie</span><input class="field-input" data-f="loads" value="${escapeHtml(gymLoadsText(ex))}" placeholder="${gymUnit() === 'lb' ? '135, 135, 145' : '60, 60, 62.5'} (${gymUnit()})"></label>
         <label class="ge-full"><span>Notas</span><input class="field-input" data-f="notes" value="${escapeHtml(ex.notes || '')}"></label>
       </div>
       <div class="ge-ex-btns">

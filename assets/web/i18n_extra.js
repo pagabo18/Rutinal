@@ -3731,6 +3731,36 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Carga recomendada por serie": {
+   "en": "Recommended load per set",
+   "pt-BR": "Carga recomendada por série",
+   "fr": "Charge recommandée par série"
+  },
+  "Carga recomendada": {
+   "en": "Recommended load",
+   "pt-BR": "Carga recomendada",
+   "fr": "Charge recommandée"
+  },
+  "Cargas por serie": {
+   "en": "Loads per set",
+   "pt-BR": "Cargas por série",
+   "fr": "Charges par série"
+  },
+  "Escribe la carga de cada serie separada por comas, en": {
+   "en": "Type the load for each set separated by commas, in",
+   "pt-BR": "Escreva a carga de cada série separada por vírgulas, em",
+   "fr": "Saisissez la charge de chaque série séparée par des virgules, en"
+  },
+  "Si pones menos cargas que series, la última se repite. Déjalo vacío para no recomendar carga.": {
+   "en": "If you enter fewer loads than sets, the last one repeats. Leave it empty to recommend no load.",
+   "pt-BR": "Se você colocar menos cargas que séries, a última se repete. Deixe vazio para não recomendar carga.",
+   "fr": "S'il y a moins de charges que de séries, la dernière se répète. Laissez vide pour ne rien recommander."
+  },
+  "Esta rutina no tiene ejercicios.": {
+   "en": "This routine has no exercises.",
+   "pt-BR": "Esta rotina não tem exercícios.",
+   "fr": "Cette routine n'a pas d'exercices."
+  },
   "Serie": {
    "en": "Set",
    "pt-BR": "Série",
