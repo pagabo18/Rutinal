@@ -12561,38 +12561,63 @@ function fitRowsHtml(item, grams, info, totals) {
   }).join('');
 }
 
-// ---- Mejores opciones: qué comer en su lugar cuando el alimento califica bajo ----
-// Por tipo de antojo (lista curada de la base local) o, si no se reconoce, por categoría.
+// ---- Mejores opciones: alternativas DEL MISMO GRUPO cuando el alimento califica bajo ----
+// Cada grupo reconoce el producto por su nombre (re) y propone solo alimentos del mismo tipo
+// (pool, nombres de la base local): botana por botana, bebida por bebida, chocolate por chocolate…
+// Si no se reconoce el grupo, se usa la categoría del alimento (lácteo, cereal, carne…).
 const FIT_SWAPS = [
-  { re: /\b(papas?|papitas|chips|sabritas|doritos|cheetos|ruffles|takis|totopos?|nachos?|chicharron(es)?|frituras?|botanas?|pretzels?|churritos?|crujientes?|snacks?)\b/,
-    alts: ['Palomitas naturales (aire)', 'Tostada horneada', 'Edamame cocido', 'Jícama', 'Cacahuates', 'Pepino', 'Almendras'] },
-  { re: /\b(refrescos?|soda|cola|jugos?|nectar|limonada|naranjada|energizante|energy|gatorade|powerade|malteada|frappe|te helado)\b/,
-    alts: ['Agua mineral', 'Refresco de cola light', 'Agua de limón con chía', 'Café negro', 'Leche de almendra (sin azúcar)'] },
-  { re: /\b(cereal(es)?|granola|hojuelas|zucaritas|corn flakes|krispis)\b/,
-    alts: ['Avena en hojuelas (cruda)', 'Cereal de trigo integral', 'Yogur griego natural', 'Fresa'] },
-  { re: /\b(yogur|yoghurt|yogurt|danonino|natilla|flan|licuado)\b/,
-    alts: ['Yogur griego natural', 'Queso cottage', 'Yogur natural', 'Yogur light'] },
-  { re: /\b(chocolates?|galletas?|pastel(es)?|pan dulce|donas?|brownies?|muffins?|helados?|dulces?|caramelos?|gomitas?|paletas?|cajeta|mermelada|panque|pay|cookies?|candy|pastelito)\b/,
-    alts: ['Fresa', 'Yogur griego natural', 'Manzana', 'Chocolate amargo 70%', 'Plátano', 'Arándanos', 'Gelatina preparada'] },
-  { re: /\b(salchichas?|jamon|tocino|chorizo|pepperoni|salami|mortadela|embutidos?|nuggets?)\b/,
-    alts: ['Pechuga de pavo', 'Pechuga de pollo (cocida)', 'Atún en agua (drenado)', 'Queso panela', 'Huevo entero'] },
-  { re: /\b(pan blanco|pan de caja|bolillo|pasta|espagueti|tortillas? de harina|arroz blanco)\b/,
-    alts: ['Pan integral', 'Tortilla integral', 'Pasta integral cocida', 'Arroz integral cocido'] },
+  { id: 'botana', re: /\b(papas?|papitas|chips|sabritas|doritos|cheetos|ruffles|takis|totopos?|nachos?|chicharron(es)?|frituras?|botanas?|pretzels?|churritos?|palomitas|cacahuates?|snacks?)\b/,
+    pool: ['Palomitas naturales (aire)', 'Tostada horneada', 'Tostada de maíz azul', 'Tostada de maíz (sola)', 'Galletas saladas', 'Cacahuates', 'Pepitas tostadas con sal',
+      'Semilla de girasol tostada', 'Almendras', 'Pistaches', 'Mix de frutos secos', 'Amaranto tostado', 'Palomitas con mantequilla (cine)', 'Chicharrón de cerdo'] },
+  { id: 'cafe', re: /\b(frappe|malteada|latte|capuchino|cappuccino|cafe|chocolate caliente|chocomilk|leche con chocolate|licuado|smoothie)\b/,
+    pool: ['Café negro', 'Café americano', 'Café con leche', 'Capuchino', 'Latte', 'Café de olla', 'Leche de almendra (sin azúcar)', 'Leche descremada', 'Licuado de fresa', 'Licuado de plátano', 'Smoothie verde'] },
+  { id: 'jugo', re: /\b(jugos?|nectar|zumo)\b/,
+    pool: ['Jugo verde', 'Jugo de zanahoria', 'Jugo de betabel', 'Jugo de naranja', 'Agua de limón con chía', 'Agua mineral', 'Limonada', 'Naranjada', 'Agua de jamaica (endulzada)'] },
+  { id: 'refresco', re: /\b(refrescos?|soda|cola|limonada|naranjada|energizante|energetica|energy|isotonica|gatorade|powerade|te helado|agua de)\b/,
+    pool: ['Agua mineral', 'Refresco de cola light', 'Agua de limón con chía', 'Kombucha', 'Té helado', 'Limonada', 'Agua de jamaica (endulzada)', 'Bebida isotónica', 'Naranjada', 'Agua de tamarindo'] },
+  { id: 'cereal', re: /\b(cereal(es)?|granola|hojuelas|zucaritas|corn flakes|krispis|muesli|avena)\b/,
+    pool: ['Avena en hojuelas (cruda)', 'Avena instantánea', 'Cereal de trigo integral', 'Cereal de salvado de trigo', 'Muesli', 'Granola', 'Cereal de arroz inflado', 'Cereal de maíz (hojuelas)', 'Amaranto reventado', 'Cereal azucarado'] },
+  { id: 'yogur', re: /\b(yogur|yoghurt|yogurt|danonino|petit suisse|kefir|skyr)\b/,
+    pool: ['Yogur griego natural', 'Skyr natural', 'Yogur natural', 'Yogur light', 'Kéfir de leche', 'Queso cottage', 'Jocoque', 'Yogur con fruta', 'Yogur bebible'] },
+  { id: 'helado', re: /\b(helados?|paletas?|nieve|sorbete|gelatina|flan|natilla)\b/,
+    pool: ['Paleta de hielo', 'Gelatina preparada', 'Nieve de garrafa', 'Gelatina de leche', 'Helado de vainilla', 'Helado de fresa', 'Helado de chocolate', 'Flan'] },
+  { id: 'galleta', re: /\b(galletas?|cookies?|barritas?|barra de (granola|cereal|proteina|avena)|obleas?)\b/,
+    pool: ['Galletas de avena', 'Galletas marías', 'Galletas de animalitos', 'Barra de granola', 'Barrita de cereal', 'Obleas', 'Galleta con chispas de chocolate', 'Polvorón'] },
+  { id: 'pan_dulce', re: /\b(pastel(es)?|pastelito|pan dulce|donas?|brownies?|muffins?|panque|pay|cheesecake|cuernito|croissant|hot ?cakes?|gansito|pinguinos|concha|bisquet)\b/,
+    pool: ['Hotcakes', 'Bisquet', 'Pan tostado', 'Cuernito', 'Croissant', 'Pan de muerto', 'Pastel de zanahoria', 'Muffin de chocolate', 'Galletas de avena', 'Oreja', 'Dona glaseada', 'Pay de limón', 'Brownie'] },
+  { id: 'chocolate', re: /\b(chocolates?|cacao|nutella|avellana)\b/,
+    pool: ['Chocolate amargo 70%', 'Cacao nibs', 'Chocolate con leche', 'Chocolate blanco', 'Crema de avellana (Nutella)'] },
+  { id: 'dulce', re: /\b(dulces?|caramelos?|gomitas?|mazapan|cajeta|mermelada|miel|lechera|leche condensada|arroz con leche|ate|tamarindo|chicles?|candy|azucar)\b/,
+    pool: ['Palanqueta', 'Ate de guayaba', 'Mazapán', 'Obleas', 'Dulce de tamarindo', 'Gelatina preparada', 'Pulparindo', 'Gomitas'] },
+  { id: 'embutido', re: /\b(salchichas?|jamon|tocino|chorizo|pepperoni|salami|mortadela|embutidos?|nuggets?)\b/,
+    pool: ['Pechuga de pavo', 'Pechuga de pavo ahumada', 'Jamón de pavo', 'Jamón de cerdo', 'Jamón serrano', 'Salchicha de pavo', 'Tocino de pavo (frito)', 'Chorizo de pavo (cocido)', 'Pepperoni de pavo', 'Chorizo de soya'] },
+  { id: 'queso', re: /\b(quesos?|requeson|mozzarella|parmesano)\b/, poolRe: /^(queso|requeson|mozzarella|parmesano)/ },
+  { id: 'leche', re: /\b(leche)\b/, poolRe: /^leche (entera|descremada|semidescremada|deslactosada|de almendra|de soya|de cabra)/ },
+  { id: 'pan', re: /\b(pan|bolillo|baguette|tortillas?|bagel|bimbo)\b/,
+    pool: ['Pan integral', 'Pan de centeno', 'Pan de masa madre', 'Pan tostado', 'Pan pita', 'Tortilla integral', 'Tortilla de maíz', 'Tortilla de nopal', 'Pan blanco de caja', 'Bolillo', 'Tortilla de harina'] },
+  { id: 'pasta', re: /\b(pasta|espagueti|spaghetti|macarron(es)?|fideos?|arroz|ramen|sopa instantanea|maruchan)\b/,
+    pool: ['Pasta integral cocida', 'Arroz integral cocido', 'Quinoa cocida', 'Arroz salvaje cocido', 'Bulgur cocido', 'Cuscús cocido', 'Pasta cocida', 'Arroz blanco cocido', 'Fideo chino'] },
 ];
 let _fitAlts = [];
 function fitLocalItem(f) {
   return { id: 'local_' + LOCAL_FOODS.indexOf(f), name: f.n, cat: f.g || null, brand: '', image: '', source: 'local', serving_size: '',
     per100g: { kcal: Math.round(f.k), protein: +(f.p || 0), carbs: +(f.c || 0), fat: +(f.f || 0), fiber: +(f.fb || 0), sugars: +(f.s || 0), sodium: +(f.na || 0) } };
 }
+function fitSwapGroup(name) {
+  const n = normalizeFoodQuery(name || '');
+  return FIT_SWAPS.find(g => g.re.test(n)) || null;
+}
 function fitAlternatives(item, info, totals, score) {
-  if (score == null || score >= 55 || typeof LOCAL_FOODS === 'undefined') return [];
+  if (score == null || score >= 60 || typeof LOCAL_FOODS === 'undefined') return [];
   const n = normalizeFoodQuery(item.name || '');
+  const grp = fitSwapGroup(item.name);
   let cands = [];
-  const grp = FIT_SWAPS.find(g => g.re.test(n));
-  if (grp) cands = grp.alts.map(a => LOCAL_FOODS.find(f => f.n === a)).filter(Boolean);
+  if (grp && grp.pool) cands = grp.pool.map(a => LOCAL_FOODS.find(f => f.n === a)).filter(Boolean);
+  else if (grp && grp.poolRe) cands = LOCAL_FOODS.filter(f => grp.poolRe.test(normalizeFoodQuery(f.n)));
   else {
+    // Grupo no reconocido: misma categoría (los platillos son demasiado distintos entre sí)
     const cat = foodCatOf(item);
-    if (cat) cands = LOCAL_FOODS.filter(f => f.g === cat);
+    if (cat && cat !== 'platillo') cands = LOCAL_FOODS.filter(f => f.g === cat);
   }
   const out = [];
   cands.forEach(f => {
@@ -12600,12 +12625,12 @@ function fitAlternatives(item, info, totals, score) {
     if (normalizeFoodQuery(alt.name) === n) return;
     let q = fitQuality(alt, info.kind);
     if (q.score == null && alt.per100g.kcal <= 5) q = { score: 95, goods: [], bads: [] }; // agua y similares
-    if (q.score == null || q.score < Math.max(55, score + 15)) return;
+    // Dentro del mismo grupo basta con que sea claramente mejor que el producto
+    if (q.score == null || q.score < score + 10) return;
     const mx = fitMaxGrams(alt, info, totals, q.score);
-    out.push({ item: alt, score: q.score, lab: fitLabel(q.score), grams: mx ? mx.grams : null, good: q.goods[0] || '' });
+    out.push({ item: alt, score: q.score, lab: fitLabel(q.score), grams: mx ? mx.grams : null });
   });
-  // Lista curada: se respeta el orden (lo más parecido al antojo primero). Por categoría: mejores primero.
-  if (!grp) out.sort((a, b) => b.score - a.score);
+  out.sort((x, y) => y.score - x.score);
   return out.slice(0, 3);
 }
 
@@ -12660,7 +12685,7 @@ function fitHtml(item, mealId, index) {
   }
   // Mejores opciones (solo al añadir)
   _fitAlts = index < 0 ? fitAlternatives(item, info, totals, q.score) : [];
-  const altsHtml = _fitAlts.length ? `<div class="fit-sec"><div class="fit-sec-k">Mejores opciones</div>
+  const altsHtml = _fitAlts.length ? `<div class="fit-sec"><div class="fit-sec-k">Mejores opciones del mismo tipo</div>
     ${_fitAlts.map((a, i) => `<div class="fit-alt" data-fit-alt="${i}">
       <div class="fit-score sm ${a.lab.c}">${a.score}</div>
       <div class="fit-alt-body"><div class="fit-alt-n">${escapeHtml(a.item.name)}</div>

@@ -3706,10 +3706,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Pouco processado",
    "fr": "Peu transformé"
   },
-  "Mejores opciones": {
-   "en": "Better options",
-   "pt-BR": "Opções melhores",
-   "fr": "Meilleures options"
+  "Mejores opciones del mismo tipo": {
+   "en": "Better options of the same kind",
+   "pt-BR": "Opções melhores do mesmo tipo",
+   "fr": "Meilleures options du même type"
   },
   "Ya cubriste tu proteína de hoy": {
    "en": "You've already covered today's protein",
