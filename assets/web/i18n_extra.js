@@ -3731,6 +3731,211 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Especialistas y entrenados": {
+   "en": "Specialists and trainees",
+   "pt-BR": "Especialistas e alunos",
+   "fr": "Spécialistes et élèves"
+  },
+  "entrenamientos": {
+   "en": "workouts",
+   "pt-BR": "treinos",
+   "fr": "entraînements"
+  },
+  "rutinas": {
+   "en": "routines",
+   "pt-BR": "rotinas",
+   "fr": "routines"
+  },
+  "peso": {
+   "en": "weight",
+   "pt-BR": "peso",
+   "fr": "poids"
+  },
+  "comidas": {
+   "en": "meals",
+   "pt-BR": "refeições",
+   "fr": "repas"
+  },
+  "metas de nutrición": {
+   "en": "nutrition targets",
+   "pt-BR": "metas de nutrição",
+   "fr": "objectifs de nutrition"
+  },
+  "agua": {
+   "en": "water",
+   "pt-BR": "água",
+   "fr": "eau"
+  },
+  "Ese código no existe o ya venció.": {
+   "en": "That code doesn't exist or has expired.",
+   "pt-BR": "Esse código não existe ou já expirou.",
+   "fr": "Ce code n'existe pas ou a expiré."
+  },
+  "Ese código es tuyo; compártelo con tu entrenado.": {
+   "en": "That code is yours; share it with your trainee.",
+   "pt-BR": "Esse código é seu; compartilhe com seu aluno.",
+   "fr": "Ce code est le vôtre ; partagez-le avec votre élève."
+  },
+  "Tienes demasiadas invitaciones pendientes. Cancela alguna.": {
+   "en": "You have too many pending invitations. Cancel one.",
+   "pt-BR": "Você tem convites pendentes demais. Cancele algum.",
+   "fr": "Vous avez trop d'invitations en attente. Annulez-en une."
+  },
+  "Tu cuenta no tiene esa especialidad.": {
+   "en": "Your account doesn't have that specialty.",
+   "pt-BR": "Sua conta não tem essa especialidade.",
+   "fr": "Votre compte n'a pas cette spécialité."
+  },
+  "Puede ver:": {
+   "en": "Can see:",
+   "pt-BR": "Pode ver:",
+   "fr": "Peut voir :"
+  },
+  "Podrá ver:": {
+   "en": "Will be able to see:",
+   "pt-BR": "Poderá ver:",
+   "fr": "Pourra voir :"
+  },
+  "Dejar de compartir": {
+   "en": "Stop sharing",
+   "pt-BR": "Parar de compartilhar",
+   "fr": "Arrêter le partage"
+  },
+  "Sin registros todavía": {
+   "en": "No records yet",
+   "pt-BR": "Ainda sem registros",
+   "fr": "Aucune donnée pour l'instant"
+  },
+  "Registró hoy": {
+   "en": "Logged today",
+   "pt-BR": "Registrou hoje",
+   "fr": "A enregistré aujourd'hui"
+  },
+  "Invitación sin usar": {
+   "en": "Unused invitation",
+   "pt-BR": "Convite não usado",
+   "fr": "Invitation non utilisée"
+  },
+  "Cancelar invitación": {
+   "en": "Cancel invitation",
+   "pt-BR": "Cancelar convite",
+   "fr": "Annuler l'invitation"
+  },
+  "Mis entrenados": {
+   "en": "My trainees",
+   "pt-BR": "Meus alunos",
+   "fr": "Mes élèves"
+  },
+  "Aún no tienes entrenados vinculados.": {
+   "en": "You don't have any linked trainees yet.",
+   "pt-BR": "Você ainda não tem alunos vinculados.",
+   "fr": "Vous n'avez pas encore d'élèves liés."
+  },
+  "Invitar como": {
+   "en": "Invite as",
+   "pt-BR": "Convidar como",
+   "fr": "Inviter comme"
+  },
+  "Mis especialistas": {
+   "en": "My specialists",
+   "pt-BR": "Meus especialistas",
+   "fr": "Mes spécialistes"
+  },
+  "Nadie más ve tus datos.": {
+   "en": "Nobody else sees your data.",
+   "pt-BR": "Ninguém mais vê seus dados.",
+   "fr": "Personne d'autre ne voit vos données."
+  },
+  "Código de invitación": {
+   "en": "Invitation code",
+   "pt-BR": "Código do convite",
+   "fr": "Code d'invitation"
+  },
+  "¿Terminar este vínculo? La otra persona dejará de ver los datos.": {
+   "en": "End this link? The other person will stop seeing the data.",
+   "pt-BR": "Encerrar este vínculo? A outra pessoa deixará de ver os dados.",
+   "fr": "Mettre fin à ce lien ? L'autre personne ne verra plus les données."
+  },
+  "Invitación": {
+   "en": "Invitation",
+   "pt-BR": "Convite",
+   "fr": "Invitation"
+  },
+  "Comparte este código con tu entrenado. Lo escribe en Editar → Ajustes → Cuenta → Especialistas y entrenados. Vence en 14 días.": {
+   "en": "Share this code with your trainee. They enter it in Edit → Settings → Account → Specialists and trainees. It expires in 14 days.",
+   "pt-BR": "Compartilhe este código com seu aluno. Ele o digita em Editar → Ajustes → Conta → Especialistas e alunos. Expira em 14 dias.",
+   "fr": "Partagez ce code avec votre élève. Il le saisit dans Modifier → Réglages → Compte → Spécialistes et élèves. Il expire dans 14 jours."
+  },
+  "Volver": {
+   "en": "Back",
+   "pt-BR": "Voltar",
+   "fr": "Retour"
+  },
+  "Activa primero el respaldo en la nube; sin él no hay datos que compartir.": {
+   "en": "Turn on cloud backup first; without it there is no data to share.",
+   "pt-BR": "Ative primeiro o backup na nuvem; sem ele não há dados para compartilhar.",
+   "fr": "Activez d'abord la sauvegarde dans le cloud ; sans elle, il n'y a rien à partager."
+  },
+  "Aceptar invitación": {
+   "en": "Accept invitation",
+   "pt-BR": "Aceitar convite",
+   "fr": "Accepter l'invitation"
+  },
+  "quiere acompañarte como": {
+   "en": "wants to work with you as",
+   "pt-BR": "quer acompanhar você como",
+   "fr": "souhaite vous accompagner comme"
+  },
+  "No podrá cambiar tus registros. Puedes dejar de compartir cuando quieras desde esta misma pantalla.": {
+   "en": "They won't be able to change your records. You can stop sharing any time from this same screen.",
+   "pt-BR": "Ele não poderá alterar seus registros. Você pode parar de compartilhar quando quiser nesta mesma tela.",
+   "fr": "Il ne pourra pas modifier vos données. Vous pouvez arrêter le partage à tout moment depuis cet écran."
+  },
+  "Aceptar y compartir": {
+   "en": "Accept and share",
+   "pt-BR": "Aceitar e compartilhar",
+   "fr": "Accepter et partager"
+  },
+  "Últimos 30 días": {
+   "en": "Last 30 days",
+   "pt-BR": "Últimos 30 dias",
+   "fr": "30 derniers jours"
+  },
+  "Solo lectura": {
+   "en": "Read-only",
+   "pt-BR": "Somente leitura",
+   "fr": "Lecture seule"
+  },
+  "Comidas": {
+   "en": "Meals",
+   "pt-BR": "Refeições",
+   "fr": "Repas"
+  },
+  "Meta diaria:": {
+   "en": "Daily target:",
+   "pt-BR": "Meta diária:",
+   "fr": "Objectif quotidien :"
+  },
+  "Sin comidas registradas en este periodo.": {
+   "en": "No meals logged in this period.",
+   "pt-BR": "Sem refeições registradas neste período.",
+   "fr": "Aucun repas enregistré sur cette période."
+  },
+  "Entrenamientos": {
+   "en": "Workouts",
+   "pt-BR": "Treinos",
+   "fr": "Entraînements"
+  },
+  "Sin series registradas": {
+   "en": "No sets logged",
+   "pt-BR": "Sem séries registradas",
+   "fr": "Aucune série enregistrée"
+  },
+  "Sin entrenamientos registrados en este periodo.": {
+   "en": "No workouts logged in this period.",
+   "pt-BR": "Sem treinos registrados neste período.",
+   "fr": "Aucun entraînement enregistré sur cette période."
+  },
   "Respaldo en la nube": {
    "en": "Cloud backup",
    "pt-BR": "Backup na nuvem",
@@ -4223,6 +4428,31 @@ window.__I18N_EXTRA = {
   }
  },
  "tpl": {
+  "Sin registros desde hace {{n}} días": {
+   "en": "No records for {{n}} days",
+   "pt-BR": "Sem registros há {{n}} dias",
+   "fr": "Aucune donnée depuis {{n}} jours"
+  },
+  "Último registro hace {{n}} días": {
+   "en": "Last record {{n}} days ago",
+   "pt-BR": "Último registro há {{n}} dias",
+   "fr": "Dernière donnée il y a {{n}} jours"
+  },
+  "Comidas registradas: {{n}} de 7 días": {
+   "en": "Meals logged: {{n}} of 7 days",
+   "pt-BR": "Refeições registradas: {{n}} de 7 dias",
+   "fr": "Repas enregistrés : {{n}} jours sur 7"
+  },
+  "Entrenamientos en 7 días: {{n}}": {
+   "en": "Workouts in 7 days: {{n}}",
+   "pt-BR": "Treinos em 7 dias: {{n}}",
+   "fr": "Entraînements sur 7 jours : {{n}}"
+  },
+  "Dolor máximo: {{n}}/10": {
+   "en": "Max pain: {{n}}/10",
+   "pt-BR": "Dor máxima: {{n}}/10",
+   "fr": "Douleur max : {{n}}/10"
+  },
   "Último acceso: {{x}}": {
    "en": "Last sign-in: {{x}}",
    "pt-BR": "Último acesso: {{x}}",

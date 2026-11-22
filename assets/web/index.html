@@ -2067,6 +2067,23 @@
   .usr-badge.off { background: rgba(220,38,38,.12); color: #B91C1C; }
   .usr-badge.spec { background: rgba(37,99,235,.12); color: #1D4ED8; }
   .usr-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .lk-h { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; margin: 18px 0 8px; }
+  .lk-row { border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 8px; background: var(--surface); }
+  .lk-row.tap { cursor: pointer; }
+  .lk-top { display: flex; align-items: center; gap: 8px; }
+  .lk-n { font-weight: 600; font-size: 15px; flex: 1; min-width: 0; }
+  .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
+  .lk-d .warn { color: #B45309; font-weight: 600; }
+  .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  .cd-day { border-bottom: 1px solid var(--border); padding: 10px 0; }
+  .cd-day summary { display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; font-size: 14px; }
+  .cd-day summary::-webkit-details-marker { display: none; }
+  .cd-date { flex: 1; font-weight: 600; }
+  .cd-num { font-variant-numeric: tabular-nums; }
+  .cd-num.over { color: #B91C1C; font-weight: 600; } .cd-num.ok { color: #15803D; font-weight: 600; }
+  .cd-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .cd-items { font-size: 13px; color: var(--text-2); margin: 8px 0 2px; line-height: 1.6; }
+  .cd-items b { color: var(--text); }
   .usr-check { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-2); margin: 10px 0; cursor: pointer; }
   .usr-check input { width: 18px; height: 18px; }
   .usr-cred { background: var(--surface-2); border-radius: 12px; padding: 14px; font-size: 15px; line-height: 1.7; margin: 10px 0; user-select: all; -webkit-user-select: all; }
@@ -2772,6 +2789,7 @@ try {
         <div class="acct-user" id="acct-user"></div>
         <div style="display:flex; flex-direction:column; gap:8px;">
           <button class="btn-secondary" id="btn-acct-users" style="display:none;">Administrar usuarios</button>
+          <button class="btn-secondary" id="btn-acct-links">Especialistas y entrenados</button>
           <button class="btn-secondary" id="btn-acct-sync">Respaldo en la nube</button>
           <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
           <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
@@ -8584,6 +8602,177 @@ function onAuthReady() {
   window.addEventListener('online', () => syncSchedule(1500));
   setInterval(() => { if (!document.hidden) syncSchedule(0); }, 5 * 60000);
 })();
+
+// ============================================================
+// ESPECIALISTAS Y ENTRENADOS (vínculos y panel de solo lectura)
+// El especialista genera un código de invitación; el entrenado lo acepta viendo qué comparte.
+// El servidor decide qué documentos puede leer cada rol (política de user_docs).
+// ============================================================
+const LINK_KEY_LABELS = { gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
+const LINK_ERRORS = { bad_code: 'Ese código no existe o ya venció.', own_code: 'Ese código es tuyo; compártelo con tu entrenado.', too_many: 'Tienes demasiadas invitaciones pendientes. Cancela alguna.', forbidden: 'Tu cuenta no tiene esa especialidad.' };
+function linkErr(code) { return LINK_ERRORS[code] || authErr(code); }
+async function linkRpc(fn, args) {
+  try {
+    const r = await sbFetch('/rest/v1/rpc/' + fn, { method: 'POST', body: args || {} });
+    const j = await r.json().catch(() => null);
+    return (r.ok && j) ? j : { ok: false, error: 'network' };
+  } catch (e) { return { ok: false, error: e && e.code === 'session' ? 'session' : 'network' }; }
+}
+function linkSees(keys) { return (keys || []).map(k => LINK_KEY_LABELS[k]).filter(Boolean).map(x => `<span>${x}</span>`).join(', '); }
+function linkAgo(iso) {
+  if (!iso) return null;
+  return Math.floor((Date.now() - Date.parse(iso)) / 864e5);
+}
+let _links = { as_client: [], as_specialist: [] };
+async function openLinks() {
+  openSheet('Especialistas y entrenados', '<div class="food-loader">Cargando...</div>');
+  const r = await linkRpc('rutinal_my_links');
+  if (!r.ok) { openSheet('Especialistas y entrenados', `<p class="auth-msg">${escapeHtml(linkErr(r.error))}</p>`); return; }
+  _links = r;
+  const s = authGet() || {}, specs = s.specs || [];
+  const mine = r.as_client.map(l => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name)}</div><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span></div>
+      <div class="lk-d"><span>Puede ver:</span> ${linkSees(l.keys)}</div>
+      <button class="btn-secondary" data-lk-end="${l.id}" style="margin-top:8px;padding:8px 12px;">Dejar de compartir</button></div>`).join('');
+  const clients = r.as_specialist.filter(l => l.status === 'active'), pend = r.as_specialist.filter(l => l.status === 'pending');
+  const cRows = clients.map((l, i) => {
+    const ago = linkAgo(l.last_activity), bits = [];
+    bits.push(ago == null ? '<span class="warn">Sin registros todavía</span>' : ago >= 3 ? `<span class="warn">Sin registros desde hace ${ago} días</span>` : ago === 0 ? '<span>Registró hoy</span>' : `<span>Último registro hace ${ago} días</span>`);
+    if (l.meals7 != null) bits.push(`<span>Comidas registradas: ${l.meals7} de 7 días</span>`);
+    if (l.workouts7 != null) bits.push(`<span>Entrenamientos en 7 días: ${l.workouts7}</span>`);
+    if (l.pain7 != null) bits.push(`<span class="${l.pain7 >= 6 ? 'warn' : ''}">Dolor máximo: ${l.pain7}/10</span>`);
+    return `<div class="lk-row tap" data-lk-open="${i}"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name || '')}</div><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span><span style="color:var(--text-3);font-size:18px;">›</span></div>
+      <div class="lk-d">${bits.join(' · ')}</div></div>`;
+  }).join('');
+  const pRows = pend.map(l => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><span class="usr-badge">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span></div>
+      <div class="lk-d"><span>Invitación sin usar</span></div><button class="btn-secondary" data-lk-end="${l.id}" style="margin-top:8px;padding:8px 12px;">Cancelar invitación</button></div>`).join('');
+  openSheet('Especialistas y entrenados', `
+    ${specs.length ? `<div class="lk-h" style="margin-top:0;">Mis entrenados</div>
+      ${cRows || '<div class="lk-d" style="margin-bottom:8px;">Aún no tienes entrenados vinculados.</div>'}${pRows}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">${specs.map(k => `<button class="btn-secondary" data-lk-invite="${k}" style="flex:1;"><span>Invitar como</span> ${AUTH_SPECS[k]}</button>`).join('')}</div>` : ''}
+    <div class="lk-h"${specs.length ? '' : ' style="margin-top:0;"'}>Mis especialistas</div>
+    ${mine || '<div class="lk-d" style="margin-bottom:8px;">Nadie más ve tus datos.</div>'}
+    <label class="auth-field" style="margin-top:12px;"><span>Código de invitación</span>
+      <div style="display:flex;gap:8px;"><input class="auth-in" id="lk-code" type="text" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="8" style="flex:1 1 auto;min-width:0;width:auto;text-transform:uppercase;letter-spacing:.08em;"><button class="btn-secondary" type="button" id="lk-go" style="white-space:nowrap;width:auto;flex:0 0 auto;padding:0 16px;">Continuar</button></div>
+    </label>
+    <div class="auth-msg" id="lk-msg"></div>`);
+  const msg = document.getElementById('lk-msg');
+  document.querySelectorAll('[data-lk-end]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('¿Terminar este vínculo? La otra persona dejará de ver los datos.')) return;
+    const e = await linkRpc('rutinal_link_end', { p_id: b.dataset.lkEnd });
+    if (!e.ok) { msg.textContent = linkErr(e.error); return; }
+    openLinks();
+  }));
+  document.querySelectorAll('[data-lk-invite]').forEach(b => b.addEventListener('click', async () => {
+    const e = await linkRpc('rutinal_invite', { p_role: b.dataset.lkInvite });
+    if (!e.ok) { msg.textContent = linkErr(e.error); return; }
+    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu entrenado. Lo escribe en Editar → Ajustes → Cuenta → Especialistas y entrenados. Vence en 14 días.</p>
+      <div class="lk-code" translate="no">${escapeHtml(e.code)}</div>
+      <button class="btn-primary" id="lk-copy" style="width:100%;margin-bottom:8px;">Copiar</button>
+      <button class="btn-secondary" id="lk-back" style="width:100%;">Volver</button>`);
+    document.getElementById('lk-copy').addEventListener('click', async (ev) => { let ok = false; try { await navigator.clipboard.writeText(e.code); ok = true; } catch (x) {} ev.target.textContent = ok ? 'Copiado' : 'No se pudo copiar'; });
+    document.getElementById('lk-back').addEventListener('click', openLinks);
+  }));
+  document.querySelectorAll('[data-lk-open]').forEach(el => el.addEventListener('click', () => openClientDetail(clients[+el.dataset.lkOpen])));
+  document.getElementById('lk-go').addEventListener('click', async () => {
+    const code = document.getElementById('lk-code').value.trim().toUpperCase();
+    if (!code) return;
+    msg.textContent = '';
+    if (!syncOn()) { msg.textContent = 'Activa primero el respaldo en la nube; sin él no hay datos que compartir.'; return; }
+    const pv = await linkRpc('rutinal_invite_preview', { p_code: code });
+    if (!pv.ok) { msg.textContent = linkErr(pv.error); return; }
+    openSheet('Aceptar invitación', `<p style="font-size:15px;line-height:1.5;"><b translate="no">${escapeHtml(pv.specialist)}</b> <span>quiere acompañarte como</span> <b>${escapeHtml(AUTH_SPECS[pv.role] || pv.role)}</b>.</p>
+      <div class="lk-row"><div class="lk-d" style="margin-top:0;font-size:14px;color:var(--text-2);"><span>Podrá ver:</span> ${linkSees(pv.keys)}</div></div>
+      <div class="fit-note" style="margin:10px 0;">No podrá cambiar tus registros. Puedes dejar de compartir cuando quieras desde esta misma pantalla.</div>
+      <div class="auth-msg" id="lk-msg2"></div>
+      <button class="btn-primary" id="lk-accept" style="width:100%;margin-bottom:8px;">Aceptar y compartir</button>
+      <button class="btn-secondary" id="lk-cancel" style="width:100%;">Cancelar</button>`);
+    document.getElementById('lk-cancel').addEventListener('click', openLinks);
+    document.getElementById('lk-accept').addEventListener('click', async () => {
+      const a = await linkRpc('rutinal_invite_accept', { p_code: code });
+      if (!a.ok) { document.getElementById('lk-msg2').textContent = linkErr(a.error); return; }
+      syncNow();
+      openLinks();
+    });
+  });
+}
+// ---- Ficha de un entrenado (solo lectura) ----
+function cdFmtDay(k) { try { return parseKey(k).toLocaleDateString(_loc(), { weekday: 'short', day: 'numeric', month: 'short' }); } catch (e) { return k; } }
+async function openClientDetail(l) {
+  const title = l.name || '';
+  openSheet(title, '<div class="food-loader">Cargando...</div>');
+  const from = keyDate(new Date(Date.now() - 29 * 864e5));
+  let rows = [];
+  try {
+    const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(l.client_id) + '&or=(sub.eq.,sub.gte.' + from + ')&limit=2000');
+    if (!r.ok) throw authErrObj('network');
+    rows = await r.json();
+  } catch (e) { openSheet(title, `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
+  const D = {};
+  rows.forEach(x => { if (x.value === null) return; if (x.sub) (D[x.key] = D[x.key] || {})[x.sub] = x.value; else D[x.key] = x.value; });
+  const parts = [`<div class="lk-d" style="margin:0 0 6px;"><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span> · <span>Últimos 30 días</span> · <span>Solo lectura</span></div>`];
+  // --- Nutrición ---
+  if (l.role === 'nutriologo') {
+    let tg = null;
+    try { if (D.nutri_profile && D.nutri_profile.heightCm) tg = calcNutriTargets(D.nutri_profile); } catch (e) {}
+    if (!tg && D.food_goal_kcal) tg = { kcal: +D.food_goal_kcal || 0 };
+    parts.push(`<div class="lk-h">Comidas</div>${tg && tg.kcal ? `<div class="lk-d" style="margin-bottom:6px;"><span>Meta diaria:</span> ${tg.kcal} kcal${tg.protein ? ` · P ${tg.protein} g · C ${tg.carbs} g · G ${tg.fat} g` : ''}</div>` : ''}`);
+    const days = Object.keys(D.meal_log || {}).sort().reverse();
+    if (!days.length) parts.push('<div class="lk-d">Sin comidas registradas en este periodo.</div>');
+    days.forEach(d => {
+      const day = D.meal_log[d] || {};
+      let k = 0, p = 0, c = 0, f = 0; const lines = [];
+      [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['dinner', 'Cena'], ['snack', 'Snacks']].forEach(([mid, lab]) => {
+        const its = day[mid] || [];
+        if (!its.length) return;
+        lines.push(`<b>${lab}</b>: ` + its.map(it => { const m = calcItemMacros(it); k += m.kcal; p += m.protein; c += m.carbs; f += m.fat; return `${escapeHtml(it.name || '')} (${Math.round(it.grams || 0)} g)`; }).join(', '));
+      });
+      if (!lines.length) return;
+      const cls = tg && tg.kcal ? (k > tg.kcal * 1.1 ? 'over' : k >= tg.kcal * 0.85 ? 'ok' : '') : '';
+      parts.push(`<details class="cd-day"><summary><span class="cd-date">${escapeHtml(cdFmtDay(d))}</span><span class="cd-num ${cls}">${Math.round(k)} kcal</span></summary>
+        <div class="cd-sub">P ${Math.round(p)} g · C ${Math.round(c)} g · G ${Math.round(f)} g</div><div class="cd-items">${lines.join('<br>')}</div></details>`);
+    });
+  }
+  // --- Entrenamiento ---
+  if (l.role === 'coach' || l.role === 'fisioterapeuta') {
+    parts.push('<div class="lk-h">Entrenamientos</div>');
+    const routines = Array.isArray(D.gym_routines) ? D.gym_routines : [];
+    const days = Object.keys(D.gym_logs || {}).sort().reverse();
+    let shown = 0;
+    days.forEach(d => {
+      const lg = D.gym_logs[d] || {};
+      const rt = routines.find(x => x.id === lg.routineId) || { name: '', exercises: [] };
+      const lines = [];
+      Object.keys(lg.ex || {}).forEach(exId => {
+        const ex = (rt.exercises || []).find(x => x.id === exId) || {};
+        const sw = lg.swap && lg.swap[exId];
+        const sets = (lg.ex[exId] || []).filter(s => s && s.done).map(s => `${s.kg || 0}×${s.reps || 0}`);
+        if (!sets.length) return;
+        const ef = (lg.exFeel && lg.exFeel[exId]) || {};
+        lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}`);
+      });
+      if (!lines.length && !lg.done) return;
+      shown++;
+      const fl = lg.feel || {};
+      const feel = [fl.mood ? GYM_MOODS[fl.mood - 1][0] : '', fl.pain != null ? `<span>Dolor</span> ${fl.pain}/10` : '', fl.rpe != null ? `RPE ${fl.rpe}` : ''].filter(Boolean).join(' · ');
+      parts.push(`<details class="cd-day"><summary><span class="cd-date">${escapeHtml(cdFmtDay(d))}</span><span class="cd-num ${fl.pain >= 6 ? 'over' : ''}">${escapeHtml(rt.name || '')}</span></summary>
+        ${feel ? `<div class="cd-sub">${feel}</div>` : ''}${fl.note ? `<div class="cd-sub">“${escapeHtml(fl.note)}”</div>` : ''}<div class="cd-items">${lines.join('<br>') || '<span>Sin series registradas</span>'}</div></details>`);
+    });
+    if (!shown) parts.push('<div class="lk-d">Sin entrenamientos registrados en este periodo.</div>');
+  }
+  // --- Peso ---
+  if (D.weight_log) {
+    const ws = Object.keys(D.weight_log).sort();
+    if (ws.length) {
+      const first = +D.weight_log[ws[0]], last = +D.weight_log[ws[ws.length - 1]], diff = Math.round((last - first) * 10) / 10;
+      parts.push(`<div class="lk-h">Peso</div><div class="lk-row"><div class="lk-top"><div class="lk-n">${last} kg</div><span class="cd-num">${diff > 0 ? '+' : ''}${diff} kg</span></div>
+        <div class="lk-d">${ws.slice(-8).map(d => `${escapeHtml(cdFmtDay(d))}: ${D.weight_log[d]} kg`).join(' · ')}</div></div>`);
+    }
+  }
+  parts.push('<button class="btn-secondary" id="cd-back" style="width:100%;margin-top:16px;">Volver</button>');
+  openSheet(title, parts.join(''));
+  document.getElementById('cd-back').addEventListener('click', openLinks);
+}
+document.getElementById('btn-acct-links').addEventListener('click', openLinks);
 
 // ============================================================
 // INIT

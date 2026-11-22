@@ -124,6 +124,10 @@ La app pide iniciar sesión al abrir. Las cuentas las crea el administrador desd
 
 Opcional y con consentimiento (Editar → Ajustes → Cuenta → Respaldo en la nube). La app sigue leyendo y escribiendo en el dispositivo; `S.set`/`S.del` anotan qué cambió y el motor de sincronización sube esos documentos a `public.user_docs` (uno por clave y, en registros diarios, uno por día) y baja los cambios de otros dispositivos. En conflicto gana lo último que llega al servidor, por documento. Los datos locales pertenecen a una sola cuenta: si otra cuenta inicia sesión en el dispositivo, se pide borrar los datos locales antes de continuar. Esquema y permisos en `supabase/rutinal_sync_links.sql`.
 
+## Especialistas y entrenados
+
+Editar → Ajustes → Cuenta → Especialistas y entrenados. Un especialista (cuenta con especialidad de coach, nutriólogo o fisioterapeuta) genera un código de invitación; el entrenado lo escribe, ve qué va a compartir y acepta. Cualquiera de los dos puede terminar el vínculo. El especialista ve a sus entrenados con indicadores de los últimos 7 días (último registro, comidas, entrenamientos, dolor máximo) y una ficha de solo lectura de 30 días. Qué puede leer cada rol lo decide el servidor (`private.role_keys` y la política de `user_docs` en `supabase/rutinal_sync_links.sql`): coach → entrenamientos, rutinas y peso; nutriólogo → comidas, metas, agua y peso; fisioterapeuta → entrenamientos y rutinas.
+
 ## APIs de nutrición
 
 - **USDA FoodData Central**: `api.nal.usda.gov/fdc/v1/foods/search`. Con `DEMO_KEY` funciona con rate limit compartido; para uso intensivo registra una key gratis en [api.data.gov/signup](https://api.data.gov/signup/) y pégala en **Editar → Ajustes → USDA API key**.
