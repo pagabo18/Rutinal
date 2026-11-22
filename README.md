@@ -112,10 +112,9 @@ Los artefactos salen en:
 
 ## Acceso (usuario y contraseña)
 
-La app pide iniciar sesión al abrir. Las cuentas las crea el administrador desde **Editar → Ajustes → Cuenta → Administrar usuarios** (alta, contraseña nueva, desactivar, eliminar). No hay registro público.
+La app pide iniciar sesión al abrir. Las cuentas las crea el administrador desde **Más → Ajustes → Administrar usuarios** (alta, contraseña nueva, desactivar, eliminar). No hay registro público.
 
-- Backend: proyecto de Supabase `rutinal`. Las tablas (`private.app_users`, `private.app_sessions`, `private.login_attempts`) no están expuestas; la app solo llama a las funciones `rutinal_*` (ver `supabase/rutinal_access.sql`) con la llave pública.
-- Contraseñas con bcrypt, sesiones por token (se guarda solo su hash), bloqueo de 15 min tras 8 intentos fallidos.
+- Backend: proyecto de Supabase `rutinal`, con Supabase Auth y la tabla `public.profiles` (ver `supabase/rutinal_profiles.sql`). El sistema de acceso propio que hubo antes se eliminó (`supabase/rutinal_drop_old_access.sql`).
 - La sesión se guarda en el dispositivo y se verifica en línea al abrir la app; sin conexión sigue funcionando hasta 14 días. Al desactivar o eliminar un usuario, pierde el acceso en la siguiente verificación.
 - Los datos de la app siguen siendo locales: el servidor solo conoce usuario, contraseña cifrada y fechas de acceso.
 - Límite conocido: el código es público, así que el login frena el uso normal de la app publicada, no a quien copie y modifique el código.
@@ -227,3 +226,7 @@ No se usa un servicio de push. `ChatPollReceiver` se despierta cada ~15 minutos 
 ### Editor de dieta
 
 Las plantillas de plan de alimentación se arman en un editor propio (`openDietEditor`): nombre, las cuatro comidas con sus alimentos y gramos, buscador integrado (mis alimentos, base local, USDA y Open Food Facts) y el total del día fijo abajo. También permite copiar un día del registro propio como punto de partida, editar plantillas ya guardadas y, desde la ficha del entrenado (**Planes → Editar**), ajustar el plan ya asignado solo para esa persona; ese cambio le llega a su app y queda avisado en el chat.
+
+### Gráficas con degradado
+
+Las barras (`gymBarsSvg`, `spBars`) y las áreas bajo las líneas (`gymLineSvg`, `spWeightChart`) usan un degradado vertical generado con `svgGrad(color, de, a)`. Cada gráfica define su propio `<linearGradient>` dentro del SVG, así también salen en el PDF.
