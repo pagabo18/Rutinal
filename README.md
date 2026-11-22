@@ -193,3 +193,7 @@ Cada ejercicio puede llevar `loads`: la carga recomendada de cada serie, en kg (
 ## Comida (rediseño)
 
 La pestaña Comida abre con la tarjeta **Meta diaria** (calorías objetivo, lo que falta o lo que se pasó, y barras de proteína, carbos y grasa) en lugar de los anillos. Cada comida es una tarjeta con icono, calorías, alimentos, macros y botón para añadir; las que están vacías muestran *+ Registrar* y, si el nutriólogo asignó una dieta, el plan de esa comida con *Registrar el plan*. Al final hay una tarjeta de **Agua** que usa la misma cuenta que Hábitos.
+
+## Estilo unificado en el resto de pestañas
+
+Hábitos, Reloj, Calendario, Gym y Editar usan el mismo lenguaje visual que las pantallas rediseñadas: títulos de pestaña, tarjetas redondeadas, selectores tipo píldora (Día/Semana/Mes, Lista/Por horas, Pomodoro/Temporizador, Tema) y la tarjeta de hidratación igual a la de agua en Comida. En **Editar → Ajustes** cada sección es una tarjeta y la cuenta aparece primero, con inicial, nombre, usuario y rol.

@@ -265,7 +265,7 @@
     #tab-habitos > .split-col-b { grid-column: 2; }
     #tab-habitos > .split-full { grid-column: 1 / -1; }
     /* Título y fecha de Comida ocupan todo el ancho */
-    #tab-comida > .h-title, #tab-comida > #food-date-label { grid-column: 1 / -1; }
+    #tab-comida > .h-title, #tab-comida > #food-date-label, #tab-habitos > .h-title { grid-column: 1 / -1; }
     #tab-hoy > .split-col-a, #tab-comida > .split-col-a { grid-column: 1; }
     #tab-hoy > .split-col-b, #tab-comida > .split-col-b { grid-column: 2; }
     /* Los anillos quedan fijos al hacer scroll en la lista de comidas */
@@ -2097,6 +2097,39 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  /* Unificación de estilo (rediseño v0) en Hábitos, Reloj, Calendario, Gym y Editar */
+  .h-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+  #cal-mode-chips, #day-mode, #pomo-mode-chips, #theme-picker { display: inline-flex; flex-wrap: nowrap; gap: 0; background: var(--surface-2); border-radius: 999px; padding: 3px; max-width: 100%; }
+  #cal-mode-chips .chip, #day-mode .chip, #pomo-mode-chips .chip, #theme-picker .chip { border: 0; background: transparent; border-radius: 999px; padding: 7px 16px; font-weight: 600; color: var(--text-3); white-space: nowrap; }
+  #cal-mode-chips .chip.selected, #day-mode .chip.selected, #pomo-mode-chips .chip.selected, #theme-picker .chip.selected { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.14); }
+  #edit-mode { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -20px 16px; padding: 0 20px; }
+  #edit-mode::-webkit-scrollbar { display: none; }
+  #edit-mode .chip, #lang-picker .chip { border-radius: 999px; padding: 8px 14px; white-space: nowrap; flex-shrink: 0; }
+  .h2-btn { border-radius: 999px; padding: 6px 12px; font-weight: 600; color: var(--text); }
+  .habit { border-radius: 16px; margin-bottom: 8px; }
+  .stat { border-radius: 16px; padding: 14px 12px; }
+  .stats { gap: 8px; }
+  .chart-card { border-radius: 18px; padding: 16px; margin-top: 8px; }
+  .streak-card { border-radius: 18px; }
+  .pomo-settings { border-radius: 18px; }
+  .icon-btn { border-radius: 50%; }
+  .gym-today.rest { background: var(--surface); border-style: dashed; border-color: var(--border-strong); }
+  .gym-day { border-radius: 14px; }
+  .gym-routine { border-radius: 18px; padding: 14px; margin-bottom: 10px; }
+  .hyd-card { margin-bottom: 16px; }
+  .hyd-pct { font-size: 15px; font-weight: 700; color: #0EA5E9; font-variant-numeric: tabular-nums; }
+  .hyd-ctl { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .hyd-count { font-size: 24px; font-weight: 700; min-width: 30px; text-align: center; font-variant-numeric: tabular-nums; }
+  .hyd-plus { flex: 1; padding: 11px 14px; background: #0EA5E9; color: #fff; border: 0; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  #edit-ajustes .setting { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 12px; }
+  #edit-ajustes .setting-label { margin-top: 0; }
+  .acct-user { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .acct-av { width: 52px; height: 52px; border-radius: 50%; background: var(--text); color: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; flex-shrink: 0; }
+  .acct-id { min-width: 0; }
+  .acct-name { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .acct-sub { font-size: 13px; color: var(--text-3); margin-top: 2px; line-height: 1.4; }
+  #acct-setting > .setting-label { display: none; }
+
   /* Comida (rediseño v0): meta diaria y tarjetas por comida */
   .food-daynav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px; position: relative; }
   .food-daylinks { text-align: center; }
@@ -2428,25 +2461,19 @@ try {
   <!-- DÍA (timeline por horas) -->
   <!-- HÁBITOS -->
   <section id="tab-habitos">
+    <h1 class="h-title" style="margin-bottom:12px;">Hábitos</h1>
     <div class="split-col split-col-a">
-    <div id="hydration-card" class="habit-card" style="margin-bottom:16px;padding:14px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:36px;height:36px;border-radius:10px;background:#0EA5E922;display:flex;align-items:center;justify-content:center;font-size:20px;">💧</div>
-          <div>
-            <div style="font-weight:600;font-size:15px;">Hidratación</div>
-            <div id="hyd-sub" style="font-size:12px;color:var(--text-3);">0 de 8 vasos</div>
-          </div>
-        </div>
-        <div id="hyd-pct" style="font-size:14px;font-weight:600;color:#0EA5E9;">0%</div>
+    <div id="hydration-card" class="mc water hyd-card">
+      <div class="mc-head">
+        <div class="mc-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg></div>
+        <div class="mc-t"><div class="meal-name">Hidratación</div><div class="mc-sub" id="hyd-sub">0 de 8 vasos</div></div>
+        <div class="hyd-pct" id="hyd-pct">0%</div>
       </div>
-      <div style="height:6px;background:var(--surface-3, var(--border));border-radius:999px;overflow:hidden;margin-bottom:12px;">
-        <div id="hyd-bar" style="height:100%;width:0%;background:#0EA5E9;transition:width .3s;"></div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <button id="hyd-minus" class="btn-secondary" style="padding:8px 14px;font-size:16px;min-width:44px;">−</button>
-        <div id="hyd-count" style="font-size:22px;font-weight:600;color:var(--text-1);">0</div>
-        <button id="hyd-plus" style="flex:1;padding:10px 14px;background:#0EA5E9;color:white;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;">+ 1 vaso</button>
+      <div class="ft-bar" style="margin-top:12px;"><i id="hyd-bar" style="width:0%;background:#0EA5E9;"></i></div>
+      <div class="hyd-ctl">
+        <button id="hyd-minus" class="mc-add ghost" aria-label="−">−</button>
+        <div class="hyd-count" id="hyd-count">0</div>
+        <button id="hyd-plus" class="hyd-plus">+ 1 vaso</button>
       </div>
     </div>
     <div id="streak-card" class="streak-card">
@@ -2521,6 +2548,7 @@ try {
 
   <!-- CALENDARIO (unificado: Día · Semana · Mes) -->
   <section id="tab-cal">
+    <h1 class="h-title" style="margin-bottom:12px;">Calendario</h1>
     <div class="chips cal-chips" id="cal-mode-chips">
       <div class="chip selected" data-cal="day">Día</div>
       <div class="chip" data-cal="week">Semana</div>
@@ -2891,6 +2919,17 @@ try {
 
     <div id="edit-ajustes" class="edit-panel" style="display:none;">
       <h2>Ajustes</h2>
+      <div class="setting" id="acct-setting">
+        <div class="setting-label">Cuenta</div>
+        <div class="acct-user" id="acct-user"></div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn-secondary" id="btn-acct-users" style="display:none;">Administrar usuarios</button>
+          <button class="btn-secondary" id="btn-acct-links">Especialistas y entrenados</button>
+          <button class="btn-secondary" id="btn-acct-sync">Respaldo en la nube</button>
+          <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
+          <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
+        </div>
+      </div>
       <div class="setting">
         <div class="setting-label">Tema</div>
         <div class="chips" id="theme-picker">
@@ -2997,17 +3036,6 @@ try {
         </label>
         <button class="btn-secondary" id="dnd-permission" style="margin-top:8px; display:none;">Conceder permiso</button>
         <div id="dnd-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
-      </div>
-      <div class="setting" id="acct-setting">
-        <div class="setting-label">Cuenta</div>
-        <div class="acct-user" id="acct-user"></div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <button class="btn-secondary" id="btn-acct-users" style="display:none;">Administrar usuarios</button>
-          <button class="btn-secondary" id="btn-acct-links">Especialistas y entrenados</button>
-          <button class="btn-secondary" id="btn-acct-sync">Respaldo en la nube</button>
-          <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
-          <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
-        </div>
       </div>
       <div class="setting">
         <div class="setting-label">Datos</div>
@@ -8428,8 +8456,9 @@ function authRenderAccount() {
   const s = authGet() || {};
   const el = document.getElementById('acct-user');
   if (!el) return;
-  el.innerHTML = `<span>Sesión iniciada como</span> <b translate="no">${escapeHtml(s.user || '')}</b>
-    <div style="font-size:13px;color:var(--text-3);margin-top:4px;">${authRolesHtml(s.specs, s.admin)}</div>`;
+  el.innerHTML = `<div class="acct-av" translate="no">${escapeHtml(String(s.name || s.user || '?').trim().slice(0, 1).toUpperCase())}</div>
+    <div class="acct-id"><div class="acct-name" translate="no">${escapeHtml(s.name || s.user || '')}</div>
+      <div class="acct-sub"><span translate="no">@${escapeHtml(s.user || '')}</span> · ${authRolesHtml(s.specs, s.admin)}</div></div>`;
   document.getElementById('btn-acct-users').style.display = s.admin ? '' : 'none';
 }
 async function authLogout() {
