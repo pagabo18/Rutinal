@@ -3731,6 +3731,71 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Mensajes": {
+   "en": "Messages",
+   "pt-BR": "Mensagens",
+   "fr": "Messages"
+  },
+  "Conversaciones con tus entrenados": {
+   "en": "Conversations with your trainees",
+   "pt-BR": "Conversas com seus alunos",
+   "fr": "Conversations avec vos élèves"
+  },
+  "Sin mensajes todavía": {
+   "en": "No messages yet",
+   "pt-BR": "Sem mensagens ainda",
+   "fr": "Pas encore de messages"
+  },
+  "Escribe un mensaje…": {
+   "en": "Write a message…",
+   "pt-BR": "Escreva uma mensagem…",
+   "fr": "Écrivez un message…"
+  },
+  "Aún no hay mensajes. Escribe el primero.": {
+   "en": "No messages yet. Write the first one.",
+   "pt-BR": "Ainda não há mensagens. Escreva a primeira.",
+   "fr": "Pas encore de messages. Écrivez le premier."
+  },
+  "Eso ya no está asignado.": {
+   "en": "That is no longer assigned.",
+   "pt-BR": "Isso não está mais atribuído.",
+   "fr": "Ce n'est plus attribué."
+  },
+  "Pregunta sobre algo que te dejaron": {
+   "en": "Ask about something you were given",
+   "pt-BR": "Pergunte sobre algo que te deixaram",
+   "fr": "Posez une question sur ce qu'on vous a donné"
+  },
+  "Todavía no tienes rutinas ni planes de este especialista.": {
+   "en": "You don't have routines or plans from this specialist yet.",
+   "pt-BR": "Você ainda não tem rotinas nem planos deste especialista.",
+   "fr": "Vous n'avez pas encore de routines ni de plans de ce spécialiste."
+  },
+  "Te dejé esto en tu app.": {
+   "en": "I left this for you in your app.",
+   "pt-BR": "Deixei isto para você no app.",
+   "fr": "Je vous ai laissé ceci dans l'appli."
+  },
+  "Actualicé tus cargas recomendadas.": {
+   "en": "I updated your recommended loads.",
+   "pt-BR": "Atualizei suas cargas recomendadas.",
+   "fr": "J'ai mis à jour vos charges recommandées."
+  },
+  "Escríbele": {
+   "en": "Send a message",
+   "pt-BR": "Escreva para ele",
+   "fr": "Écrivez-lui"
+  },
+  "Adjuntar": {
+   "en": "Attach",
+   "pt-BR": "Anexar",
+   "fr": "Joindre"
+  },
+  "Plan": {
+   "en": "Plan",
+   "pt-BR": "Plano",
+   "fr": "Plan"
+  },
   "Copiar resumen": {
    "en": "Copy summary",
    "pt-BR": "Copiar resumo",

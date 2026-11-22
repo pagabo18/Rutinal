@@ -1953,6 +1953,7 @@
     .sheet-save { justify-self: end; font-size: 15px; padding: 8px 10px; }
     .sheet-body { flex: 1; min-height: 0; padding-bottom: 28px; }
     .gym-wo-bar, .gym-cta-wrap { background: var(--bg); }
+    .chat-bar { bottom: -28px; margin-bottom: -28px; }
     .gym-cta-wrap { background: linear-gradient(to bottom, transparent, var(--bg) 28%); }
   }
 
@@ -2097,6 +2098,49 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  /* Chat entre especialista y entrenado */
+  .chat { display: flex; flex-direction: column; min-height: 100%; }
+  .chat-sub { text-align: center; margin: -6px 0 8px; }
+  .chat .nt-list { flex: 1; gap: 2px; margin-bottom: 8px; }
+  .chat-day { text-align: center; margin: 12px 0 8px; }
+  .chat-day span { font-size: 11px; font-weight: 600; color: var(--text-3); background: var(--surface-2); padding: 4px 12px; border-radius: 999px; }
+  .chat-empty { text-align: center; color: var(--text-3); font-size: 14px; padding: 40px 10px; }
+  .nt-w { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 6px; }
+  .nt-w.me { align-items: flex-end; }
+  .chat .nt { max-width: 82%; padding: 10px 13px; border-radius: 18px 18px 18px 6px; font-size: 15px; background: var(--surface); border: 1px solid var(--border); }
+  .chat .nt.me { border-radius: 18px 18px 6px 18px; background: var(--text); color: var(--bg); border-color: var(--text); }
+  .chat .nt-t { font-size: 10px; color: var(--text-3); opacity: 1; margin: 3px 6px 0; }
+  .nt-refc { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin: -2px -3px 8px; border-radius: 12px; background: var(--surface-2); color: var(--text); font-size: 13px; cursor: pointer; white-space: normal; }
+  .nt.me .nt-refc { background: rgba(255,255,255,.16); color: inherit; }
+  [data-theme="dark"] .nt.me .nt-refc { background: rgba(0,0,0,.10); }
+  .chat-bar { position: sticky; bottom: -20px; margin: 0 -20px -20px; padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--bg); border-top: 1px solid var(--border); z-index: 2; }
+  .chat-row { display: flex; align-items: flex-end; gap: 8px; }
+  .chat-row textarea { flex: 1; resize: none; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 20px; padding: 10px 14px; font: inherit; font-size: 15px; line-height: 1.35; max-height: 120px; outline: none; }
+  .chat-row textarea:focus { border-color: var(--border-strong); }
+  .chat-plus, .chat-send { width: 40px; height: 40px; border-radius: 50%; border: 0; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .chat-plus { background: var(--surface-2); color: var(--text); font-size: 22px; line-height: 1; }
+  .chat-send { background: var(--text); color: var(--bg); }
+  .chat-refchip { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--surface-2); border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; font-size: 13px; }
+  .chat-refchip button { border: 0; background: transparent; color: var(--text-3); font-size: 18px; cursor: pointer; padding: 0 4px; }
+  .chat-refchip[hidden], .chat-pick[hidden] { display: none; }
+  .chat-pick { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 8px; margin-bottom: 8px; max-height: 40vh; overflow-y: auto; }
+  .chat-pick-h { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; padding: 4px 6px 6px; }
+  .chat-pick-i { display: block; width: 100%; text-align: left; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; padding: 10px 8px; border-radius: 10px; cursor: pointer; }
+  .chat-pick-i:active { background: var(--surface-2); }
+  .chat-pick-e { font-size: 13px; color: var(--text-3); padding: 8px; }
+  nav button { position: relative; }
+  nav button.has-dot::after { content: ''; position: absolute; top: 6px; left: calc(50% + 8px); width: 9px; height: 9px; border-radius: 50%; background: #EF4444; border: 2px solid var(--surface); }
+  .sp-row.unread .sp-row-n, .sp-row.unread .sp-row-d { font-weight: 700; color: var(--text); }
+  .sp-row.unread .sp-chev { width: 10px; height: 10px; border-radius: 50%; background: #EF4444; font-size: 0; }
+  .hd-chat { padding-bottom: 6px; }
+  .hd-chat-row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 0; border-top: 1px solid var(--border); background: transparent; color: var(--text); font: inherit; padding: 10px 0; cursor: pointer; }
+  .hd-chat .hd-k + .hd-chat-row { border-top: 0; margin-top: 4px; }
+  .hd-chat-b { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .hd-chat-b b { font-size: 15px; font-weight: 600; }
+  .hd-chat-b small { font-size: 13px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hd-chat-row.unread small { color: var(--text); font-weight: 600; }
+  .hd-dot { width: 10px; height: 10px; border-radius: 50%; background: #EF4444; flex-shrink: 0; }
+
   /* Ficha del entrenado: resumen semanal y gráficas */
   .sp-rep-btns { display: flex; gap: 8px; margin-bottom: 12px; }
   .sp-rep-btns .sp-act { flex: 1; }
@@ -3164,7 +3208,7 @@ try {
   </button>
   <button data-tab="sp-notes" data-mode="spec">
     <svg class="icon" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>
-    Notas
+    Mensajes
   </button>
   <button data-tab="editar">
     <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -7914,7 +7958,9 @@ function closeSheet() {
   if (typeof stopWebScanner === 'function') { try { stopWebScanner(); } catch (e) {} }
   sheet.classList.remove('show');
   backdrop.classList.remove('show');
+  const onClose = sheetCtx && sheetCtx.onClose;
   sheetCtx = null;
+  if (onClose) { try { onClose(); } catch (e) {} }
   // Quitar la entrada del historial, salvo que en este mismo instante se abra otra página
   if (_sheetHist) setTimeout(() => {
     if (_sheetHist && !sheet.classList.contains('show')) { _sheetHist = false; _sheetPopSkip++; try { history.back(); } catch (e) { _sheetPopSkip--; } }
@@ -8523,7 +8569,7 @@ const AUTH_ERRORS = {
 };
 function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
 function authEndSession(msg, info) {
-  try { localStorage.removeItem('__asg'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
+  try { localStorage.removeItem('__asg'); localStorage.removeItem('__msgs'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
   try { document.documentElement.dataset.mode = ''; document.documentElement.classList.remove('is-spec'); localStorage.removeItem('__mode'); document.querySelector('nav button[data-tab="hoy"]').click(); } catch (e) {}
   const s = authGet();
   authSet(s && s.user ? { user: s.user } : null);
@@ -8987,7 +9033,7 @@ function onAuthReady() {
   spSyncBar();
   if (authIsSpecialist() && !spMode() && localStorage.getItem('__mode') === 'spec') spSetMode(true);
   if (!authIsSpecialist() && spMode()) spSetMode(false);
-  asgRenderCard(); asgRefresh(true);
+  asgRenderCard(); asgRefresh(true); msgRefresh(true);
   if (m.consent === true) syncSchedule(800);
   else if (m.consent === undefined) setTimeout(() => { if (!document.querySelector('#sheet.show, .sheet.show')) openSyncSheet(true); }, 600);
 }
@@ -9027,7 +9073,7 @@ async function openLinks() {
   const s = authGet() || {}, specs = s.specs || [];
   const mine = r.as_client.map(l => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name)}</div><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span></div>
       <div class="lk-d"><span>Puede ver:</span> ${linkSees(l.keys)}</div>
-      <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-secondary" data-lk-notes="${l.id}" data-lk-name="${escapeHtml(l.name)}" style="padding:8px 12px;flex:1;">Notas</button>
+      <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-secondary" data-lk-notes="${l.id}" data-lk-name="${escapeHtml(l.name)}" data-lk-role="${l.role}" style="padding:8px 12px;flex:1;">Mensajes</button>
       <button class="btn-secondary" data-lk-end="${l.id}" style="padding:8px 12px;flex:1;">Dejar de compartir</button></div></div>`).join('');
   const clients = r.as_specialist.filter(l => l.status === 'active'), pend = r.as_specialist.filter(l => l.status === 'pending');
   const cRows = clients.map((l, i) => {
@@ -9068,7 +9114,7 @@ async function openLinks() {
     document.getElementById('lk-back').addEventListener('click', openLinks);
   }));
   document.querySelectorAll('[data-lk-open]').forEach(el => el.addEventListener('click', () => openClientDetail(clients[+el.dataset.lkOpen])));
-  document.querySelectorAll('[data-lk-notes]').forEach(b => b.addEventListener('click', () => openNotes(b.dataset.lkNotes, b.dataset.lkName, openLinks)));
+  document.querySelectorAll('[data-lk-notes]').forEach(b => b.addEventListener('click', () => openNotes(b.dataset.lkNotes, b.dataset.lkName, openLinks, { spec: false, role: b.dataset.lkRole })));
   if (document.getElementById('lk-specmode')) document.getElementById('lk-specmode').addEventListener('click', () => { closeSheet(); spSetMode(true); });
   document.getElementById('lk-go').addEventListener('click', async () => {
     const code = document.getElementById('lk-code').value.trim().toUpperCase();
@@ -9223,34 +9269,173 @@ async function openAssign(tp, forClient) {
       await sbRest('assignments', { method: 'POST', headers: { Prefer: 'return=minimal' },
         body: sel.map(l => ({ client_id: l.client_id, role: l.role, kind: tp.kind, name: tp.name, payload: tp.payload, note, author_name: s.name || s.user })) });
     } catch (e) { msg.textContent = authErr(e.code); return; }
+    // Aviso en el chat de cada entrenado, con lo asignado adjunto
+    for (const l of sel) { if (l.id) { try { await ntPost(l.id, note || t('Te dejé esto en tu app.'), { t: 'asg', kind: tp.kind, name: tp.name }); } catch (e) {} } }
     tplDone(forClient);
   });
 }
-// ---- Notas (hilo por vínculo) ----
-async function openNotes(linkId, name, back) {
-  const title = name || '';
-  openSheet(title, '<div class="food-loader">Cargando...</div>');
-  let rows = [];
-  try { rows = await sbRest('notes?select=id,author_id,body,created_at&link_id=eq.' + encodeURIComponent(linkId) + '&order=created_at.asc&limit=300') || []; }
-  catch (e) { openSheet(title, `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
-  const me = (authGet() || {}).uid;
-  const fmt = iso => { try { return new Date(iso).toLocaleString(_loc(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
-  openSheet(title, `<div class="lk-h" style="margin-top:0;">Notas</div>
-    <div class="nt-list">${rows.map(n => `<div class="nt ${n.author_id === me ? 'me' : ''}" translate="no">${escapeHtml(n.body)}<div class="nt-t">${escapeHtml(fmt(n.created_at))}</div></div>`).join('') || '<div class="lk-d">Aún no hay notas.</div>'}</div>
-    <textarea class="auth-in" id="nt-text" rows="3" maxlength="1000" style="resize:vertical;font-family:inherit;" placeholder="Escribe una nota…"></textarea>
-    <div class="auth-msg" id="nt-msg"></div>
-    <button class="btn-primary" id="nt-send" style="width:100%;margin:8px 0;">Enviar</button>
-    <button class="btn-secondary" id="nt-back" style="width:100%;">Volver</button>`);
-  document.getElementById('nt-back').addEventListener('click', () => back ? back() : closeSheet());
-  document.getElementById('nt-send').addEventListener('click', async () => {
-    const body = document.getElementById('nt-text').value.trim();
-    if (!body) return;
-    try { await sbRest('notes', { method: 'POST', body: { link_id: linkId, body }, headers: { Prefer: 'return=minimal' } }); }
-    catch (e) { document.getElementById('nt-msg').textContent = authErr(e.code); return; }
-    openNotes(linkId, name, back);
-  });
-  const list = document.querySelector('.nt-list'); if (list && list.lastElementChild) list.lastElementChild.scrollIntoView({ block: 'nearest' });
+// ---- Mensajes: chat por vínculo entre especialista y entrenado ----
+// Los mensajes viven en public.notes; `ref` adjunta algo asignado (rutina, dieta, metas, indicaciones).
+let _ntRefCol = true, _ntTimer = null, _msgAt = 0;
+function ntSeen() { try { return JSON.parse(localStorage.getItem('__nt_seen') || '{}') || {}; } catch (e) { return {}; } }
+function ntMarkSeen(linkId, iso) {
+  if (!iso) return;
+  const m = ntSeen();
+  if (!m[linkId] || Date.parse(m[linkId]) < Date.parse(iso)) { m[linkId] = iso; try { localStorage.setItem('__nt_seen', JSON.stringify(m)); } catch (e) {} }
 }
+function msgCache() { try { const c = JSON.parse(localStorage.getItem('__msgs') || 'null'); return c && c.last ? c : { links: [], spec: [], last: {} }; } catch (e) { return { links: [], spec: [], last: {} }; } }
+function ntIsUnread(linkId, n) {
+  const me = (authGet() || {}).uid;
+  if (!n || n.author_id === me) return false;
+  const seen = ntSeen()[linkId];
+  return !seen || Date.parse(seen) < Date.parse(n.created_at);
+}
+function msgUnread(asSpec) { const c = msgCache(); return (asSpec ? c.spec || [] : (c.links || []).map(l => l.id)).filter(id => ntIsUnread(id, c.last[id])).length; }
+function msgPaint() {
+  const sp = document.querySelector('nav button[data-tab="sp-notes"]'), hoy = document.querySelector('nav button[data-tab="hoy"]');
+  if (sp) sp.classList.toggle('has-dot', msgUnread(true) > 0);
+  if (hoy) hoy.classList.toggle('has-dot', msgUnread(false) > 0);
+  try { if (typeof renderHoyDash === 'function') renderHoyDash(); } catch (e) {}
+}
+async function msgRefresh(force) {
+  const s = authGet();
+  if (!s || !s.refresh || !s.uid || navigator.onLine === false) return;
+  if (!force && Date.now() - _msgAt < 60000) return;
+  _msgAt = Date.now();
+  let r, notes;
+  try {
+    r = await linkRpc('rutinal_my_links'); if (!r.ok) return;
+    notes = await sbRest('notes?select=link_id,author_id,body,created_at&order=created_at.desc&limit=200') || [];
+  } catch (e) { return; }
+  const last = {};
+  notes.forEach(n => { if (!last[n.link_id]) last[n.link_id] = { author_id: n.author_id, body: String(n.body || '').slice(0, 120), created_at: n.created_at }; });
+  const c = { links: (r.as_client || []).map(l => ({ id: l.id, name: l.name, role: l.role })), spec: (r.as_specialist || []).filter(l => l.status === 'active').map(l => l.id), last };
+  try { localStorage.setItem('__msgs', JSON.stringify(c)); } catch (e) {}
+  msgPaint();
+}
+function ntRefLabel(ref) { return ref && ref.t === 'asg' ? `${t(ASG_KINDS[ref.kind] || 'Plan')} · ${ref.name || ''}` : ''; }
+// Enviar un mensaje (con referencia opcional). Si el servidor aún no acepta `ref`, se manda como texto.
+async function ntPost(linkId, body, ref) {
+  body = String(body || '').trim().slice(0, 1000);
+  if (!body) return;
+  if (ref && _ntRefCol) {
+    try { await sbRest('notes', { method: 'POST', body: { link_id: linkId, body, ref }, headers: { Prefer: 'return=minimal' } }); return; }
+    catch (e) { if (e && e.code === 'session') throw e; }
+    await sbRest('notes', { method: 'POST', body: { link_id: linkId, body: (`[${ntRefLabel(ref)}] ` + body).slice(0, 1000) }, headers: { Prefer: 'return=minimal' } });
+    _ntRefCol = false; return;
+  }
+  await sbRest('notes', { method: 'POST', body: { link_id: linkId, body: ref ? (`[${ntRefLabel(ref)}] ` + body).slice(0, 1000) : body }, headers: { Prefer: 'return=minimal' } });
+}
+async function openNotes(linkId, name, back, opts) {
+  opts = opts || {};
+  const me = (authGet() || {}).uid, title = name || '';
+  if (_ntTimer) { clearInterval(_ntTimer); _ntTimer = null; }
+  let pending = null, rows = [], lastSig = '';
+  openSheet(title, `<div class="chat" id="nt-chat" data-link="${escapeHtml(String(linkId))}">
+      ${opts.role ? `<div class="chat-sub"><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[opts.role] || opts.role)}</span></div>` : ''}
+      <div class="nt-list" id="nt-list"><div class="food-loader">Cargando...</div></div>
+      <div class="chat-bar">
+        <div class="chat-pick" id="nt-pick" hidden></div>
+        <div class="chat-refchip" id="nt-refchip" hidden></div>
+        <div class="chat-row">
+          <button class="chat-plus" id="nt-plus" aria-label="Adjuntar">+</button>
+          <textarea id="nt-text" rows="1" maxlength="1000" placeholder="Escribe un mensaje…"></textarea>
+          <button class="chat-send" id="nt-send" aria-label="Enviar"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="auth-msg" id="nt-msg"></div>
+      </div>
+    </div>`);
+  const alive = () => { const c = document.getElementById('nt-chat'); return !!(c && c.dataset.link === String(linkId) && sheet.classList.contains('show')); };
+  if (sheetCtx) sheetCtx.onClose = () => {
+    if (_ntTimer) { clearInterval(_ntTimer); _ntTimer = null; }
+    msgPaint();
+    if (back && back !== closeSheet) back();
+  };
+  const sb = document.getElementById('sheet-body');
+  const hm = iso => { try { return new Date(iso).toLocaleTimeString(_loc(), { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+  const dayLabel = iso => {
+    const d = new Date(iso), k = keyDate(d), y = new Date(); y.setDate(y.getDate() - 1);
+    if (k === keyDate()) return t('Hoy');
+    if (k === keyDate(y)) return t('Ayer');
+    return d.toLocaleDateString(_loc(), { weekday: 'short', day: 'numeric', month: 'short' });
+  };
+  const draw = (toEnd) => {
+    const list = document.getElementById('nt-list'); if (!list) return;
+    let prevDay = '';
+    list.innerHTML = rows.map((n, i) => {
+      const dk = keyDate(new Date(n.created_at)); let sep = '';
+      if (dk !== prevDay) { prevDay = dk; sep = `<div class="chat-day"><span>${escapeHtml(dayLabel(n.created_at))}</span></div>`; }
+      const mine = n.author_id === me;
+      const refc = n.ref && n.ref.t === 'asg' ? `<div class="nt-refc" data-nt-ref="${i}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span><b>${ASG_KINDS[n.ref.kind] || 'Plan'}</b> · <span translate="no">${escapeHtml(n.ref.name || '')}</span></span></div>` : '';
+      return `${sep}<div class="nt-w ${mine ? 'me' : ''}"><div class="nt ${mine ? 'me' : ''}">${refc}<span translate="no">${escapeHtml(n.body)}</span></div><div class="nt-t" translate="no">${escapeHtml(hm(n.created_at))}</div></div>`;
+    }).join('') || '<div class="chat-empty">Aún no hay mensajes. Escribe el primero.</div>';
+    list.querySelectorAll('[data-nt-ref]').forEach(c => c.addEventListener('click', () => {
+      const ref = rows[+c.dataset.ntRef].ref;
+      if (opts.spec) return;
+      const a = asgList().find(x => x.kind === ref.kind && x.name === ref.name);
+      if (a) openAssignmentView(a);
+      else { const m = document.getElementById('nt-msg'); if (m) { m.textContent = t('Eso ya no está asignado.'); setTimeout(() => { if (m) m.textContent = ''; }, 2500); } }
+    }));
+    if (toEnd) sb.scrollTop = sb.scrollHeight;
+  };
+  const load = async (toEnd) => {
+    let rs;
+    try {
+      const q = cols => sbRest('notes?select=' + cols + '&link_id=eq.' + encodeURIComponent(linkId) + '&order=created_at.asc&limit=300');
+      if (_ntRefCol) { try { rs = await q('id,author_id,body,ref,created_at'); } catch (e) { if (e && e.code === 'session') throw e; _ntRefCol = false; } }
+      if (!_ntRefCol) rs = await q('id,author_id,body,created_at');
+    } catch (e) {
+      if (!rows.length && alive()) document.getElementById('nt-list').innerHTML = `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`;
+      return;
+    }
+    if (!alive()) return;
+    rs = rs || [];
+    const sig = rs.length + ':' + (rs.length ? rs[rs.length - 1].id : '');
+    const nearEnd = sb.scrollHeight - sb.scrollTop - sb.clientHeight < 80;
+    if (sig !== lastSig) { lastSig = sig; rows = rs; draw(toEnd || nearEnd); }
+    if (rows.length) {
+      const ln = rows[rows.length - 1];
+      ntMarkSeen(linkId, ln.created_at);
+      const c = msgCache(); c.last[linkId] = { author_id: ln.author_id, body: String(ln.body || '').slice(0, 120), created_at: ln.created_at };
+      try { localStorage.setItem('__msgs', JSON.stringify(c)); } catch (e) {}
+    }
+  };
+  const txt = document.getElementById('nt-text'), msg = document.getElementById('nt-msg');
+  const grow = () => { txt.style.height = 'auto'; txt.style.height = Math.min(120, txt.scrollHeight) + 'px'; };
+  txt.addEventListener('input', grow);
+  const setRef = (ref) => {
+    pending = ref;
+    const chip = document.getElementById('nt-refchip');
+    chip.hidden = !ref;
+    chip.innerHTML = ref ? `<span><span>Sobre</span>: <b translate="no">${escapeHtml(ntRefLabel(ref))}</b></span><button id="nt-refx" aria-label="Quitar">×</button>` : '';
+    if (ref) document.getElementById('nt-refx').addEventListener('click', () => setRef(null));
+  };
+  document.getElementById('nt-plus').addEventListener('click', () => {
+    // El especialista adjunta asignando una plantilla; el entrenado elige sobre qué pregunta
+    if (opts.spec && opts.link) { openTemplates(opts.link); return; }
+    const pick = document.getElementById('nt-pick');
+    if (!pick.hidden) { pick.hidden = true; return; }
+    const items = asgList().filter(a => !opts.role || a.role === opts.role);
+    pick.innerHTML = `<div class="chat-pick-h">Pregunta sobre algo que te dejaron</div>` + (items.map((a, i) => `<button class="chat-pick-i" data-nt-pick="${i}"><b>${ASG_KINDS[a.kind] || a.kind}</b> · <span translate="no">${escapeHtml(a.name || '')}</span></button>`).join('') || '<div class="chat-pick-e">Todavía no tienes rutinas ni planes de este especialista.</div>');
+    pick.hidden = false;
+    pick.querySelectorAll('[data-nt-pick]').forEach(b => b.addEventListener('click', () => { const a = items[+b.dataset.ntPick]; setRef({ t: 'asg', kind: a.kind, name: a.name }); pick.hidden = true; txt.focus(); }));
+  });
+  let sending = false;
+  document.getElementById('nt-send').addEventListener('click', async () => {
+    const body = txt.value.trim();
+    if (!body || sending) return;
+    sending = true; msg.textContent = '';
+    try { await ntPost(linkId, body, pending); }
+    catch (e) { msg.textContent = authErr(e.code); sending = false; return; }
+    sending = false; txt.value = ''; grow(); setRef(null);
+    await load(true);
+  });
+  await load(true);
+  _ntTimer = setInterval(() => { if (!alive()) { clearInterval(_ntTimer); _ntTimer = null; return; } if (document.visibilityState === 'visible') load(false); }, 12000);
+}
+// Revisar mensajes nuevos al volver a la app y cada par de minutos
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') msgRefresh(false); });
+setInterval(() => { if (document.visibilityState === 'visible') msgRefresh(false); }, 120000);
 // ---- Entrenado: lo que le asignaron ----
 function asgList() { try { const a = JSON.parse(localStorage.getItem('__asg') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 function assignedTargets() {
@@ -9351,6 +9536,7 @@ function openAsgLoads(a, l, onDone) {
     });
     try { await sbRest('assignments?id=eq.' + encodeURIComponent(a.id), { method: 'PATCH', body: { payload: p }, headers: { Prefer: 'return=minimal' } }); }
     catch (e) { document.getElementById('al-msg').textContent = authErr(e.code); return; }
+    try { await ntPost(l.id, t('Actualicé tus cargas recomendadas.'), { t: 'asg', kind: 'routine', name: a.name }); } catch (e) {}
     closeSheet(); if (onDone) onDone();
   });
 }
@@ -9669,7 +9855,7 @@ async function spOpenClient(l) {
   el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Entrenados</span></button>
     <div class="sp-center"><div class="sp-av big">${escapeHtml((l.name || '?').slice(0, 1))}</div><div class="sp-name" translate="no">${escapeHtml(l.name || '')}</div>
       <div class="sp-sub" style="margin-bottom:0;"><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span> · ${spStatusLine(l)}</div></div>
-    <div class="sp-actions"><button class="sp-act" id="sp-c-notes">Notas</button><button class="sp-act" id="sp-c-assign">Asignar</button></div>
+    <div class="sp-actions"><button class="sp-act" id="sp-c-notes">Mensajes</button><button class="sp-act" id="sp-c-assign">Asignar</button></div>
     <div class="sp-tabs"><button data-sp-t="plans" class="${_sp.tab === 'plans' ? 'on' : ''}">Planes</button><button data-sp-t="progress" class="${_sp.tab === 'progress' ? 'on' : ''}">Progreso</button><button data-sp-t="logs" class="${_sp.tab === 'logs' ? 'on' : ''}">Registros</button></div>
     <div id="sp-tabbody">${tabs[_sp.tab]}</div>
     <button class="btn-secondary" id="sp-c-end" style="width:100%;margin-top:22px;">Terminar vínculo</button>`;
@@ -9702,7 +9888,7 @@ async function spOpenClient(l) {
   wire();
   document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); });
   el.querySelectorAll('[data-sp-t]').forEach(b => b.addEventListener('click', () => { _sp.tab = b.dataset.spT; el.querySelectorAll('[data-sp-t]').forEach(x => x.classList.toggle('on', x === b)); document.getElementById('sp-tabbody').innerHTML = tabs[_sp.tab]; wire(); }));
-  document.getElementById('sp-c-notes').addEventListener('click', () => openNotes(l.id, l.name, closeSheet));
+  document.getElementById('sp-c-notes').addEventListener('click', () => openNotes(l.id, l.name, null, { spec: true, link: l }));
   document.getElementById('sp-c-assign').addEventListener('click', () => openTemplates(l));
   document.getElementById('sp-c-end').addEventListener('click', async () => {
     if (!confirm('¿Terminar este vínculo? La otra persona dejará de ver los datos.')) return;
@@ -9750,11 +9936,13 @@ tabRenderers['sp-notes'] = async function () {
   notes.forEach(n => { if (!last[n.link_id]) last[n.link_id] = n; });
   const ids = new Set(cs.map(l => l.id));
   const sorted = cs.slice().sort((a, b) => Date.parse((last[b.id] || {}).created_at || 0) - Date.parse((last[a.id] || {}).created_at || 0));
-  el.innerHTML = `<div class="sp-hello">Notas</div><div class="sp-sub">Mensajes con tus entrenados</div>
-    ${sorted.map(l => { const n = last[l.id]; return `<div class="sp-row" data-sp-note="${cs.indexOf(l)}"><div class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</div>
-      <div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(l.name || '')}</div><div class="sp-row-d" translate="no">${n ? (n.author_id === me ? '<span translate="yes">Tú</span>: ' : '') + escapeHtml(n.body) : '<span translate="yes">Sin notas todavía</span>'}</div></div>
+  try { const c = msgCache(); c.spec = cs.map(l => l.id); cs.forEach(l => { const n = last[l.id]; if (n) c.last[l.id] = { author_id: n.author_id, body: String(n.body || '').slice(0, 120), created_at: n.created_at }; }); localStorage.setItem('__msgs', JSON.stringify(c)); } catch (e) {}
+  const nb = document.querySelector('nav button[data-tab="sp-notes"]'); if (nb) nb.classList.toggle('has-dot', msgUnread(true) > 0);
+  el.innerHTML = `<div class="sp-hello">Mensajes</div><div class="sp-sub">Conversaciones con tus entrenados</div>
+    ${sorted.map(l => { const n = last[l.id]; return `<div class="sp-row${ntIsUnread(l.id, n) ? ' unread' : ''}" data-sp-note="${cs.indexOf(l)}"><div class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</div>
+      <div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(l.name || '')}</div><div class="sp-row-d" translate="no">${n ? (n.author_id === me ? '<span translate="yes">Tú</span>: ' : '') + escapeHtml(n.body) : '<span translate="yes">Sin mensajes todavía</span>'}</div></div>
       <span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span><span class="sp-chev">›</span></div>`; }).join('') || '<div class="sp-empty">Cuando tengas entrenados, aquí aparecen sus conversaciones.</div>'}`;
-  el.querySelectorAll('[data-sp-note]').forEach(x => x.addEventListener('click', () => { const l = cs[+x.dataset.spNote]; openNotes(l.id, l.name, () => { closeSheet(); tabRenderers['sp-notes'](); }); }));
+  el.querySelectorAll('[data-sp-note]').forEach(x => x.addEventListener('click', () => { const l = cs[+x.dataset.spNote]; openNotes(l.id, l.name, () => { tabRenderers['sp-notes'](); }, { spec: true, link: l }); }));
 };
 (function spInit() {
   document.querySelectorAll('#mode-bar button').forEach(b => b.addEventListener('click', () => spSetMode(b.dataset.modeSet === 'spec')));
@@ -9814,7 +10002,16 @@ function renderHoyDash() {
       weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span></div><div class="hd-d" style="margin-top:8px;">Toca para registrar tu peso.</div></div>`;
     }
   } catch (e) {}
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${food}${weight}`;
+  // --- mensajes con sus especialistas ---
+  let chat = '';
+  try {
+    const mc = msgCache();
+    if ((mc.links || []).length) chat = `<div class="hd-card hd-chat"><div class="hd-k"><span>Mensajes</span></div>${mc.links.map((l, i) => { const n = mc.last[l.id], un = ntIsUnread(l.id, n);
+      return `<button class="hd-chat-row${un ? ' unread' : ''}" data-hd-chat="${i}"><span class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</span><span class="hd-chat-b"><b translate="no">${escapeHtml(l.name || '')}</b>
+        <small translate="no">${n ? (n.author_id === s.uid ? `<span translate="yes">Tú</span>: ` : '') + escapeHtml(n.body) : `<span translate="yes">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span> · <span translate="yes">Escríbele</span>`}</small></span>${un ? '<i class="hd-dot"></i>' : '<span class="mas-chev">›</span>'}</button>`; }).join('')}</div>`;
+  } catch (e) {}
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${chat}${food}${weight}`;
+  el.querySelectorAll('[data-hd-chat]').forEach(b => b.addEventListener('click', () => { const l = msgCache().links[+b.dataset.hdChat]; if (l) openNotes(l.id, l.name, null, { spec: false, role: l.role }); }));
   el.querySelectorAll('[data-hd]').forEach(b => b.addEventListener('click', (ev) => { ev.stopPropagation(); const n = document.querySelector(`nav button[data-tab="${b.dataset.hd}"]`); if (n) n.click(); }));
   el.querySelectorAll('[data-hd-start]').forEach(b => b.addEventListener('click', () => openGymWorkout(b.dataset.hdStart, keyDate())));
   el.querySelectorAll('[data-hd-weight]').forEach(c => c.addEventListener('click', openWeightQuick));

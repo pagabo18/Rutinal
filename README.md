@@ -205,3 +205,12 @@ En teléfono y tableta (menos de 1024 px) la barra inferior muestra **Hoy · Com
 ### Ficha del entrenado: resumen semanal, gráficas y PDF
 
 La pestaña **Progreso** de la ficha (modo especialista) trae ahora 8 semanas de datos y muestra: resumen de los últimos 7 días contra los 7 anteriores, y gráficas según la especialidad. Coach y fisioterapeuta ven entrenamientos y volumen por semana, dolor y esfuerzo por sesión y 1RM estimado por ejercicio; el nutriólogo ve calorías y proteína por día (14 días) con la línea de la meta, que es la asignada por él si existe. **Copiar resumen** lo deja como texto para pegar en un mensaje y **Guardar PDF** imprime el reporte (impresión nativa en la app, diálogo de impresión en el navegador).
+
+## Chat entre especialista y entrenado
+
+Las "notas" por vínculo ahora son un **chat**: burbujas por autor, separadores por día, barra de escritura fija abajo y actualización cada 12 s mientras está abierto. Los mensajes siguen en `public.notes` (solo los ven las dos partes del vínculo); la migración `supabase/rutinal_chat.sql` agrega `ref`, la referencia opcional a algo asignado.
+
+- **Adjuntos**: al asignar una plantilla (o cambiar las cargas por serie) queda un mensaje en el chat con la rutina, dieta, metas o indicaciones adjuntas. El entrenado toca el adjunto para abrirlo. Con **+**, el especialista asigna una plantilla desde el chat y el entrenado elige sobre qué rutina o plan pregunta.
+- **No leídos**: punto rojo en *Mensajes* (especialista) o en *Hoy* (entrenado), y en cada conversación. Lo "visto" se guarda en el dispositivo (`__nt_seen`), no en el servidor.
+- **Dónde está**: el entrenado ve la tarjeta *Mensajes* en Hoy con cada especialista; el especialista tiene la pestaña *Mensajes* y el botón *Mensajes* en la ficha de cada entrenado.
+- No hay notificaciones con la app cerrada: los mensajes nuevos se revisan al abrir la app, al volver a ella y cada 2 minutos.
