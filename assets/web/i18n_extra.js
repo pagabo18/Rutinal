@@ -3731,6 +3731,226 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "activo": {
+   "en": "active",
+   "pt-BR": "ativo",
+   "fr": "actif"
+  },
+  "Inicio": {
+   "en": "Home",
+   "pt-BR": "Início",
+   "fr": "Accueil"
+  },
+  "Abrir modo especialista": {
+   "en": "Open specialist mode",
+   "pt-BR": "Abrir modo especialista",
+   "fr": "Ouvrir le mode spécialiste"
+  },
+  "Tus entrenados, plantillas y notas están en el modo especialista.": {
+   "en": "Your trainees, templates and notes are in specialist mode.",
+   "pt-BR": "Seus alunos, modelos e notas estão no modo especialista.",
+   "fr": "Vos élèves, modèles et notes sont dans le mode spécialiste."
+  },
+  "¿Quién eres hoy?": {
+   "en": "Who are you today?",
+   "pt-BR": "Quem é você hoje?",
+   "fr": "Qui êtes-vous aujourd'hui ?"
+  },
+  "Elige con qué quieres empezar. Puedes cambiar cuando quieras desde arriba.": {
+   "en": "Choose where to start. You can switch any time from the top.",
+   "pt-BR": "Escolha por onde começar. Você pode trocar quando quiser no topo.",
+   "fr": "Choisissez par où commencer. Vous pouvez changer à tout moment en haut."
+  },
+  "Revisa a tus entrenados, arma plantillas y deja rutinas, planes e indicaciones.": {
+   "en": "Check on your trainees, build templates and hand out routines, plans and instructions.",
+   "pt-BR": "Acompanhe seus alunos, monte modelos e deixe rotinas, planos e orientações.",
+   "fr": "Suivez vos élèves, créez des modèles et donnez routines, plans et consignes."
+  },
+  "Registra tus comidas, entrenamientos y hábitos, y revisa lo que te dejaron.": {
+   "en": "Log your meals, workouts and habits, and check what was assigned to you.",
+   "pt-BR": "Registre suas refeições, treinos e hábitos, e veja o que deixaram para você.",
+   "fr": "Enregistrez vos repas, entraînements et habitudes, et consultez ce qu'on vous a attribué."
+  },
+  "Invitar entrenado": {
+   "en": "Invite trainee",
+   "pt-BR": "Convidar aluno",
+   "fr": "Inviter un élève"
+  },
+  "¿Con qué especialidad lo vas a acompañar?": {
+   "en": "Which specialty will you work with them as?",
+   "pt-BR": "Com qual especialidade você vai acompanhá-lo?",
+   "fr": "Avec quelle spécialité allez-vous l'accompagner ?"
+  },
+  "Hola": {
+   "en": "Hi",
+   "pt-BR": "Olá",
+   "fr": "Bonjour"
+  },
+  "Tu resumen de hoy": {
+   "en": "Your overview for today",
+   "pt-BR": "Seu resumo de hoje",
+   "fr": "Votre résumé du jour"
+  },
+  "Entrenados activos": {
+   "en": "Active trainees",
+   "pt-BR": "Alunos ativos",
+   "fr": "Élèves actifs"
+  },
+  "Invitaciones pendientes": {
+   "en": "Pending invitations",
+   "pt-BR": "Convites pendentes",
+   "fr": "Invitations en attente"
+  },
+  "Avisos": {
+   "en": "Alerts",
+   "pt-BR": "Avisos",
+   "fr": "Alertes"
+  },
+  "Sin registrar:": {
+   "en": "Not logging:",
+   "pt-BR": "Sem registrar:",
+   "fr": "Sans saisie :"
+  },
+  "Dolor alto esta semana:": {
+   "en": "High pain this week:",
+   "pt-BR": "Dor alta esta semana:",
+   "fr": "Douleur élevée cette semaine :"
+  },
+  "Todo en orden": {
+   "en": "All good",
+   "pt-BR": "Tudo em ordem",
+   "fr": "Tout va bien"
+  },
+  "Aún no tienes entrenados": {
+   "en": "You don't have trainees yet",
+   "pt-BR": "Você ainda não tem alunos",
+   "fr": "Vous n'avez pas encore d'élèves"
+  },
+  "Nadie lleva más de 2 días sin registrar ni reportó dolor alto.": {
+   "en": "Nobody has gone more than 2 days without logging or reported high pain.",
+   "pt-BR": "Ninguém está há mais de 2 dias sem registrar nem relatou dor alta.",
+   "fr": "Personne n'a passé plus de 2 jours sans saisie ni signalé de douleur élevée."
+  },
+  "Invita a tu primer entrenado con un código.": {
+   "en": "Invite your first trainee with a code.",
+   "pt-BR": "Convide seu primeiro aluno com um código.",
+   "fr": "Invitez votre premier élève avec un code."
+  },
+  "Actividad reciente": {
+   "en": "Recent activity",
+   "pt-BR": "Atividade recente",
+   "fr": "Activité récente"
+  },
+  "Las personas que acompañas": {
+   "en": "The people you work with",
+   "pt-BR": "As pessoas que você acompanha",
+   "fr": "Les personnes que vous accompagnez"
+  },
+  "Buscar por nombre…": {
+   "en": "Search by name…",
+   "pt-BR": "Buscar por nome…",
+   "fr": "Rechercher par nom…"
+  },
+  "activos": {
+   "en": "active",
+   "pt-BR": "ativos",
+   "fr": "actifs"
+  },
+  "Nadie coincide con la búsqueda.": {
+   "en": "Nobody matches the search.",
+   "pt-BR": "Ninguém corresponde à busca.",
+   "fr": "Personne ne correspond à la recherche."
+  },
+  "Aún no tienes entrenados. Invita al primero con un código.": {
+   "en": "You don't have trainees yet. Invite the first one with a code.",
+   "pt-BR": "Você ainda não tem alunos. Convide o primeiro com um código.",
+   "fr": "Vous n'avez pas encore d'élèves. Invitez le premier avec un code."
+  },
+  "Invitaciones sin usar": {
+   "en": "Unused invitations",
+   "pt-BR": "Convites não usados",
+   "fr": "Invitations non utilisées"
+  },
+  "Días con comidas (7)": {
+   "en": "Days with meals (7)",
+   "pt-BR": "Dias com refeições (7)",
+   "fr": "Jours avec repas (7)"
+  },
+  "Promedio diario": {
+   "en": "Daily average",
+   "pt-BR": "Média diária",
+   "fr": "Moyenne quotidienne"
+  },
+  "Entrenamientos (7 días)": {
+   "en": "Workouts (7 days)",
+   "pt-BR": "Treinos (7 dias)",
+   "fr": "Entraînements (7 jours)"
+  },
+  "Dolor máximo (7 días)": {
+   "en": "Max pain (7 days)",
+   "pt-BR": "Dor máxima (7 dias)",
+   "fr": "Douleur max (7 jours)"
+  },
+  "Sin registros de peso en este periodo.": {
+   "en": "No weight records in this period.",
+   "pt-BR": "Sem registros de peso neste período.",
+   "fr": "Aucune pesée sur cette période."
+  },
+  "Planes": {
+   "en": "Plans",
+   "pt-BR": "Planos",
+   "fr": "Plans"
+  },
+  "Registros": {
+   "en": "Logs",
+   "pt-BR": "Registros",
+   "fr": "Journal"
+  },
+  "Terminar vínculo": {
+   "en": "End link",
+   "pt-BR": "Encerrar vínculo",
+   "fr": "Mettre fin au lien"
+  },
+  "Lo que dejas a tus entrenados": {
+   "en": "What you hand to your trainees",
+   "pt-BR": "O que você deixa para seus alunos",
+   "fr": "Ce que vous donnez à vos élèves"
+  },
+  "Buscar plantillas…": {
+   "en": "Search templates…",
+   "pt-BR": "Buscar modelos…",
+   "fr": "Rechercher des modèles…"
+  },
+  "Ninguna plantilla coincide con la búsqueda.": {
+   "en": "No template matches the search.",
+   "pt-BR": "Nenhum modelo corresponde à busca.",
+   "fr": "Aucun modèle ne correspond à la recherche."
+  },
+  "Aún no tienes plantillas. Crea la primera aquí abajo.": {
+   "en": "You don't have templates yet. Create the first one below.",
+   "pt-BR": "Você ainda não tem modelos. Crie o primeiro aqui embaixo.",
+   "fr": "Vous n'avez pas encore de modèles. Créez le premier ci-dessous."
+  },
+  "Mensajes con tus entrenados": {
+   "en": "Messages with your trainees",
+   "pt-BR": "Mensagens com seus alunos",
+   "fr": "Messages avec vos élèves"
+  },
+  "Tú": {
+   "en": "You",
+   "pt-BR": "Você",
+   "fr": "Vous"
+  },
+  "Sin notas todavía": {
+   "en": "No notes yet",
+   "pt-BR": "Ainda sem notas",
+   "fr": "Pas encore de notes"
+  },
+  "Cuando tengas entrenados, aquí aparecen sus conversaciones.": {
+   "en": "Once you have trainees, their conversations show up here.",
+   "pt-BR": "Quando você tiver alunos, as conversas aparecem aqui.",
+   "fr": "Quand vous aurez des élèves, leurs conversations apparaîtront ici."
+  },
   "Rutina": {
    "en": "Routine",
    "pt-BR": "Rotina",

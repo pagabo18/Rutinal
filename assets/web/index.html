@@ -2075,6 +2075,59 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  /* Modo especialista */
+  nav button[data-mode="spec"] { display: none; }
+  html[data-mode="spec"] nav button { display: none; }
+  html[data-mode="spec"] nav button[data-mode="spec"] { display: flex; }
+  #mode-bar { display: none; margin: 0 20px 12px; padding: 3px; border-radius: 12px; background: var(--surface-2); gap: 3px; }
+  html.is-spec #mode-bar { display: flex; }
+  #mode-bar button { flex: 1; border: 0; background: transparent; color: var(--text-3); font: inherit; font-size: 13px; font-weight: 600; padding: 8px 0; border-radius: 9px; cursor: pointer; }
+  #mode-bar button.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .sp-hello { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; }
+  .sp-sub { font-size: 14px; color: var(--text-3); margin: 2px 0 16px; }
+  .sp-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 6px; }
+  .sp-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+  .sp-stat-k { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; }
+  .sp-stat-v { font-size: 30px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .sp-stat-s { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .sp-h { font-size: 17px; font-weight: 700; margin: 20px 0 10px; display: flex; align-items: baseline; justify-content: space-between; }
+  .sp-h small { font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .sp-alert { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid #D97706; border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; }
+  .sp-alert.ok { border-left-color: #16A34A; }
+  .sp-alert-t { font-weight: 700; font-size: 15px; }
+  .sp-alert-d { font-size: 13px; color: var(--text-3); margin-top: 3px; line-height: 1.45; }
+  .sp-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+  .sp-av { width: 44px; height: 44px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: var(--text-2); flex: none; text-transform: uppercase; }
+  .sp-av.big { width: 76px; height: 76px; font-size: 28px; margin: 4px auto 10px; }
+  .sp-row-b { flex: 1; min-width: 0; }
+  .sp-row-n { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sp-row-d { font-size: 12.5px; color: var(--text-3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sp-row-d .warn, .sp-kpi .warn { color: #B45309; font-weight: 600; }
+  .sp-chev { color: var(--text-3); font-size: 20px; }
+  .sp-search { width: 100%; padding: 12px 14px; font-size: 15px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--text); outline: none; box-sizing: border-box; margin-bottom: 14px; }
+  .sp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 4px; }
+  .sp-act { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 8px; font: inherit; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; }
+  .sp-act.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .sp-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 14px 0 12px; }
+  .sp-tabs button { flex: 1; background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 0; font: inherit; font-size: 14px; font-weight: 600; color: var(--text-3); cursor: pointer; }
+  .sp-tabs button.on { color: var(--text); border-bottom-color: var(--text); }
+  .sp-back { background: none; border: 0; color: var(--text-2); font: inherit; font-size: 14px; font-weight: 600; padding: 4px 0 10px; cursor: pointer; }
+  .sp-center { text-align: center; }
+  .sp-name { font-size: 22px; font-weight: 700; }
+  .sp-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .sp-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
+  .sp-kpi b { display: block; font-size: 22px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .sp-kpi span { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; }
+  .sp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+  .sp-card-top { display: flex; align-items: center; gap: 8px; }
+  .sp-card-n { flex: 1; min-width: 0; font-weight: 700; font-size: 16px; }
+  .sp-card-d { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+  .sp-card-btns { display: flex; gap: 8px; margin-top: 12px; }
+  .sp-card-btns button { flex: 1; padding: 10px 0; }
+  .sp-empty { text-align: center; color: var(--text-3); font-size: 14px; padding: 26px 10px; line-height: 1.5; }
+  .who-card { border: 2px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 12px; cursor: pointer; background: var(--surface); }
+  .who-card b { font-size: 18px; display: block; margin-bottom: 4px; }
+  .who-card span { font-size: 14px; color: var(--text-3); line-height: 1.45; }
   .asg-card { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin: 0 0 12px; background: var(--surface); }
   .asg-card .lk-h { margin: 0 0 6px; }
   .asg-item { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid var(--border); cursor: pointer; }
@@ -2204,7 +2257,15 @@ try {
   <div class="search-results" id="search-results"></div>
 </div>
 
+<div id="mode-bar"><button data-mode-set="">Entrenado</button><button data-mode-set="spec">Especialista</button></div>
+
 <main>
+  <!-- MODO ESPECIALISTA -->
+  <section id="tab-sp-home"></section>
+  <section id="tab-sp-clients"></section>
+  <section id="tab-sp-templates"></section>
+  <section id="tab-sp-notes"></section>
+
   <!-- HOY -->
   <section id="tab-hoy" class="active">
     <div class="split-col split-col-a">
@@ -2869,6 +2930,22 @@ try {
   <button data-tab="cal">
     <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="6"/><line x1="16" y1="3" x2="16" y2="6"/></svg>
     Calendario
+  </button>
+  <button data-tab="sp-home" data-mode="spec">
+    <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+    Inicio
+  </button>
+  <button data-tab="sp-clients" data-mode="spec">
+    <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14c2.6.2 4.5 2 4.5 5"/></svg>
+    Entrenados
+  </button>
+  <button data-tab="sp-templates" data-mode="spec">
+    <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="3" width="13" height="16" rx="2"/><path d="M8 8h5M8 12h5M20 7v12a2 2 0 0 1-2 2H8"/></svg>
+    Plantillas
+  </button>
+  <button data-tab="sp-notes" data-mode="spec">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>
+    Notas
   </button>
   <button data-tab="editar">
     <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -8158,6 +8235,7 @@ const AUTH_ERRORS = {
 function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
 function authEndSession(msg, info) {
   try { localStorage.removeItem('__asg'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
+  try { document.documentElement.dataset.mode = ''; document.documentElement.classList.remove('is-spec'); localStorage.removeItem('__mode'); document.querySelector('nav button[data-tab="hoy"]').click(); } catch (e) {}
   const s = authGet();
   authSet(s && s.user ? { user: s.user } : null);
   authShowGate(msg, info);
@@ -8176,6 +8254,7 @@ async function authVerify(force) {
       authApplyProfile(p);
       if (!document.documentElement.classList.contains('auth-ok')) authHideGate(); // estaba esperando conexión
       authRenderAccount();
+      if (typeof spSyncBar === 'function') { spSyncBar(); if (!authIsSpecialist() && spMode()) spSetMode(false); }
     }
   } catch (e) {
     if (e && e.code === 'session') authEndSession('Tu acceso ya no está activo. Vuelve a iniciar sesión o contacta a quien te dio la cuenta.');
@@ -8357,6 +8436,7 @@ function openAuthUserEditor(u) {
     authHideGate();
     authRenderAccount();
     if (typeof onAuthReady === 'function') onAuthReady();
+    if (authIsSpecialist()) openModeChooser();
   });
   document.getElementById('auth-show').addEventListener('click', (ev) => {
     const i = document.getElementById('auth-pass');
@@ -8614,6 +8694,9 @@ function onAuthReady() {
   }
   if (!m.uid) { m = { uid: s.uid, user: s.user, dirty: {} }; syncSave(m); }
   syncRenderStatus();
+  spSyncBar();
+  if (authIsSpecialist() && !spMode() && localStorage.getItem('__mode') === 'spec') spSetMode(true);
+  if (!authIsSpecialist() && spMode()) spSetMode(false);
   asgRenderCard(); asgRefresh(true);
   if (m.consent === true) syncSchedule(800);
   else if (m.consent === undefined) setTimeout(() => { if (!document.querySelector('#sheet.show, .sheet.show')) openSyncSheet(true); }, 600);
@@ -8669,10 +8752,8 @@ async function openLinks() {
   const pRows = pend.map(l => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><span class="usr-badge">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span></div>
       <div class="lk-d"><span>Invitación sin usar</span></div><button class="btn-secondary" data-lk-end="${l.id}" style="margin-top:8px;padding:8px 12px;">Cancelar invitación</button></div>`).join('');
   openSheet('Especialistas y entrenados', `
-    ${specs.length ? `<div class="lk-h" style="margin-top:0;">Mis entrenados</div>
-      ${cRows || '<div class="lk-d" style="margin-bottom:8px;">Aún no tienes entrenados vinculados.</div>'}${pRows}
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">${specs.map(k => `<button class="btn-secondary" data-lk-invite="${k}" style="flex:1;"><span>Invitar como</span> ${AUTH_SPECS[k]}</button>`).join('')}</div>
-      <button class="btn-secondary" id="lk-templates" style="width:100%;margin-top:8px;">Mis plantillas</button>` : ''}
+    ${specs.length ? `<button class="btn-primary" id="lk-specmode" style="width:100%;margin-bottom:6px;">Abrir modo especialista</button>
+      <div class="fit-note">Tus entrenados, plantillas y notas están en el modo especialista.</div>` : ''}
     <div class="lk-h"${specs.length ? '' : ' style="margin-top:0;"'}>Mis especialistas</div>
     ${mine || '<div class="lk-d" style="margin-bottom:8px;">Nadie más ve tus datos.</div>'}
     <label class="auth-field" style="margin-top:12px;"><span>Código de invitación</span>
@@ -8698,7 +8779,7 @@ async function openLinks() {
   }));
   document.querySelectorAll('[data-lk-open]').forEach(el => el.addEventListener('click', () => openClientDetail(clients[+el.dataset.lkOpen])));
   document.querySelectorAll('[data-lk-notes]').forEach(b => b.addEventListener('click', () => openNotes(b.dataset.lkNotes, b.dataset.lkName, openLinks)));
-  if (document.getElementById('lk-templates')) document.getElementById('lk-templates').addEventListener('click', () => openTemplates(null));
+  if (document.getElementById('lk-specmode')) document.getElementById('lk-specmode').addEventListener('click', () => { closeSheet(); spSetMode(true); });
   document.getElementById('lk-go').addEventListener('click', async () => {
     const code = document.getElementById('lk-code').value.trim().toUpperCase();
     if (!code) return;
@@ -8723,94 +8804,7 @@ async function openLinks() {
 }
 // ---- Ficha de un entrenado (solo lectura) ----
 function cdFmtDay(k) { try { return parseKey(k).toLocaleDateString(_loc(), { weekday: 'short', day: 'numeric', month: 'short' }); } catch (e) { return k; } }
-async function openClientDetail(l) {
-  const title = l.name || '';
-  openSheet(title, '<div class="food-loader">Cargando...</div>');
-  const from = keyDate(new Date(Date.now() - 29 * 864e5));
-  let rows = [];
-  try {
-    const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(l.client_id) + '&or=(sub.eq.,sub.gte.' + from + ')&limit=2000');
-    if (!r.ok) throw authErrObj('network');
-    rows = await r.json();
-  } catch (e) { openSheet(title, `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
-  const D = {};
-  rows.forEach(x => { if (x.value === null) return; if (x.sub) (D[x.key] = D[x.key] || {})[x.sub] = x.value; else D[x.key] = x.value; });
-  const parts = [`<div class="lk-d" style="margin:0 0 6px;"><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span> · <span>Últimos 30 días</span> · <span>Solo lectura</span></div>`];
-  // --- Nutrición ---
-  if (l.role === 'nutriologo') {
-    let tg = null;
-    try { if (D.nutri_profile && D.nutri_profile.heightCm) tg = calcNutriTargets(D.nutri_profile); } catch (e) {}
-    if (!tg && D.food_goal_kcal) tg = { kcal: +D.food_goal_kcal || 0 };
-    parts.push(`<div class="lk-h">Comidas</div>${tg && tg.kcal ? `<div class="lk-d" style="margin-bottom:6px;"><span>Meta diaria:</span> ${tg.kcal} kcal${tg.protein ? ` · P ${tg.protein} g · C ${tg.carbs} g · G ${tg.fat} g` : ''}</div>` : ''}`);
-    const days = Object.keys(D.meal_log || {}).sort().reverse();
-    if (!days.length) parts.push('<div class="lk-d">Sin comidas registradas en este periodo.</div>');
-    days.forEach(d => {
-      const day = D.meal_log[d] || {};
-      let k = 0, p = 0, c = 0, f = 0; const lines = [];
-      [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['dinner', 'Cena'], ['snack', 'Snacks']].forEach(([mid, lab]) => {
-        const its = day[mid] || [];
-        if (!its.length) return;
-        lines.push(`<b>${lab}</b>: ` + its.map(it => { const m = calcItemMacros(it); k += m.kcal; p += m.protein; c += m.carbs; f += m.fat; return `${escapeHtml(it.name || '')} (${Math.round(it.grams || 0)} g)`; }).join(', '));
-      });
-      if (!lines.length) return;
-      const cls = tg && tg.kcal ? (k > tg.kcal * 1.1 ? 'over' : k >= tg.kcal * 0.85 ? 'ok' : '') : '';
-      parts.push(`<details class="cd-day"><summary><span class="cd-date">${escapeHtml(cdFmtDay(d))}</span><span class="cd-num ${cls}">${Math.round(k)} kcal</span></summary>
-        <div class="cd-sub">P ${Math.round(p)} g · C ${Math.round(c)} g · G ${Math.round(f)} g</div><div class="cd-items">${lines.join('<br>')}</div></details>`);
-    });
-  }
-  // --- Entrenamiento ---
-  if (l.role === 'coach' || l.role === 'fisioterapeuta') {
-    parts.push('<div class="lk-h">Entrenamientos</div>');
-    const routines = Array.isArray(D.gym_routines) ? D.gym_routines : [];
-    const days = Object.keys(D.gym_logs || {}).sort().reverse();
-    let shown = 0;
-    days.forEach(d => {
-      const lg = D.gym_logs[d] || {};
-      const rt = routines.find(x => x.id === lg.routineId) || { name: '', exercises: [] };
-      const lines = [];
-      Object.keys(lg.ex || {}).forEach(exId => {
-        const ex = (rt.exercises || []).find(x => x.id === exId) || {};
-        const sw = lg.swap && lg.swap[exId];
-        const sets = (lg.ex[exId] || []).filter(s => s && s.done).map(s => `${s.kg || 0}×${s.reps || 0}`);
-        if (!sets.length) return;
-        const ef = (lg.exFeel && lg.exFeel[exId]) || {};
-        lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}`);
-      });
-      if (!lines.length && !lg.done) return;
-      shown++;
-      const fl = lg.feel || {};
-      const feel = [fl.mood ? GYM_MOODS[fl.mood - 1][0] : '', fl.pain != null ? `<span>Dolor</span> ${fl.pain}/10` : '', fl.rpe != null ? `RPE ${fl.rpe}` : ''].filter(Boolean).join(' · ');
-      parts.push(`<details class="cd-day"><summary><span class="cd-date">${escapeHtml(cdFmtDay(d))}</span><span class="cd-num ${fl.pain >= 6 ? 'over' : ''}">${escapeHtml(rt.name || '')}</span></summary>
-        ${feel ? `<div class="cd-sub">${feel}</div>` : ''}${fl.note ? `<div class="cd-sub">“${escapeHtml(fl.note)}”</div>` : ''}<div class="cd-items">${lines.join('<br>') || '<span>Sin series registradas</span>'}</div></details>`);
-    });
-    if (!shown) parts.push('<div class="lk-d">Sin entrenamientos registrados en este periodo.</div>');
-  }
-  // --- Peso ---
-  if (D.weight_log) {
-    const ws = Object.keys(D.weight_log).sort();
-    if (ws.length) {
-      const first = +D.weight_log[ws[0]], last = +D.weight_log[ws[ws.length - 1]], diff = Math.round((last - first) * 10) / 10;
-      parts.push(`<div class="lk-h">Peso</div><div class="lk-row"><div class="lk-top"><div class="lk-n">${last} kg</div><span class="cd-num">${diff > 0 ? '+' : ''}${diff} kg</span></div>
-        <div class="lk-d">${ws.slice(-8).map(d => `${escapeHtml(cdFmtDay(d))}: ${D.weight_log[d]} kg`).join(' · ')}</div></div>`);
-    }
-  }
-  // --- Asignado por mí ---
-  let asg = [];
-  try { asg = await sbRest('assignments?select=id,kind,name,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent((authGet() || {}).uid) + '&role=eq.' + l.role + '&status=eq.active&order=created_at.desc'); } catch (e) {}
-  parts.push(`<div class="lk-h">Asignado</div>${asg.map(a => `<div class="lk-row"><div class="lk-top"><div class="lk-n">${escapeHtml(a.name)}</div><span class="usr-badge">${ASG_KINDS[a.kind] || a.kind}</span></div>
-      <div class="lk-d">${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><button class="btn-secondary" data-asg-end="${a.id}" style="margin-top:8px;padding:8px 12px;">Quitar</button></div>`).join('') || '<div class="lk-d" style="margin-bottom:8px;">Nada asignado todavía.</div>'}
-    <div style="display:flex;gap:8px;"><button class="btn-secondary" id="cd-assign" style="flex:1;">Asignar plantilla</button><button class="btn-secondary" id="cd-notes" style="flex:1;">Notas</button></div>`);
-  parts.push('<button class="btn-secondary" id="cd-back" style="width:100%;margin-top:16px;">Volver</button>');
-  openSheet(title, parts.join(''));
-  document.getElementById('cd-back').addEventListener('click', openLinks);
-  document.getElementById('cd-assign').addEventListener('click', () => openTemplates(l));
-  document.getElementById('cd-notes').addEventListener('click', () => openNotes(l.id, l.name, () => openClientDetail(l)));
-  document.querySelectorAll('[data-asg-end]').forEach(b => b.addEventListener('click', async () => {
-    if (!confirm('¿Quitar esta asignación? Dejará de aparecerle al entrenado.')) return;
-    try { await sbRest('assignments?id=eq.' + b.dataset.asgEnd, { method: 'PATCH', body: { status: 'ended' }, headers: { Prefer: 'return=minimal' } }); } catch (e) {}
-    openClientDetail(l);
-  }));
-}
+function openClientDetail(l) { closeSheet(); if (!spMode()) spSetMode(true); spGo('sp-clients'); spOpenClient(l); }
 document.getElementById('btn-acct-links').addEventListener('click', openLinks);
 
 // ============================================================
@@ -8853,7 +8847,7 @@ async function openTemplates(forClient) {
     <div style="display:flex;gap:8px;flex-wrap:wrap;">${usable.map(k => `<button class="btn-secondary" data-tp-new="${k}" style="flex:1 1 45%;">${ASG_KINDS[k]}</button>`).join('')}</div>
     <div class="auth-msg" id="tp-msg"></div>
     <button class="btn-secondary" id="tp-back" style="width:100%;margin-top:12px;">Volver</button>`);
-  document.getElementById('tp-back').addEventListener('click', () => forClient ? openClientDetail(forClient) : openLinks());
+  document.getElementById('tp-back').addEventListener('click', () => closeSheet());
   document.querySelectorAll('[data-tp-new]').forEach(b => b.addEventListener('click', () => openTemplateEditor(b.dataset.tpNew, forClient)));
   document.querySelectorAll('[data-tp-del]').forEach(b => b.addEventListener('click', async () => {
     if (!confirm('¿Eliminar esta plantilla? Lo que ya asignaste no cambia.')) return;
@@ -8907,7 +8901,7 @@ function openTemplateEditor(kind, forClient) {
     if (!name) { msg.textContent = 'Ponle un nombre a la plantilla.'; return; }
     try { await sbRest('templates', { method: 'POST', body: { kind, name, payload }, headers: { Prefer: 'return=minimal' } }); }
     catch (e) { msg.textContent = authErr(e.code); return; }
-    openTemplates(forClient);
+    tplDone(forClient);
   });
   if (kind === 'diet') {
     const upd = () => { const d = mealLog()[document.getElementById('te-src').value]; document.getElementById('te-prev').textContent = d && asgMealsKcal(d) ? asgMealsKcal(d) + ' kcal' : t('Ese día no tiene comidas registradas.'); };
@@ -8939,7 +8933,7 @@ async function openAssign(tp, forClient) {
       await sbRest('assignments', { method: 'POST', headers: { Prefer: 'return=minimal' },
         body: sel.map(l => ({ client_id: l.client_id, role: l.role, kind: tp.kind, name: tp.name, payload: tp.payload, note, author_name: s.name || s.user })) });
     } catch (e) { msg.textContent = authErr(e.code); return; }
-    if (forClient) openClientDetail(forClient); else openTemplates(null);
+    tplDone(forClient);
   });
 }
 // ---- Notas (hilo por vínculo) ----
@@ -9042,6 +9036,274 @@ function openAssignmentView(a) {
     syncRefreshUi();
   }));
 }
+
+// ============================================================
+// MODO ESPECIALISTA (pantallas propias: Inicio, Entrenados, Plantillas, Notas)
+// Una cuenta con especialidad puede cambiar entre su app de entrenado y este modo.
+// ============================================================
+let _sp = { links: null, at: 0, client: null, tab: 'plans', q: '', tq: '', tpls: null };
+function spMode() { return document.documentElement.dataset.mode === 'spec'; }
+function spGo(tab) { const b = document.querySelector(`nav button[data-tab="${tab}"]`); if (b) b.click(); }
+function spCurrentTab() { return (document.querySelector('nav button.active') || { dataset: {} }).dataset.tab || ''; }
+function spRender() { const tb = spCurrentTab(); if (tabRenderers[tb]) tabRenderers[tb](); }
+function spSyncBar() {
+  const is = authIsSpecialist();
+  document.documentElement.classList.toggle('is-spec', is);
+  document.querySelectorAll('#mode-bar button').forEach(b => b.classList.toggle('on', (b.dataset.modeSet === 'spec') === spMode()));
+}
+function spSetMode(on) {
+  on = !!on && authIsSpecialist();
+  document.documentElement.dataset.mode = on ? 'spec' : '';
+  try { localStorage.setItem('__mode', on ? 'spec' : ''); } catch (e) {}
+  _sp.client = null;
+  spSyncBar();
+  spGo(on ? 'sp-home' : 'hoy');
+  window.scrollTo(0, 0);
+}
+function openModeChooser() {
+  openSheet('¿Quién eres hoy?', `<p style="color:var(--text-3);font-size:14px;margin-bottom:14px;">Elige con qué quieres empezar. Puedes cambiar cuando quieras desde arriba.</p>
+    <div class="who-card" data-who="spec"><b>Especialista</b><span>Revisa a tus entrenados, arma plantillas y deja rutinas, planes e indicaciones.</span></div>
+    <div class="who-card" data-who=""><b>Entrenado</b><span>Registra tus comidas, entrenamientos y hábitos, y revisa lo que te dejaron.</span></div>`);
+  document.querySelectorAll('[data-who]').forEach(c => c.addEventListener('click', () => { closeSheet(); spSetMode(c.dataset.who === 'spec'); }));
+}
+async function spLoad(force) {
+  if (!force && _sp.links && Date.now() - _sp.at < 60000) return _sp.links;
+  const r = await linkRpc('rutinal_my_links');
+  if (r.ok) { _sp.links = r; _sp.at = Date.now(); }
+  return r.ok ? r : (_sp.links || { ok: false, error: r.error, as_specialist: [], as_client: [] });
+}
+function spClients(r) { return (r.as_specialist || []).filter(l => l.status === 'active'); }
+function spStatusLine(l) {
+  const ago = linkAgo(l.last_activity), bits = [];
+  bits.push(ago == null ? '<span class="warn">Sin registros todavía</span>' : ago >= 3 ? `<span class="warn">Sin registros desde hace ${ago} días</span>` : ago === 0 ? '<span>Registró hoy</span>' : `<span>Último registro hace ${ago} días</span>`);
+  if (l.pain7 != null && l.pain7 >= 6) bits.push(`<span class="warn">Dolor máximo: ${l.pain7}/10</span>`);
+  return bits.join(' · ');
+}
+function spRowHtml(l, i) {
+  return `<div class="sp-row" data-sp-open="${i}"><div class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</div>
+    <div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(l.name || '')}</div><div class="sp-row-d">${spStatusLine(l)}</div></div>
+    <span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span><span class="sp-chev">›</span></div>`;
+}
+async function spInvite() {
+  const specs = (authGet() || {}).specs || [];
+  const make = async (role) => {
+    const e = await linkRpc('rutinal_invite', { p_role: role });
+    if (!e.ok) { openSheet('Invitación', `<p class="auth-msg">${escapeHtml(linkErr(e.error))}</p>`); return; }
+    _sp.at = 0;
+    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu entrenado. Lo escribe en Editar → Ajustes → Cuenta → Especialistas y entrenados. Vence en 14 días.</p>
+      <div class="lk-code" translate="no">${escapeHtml(e.code)}</div>
+      <button class="btn-primary" id="lk-copy" style="width:100%;">Copiar</button>`);
+    document.getElementById('lk-copy').addEventListener('click', async (ev) => { let ok = false; try { await navigator.clipboard.writeText(e.code); ok = true; } catch (x) {} ev.target.textContent = ok ? 'Copiado' : 'No se pudo copiar'; });
+  };
+  if (specs.length === 1) return make(specs[0]);
+  openSheet('Invitar entrenado', `<p style="color:var(--text-3);font-size:14px;margin-bottom:12px;">¿Con qué especialidad lo vas a acompañar?</p>
+    ${specs.map(k => `<button class="btn-secondary" data-inv="${k}" style="width:100%;margin-bottom:8px;">${AUTH_SPECS[k]}</button>`).join('')}`);
+  document.querySelectorAll('[data-inv]').forEach(b => b.addEventListener('click', () => make(b.dataset.inv)));
+}
+// ---- Inicio ----
+tabRenderers['sp-home'] = async function () {
+  const el = document.getElementById('tab-sp-home'), s = authGet() || {};
+  if (!el.innerHTML) el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  const r = await spLoad(false), cs = spClients(r), pend = (r.as_specialist || []).filter(l => l.status === 'pending');
+  const quiet = cs.filter(l => { const a = linkAgo(l.last_activity); return a == null || a >= 3; });
+  const pain = cs.filter(l => l.pain7 != null && l.pain7 >= 6);
+  const recent = cs.filter(l => l.last_activity).sort((a, b) => Date.parse(b.last_activity) - Date.parse(a.last_activity)).slice(0, 5);
+  el.innerHTML = `<div class="sp-hello"><span>Hola</span>, <span translate="no">${escapeHtml(s.name || s.user || '')}</span></div><div class="sp-sub">Tu resumen de hoy</div>
+    <div class="sp-stats"><div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Entrenados activos</div><div class="sp-stat-v">${cs.length}</div></div>
+      <div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Invitaciones pendientes</div><div class="sp-stat-v">${pend.length}</div></div></div>
+    <div class="sp-h">Avisos</div>
+    ${quiet.length ? `<div class="sp-alert"><div class="sp-alert-t"><span>Sin registrar:</span> ${quiet.length}</div><div class="sp-alert-d" translate="no">${quiet.map(l => escapeHtml(l.name || '')).join(', ')}</div></div>` : ''}
+    ${pain.length ? `<div class="sp-alert"><div class="sp-alert-t"><span>Dolor alto esta semana:</span> ${pain.length}</div><div class="sp-alert-d" translate="no">${pain.map(l => escapeHtml(l.name || '') + ' (' + l.pain7 + '/10)').join(', ')}</div></div>` : ''}
+    ${!quiet.length && !pain.length ? `<div class="sp-alert ok"><div class="sp-alert-t">${cs.length ? 'Todo en orden' : 'Aún no tienes entrenados'}</div><div class="sp-alert-d">${cs.length ? 'Nadie lleva más de 2 días sin registrar ni reportó dolor alto.' : 'Invita a tu primer entrenado con un código.'}</div></div>` : ''}
+    ${recent.length ? `<div class="sp-h">Actividad reciente</div>${recent.map(l => spRowHtml(l, cs.indexOf(l))).join('')}` : ''}
+    <div class="sp-actions"><button class="sp-act primary" id="sp-invite">Invitar entrenado</button><button class="sp-act" data-sp-tab="sp-templates">Mis plantillas</button></div>`;
+  el.querySelectorAll('[data-sp-tab]').forEach(x => x.addEventListener('click', () => spGo(x.dataset.spTab)));
+  el.querySelectorAll('[data-sp-open]').forEach(x => x.addEventListener('click', () => { spGo('sp-clients'); spOpenClient(cs[+x.dataset.spOpen]); }));
+  document.getElementById('sp-invite').addEventListener('click', spInvite);
+};
+// ---- Entrenados (lista y ficha) ----
+tabRenderers['sp-clients'] = async function () {
+  const el = document.getElementById('tab-sp-clients');
+  if (_sp.client) return spOpenClient(_sp.client);
+  if (!el.innerHTML) el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  const r = await spLoad(false), cs = spClients(r), pend = (r.as_specialist || []).filter(l => l.status === 'pending');
+  if (_sp.client) return;
+  const q = normalizeFoodQuery(_sp.q || '');
+  const shown = cs.filter(l => !q || normalizeFoodQuery((l.name || '') + ' ' + (l.username || '')).includes(q));
+  el.innerHTML = `<div class="sp-hello">Entrenados</div><div class="sp-sub">Las personas que acompañas</div>
+    <input class="sp-search" id="sp-q" type="search" placeholder="Buscar por nombre…" value="${escapeHtml(_sp.q || '')}">
+    <div class="sp-h" style="margin-top:0;"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Entrenados</span><small><span>${cs.length}</span> <span>${cs.length === 1 ? 'activo' : 'activos'}</span></small></div>
+    <div id="sp-list">${shown.map(l => spRowHtml(l, cs.indexOf(l))).join('') || `<div class="sp-empty">${cs.length ? 'Nadie coincide con la búsqueda.' : 'Aún no tienes entrenados. Invita al primero con un código.'}</div>`}</div>
+    ${pend.length ? `<div class="sp-h"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Invitaciones sin usar</span></div>${pend.map(l => `<div class="sp-row" style="cursor:default;"><div class="sp-row-b"><div class="sp-row-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><div class="sp-row-d">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</div></div><button class="btn-secondary" data-sp-cancel="${l.id}" style="padding:8px 12px;width:auto;">Cancelar</button></div>`).join('')}` : ''}
+    <div class="sp-actions" style="grid-template-columns:1fr;"><button class="sp-act primary" id="sp-invite2">Invitar entrenado</button></div>`;
+  const inp = document.getElementById('sp-q');
+  inp.addEventListener('input', () => { _sp.q = inp.value; const pos = inp.selectionStart; tabRenderers['sp-clients']().then(() => { const n = document.getElementById('sp-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } }); });
+  el.querySelectorAll('[data-sp-open]').forEach(x => x.addEventListener('click', () => spOpenClient(cs[+x.dataset.spOpen])));
+  el.querySelectorAll('[data-sp-cancel]').forEach(x => x.addEventListener('click', async () => { await linkRpc('rutinal_link_end', { p_id: x.dataset.spCancel }); _sp.at = 0; tabRenderers['sp-clients'](); }));
+  document.getElementById('sp-invite2').addEventListener('click', spInvite);
+};
+function spWeightChart(wl) {
+  const ks = Object.keys(wl || {}).sort();
+  if (ks.length < 2) return '';
+  const vs = ks.map(k => +wl[k]), lo = Math.min.apply(null, vs), hi = Math.max.apply(null, vs), W = 320, H = 90, pad = 8;
+  const t0 = parseKey(ks[0]).getTime(), t1 = parseKey(ks[ks.length - 1]).getTime();
+  const X = k => pad + (t1 === t0 ? 0 : (parseKey(k).getTime() - t0) / (t1 - t0)) * (W - 2 * pad), Y = v => H - pad - (hi === lo ? 0.5 : (v - lo) / (hi - lo)) * (H - 2 * pad);
+  const pts = ks.map((k, i) => X(k).toFixed(1) + ',' + Y(vs[i]).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:8px;"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${ks.map((k, i) => `<circle cx="${X(k).toFixed(1)}" cy="${Y(vs[i]).toFixed(1)}" r="${i === ks.length - 1 ? 4 : 2.5}" fill="currentColor"/>`).join('')}</svg>`;
+}
+async function spOpenClient(l) {
+  if (!l) return;
+  const el = document.getElementById('tab-sp-clients');
+  _sp.client = l;
+  el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  window.scrollTo(0, 0);
+  const from = keyDate(new Date(Date.now() - 29 * 864e5)), me = (authGet() || {}).uid;
+  let rows = [], asg = [];
+  try {
+    const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(l.client_id) + '&or=(sub.eq.,sub.gte.' + from + ')&limit=2000');
+    if (!r.ok) throw authErrObj('network');
+    rows = await r.json();
+    asg = await sbRest('assignments?select=id,kind,name,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent(me) + '&role=eq.' + l.role + '&status=eq.active&order=created_at.desc') || [];
+  } catch (e) { el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Entrenados</span></button><p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); }); return; }
+  if (_sp.client !== l) return;
+  const D = {};
+  rows.forEach(x => { if (x.value === null) return; if (x.sub) (D[x.key] = D[x.key] || {})[x.sub] = x.value; else D[x.key] = x.value; });
+  const nutri = l.role === 'nutriologo', d7 = keyDate(new Date(Date.now() - 6 * 864e5));
+  // --- Registros ---
+  const logs = [], kpis = [];
+  if (nutri) {
+    let tg = null;
+    try { if (D.nutri_profile && D.nutri_profile.heightCm) tg = calcNutriTargets(D.nutri_profile); } catch (e) {}
+    if (!tg && D.food_goal_kcal) tg = { kcal: +D.food_goal_kcal || 0 };
+    if (tg && tg.kcal) logs.push(`<div class="lk-d" style="margin-bottom:6px;"><span>Meta diaria:</span> ${tg.kcal} kcal${tg.protein ? ` · P ${tg.protein} g · C ${tg.carbs} g · G ${tg.fat} g` : ''}</div>`);
+    let n7 = 0, k7 = 0;
+    Object.keys(D.meal_log || {}).sort().reverse().forEach(d => {
+      const day = D.meal_log[d] || {};
+      let k = 0, p = 0, c = 0, f = 0; const lines = [];
+      ASG_MEALS.forEach(([mid, lab]) => { const its = day[mid] || []; if (!its.length) return;
+        lines.push(`<b>${lab}</b>: ` + its.map(it => { const m = calcItemMacros(it); k += m.kcal; p += m.protein; c += m.carbs; f += m.fat; return `${escapeHtml(it.name || '')} (${Math.round(it.grams || 0)} g)`; }).join(', ')); });
+      if (!lines.length) return;
+      if (d >= d7) { n7++; k7 += k; }
+      const cls = tg && tg.kcal ? (k > tg.kcal * 1.1 ? 'over' : k >= tg.kcal * 0.85 ? 'ok' : '') : '';
+      logs.push(`<details class="cd-day"><summary><span class="cd-date">${escapeHtml(cdFmtDay(d))}</span><span class="cd-num ${cls}">${Math.round(k)} kcal</span></summary>
+        <div class="cd-sub">P ${Math.round(p)} g · C ${Math.round(c)} g · G ${Math.round(f)} g</div><div class="cd-items">${lines.join('<br>')}</div></details>`);
+    });
+    if (logs.length <= (tg && tg.kcal ? 1 : 0)) logs.push('<div class="sp-empty">Sin comidas registradas en este periodo.</div>');
+    kpis.push(`<div class="sp-kpi"><span>Días con comidas (7)</span><b class="${n7 < 4 ? 'warn' : ''}">${n7}/7</b></div>`);
+    kpis.push(`<div class="sp-kpi"><span>Promedio diario</span><b>${n7 ? Math.round(k7 / n7) : 0} kcal</b></div>`);
+  } else {
+    const routines = Array.isArray(D.gym_routines) ? D.gym_routines : [];
+    let n7 = 0, pmax = null;
+    Object.keys(D.gym_logs || {}).sort().reverse().forEach(d => {
+      const lg = D.gym_logs[d] || {}, rt = routines.find(x => x.id === lg.routineId) || { name: '', exercises: [] }, lines = [];
+      Object.keys(lg.ex || {}).forEach(exId => {
+        const ex = (rt.exercises || []).find(x => x.id === exId) || {}, sw = lg.swap && lg.swap[exId];
+        const sets = (lg.ex[exId] || []).filter(x => x && x.done).map(x => `${x.kg || 0}×${x.reps || 0}`);
+        if (!sets.length) return;
+        const ef = (lg.exFeel && lg.exFeel[exId]) || {};
+        lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}`);
+      });
+      if (!lines.length && !lg.done) return;
+      const fl = lg.feel || {};
+      if (d >= d7) { if (lg.done) n7++; if (fl.pain != null && (pmax == null || fl.pain > pmax)) pmax = fl.pain; }
+      const feel = [fl.mood ? GYM_MOODS[fl.mood - 1][0] : '', fl.pain != null ? `<span>Dolor</span> ${fl.pain}/10` : '', fl.rpe != null ? `RPE ${fl.rpe}` : ''].filter(Boolean).join(' · ');
+      logs.push(`<details class="cd-day"><summary><span class="cd-date">${escapeHtml(cdFmtDay(d))}</span><span class="cd-num ${fl.pain >= 6 ? 'over' : ''}">${escapeHtml(rt.name || '')}</span></summary>
+        ${feel ? `<div class="cd-sub">${feel}</div>` : ''}${fl.note ? `<div class="cd-sub">“${escapeHtml(fl.note)}”</div>` : ''}<div class="cd-items">${lines.join('<br>') || '<span>Sin series registradas</span>'}</div></details>`);
+    });
+    if (!logs.length) logs.push('<div class="sp-empty">Sin entrenamientos registrados en este periodo.</div>');
+    kpis.push(`<div class="sp-kpi"><span>Entrenamientos (7 días)</span><b>${n7}</b></div>`);
+    kpis.push(`<div class="sp-kpi"><span>Dolor máximo (7 días)</span><b class="${pmax >= 6 ? 'warn' : ''}">${pmax == null ? '—' : pmax + '/10'}</b></div>`);
+  }
+  // --- Progreso ---
+  let weight = '';
+  const ws = Object.keys(D.weight_log || {}).sort();
+  if (ws.length) {
+    const first = +D.weight_log[ws[0]], last = +D.weight_log[ws[ws.length - 1]], diff = Math.round((last - first) * 10) / 10;
+    weight = `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n"><span>Peso</span>: ${last} kg</div><span class="cd-num">${diff > 0 ? '+' : ''}${diff} kg</span></div>
+      <div class="sp-card-d">${escapeHtml(cdFmtDay(ws[0]))} → ${escapeHtml(cdFmtDay(ws[ws.length - 1]))}</div>${spWeightChart(D.weight_log)}</div>`;
+  }
+  const plans = asg.map(a => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(a.name)}</div><span class="usr-badge">${ASG_KINDS[a.kind] || a.kind}</span></div>
+      <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><div class="sp-card-btns"><button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
+  const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button>',
+    progress: `<div class="sp-kpis">${kpis.join('')}</div>${weight || (l.role === 'fisioterapeuta' ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}`,
+    logs: logs.join('') };
+  if (!tabs[_sp.tab]) _sp.tab = 'plans';
+  el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Entrenados</span></button>
+    <div class="sp-center"><div class="sp-av big">${escapeHtml((l.name || '?').slice(0, 1))}</div><div class="sp-name" translate="no">${escapeHtml(l.name || '')}</div>
+      <div class="sp-sub" style="margin-bottom:0;"><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span> · ${spStatusLine(l)}</div></div>
+    <div class="sp-actions"><button class="sp-act" id="sp-c-notes">Notas</button><button class="sp-act" id="sp-c-assign">Asignar</button></div>
+    <div class="sp-tabs"><button data-sp-t="plans" class="${_sp.tab === 'plans' ? 'on' : ''}">Planes</button><button data-sp-t="progress" class="${_sp.tab === 'progress' ? 'on' : ''}">Progreso</button><button data-sp-t="logs" class="${_sp.tab === 'logs' ? 'on' : ''}">Registros</button></div>
+    <div id="sp-tabbody">${tabs[_sp.tab]}</div>
+    <button class="btn-secondary" id="sp-c-end" style="width:100%;margin-top:22px;">Terminar vínculo</button>`;
+  const wire = () => {
+    const as = document.getElementById('sp-assign'); if (as) as.addEventListener('click', () => openTemplates(l));
+    el.querySelectorAll('[data-asg-end]').forEach(b => b.addEventListener('click', async () => {
+      if (!confirm('¿Quitar esta asignación? Dejará de aparecerle al entrenado.')) return;
+      try { await sbRest('assignments?id=eq.' + b.dataset.asgEnd, { method: 'PATCH', body: { status: 'ended' }, headers: { Prefer: 'return=minimal' } }); } catch (e) {}
+      spOpenClient(l);
+    }));
+  };
+  wire();
+  document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); });
+  el.querySelectorAll('[data-sp-t]').forEach(b => b.addEventListener('click', () => { _sp.tab = b.dataset.spT; el.querySelectorAll('[data-sp-t]').forEach(x => x.classList.toggle('on', x === b)); document.getElementById('sp-tabbody').innerHTML = tabs[_sp.tab]; wire(); }));
+  document.getElementById('sp-c-notes').addEventListener('click', () => openNotes(l.id, l.name, closeSheet));
+  document.getElementById('sp-c-assign').addEventListener('click', () => openTemplates(l));
+  document.getElementById('sp-c-end').addEventListener('click', async () => {
+    if (!confirm('¿Terminar este vínculo? La otra persona dejará de ver los datos.')) return;
+    await linkRpc('rutinal_link_end', { p_id: l.id }); _sp.at = 0; _sp.client = null; tabRenderers['sp-clients']();
+  });
+}
+function tplDone(forClient) { closeSheet(); _sp.tpls = null; if (forClient && spCurrentTab() === 'sp-clients') spOpenClient(forClient); else spRender(); }
+// ---- Plantillas ----
+tabRenderers['sp-templates'] = async function () {
+  const el = document.getElementById('tab-sp-templates');
+  if (!el.innerHTML) el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  let list = [];
+  try { list = await sbRest('templates?select=id,kind,name,payload,updated_at&order=updated_at.desc') || []; }
+  catch (e) { el.innerHTML = `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; return; }
+  _tpls = list;
+  const specs = (authGet() || {}).specs || [];
+  const kinds = Object.keys(ASG_KINDS).filter(k => specs.some(sp => (ASG_ROLE_KINDS[sp] || []).includes(k)));
+  const q = normalizeFoodQuery(_sp.tq || '');
+  const shown = list.filter(tp => kinds.includes(tp.kind) && (!q || normalizeFoodQuery(tp.name).includes(q)));
+  el.innerHTML = `<div class="sp-hello">Plantillas</div><div class="sp-sub">Lo que dejas a tus entrenados</div>
+    <input class="sp-search" id="sp-tq" type="search" placeholder="Buscar plantillas…" value="${escapeHtml(_sp.tq || '')}">
+    ${shown.map(tp => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(tp.name)}</div><span class="usr-badge">${ASG_KINDS[tp.kind]}</span></div>
+      <div class="sp-card-d">${asgSummary(tp.kind, tp.payload || {})}</div>
+      <div class="sp-card-btns"><button class="btn-secondary" data-tp-del="${tp.id}">Eliminar</button><button class="btn-primary" data-tp-assign="${tp.id}">Asignar</button></div></div>`).join('') || `<div class="sp-empty">${list.length ? 'Ninguna plantilla coincide con la búsqueda.' : 'Aún no tienes plantillas. Crea la primera aquí abajo.'}</div>`}
+    <div class="sp-h">Nueva plantilla</div>
+    <div class="sp-actions" style="margin-top:0;">${kinds.map(k => `<button class="sp-act" data-tp-new="${k}">${ASG_KINDS[k]}</button>`).join('')}</div>`;
+  const inp = document.getElementById('sp-tq');
+  inp.addEventListener('change', () => { _sp.tq = inp.value; tabRenderers['sp-templates'](); });
+  el.querySelectorAll('[data-tp-new]').forEach(b => b.addEventListener('click', () => openTemplateEditor(b.dataset.tpNew, null)));
+  el.querySelectorAll('[data-tp-assign]').forEach(b => b.addEventListener('click', () => openAssign(list.find(x => x.id === b.dataset.tpAssign), null)));
+  el.querySelectorAll('[data-tp-del]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('¿Eliminar esta plantilla? Lo que ya asignaste no cambia.')) return;
+    try { await sbRest('templates?id=eq.' + b.dataset.tpDel, { method: 'DELETE', headers: { Prefer: 'return=minimal' } }); } catch (e) {}
+    tabRenderers['sp-templates']();
+  }));
+};
+// ---- Notas ----
+tabRenderers['sp-notes'] = async function () {
+  const el = document.getElementById('tab-sp-notes');
+  if (!el.innerHTML) el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  const r = await spLoad(false), cs = spClients(r), me = (authGet() || {}).uid;
+  let notes = [];
+  try { notes = await sbRest('notes?select=link_id,author_id,body,created_at&order=created_at.desc&limit=300') || []; } catch (e) {}
+  const last = {};
+  notes.forEach(n => { if (!last[n.link_id]) last[n.link_id] = n; });
+  const ids = new Set(cs.map(l => l.id));
+  const sorted = cs.slice().sort((a, b) => Date.parse((last[b.id] || {}).created_at || 0) - Date.parse((last[a.id] || {}).created_at || 0));
+  el.innerHTML = `<div class="sp-hello">Notas</div><div class="sp-sub">Mensajes con tus entrenados</div>
+    ${sorted.map(l => { const n = last[l.id]; return `<div class="sp-row" data-sp-note="${cs.indexOf(l)}"><div class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</div>
+      <div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(l.name || '')}</div><div class="sp-row-d" translate="no">${n ? (n.author_id === me ? '<span translate="yes">Tú</span>: ' : '') + escapeHtml(n.body) : '<span translate="yes">Sin notas todavía</span>'}</div></div>
+      <span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span><span class="sp-chev">›</span></div>`; }).join('') || '<div class="sp-empty">Cuando tengas entrenados, aquí aparecen sus conversaciones.</div>'}`;
+  el.querySelectorAll('[data-sp-note]').forEach(x => x.addEventListener('click', () => { const l = cs[+x.dataset.spNote]; openNotes(l.id, l.name, () => { closeSheet(); tabRenderers['sp-notes'](); }); }));
+};
+(function spInit() {
+  document.querySelectorAll('#mode-bar button').forEach(b => b.addEventListener('click', () => spSetMode(b.dataset.modeSet === 'spec')));
+  document.querySelectorAll('nav button[data-mode="spec"]').forEach(b => b.addEventListener('click', () => { if (b.dataset.tab !== 'sp-clients') _sp.client = null; }));
+})();
 
 // ============================================================
 // INIT
