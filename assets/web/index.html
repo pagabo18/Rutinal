@@ -3091,7 +3091,6 @@ try {
         <div class="setting-label">Unidades</div>
         <div class="unit-row"><span>Peso corporal</span><div class="gym-unit" translate="no"><button data-unit-k="body_unit" data-unit-v="kg">kg</button><button data-unit-k="body_unit" data-unit-v="lb">lb</button></div></div>
         <div class="unit-row"><span>Cargas del gym</span><div class="gym-unit" translate="no"><button data-unit-k="gym_unit" data-unit-v="kg">kg</button><button data-unit-k="gym_unit" data-unit-v="lb">lb</button></div></div>
-        <div style="font-size:12px; color:var(--text-3); margin-top:8px; line-height:1.4;">El perfil de nutrición y las tendencias de comida siguen mostrando el peso en kg.</div>
       </div>
       <div class="setting">
         <div class="setting-label">Tema</div>
@@ -7580,8 +7579,8 @@ function renderEditNutri() {
           <input type="number" id="nutri-h" value="${p.heightCm}" min="120" max="220"/>
         </div>
         <div class="nutri-field">
-          <label>Peso (kg)</label>
-          <input type="number" id="nutri-w" value="${p.weightKg}" min="35" max="200" step="0.1"/>
+          <label><span>Peso</span> (${bwUnit()})</label>
+          <input type="number" id="nutri-w" value="${bwDisp(p.weightKg)}" step="0.1"/>
         </div>
       </div>
       <div class="nutri-field">
@@ -7646,7 +7645,7 @@ function renderEditNutri() {
       sex: document.querySelector('#nutri-sex .chip.selected')?.dataset.v || p.sex,
       age: parseInt(document.getElementById('nutri-age').value) || p.age,
       heightCm: parseInt(document.getElementById('nutri-h').value) || p.heightCm,
-      weightKg: parseFloat(document.getElementById('nutri-w').value) || p.weightKg,
+      weightKg: (w => (w >= 35 && w <= 250 ? w : p.weightKg))(bwStore(document.getElementById('nutri-w').value)),
       bodyFatPct: parseFloat(document.getElementById('nutri-bf').value) || null,
       activity: document.querySelector('#nutri-act .chip.selected')?.dataset.v || p.activity,
       goal: document.querySelector('#nutri-goal .chip.selected')?.dataset.v || p.goal,
@@ -7749,13 +7748,13 @@ function startNutriWizard(initial) {
         </div>
         <div class="wiz-input-block">
           <label>Peso actual</label>
-          <input type="number" id="wiz-w" value="${draft.weightKg || ''}" min="35" max="200" step="0.1" inputmode="decimal"/>
-          <span class="wiz-suffix">kg</span>
+          <input type="number" id="wiz-w" value="${draft.weightKg ? bwDisp(draft.weightKg) : ''}" step="0.1" inputmode="decimal"/>
+          <span class="wiz-suffix" translate="no">${bwUnit()}</span>
         </div>`,
       bind: (root) => {
         root.querySelector('#wiz-age').addEventListener('input', e => draft.age = parseInt(e.target.value) || null);
         root.querySelector('#wiz-h').addEventListener('input', e => draft.heightCm = parseInt(e.target.value) || null);
-        root.querySelector('#wiz-w').addEventListener('input', e => draft.weightKg = parseFloat(e.target.value) || null);
+        root.querySelector('#wiz-w').addEventListener('input', e => { const w = bwStore(e.target.value); draft.weightKg = isFinite(w) && w > 0 ? w : null; });
       },
       valid: () => draft.age >= 14 && draft.heightCm >= 120 && draft.weightKg >= 35,
     },
@@ -7884,7 +7883,7 @@ function startNutriWizard(initial) {
               <div><span>Sexo</span><b>${draft.sex === 'M' ? 'Hombre' : 'Mujer'}</b></div>
               <div><span>Edad</span><b>${draft.age} años</b></div>
               <div><span>Altura</span><b>${draft.heightCm} cm</b></div>
-              <div><span>Peso</span><b>${draft.weightKg} kg</b></div>
+              <div><span>Peso</span><b translate="no">${bwDisp(draft.weightKg)} ${bwUnit()}</b></div>
               ${draft.bodyFatPct ? `<div><span>% grasa</span><b>${draft.bodyFatPct}%</b></div>` : ''}
               <div><span>Actividad</span><b>${actLbl}</b></div>
               <div><span>Objetivo</span><b>${goalLbl}</b></div>
@@ -9222,7 +9221,7 @@ async function openLinks() {
   const mine = mineG.map((l, i) => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name)}</div><span class="sp-roles">${rolesBadges(l)}</span></div>
       <div class="lk-d"><span>Puede ver:</span> ${linkSees(l.keys)}</div>
       <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-secondary" data-lk-notes="${i}" style="padding:8px 12px;flex:1;">Mensajes</button>
-      <button class="btn-secondary" data-lk-end="${l.ids.join(',')}" style="padding:8px 12px;flex:1;">Dejar de compartir</button></div></div>`).join('');
+      <button class="btn-secondary" data-lk-stop="${i}" style="padding:8px 12px;flex:1;">Dejar de compartir</button></div></div>`).join('');
   const clients = spClients(r), pend = linkGroup(r.as_specialist.filter(l => l.status === 'pending'), l => l.code || l.id);
   const cRows = clients.map((l, i) => {
     const ago = linkAgo(l.last_activity), bits = [];
@@ -9250,6 +9249,7 @@ async function openLinks() {
     for (const id of b.dataset.lkEnd.split(',')) { const e = await linkRpc('rutinal_link_end', { p_id: id }); if (!e.ok) { msg.textContent = linkErr(e.error); return; } }
     openLinks();
   }));
+  document.querySelectorAll('[data-lk-stop]').forEach(b => b.addEventListener('click', () => openEndServices(mineG[+b.dataset.lkStop], true, () => { try { msgRefresh(true); asgRefresh(true); } catch (e) {} openLinks(); })));
   document.querySelectorAll('[data-lk-invite]').forEach(b => b.addEventListener('click', async () => {
     const e = await linkRpc('rutinal_invite', { p_role: b.dataset.lkInvite });
     if (!e.ok) { msg.textContent = linkErr(e.error); return; }
@@ -9850,7 +9850,7 @@ function linkGroup(list, keyFn) {
     const k = keyFn(l); let g = m.get(k);
     if (!g) { g = Object.assign({}, l, { roles: [], ids: [], keys: [] }); m.set(k, g); }
     if (!g.roles.includes(l.role)) g.roles.push(l.role);
-    g.ids.push(l.id);
+    g.ids.push(l.id); (g.byRole = g.byRole || {})[l.role] = l.id;
     (l.keys || []).forEach(x => { if (!g.keys.includes(x)) g.keys.push(x); });
     ['meals7', 'workouts7'].forEach(f => { if (l[f] != null && g[f] == null) g[f] = l[f]; });
     if (l.pain7 != null && (g.pain7 == null || l.pain7 > g.pain7)) g.pain7 = l.pain7;
@@ -9862,6 +9862,22 @@ function linkRoles(l) { return (l && l.roles && l.roles.length) ? l.roles : (l &
 function linkIds(l) { return (l && l.ids && l.ids.length) ? l.ids : (l && l.id ? [l.id] : []); }
 function rolesBadges(l, cls) { return linkRoles(l).map(r => `<span class="usr-badge ${cls == null ? 'spec' : cls}">${escapeHtml(AUTH_SPECS[r] || r)}</span>`).join(' '); }
 function rolesText(l) { return linkRoles(l).map(r => t(AUTH_SPECS[r] || r)).join(' · '); }
+// Terminar una relación: todo, o solo uno de los servicios cuando hay varios
+function openEndServices(l, mine, onDone) {
+  const roles = linkRoles(l), msgAll = t('¿Terminar este vínculo? La otra persona dejará de ver los datos.');
+  const endAll = async () => { for (const id of linkIds(l)) await linkRpc('rutinal_link_end', { p_id: id }); onDone(); };
+  if (roles.length < 2) { if (confirm(msgAll)) endAll(); return; }
+  openSheet(mine ? 'Dejar de compartir' : 'Terminar vínculo', `<div class="lk-d" style="margin:0 0 12px;"><b translate="no">${escapeHtml(l.name || '')}</b> · <span>elige qué servicio termina</span></div>
+    ${roles.map(r => `<div class="lk-row"><div class="lk-top"><div class="lk-n">${escapeHtml(AUTH_SPECS[r] || r)}</div><button class="btn-secondary" data-end-role="${r}" style="width:auto;padding:8px 14px;">Quitar</button></div>
+      <div class="lk-d"><span>${mine ? 'Dejará de ver:' : 'Dejarás de ver:'}</span> ${linkSees(ASG_ROLE_SEES[r] || [])}</div></div>`).join('')}
+    <button class="btn-danger" id="end-all" style="width:100%;padding:12px;margin-top:10px;">Terminar todos los servicios</button>`);
+  document.querySelectorAll('[data-end-role]').forEach(b => b.addEventListener('click', async () => {
+    const id = (l.byRole || {})[b.dataset.endRole]; if (!id) return;
+    await linkRpc('rutinal_link_end', { p_id: id }); closeSheet(); onDone();
+  }));
+  document.getElementById('end-all').addEventListener('click', async () => { if (!confirm(msgAll)) return; closeSheet(); await endAll(); });
+}
+const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log'], nutriologo: ['meal_log', 'nutri_profile', 'weight_log', 'hydration_log'], fisioterapeuta: ['gym_logs', 'gym_routines'] };
 // El servicio (rol) con el que se puede dejar un tipo de plantilla a esta persona
 function asgRoleFor(l, kind) { return linkRoles(l).find(r => (ASG_ROLE_KINDS[r] || []).includes(kind)) || null; }
 function asgKindsFor(l) { const out = []; linkRoles(l).forEach(r => (ASG_ROLE_KINDS[r] || []).forEach(k => { if (!out.includes(k)) out.push(k); })); return out; }
@@ -10216,11 +10232,11 @@ async function spOpenClient(l) {
   document.getElementById('sp-c-notes').addEventListener('click', () => openNotes(l.id, l.name, null, { spec: true, link: l, ids: linkIds(l), roles: linkRoles(l) }));
   document.getElementById('sp-c-assign').addEventListener('click', () => openTemplates(l));
   document.getElementById('sp-c-appt').addEventListener('click', async () => { await msgRefresh(false); openApptEditor(null, l); });
-  document.getElementById('sp-c-end').addEventListener('click', async () => {
-    if (!confirm('¿Terminar este vínculo? La otra persona dejará de ver los datos.')) return;
-    for (const id of linkIds(l)) await linkRpc('rutinal_link_end', { p_id: id });
-    _sp.at = 0; _sp.client = null; tabRenderers['sp-clients']();
-  });
+  document.getElementById('sp-c-end').addEventListener('click', () => openEndServices(l, false, async () => {
+    _sp.at = 0; const r = await spLoad(true), g = spClients(r).find(x => x.client_id === l.client_id);
+    _sp.client = null; if (g) spOpenClient(g); else tabRenderers['sp-clients']();
+    try { msgRefresh(true); } catch (e) {}
+  }));
 }
 function tplDone(forClient) { closeSheet(); _sp.tpls = null; if (forClient && spCurrentTab() === 'sp-clients') spOpenClient(forClient); else spRender(); }
 // ---- Plantillas ----
@@ -11575,13 +11591,13 @@ function buildReviewDoc(data) {
 
   let weight = '';
   if (data.weight && data.weight.n === 1) {
-    weight = `<div class="rp-row3">${stat('Peso registrado', n1(data.weight.last) + ' kg')}</div>`;
+    weight = `<div class="rp-row3">${stat('Peso registrado', bwDisp(data.weight.last) + ' ' + bwUnit())}</div>`;
   } else if (data.weight) {
     const dw = data.weight.last - data.weight.first;
     weight = `<div class="rp-row3">
-      ${stat('Peso inicial', n1(data.weight.first) + ' kg')}
-      ${stat('Peso final', n1(data.weight.last) + ' kg')}
-      ${stat('Cambio', (dw > 0 ? '+' : '') + n1(dw) + ' kg')}
+      ${stat('Peso inicial', bwDisp(data.weight.first) + ' ' + bwUnit())}
+      ${stat('Peso final', bwDisp(data.weight.last) + ' ' + bwUnit())}
+      ${stat('Cambio', bwDiff(dw) + ' ' + bwUnit())}
     </div>`;
   }
 
@@ -11888,9 +11904,9 @@ function openNutriTrends() {
     const pts = wkeys.map((k, i) => `${(i / (wkeys.length - 1) * 316 + 2).toFixed(1)},${(95 - (wlog[k] - wmin) / (wmax - wmin) * 85 + 5).toFixed(1)}`).join(' ');
     weightChart = `<svg viewBox="0 0 320 110" style="width:100%;">
       <polyline points="${pts}" fill="none" stroke="#A855F7" stroke-width="2" stroke-linejoin="round"/>
-      <text x="2" y="10" font-size="9" fill="var(--text-3)">${wmax.toFixed(1)} kg</text>
-      <text x="2" y="105" font-size="9" fill="var(--text-3)">${wmin.toFixed(1)} kg</text>
-      <text x="318" y="10" font-size="9" text-anchor="end" fill="#A855F7">${ws[ws.length-1].toFixed(1)} kg</text>
+      <text x="2" y="10" font-size="9" fill="var(--text-3)">${bwDisp(wmax)} ${bwUnit()}</text>
+      <text x="2" y="105" font-size="9" fill="var(--text-3)">${bwDisp(wmin)} ${bwUnit()}</text>
+      <text x="318" y="10" font-size="9" text-anchor="end" fill="#A855F7">${bwDisp(ws[ws.length-1])} ${bwUnit()}</text>
     </svg>`;
   }
 
@@ -11917,7 +11933,7 @@ function openNutriTrends() {
         <div class="fe-lbl" style="font-weight:600;">Peso corporal</div>
         ${weightChart}
         <div style="display:flex;gap:8px;margin-top:8px;align-items:stretch;">
-          <input type="text" inputmode="decimal" class="field-input" id="trend-weight" placeholder="Peso de hoy (kg)" style="flex:2;min-width:0;width:100%;box-sizing:border-box;"/>
+          <input type="text" inputmode="decimal" class="field-input" id="trend-weight" placeholder="${bwUnit() === 'lb' ? 'Peso de hoy (lb)' : 'Peso de hoy (kg)'}" style="flex:2;min-width:0;width:100%;box-sizing:border-box;"/>
           <button class="btn-secondary" id="trend-weight-save" style="flex:1;white-space:nowrap;">Registrar</button>
         </div>
         <div id="trend-weight-err" style="color:#EF4444;font-size:12px;margin-top:4px;display:none;"></div>
@@ -11926,8 +11942,7 @@ function openNutriTrends() {
   openSheet('Tendencias', body);
   document.getElementById('trend-weight-save').addEventListener('click', () => {
     // Aceptar coma decimal (teclados es-MX) y validar con feedback visible
-    const raw = (document.getElementById('trend-weight').value || '').replace(',', '.').trim();
-    const w = parseFloat(raw);
+    const w = bwStore((document.getElementById('trend-weight').value || '').trim());
     const errEl = document.getElementById('trend-weight-err');
     if (!(w >= 30 && w <= 250)) {
       if (errEl) { errEl.textContent = 'Escribe un peso válido entre 30 y 250 kg (ej. 78.5).'; errEl.style.display = 'block'; }

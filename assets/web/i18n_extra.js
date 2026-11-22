@@ -3731,6 +3731,31 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "elige qué servicio termina": {
+   "en": "choose which service ends",
+   "pt-BR": "escolha qual serviço termina",
+   "fr": "choisissez le service à arrêter"
+  },
+  "Dejará de ver:": {
+   "en": "Will no longer see:",
+   "pt-BR": "Deixará de ver:",
+   "fr": "Ne verra plus :"
+  },
+  "Dejarás de ver:": {
+   "en": "You will no longer see:",
+   "pt-BR": "Você deixará de ver:",
+   "fr": "Vous ne verrez plus :"
+  },
+  "Terminar todos los servicios": {
+   "en": "End all services",
+   "pt-BR": "Encerrar todos os serviços",
+   "fr": "Arrêter tous les services"
+  },
+  "Peso de hoy (lb)": {
+   "en": "Today's weight (lb)",
+   "pt-BR": "Peso de hoje (lb)",
+   "fr": "Poids du jour (lb)"
+  },
   "y": {
    "en": "and",
    "pt-BR": "e",
