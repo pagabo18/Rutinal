@@ -3731,6 +3731,91 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Copiar resumen": {
+   "en": "Copy summary",
+   "pt-BR": "Copiar resumo",
+   "fr": "Copier le résumé"
+  },
+  "Resumen de la semana": {
+   "en": "Weekly summary",
+   "pt-BR": "Resumo da semana",
+   "fr": "Résumé de la semaine"
+  },
+  "Últimos 14 días": {
+   "en": "Last 14 days",
+   "pt-BR": "Últimos 14 dias",
+   "fr": "14 derniers jours"
+  },
+  "Sin registros en los últimos 7 días.": {
+   "en": "No records in the last 7 days.",
+   "pt-BR": "Sem registros nos últimos 7 dias.",
+   "fr": "Aucune donnée sur les 7 derniers jours."
+  },
+  "Días con comidas": {
+   "en": "Days with meals",
+   "pt-BR": "Dias com refeições",
+   "fr": "Jours avec repas"
+  },
+  "semana anterior": {
+   "en": "previous week",
+   "pt-BR": "semana anterior",
+   "fr": "semaine précédente"
+  },
+  "de la meta": {
+   "en": "of target",
+   "pt-BR": "da meta",
+   "fr": "de l'objectif"
+  },
+  "Proteína promedio": {
+   "en": "Average protein",
+   "pt-BR": "Proteína média",
+   "fr": "Protéines moyennes"
+  },
+  "Calorías por día": {
+   "en": "Calories per day",
+   "pt-BR": "Calorias por dia",
+   "fr": "Calories par jour"
+  },
+  "la línea es la meta": {
+   "en": "the line is the target",
+   "pt-BR": "a linha é a meta",
+   "fr": "la ligne est l'objectif"
+  },
+  "Proteína por día (g)": {
+   "en": "Protein per day (g)",
+   "pt-BR": "Proteína por dia (g)",
+   "fr": "Protéines par jour (g)"
+  },
+  "Entrenamientos por semana": {
+   "en": "Workouts per week",
+   "pt-BR": "Treinos por semana",
+   "fr": "Entraînements par semaine"
+  },
+  "Volumen por semana": {
+   "en": "Volume per week",
+   "pt-BR": "Volume por semana",
+   "fr": "Volume par semaine"
+  },
+  "Volumen": {
+   "en": "Volume",
+   "pt-BR": "Volume",
+   "fr": "Volume"
+  },
+  "Dolor máximo": {
+   "en": "Max pain",
+   "pt-BR": "Dor máxima",
+   "fr": "Douleur max"
+  },
+  "RPE promedio": {
+   "en": "Average RPE",
+   "pt-BR": "RPE médio",
+   "fr": "RPE moyen"
+  },
+  "Dolor y esfuerzo por sesión": {
+   "en": "Pain and effort per session",
+   "pt-BR": "Dor e esforço por sessão",
+   "fr": "Douleur et effort par séance"
+  },
   "Herramientas": {
    "en": "Tools",
    "pt-BR": "Ferramentas",
@@ -4576,10 +4661,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Convite",
    "fr": "Invitation"
   },
-  "Comparte este código con tu entrenado. Lo escribe en Editar → Ajustes → Cuenta → Especialistas y entrenados. Vence en 14 días.": {
-   "en": "Share this code with your trainee. They enter it in Edit → Settings → Account → Specialists and trainees. It expires in 14 days.",
-   "pt-BR": "Compartilhe este código com seu aluno. Ele o digita em Editar → Ajustes → Conta → Especialistas e alunos. Expira em 14 dias.",
-   "fr": "Partagez ce code avec votre élève. Il le saisit dans Modifier → Réglages → Compte → Spécialistes et élèves. Il expire dans 14 jours."
+  "Comparte este código con tu entrenado. Lo escribe en Más → Especialistas y entrenados. Vence en 14 días.": {
+   "en": "Share this code with your trainee. They enter it in More → Specialists and trainees. It expires in 14 days.",
+   "pt-BR": "Compartilhe este código com seu aluno. Ele o digita em Mais → Especialistas e alunos. Expira em 14 dias.",
+   "fr": "Partagez ce code avec votre élève. Il le saisit dans Plus → Spécialistes et élèves. Il expire dans 14 jours."
   },
   "Volver": {
    "en": "Back",
@@ -4721,10 +4806,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Agora não",
    "fr": "Pas maintenant"
   },
-  "Puedes cambiarlo cuando quieras en Editar → Ajustes → Cuenta.": {
-   "en": "You can change this any time in Edit → Settings → Account.",
-   "pt-BR": "Você pode mudar isso quando quiser em Editar → Ajustes → Conta.",
-   "fr": "Vous pouvez changer cela à tout moment dans Modifier → Réglages → Compte."
+  "Puedes cambiarlo cuando quieras en Más → Respaldo en la nube.": {
+   "en": "You can change this any time in More → Cloud backup.",
+   "pt-BR": "Você pode mudar isso quando quiser em Mais → Backup na nuvem.",
+   "fr": "Vous pouvez changer cela à tout moment dans Plus → Sauvegarde dans le cloud."
   },
   "Sincronizando...": {
    "en": "Syncing...",

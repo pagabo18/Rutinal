@@ -2097,6 +2097,17 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  /* Ficha del entrenado: resumen semanal y gráficas */
+  .sp-rep-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+  .sp-rep-btns .sp-act { flex: 1; }
+  .sp-sum-l { font-size: 14px; margin-top: 8px; line-height: 1.4; color: var(--text-2); }
+  .sp-sum-l b { color: var(--text); } .sp-sum-l b.warn { color: #DC2626; }
+  .sp-e1 { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; margin-top: 8px; }
+  .sp-e1 > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+  .sp-e1 > span:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sp-e1 i { font-style: normal; font-weight: 700; color: #16A34A; } .sp-e1 i.dn { color: #DC2626; }
+  #sp-report .sp-card svg { margin-top: 8px; }
+
   /* Barra inferior de 5 pestañas (teléfono y tableta): Reloj, Calendario y Editar están en "Más" */
   nav button[data-tab="mas"] { display: none; }
   #tab-mas, .mas-back { display: none; }
@@ -8936,7 +8947,7 @@ function openSyncSheet(first) {
       <div class="fit-note" style="margin-top:10px;">Al desactivarlo, lo que ya se guardó en el servidor se conserva; para borrarlo, pídeselo a quien administra tu cuenta.</div>`
     : `<button class="btn-primary" id="sync-on" style="width:100%;margin-bottom:8px;">Activar respaldo</button>
       <button class="btn-secondary" id="sync-later" style="width:100%;">Ahora no</button>
-      <div class="fit-note" style="margin-top:10px;">Puedes cambiarlo cuando quieras en Editar → Ajustes → Cuenta.</div>`}
+      <div class="fit-note" style="margin-top:10px;">Puedes cambiarlo cuando quieras en Más → Respaldo en la nube.</div>`}
     <div class="auth-msg info" id="sync-msg" style="margin-top:8px;"></div>`);
   const msg = document.getElementById('sync-msg');
   const q = id => document.getElementById(id);
@@ -9049,7 +9060,7 @@ async function openLinks() {
   document.querySelectorAll('[data-lk-invite]').forEach(b => b.addEventListener('click', async () => {
     const e = await linkRpc('rutinal_invite', { p_role: b.dataset.lkInvite });
     if (!e.ok) { msg.textContent = linkErr(e.error); return; }
-    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu entrenado. Lo escribe en Editar → Ajustes → Cuenta → Especialistas y entrenados. Vence en 14 días.</p>
+    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu entrenado. Lo escribe en Más → Especialistas y entrenados. Vence en 14 días.</p>
       <div class="lk-code" translate="no">${escapeHtml(e.code)}</div>
       <button class="btn-primary" id="lk-copy" style="width:100%;margin-bottom:8px;">Copiar</button>
       <button class="btn-secondary" id="lk-back" style="width:100%;">Volver</button>`);
@@ -9397,7 +9408,7 @@ async function spInvite() {
     const e = await linkRpc('rutinal_invite', { p_role: role });
     if (!e.ok) { openSheet('Invitación', `<p class="auth-msg">${escapeHtml(linkErr(e.error))}</p>`); return; }
     _sp.at = 0;
-    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu entrenado. Lo escribe en Editar → Ajustes → Cuenta → Especialistas y entrenados. Vence en 14 días.</p>
+    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu entrenado. Lo escribe en Más → Especialistas y entrenados. Vence en 14 días.</p>
       <div class="lk-code" translate="no">${escapeHtml(e.code)}</div>
       <button class="btn-primary" id="lk-copy" style="width:100%;">Copiar</button>`);
     document.getElementById('lk-copy').addEventListener('click', async (ev) => { let ok = false; try { await navigator.clipboard.writeText(e.code); ok = true; } catch (x) {} ev.target.textContent = ok ? 'Copiado' : 'No se pudo copiar'; });
@@ -9458,13 +9469,130 @@ function spWeightChart(wl) {
   const pts = ks.map((k, i) => X(k).toFixed(1) + ',' + Y(vs[i]).toFixed(1)).join(' ');
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;margin-top:8px;"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${ks.map((k, i) => `<circle cx="${X(k).toFixed(1)}" cy="${Y(vs[i]).toFixed(1)}" r="${i === ks.length - 1 ? 4 : 2.5}" fill="currentColor"/>`).join('')}</svg>`;
 }
+// Barras con línea de meta opcional
+function spBars(vals, labels, o) {
+  o = o || {};
+  const W = 320, H = o.h || 110, n = vals.length, max = Math.max(1, o.target || 0, ...vals), bw = (W - 10) / n, Y = v => H - 16 - v / max * (H - 32);
+  const every = n > 9 ? 2 : 1;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">${vals.map((v, i) => {
+    const bh = v ? Math.max(2, v / max * (H - 32)) : 0, x = i * bw + 6, w = Math.max(2, bw - 6);
+    const over = o.target && v > o.target * 1.1;
+    return `<rect x="${x.toFixed(1)}" y="${(H - 16 - bh).toFixed(1)}" width="${w.toFixed(1)}" height="${bh.toFixed(1)}" rx="3" fill="${over ? '#EF4444' : (o.color || '#3B82F6')}"/>
+      ${v && n <= 9 ? `<text x="${(x + w / 2).toFixed(1)}" y="${(H - 19 - bh).toFixed(1)}" font-size="8" text-anchor="middle" fill="var(--text-2)">${v >= 10000 ? (v / 1000).toFixed(0) + 'k' : v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v)}</text>` : ''}
+      ${i % every === 0 ? `<text x="${(x + w / 2).toFixed(1)}" y="${H - 4}" font-size="8" text-anchor="middle" fill="var(--text-3)">${escapeHtml(labels[i])}</text>` : ''}`;
+  }).join('')}${o.target ? `<line x1="4" x2="${W - 4}" y1="${Y(o.target).toFixed(1)}" y2="${Y(o.target).toFixed(1)}" stroke="var(--text-2)" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="${W - 4}" y="${(Y(o.target) - 3).toFixed(1)}" font-size="8" text-anchor="end" fill="var(--text-2)">${Math.round(o.target)}</text>` : ''}</svg>`;
+}
+// Resumen de los últimos 7 días (contra los 7 anteriores) y gráficas de 8 semanas
+function spClientReport(D, l, asg) {
+  const nutri = l.role === 'nutriologo', today = parseKey(keyDate()).getTime();
+  const ago = k => Math.round((today - parseKey(k).getTime()) / 864e5);
+  const dm = new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' });
+  const fmt = n => Math.round(n).toLocaleString(_loc());
+  const pct = (a, b) => (b > 0 ? Math.round((a - b) / b * 100) : null);
+  const sgn = v => (v > 0 ? '+' : '') + v;
+  const line = h => `<div class="sp-sum-l">${h}</div>`;
+  const card = (title, body, val) => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${title}</div>${val ? `<span class="cd-num">${val}</span>` : ''}</div>${body}</div>`;
+  const sum = [], charts = [];
+  if (nutri) {
+    let tg = null;
+    const at = (asg || []).find(a => a.kind === 'targets' && a.payload && a.payload.kcal > 0);
+    if (at) tg = at.payload;
+    try { if (!tg && D.nutri_profile && D.nutri_profile.heightCm) tg = calcNutriTargets(D.nutri_profile, true); } catch (e) {}
+    if (!tg && D.food_goal_kcal) tg = { kcal: +D.food_goal_kcal || 0 };
+    const N = 14, kc = Array(N).fill(0), pr = Array(N).fill(0), lab = [];
+    for (let i = 0; i < N; i++) lab.push(dm.format(new Date(today - (N - 1 - i) * 864e5)));
+    Object.keys(D.meal_log || {}).forEach(d => {
+      const a = ago(d); if (a < 0 || a >= N) return;
+      const day = D.meal_log[d] || {}; let k = 0, p = 0;
+      ASG_MEALS.forEach(([mid]) => (day[mid] || []).forEach(it => { const m = calcItemMacros(it); k += m.kcal; p += m.protein; }));
+      kc[N - 1 - a] = Math.round(k); pr[N - 1 - a] = Math.round(p);
+    });
+    const wk = arr => { const v = arr.filter(x => x > 0); return { n: v.length, avg: v.length ? v.reduce((x, y) => x + y, 0) / v.length : 0 }; };
+    const k0 = wk(kc.slice(7)), k1 = wk(kc.slice(0, 7)), p0 = wk(pr.slice(7));
+    sum.push(line(`<span>Días con comidas</span>: <b>${k0.n}/7</b> · <span>semana anterior</span>: ${k1.n}/7`));
+    if (k0.n) sum.push(line(`<span>Promedio diario</span>: <b>${fmt(k0.avg)} kcal</b>${tg && tg.kcal ? ` (${Math.round(k0.avg / tg.kcal * 100)}% <span>de la meta</span>)` : ''}`));
+    if (k0.n) sum.push(line(`<span>Proteína promedio</span>: <b>${fmt(p0.avg)} g</b>${tg && tg.protein ? ` (${Math.round(p0.avg / tg.protein * 100)}% <span>de la meta</span>)` : ''}`));
+    if (kc.some(x => x)) {
+      charts.push(card('<span>Calorías por día</span>', spBars(kc, lab, { target: tg && tg.kcal, color: 'var(--text)' }) + '<div class="sp-card-d"><span>Últimos 14 días</span>' + (tg && tg.kcal ? ' · <span>la línea es la meta</span>' : '') + '</div>'));
+      charts.push(card('<span>Proteína por día (g)</span>', spBars(pr, lab, { target: tg && tg.protein, color: '#22C55E' })));
+    }
+  } else {
+    const WN = 8, ses = Array(WN).fill(0), vol = Array(WN).fill(0), lab = [], feel = [], e1 = {};
+    for (let i = 0; i < WN; i++) lab.push(dm.format(new Date(today - ((WN - i) * 7 - 1) * 864e5)));
+    const routines = Array.isArray(D.gym_routines) ? D.gym_routines : [];
+    let pmax0 = null; const rpe0 = [];
+    Object.keys(D.gym_logs || {}).sort().forEach(d => {
+      const a = ago(d), w = Math.floor(a / 7); if (a < 0 || w >= WN) return;
+      const lg = D.gym_logs[d] || {}, rt = routines.find(x => x.id === lg.routineId) || { exercises: [] };
+      let v = 0, any = false;
+      Object.keys(lg.ex || {}).forEach(exId => {
+        const done = (lg.ex[exId] || []).filter(x => x && x.done); if (!done.length) return;
+        any = true;
+        done.forEach(x => { v += (gymNum(x.kg) || 0) * (gymNum(x.reps) || 0); });
+        if (lg.swap && lg.swap[exId]) return;
+        const best = Math.max(0, ...done.map(x => gymE1RM(x.kg, x.reps)));
+        if (best > 0) { const ex = (rt.exercises || []).find(x => x.id === exId) || {}; (e1[exId] = e1[exId] || { name: ex.name || exId, v: [] }).v.push(best); }
+      });
+      if (!any && !lg.done) return;
+      ses[WN - 1 - w]++; vol[WN - 1 - w] += gymVolU(v);
+      const fl = lg.feel || {};
+      if (fl.pain != null || fl.rpe != null) feel.push({ a, pain: fl.pain, rpe: fl.rpe });
+      if (w === 0) { if (fl.pain != null && (pmax0 == null || fl.pain > pmax0)) pmax0 = fl.pain; if (fl.rpe != null) rpe0.push(fl.rpe); }
+    });
+    const U = gymUnit(), dv = pct(vol[WN - 1], vol[WN - 2]);
+    sum.push(line(`<span>Entrenamientos</span>: <b>${ses[WN - 1]}</b> · <span>semana anterior</span>: ${ses[WN - 2]}`));
+    if (vol[WN - 1] || vol[WN - 2]) sum.push(line(`<span>Volumen</span>: <b>${fmt(vol[WN - 1])} ${U}</b>${dv != null ? ` (${sgn(dv)}%)` : ''}`));
+    if (pmax0 != null) sum.push(line(`<span>Dolor máximo</span>: <b class="${pmax0 >= 6 ? 'warn' : ''}">${pmax0}/10</b>`));
+    if (rpe0.length) sum.push(line(`<span>RPE promedio</span>: <b>${(rpe0.reduce((x, y) => x + y, 0) / rpe0.length).toFixed(1)}</b>`));
+    if (ses.some(x => x)) {
+      charts.push(card('<span>Entrenamientos por semana</span>', spBars(ses, lab, { color: 'var(--text)', h: 100 })));
+      if (vol.some(x => x)) charts.push(card(`<span>Volumen por semana</span> (${U})`, spBars(vol, lab, { color: '#3B82F6' })));
+    }
+    if (feel.length >= 2) {
+      const span = Math.max(1, feel[0].a - feel[feel.length - 1].a), X = f => (feel[0].a - f.a) / span;
+      charts.push(card('<span>Dolor y esfuerzo por sesión</span>', gymLineSvg([{ color: '#EF4444', pts: feel.filter(f => f.pain != null).map(f => ({ x: X(f), y: f.pain })) }, { color: '#3B82F6', pts: feel.filter(f => f.rpe != null).map(f => ({ x: X(f), y: f.rpe })) }], { min: 0, max: 10, ticks: [0, 5, 10], h: 120 })
+        + '<div class="gym-leg"><span><i style="background:#EF4444"></i><span>Dolor (NPRS)</span></span><span><i style="background:#3B82F6"></i><span>RPE sesión</span></span></div>'));
+    }
+    const top = Object.values(e1).filter(x => x.v.length >= 2).sort((x, y) => y.v.length - x.v.length).slice(0, 5);
+    if (top.length) charts.push(card('<span>1RM estimado</span>', top.map(x => { const a = x.v[0], b = x.v[x.v.length - 1], d = pct(b, a);
+      return `<div class="sp-e1"><span translate="no">${escapeHtml(x.name)}</span><span translate="no">${gymFmtKg(a)} → <b>${gymFmtKg(b)} ${U}</b>${d != null ? ` <i class="${d < 0 ? 'dn' : 'up'}">${sgn(d)}%</i>` : ''}</span></div>`; }).join('')));
+  }
+  const ws = Object.keys(D.weight_log || {}).sort();
+  if (ws.length >= 2) { const a = +D.weight_log[ws[0]], b = +D.weight_log[ws[ws.length - 1]], d = Math.round((b - a) * 10) / 10; sum.push(line(`<span>Peso</span>: <b>${b} kg</b> (${sgn(d)} kg)`)); }
+  return `<div class="sp-card" id="sp-sum"><div class="sp-card-top"><div class="sp-card-n">Resumen de la semana</div><span class="cd-num"><span>Últimos 7 días</span></span></div>
+    ${sum.join('') || '<div class="sp-card-d">Sin registros en los últimos 7 días.</div>'}</div>${charts.join('')}`;
+}
+// PDF del reporte: impresión nativa en la app y diálogo de impresión en el navegador
+function spPrintReport(title, inner) {
+  const css = `:root{--text:#111;--text-2:#444;--text-3:#777;--border:#ddd;--border-strong:#bbb;--surface:#fff;--surface-2:#f3f4f6;}
+    body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#111;margin:24px;font-size:13px;}
+    h1{font-size:22px;margin:0 0 2px;} .sub{color:#777;margin-bottom:16px;}
+    .sp-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;} .sp-kpi{border:1px solid #ddd;border-radius:10px;padding:10px;} .sp-kpi span{display:block;font-size:11px;color:#777;} .sp-kpi b{font-size:18px;}
+    .sp-card{border:1px solid #ddd;border-radius:10px;padding:12px;margin-bottom:10px;page-break-inside:avoid;} .sp-card-top{display:flex;justify-content:space-between;gap:8px;} .sp-card-n{font-weight:700;font-size:14px;} .sp-card-d,.cd-num{color:#777;font-size:12px;}
+    .sp-sum-l{margin-top:6px;} .sp-e1{display:flex;justify-content:space-between;gap:8px;margin-top:6px;} .sp-e1 i{font-style:normal;color:#16a34a;} .sp-e1 i.dn{color:#dc2626;}
+    .gym-leg{display:flex;gap:14px;font-size:11px;color:#777;margin-top:4px;} .gym-leg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;}
+    svg{max-width:520px;display:block;} .sp-empty{color:#777;}`;
+  const html = `<!DOCTYPE html><html lang="${(window.i18n && i18n.getLang && i18n.getLang()) || 'es'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(title)}</title><style>${css}</style></head><body>${inner}</body></html>`;
+  const t = x => (window.i18n && window.i18n.t) ? window.i18n.t(x) : x;
+  if (typeof window.Android !== 'undefined') {
+    if (window.Android.printHtml) { try { if (window.Android.printHtml(title, html)) return; } catch (e) {} }
+    alert(t('No se pudo generar el PDF en este dispositivo.')); return;
+  }
+  const f = document.createElement('iframe');
+  f.setAttribute('aria-hidden', 'true'); f.id = 'sp-print-frame';
+  f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+  document.body.appendChild(f);
+  f.contentDocument.open(); f.contentDocument.write(html); f.contentDocument.close();
+  setTimeout(() => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) {} setTimeout(() => f.remove(), 60000); }, 250);
+}
 async function spOpenClient(l) {
   if (!l) return;
   const el = document.getElementById('tab-sp-clients');
   _sp.client = l;
   el.innerHTML = '<div class="food-loader">Cargando...</div>';
   window.scrollTo(0, 0);
-  const from = keyDate(new Date(Date.now() - 29 * 864e5)), me = (authGet() || {}).uid;
+  const from = keyDate(new Date(Date.now() - 55 * 864e5)), me = (authGet() || {}).uid;
   let rows = [], asg = [];
   try {
     const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(l.client_id) + '&or=(sub.eq.,sub.gte.' + from + ')&limit=2000');
@@ -9531,8 +9659,11 @@ async function spOpenClient(l) {
   }
   const plans = asg.map(a => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(a.name)}</div><span class="usr-badge">${ASG_KINDS[a.kind] || a.kind}</span></div>
       <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><div class="sp-card-btns">${a.kind === 'routine' ? `<button class="btn-secondary" data-asg-loads="${a.id}">Cargas por serie</button>` : ''}<button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
+  // --- Resumen de la semana y gráficas (8 semanas) ---
+  const rep = spClientReport(D, l, asg);
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button>',
-    progress: `<div class="sp-kpis">${kpis.join('')}</div>${weight || (l.role === 'fisioterapeuta' ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}`,
+    progress: `<div class="sp-rep-btns"><button class="sp-act" id="sp-rep-copy">Copiar resumen</button><button class="sp-act" id="sp-rep-pdf">Guardar PDF</button></div>
+      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${rep}${weight || (l.role === 'fisioterapeuta' ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}</div>`,
     logs: logs.join('') };
   if (!tabs[_sp.tab]) _sp.tab = 'plans';
   el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Entrenados</span></button>
@@ -9544,6 +9675,20 @@ async function spOpenClient(l) {
     <button class="btn-secondary" id="sp-c-end" style="width:100%;margin-top:22px;">Terminar vínculo</button>`;
   const wire = () => {
     const as = document.getElementById('sp-assign'); if (as) as.addEventListener('click', () => openTemplates(l));
+    const tt = x => (window.i18n && window.i18n.t) ? window.i18n.t(x) : x;
+    const rc = document.getElementById('sp-rep-copy');
+    if (rc) rc.addEventListener('click', async () => {
+      const sm = document.getElementById('sp-sum');
+      const text = `${tt('Resumen de la semana')} · ${l.name || ''}\n` + (sm ? [...sm.querySelectorAll('.sp-sum-l')].map(x => '• ' + x.innerText.replace(/\s+/g, ' ').trim()).join('\n') : '');
+      let ok = false; try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {}
+      if (ok) { rc.textContent = tt('Copiado'); setTimeout(() => { rc.textContent = tt('Copiar resumen'); }, 1600); } else prompt(tt('Copia el texto:'), text);
+    });
+    const rp = document.getElementById('sp-rep-pdf');
+    if (rp) rp.addEventListener('click', () => {
+      const body = document.getElementById('sp-report');
+      const title = `Rutinal - ${l.name || ''} - ${keyDate()}`;
+      spPrintReport(title, `<h1>${escapeHtml(l.name || '')}</h1><div class="sub">${escapeHtml(tt(AUTH_SPECS[l.role] || l.role))} · ${escapeHtml(new Date().toLocaleDateString(_loc(), { day: 'numeric', month: 'long', year: 'numeric' }))} · Rutinal</div>${body ? body.innerHTML : ''}`);
+    });
     el.querySelectorAll('[data-asg-loads]').forEach(b => b.addEventListener('click', () => {
       const a = asg.find(x => String(x.id) === b.dataset.asgLoads);
       if (a) openAsgLoads(a, l, () => spOpenClient(l));

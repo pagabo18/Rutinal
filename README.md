@@ -201,3 +201,7 @@ Hábitos, Reloj, Calendario, Gym y Editar usan el mismo lenguaje visual que las 
 ## Barra inferior de 5 pestañas y "Más"
 
 En teléfono y tableta (menos de 1024 px) la barra inferior muestra **Hoy · Comida · Gym · Hábitos · Más**. Reloj, Calendario y Editar siguen existiendo como pantallas, pero se entra desde **Más**, que reúne: perfil (lleva a Ajustes), herramientas (Reloj, Calendario), tu contenido (Bloques, Hábitos, Imprevistos, Categorías, Nutrición, Metas semanales) y cuenta (Ajustes, Especialistas y entrenados, Respaldo en la nube, Cerrar sesión). Cada una de esas pantallas tiene un regreso "‹ Más". En modo especialista la barra es Inicio · Entrenados · Plantillas · Notas · Más. En escritorio se conserva la barra lateral con todas las pestañas.
+
+### Ficha del entrenado: resumen semanal, gráficas y PDF
+
+La pestaña **Progreso** de la ficha (modo especialista) trae ahora 8 semanas de datos y muestra: resumen de los últimos 7 días contra los 7 anteriores, y gráficas según la especialidad. Coach y fisioterapeuta ven entrenamientos y volumen por semana, dolor y esfuerzo por sesión y 1RM estimado por ejercicio; el nutriólogo ve calorías y proteína por día (14 días) con la línea de la meta, que es la asignada por él si existe. **Copiar resumen** lo deja como texto para pegar en un mensaje y **Guardar PDF** imprime el reporte (impresión nativa en la app, diálogo de impresión en el navegador).
