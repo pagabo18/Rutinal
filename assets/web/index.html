@@ -2097,6 +2097,55 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  /* Comida (rediseño v0): meta diaria y tarjetas por comida */
+  .food-daynav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px; position: relative; }
+  .food-daylinks { text-align: center; }
+  .food-totals[hidden] { display: none !important; }
+  .ft-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px 16px 14px; margin-bottom: 16px; text-align: center; }
+  .ft-k { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .1em; }
+  .ft-big { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .ft-big small { font-size: 16px; font-weight: 500; color: var(--text-3); }
+  .ft-rem { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .ft-rem.ok { color: #16A34A; } .ft-rem.over { color: #DC2626; }
+  .ft-sub { font-size: 12px; color: var(--text-3); margin-top: 8px; }
+  .ft-set { margin-top: 10px; border: 0; background: var(--surface-2); color: var(--text); font: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+  .ft-bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-top: 6px; }
+  .ft-bar.big { margin-top: 12px; }
+  .ft-bar i { display: block; height: 100%; border-radius: 999px; transition: width .3s; }
+  .ft-row { margin-top: 14px; text-align: left; }
+  .ft-row-h { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
+  .ft-row-v { color: var(--text-3); font-weight: 500; font-variant-numeric: tabular-nums; } .ft-row-v.over { color: #DC2626; }
+  .mc-title { display: flex; align-items: baseline; justify-content: space-between; margin: 4px 2px 10px; font-size: 13px; }
+  .mc { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; margin-bottom: 12px; }
+  .mc.mc-none { border-style: dashed; border-color: var(--border-strong); }
+  .mc-head { display: flex; align-items: center; gap: 12px; }
+  .mc-ic { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); color: var(--text-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mc.water .mc-ic { background: rgba(14,165,233,.14); color: #0EA5E9; }
+  .mc-t { flex: 1; min-width: 0; }
+  .mc-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+  .mc-k { text-align: right; line-height: 1.1; }
+  .mc-k b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .mc-k small { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; }
+  .mc-log { border: 0; background: var(--surface-2); color: var(--text); font: inherit; font-size: 13px; font-weight: 600; padding: 9px 14px; border-radius: 12px; cursor: pointer; white-space: nowrap; }
+  .mc .meal-list { margin-top: 12px; }
+  .mc.mc-none .meal-list { display: none; }
+  .mc .meal-item { background: var(--surface-2); border-color: transparent; }
+  .mc-foot { display: flex; align-items: center; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+  .mc-foot:empty, .mc.mc-none .mc-foot:not(:has(button)) { display: none; }
+  .mc-sp { flex: 1; }
+  .mc-chip { font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; font-variant-numeric: tabular-nums; }
+  .mc-chip.p { background: rgba(34,197,94,.14); color: #16A34A; }
+  .mc-chip.c { background: rgba(124,156,255,.18); color: #4F6FE0; }
+  .mc-chip.g { background: rgba(245,158,11,.16); color: #C2760A; }
+  .mc-add { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--text); color: var(--bg); font-size: 20px; line-height: 1; font-weight: 500; cursor: pointer; flex-shrink: 0; padding: 0; }
+  .mc-add.ghost { background: var(--surface-2); color: var(--text); }
+  .mc-add:disabled { opacity: .35; }
+  .mc-plan { margin-top: 12px; background: rgba(37,99,235,.08); border-radius: 12px; padding: 10px 12px; }
+  .mc-plan-h { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); }
+  .mc-plan-l { font-size: 13px; line-height: 1.5; margin-top: 4px; }
+  .mc-plan-l i { color: var(--text-3); font-style: normal; }
+  .mc-plan-b { width: 100%; margin-top: 8px; padding: 9px 12px; }
+
   /* Registro de entrenamiento (rediseño v0) */
   .gym-wo-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .gym-unit { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 2px; flex-shrink: 0; }
@@ -2680,7 +2729,8 @@ try {
 
     <!-- Anillos de macros y kcal -->
     <div class="split-col split-col-a">
-    <div class="food-totals">
+    <div id="food-target"></div>
+    <div class="food-totals" hidden>
       <div class="macro-rings-wrap">
         <div class="macro-rings" id="macro-rings">
           <svg viewBox="0 0 260 260" aria-hidden="true">
@@ -2768,7 +2818,9 @@ try {
     </div>
 
     <!-- Comidas del día -->
+    <div class="mc-title"><h2 style="margin:0;">Comidas</h2><span class="food-inline-link" id="food-goals-link">Editar metas</span></div>
     <div id="food-meals"></div>
+    <div id="food-water"></div>
     </div>
   </section>
 
@@ -11542,14 +11594,14 @@ function renderComida() {
       : `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
     const canCopyDay = totalK === 0 && !!yesterdayMeals();
     dateLbl.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;position:relative;">
+      <div class="food-daynav">
         <button class="food-edit-btn" id="food-day-prev" title="Día anterior" style="margin:0;">‹</button>
         <span id="food-day-label" style="font-weight:600;color:${isToday ? 'var(--text-3)' : 'var(--accent,#2563EB)'};cursor:pointer;min-width:70px;text-align:center;">${label}</span>
         <button class="food-edit-btn" id="food-day-next" title="Día siguiente" style="margin:0;">›</button>
         ${!isToday ? '<span class="food-inline-link" id="food-day-today" style="font-size:12px;">Volver a hoy</span>' : ''}
         <input type="date" id="food-day-pick" value="${foodViewDate}" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;"/>
       </div>
-      <div>
+      <div class="food-daylinks">
         ${canCopyDay ? `<span class="food-inline-link" id="food-copy-yday"><svg class="mini-ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Repetir día anterior</span> · ` : ''}
         <span class="food-inline-link" id="food-trends-link"><svg class="mini-ico" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg> Tendencias</span> · <span class="food-inline-link" id="food-review-link"><svg class="mini-ico" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg> Review</span>
       </div>`;
@@ -11590,6 +11642,7 @@ function renderComida() {
   }
 
   updateMacroRings({ kcal: totalK, protein: totalP, carbs: totalC, fat: totalG }, targets, suggestedTargets);
+  renderFoodTarget({ kcal: totalK, protein: totalP, carbs: totalC, fat: totalG }, targets, suggestedTargets);
 
   // Auto-marca el hábito virtual de meta nutricional del día
   updateNutriHabitAuto({ kcal: totalK, protein: totalP, carbs: totalC, fat: totalG }, targets);
@@ -11601,24 +11654,41 @@ function renderComida() {
   // Carrusel de platillos guardados
   renderDishesStrip();
 
-  // Lista de comidas
+  // Lista de comidas (tarjetas)
   const cont = document.getElementById('food-meals');
   cont.innerHTML = '';
+  const plan = foodViewIsToday() ? foodAssignedDiet() : null;
   MEALS.forEach(m => {
     const items = meals[m.id] || [];
     const t = calcMealTotals(items);
+    const planIts = plan ? ((plan.payload || {}).meals || {})[m.id] || [] : [];
     const grp = document.createElement('div');
-    grp.className = 'meal-group';
+    grp.className = 'meal-group mc' + (items.length ? '' : ' mc-none');
     grp.innerHTML = `
-      <div class="meal-head">
-        <div class="meal-name">${m.name}</div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          ${!items.length && yesterdayHasMeal(m.id) ? `<button class="meal-save-dish meal-copy-yday" data-meal="${m.id}" title="Repetir lo de ayer"><svg class="mini-ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Ayer</button>` : ''}
-          ${items.length ? `<button class="meal-save-dish" data-meal="${m.id}" title="Guardar como platillo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button>` : ''}
-          <div class="meal-kcal">${t.kcal} kcal</div>
-        </div>
+      <div class="mc-head">
+        <div class="mc-ic">${FOOD_MEAL_ICONS[m.id] || ''}</div>
+        <div class="mc-t"><div class="meal-name">${m.name}</div>
+          <div class="mc-sub">${items.length ? `<span>${items.length}</span> <span>${items.length === 1 ? 'alimento' : 'alimentos'}</span>` : 'Sin registrar'}</div></div>
+        ${items.length ? `<div class="mc-k"><b>${t.kcal}</b><small>kcal</small></div>` : `<button class="mc-log" data-mc-add="1">+ Registrar</button>`}
       </div>
-      <div class="meal-list" data-meal="${m.id}"></div>`;
+      <div class="meal-list" data-meal="${m.id}"></div>
+      ${planIts.length && !items.length ? `<div class="mc-plan"><div class="mc-plan-h"><span>Plan de tu especialista</span><span translate="no">${Math.round(planIts.reduce((x, it) => x + calcItemMacros(it).kcal, 0))} kcal</span></div>
+        <div class="mc-plan-l" translate="no">${planIts.map(it => `${escapeHtml(it.name || '')} <i>(${Math.round(it.grams || 0)} g)</i>`).join('<br>')}</div>
+        <button class="btn-secondary mc-plan-b" data-mc-plan="1">Registrar el plan</button></div>` : ''}
+      <div class="mc-foot">
+        ${items.length ? `<span class="mc-chip p"><span data-i18n-ctx="macro">P</span> ${Math.round(t.protein)} g</span><span class="mc-chip c"><span data-i18n-ctx="macro">C</span> ${Math.round(t.carbs)} g</span><span class="mc-chip g"><span data-i18n-ctx="macro">G</span> ${Math.round(t.fat)} g</span>` : ''}
+        <span class="mc-sp"></span>
+        ${!items.length && yesterdayHasMeal(m.id) ? `<button class="meal-save-dish meal-copy-yday" data-meal="${m.id}" title="Repetir lo de ayer"><svg class="mini-ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Ayer</button>` : ''}
+        ${items.length ? `<button class="meal-save-dish" data-meal="${m.id}" title="Guardar como platillo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button>
+          <button class="mc-add" data-mc-add="1" aria-label="Añadir alimento">+</button>` : ''}
+      </div>`;
+    grp.querySelectorAll('[data-mc-add]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); openFoodSearch(m.id); }));
+    const planBtn = grp.querySelector('[data-mc-plan]');
+    if (planBtn) planBtn.addEventListener('click', () => {
+      const log = mealLog(), day = log[foodViewDate] || (log[foodViewDate] = {});
+      day[m.id] = (day[m.id] || []).concat(JSON.parse(JSON.stringify(planIts)));
+      saveMealLog(log); renderComida();
+    });
     // Bind botón "Repetir ayer" (por comida)
     const cpBtn = grp.querySelector('.meal-copy-yday');
     if (cpBtn) {
@@ -11636,35 +11706,35 @@ function renderComida() {
       });
     }
     const list = grp.querySelector('.meal-list');
-    {
-      items.forEach((it, i) => {
-        const mm = calcItemMacros(it);
-        const li = document.createElement('div');
-        li.className = 'meal-item';
-        const tint = foodTint(it);
-        if (tint) {
-          li.style.backgroundImage = tint.bg;
-          li.style.borderLeft = '3px solid ' + tint.border;
-        }
-        li.innerHTML = `
-          <div class="meal-item-info">
-            <div class="meal-item-name">${escapeHtml(it.name || 'Alimento')}</div>
-            <div class="meal-item-meta">${it.grams}g${it.brand ? ' · ' + escapeHtml(it.brand) : ''} · P${mm.protein} C${mm.carbs} G${mm.fat}</div>
-          </div>
-          <div class="meal-item-kcal">${mm.kcal}</div>`;
-        li.addEventListener('click', () => openPortionEditor(it, m.id, i));
-        list.appendChild(li);
-      });
-      // El botón "+ Añadir alimento" queda siempre al final de cada comida,
-      // haya o no elementos, para poder seguir agregando.
-      const em = document.createElement('div');
-      em.className = 'meal-empty' + (items.length ? ' meal-add-more' : '');
-      em.textContent = '+ Añadir alimento';
-      em.addEventListener('click', () => openFoodSearch(m.id));
-      list.appendChild(em);
-    }
+    items.forEach((it, i) => {
+      const mm = calcItemMacros(it);
+      const li = document.createElement('div');
+      li.className = 'meal-item';
+      const tint = foodTint(it);
+      if (tint) {
+        li.style.backgroundImage = tint.bg;
+        li.style.borderLeft = '3px solid ' + tint.border;
+      }
+      li.innerHTML = `
+        <div class="meal-item-info">
+          <div class="meal-item-name">${escapeHtml(it.name || 'Alimento')}</div>
+          <div class="meal-item-meta">${it.grams}g${it.brand ? ' · ' + escapeHtml(it.brand) : ''} · P${mm.protein} C${mm.carbs} G${mm.fat}</div>
+        </div>
+        <div class="meal-item-kcal">${mm.kcal}</div>`;
+      li.addEventListener('click', () => openPortionEditor(it, m.id, i));
+      list.appendChild(li);
+    });
     cont.appendChild(grp);
   });
+  renderFoodWater();
+  const gl = document.getElementById('food-goals-link');
+  if (gl && !gl.dataset.bound) {
+    gl.dataset.bound = '1';
+    gl.addEventListener('click', () => {
+      const n = document.querySelector('nav button[data-tab="editar"]'); if (n) n.click();
+      const c = document.querySelector('#edit-mode .chip[data-v="nutri"]'); if (c) c.click();
+    });
+  }
 
   // Botones
   const searchBtn = document.getElementById('food-search-btn');
@@ -11689,6 +11759,58 @@ function renderComida() {
   }
 }
 tabRenderers.comida = renderComida;
+
+const FOOD_MEAL_ICONS = (() => {
+  const w = d => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  return {
+    breakfast: w('<path d="M12 3v3M4.9 8.9l2 2M19.1 8.9l-2 2M2 18h20M6 18a6 6 0 0 1 12 0M8 22h8"/>'),
+    lunch: w('<path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2.5 1-4 4-4 8h4"/>'),
+    dinner: w('<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>'),
+    snack: w('<path d="M12 7c-2-2-7-1.5-7 4 0 4 3 9 5.5 9 .8 0 1-.5 1.5-.5s.7.5 1.5.5C16 20 19 15 19 11c0-5.5-5-6-7-4zM12 7c0-2 1-3.5 3-4"/>'),
+  };
+})();
+// Dieta asignada por el nutriólogo (la más reciente)
+function foodAssignedDiet() {
+  try { return asgList().filter(x => x.kind === 'diet').sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)))[0] || null; } catch (e) { return null; }
+}
+// Tarjeta "Meta diaria": calorías, lo que falta y barras de macros
+function renderFoodTarget(cur, tg, suggested) {
+  const el = document.getElementById('food-target');
+  if (!el) return;
+  const left = tg.kcal - cur.kcal, fmt = n => Math.round(n).toLocaleString(_loc());
+  const bar = (label, color, c, g) => {
+    const pct = g > 0 ? Math.min(100, c / g * 100) : 0, over = g > 0 && c > g * 1.1;
+    return `<div class="ft-row"><div class="ft-row-h"><span>${label}</span><span class="ft-row-v${over ? ' over' : ''}" translate="no">${Math.round(c)} / ${Math.round(g)} g</span></div>
+      <div class="ft-bar"><i style="width:${pct.toFixed(1)}%;background:${over ? '#EF4444' : color}"></i></div></div>`;
+  };
+  el.innerHTML = `<div class="ft-card">
+    <div class="ft-k">${suggested ? 'Meta sugerida' : 'Meta diaria'}</div>
+    <div class="ft-big" translate="no">${fmt(tg.kcal)} <small>kcal</small></div>
+    <div class="ft-rem ${left < 0 ? 'over' : 'ok'}">${left >= 0 ? `<span translate="no">${fmt(left)} kcal</span> <span>restantes</span>` : `<span>Te pasaste por</span> <span translate="no">${fmt(-left)} kcal</span>`}</div>
+    <div class="ft-bar big"><i style="width:${Math.min(100, tg.kcal ? cur.kcal / tg.kcal * 100 : 0).toFixed(1)}%;background:${left < 0 ? '#EF4444' : 'var(--text)'}"></i></div>
+    <div class="ft-sub"><span translate="no">${fmt(cur.kcal)} kcal</span> <span>consumidas</span>${tg.assigned ? ' · <span>meta de tu especialista</span>' : ''}</div>
+    ${suggested ? '<button class="ft-set" id="ft-set">Calcular mi meta</button>' : ''}
+    ${bar('Proteína', '#22C55E', cur.protein, tg.protein)}${bar('Carbos', '#7C9CFF', cur.carbs, tg.carbs)}${bar('Grasa', '#F59E0B', cur.fat, tg.fat)}
+  </div>`;
+  const b = document.getElementById('ft-set');
+  if (b) b.addEventListener('click', () => { if (typeof startNutriWizard === 'function') startNutriWizard(); });
+}
+// Agua del día (misma cuenta que la tarjeta de Hábitos)
+function renderFoodWater() {
+  const el = document.getElementById('food-water');
+  if (!el) return;
+  let s = null; try { s = hydSettings(); } catch (e) {}
+  if (!s || !s.enabled || !foodViewIsToday()) { el.innerHTML = ''; return; }
+  const cur = hydToday();
+  el.innerHTML = `<div class="mc water"><div class="mc-head">
+      <div class="mc-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg></div>
+      <div class="mc-t"><div class="meal-name">Agua</div><div class="mc-sub"><span translate="no">${cur} / ${s.goal}</span> <span>vasos</span>${s.mlPerGlass > 0 ? ` · <span translate="no">${cur * s.mlPerGlass} ml</span>` : ''}</div></div>
+      <button class="mc-add ghost" id="fw-minus" aria-label="−" ${cur <= 0 ? 'disabled' : ''}>−</button><button class="mc-add" id="fw-plus" aria-label="+">+</button>
+    </div></div>`;
+  const set = n => { hydSetToday(Math.max(0, n)); try { renderHydration(); } catch (e) {} try { if (window.Android && window.Android.refreshAllWidgets) window.Android.refreshAllWidgets(); } catch (e) {} renderFoodWater(); };
+  document.getElementById('fw-plus').addEventListener('click', () => set(cur + 1));
+  document.getElementById('fw-minus').addEventListener('click', () => set(cur - 1));
+}
 
 /* ==================== GYM: rutinas, semana, registro de cargas ==================== */
 // Datos (localStorage):

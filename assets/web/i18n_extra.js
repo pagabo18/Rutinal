@@ -3731,6 +3731,76 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "alimento": {
+   "en": "food",
+   "pt-BR": "alimento",
+   "fr": "aliment"
+  },
+  "alimentos": {
+   "en": "foods",
+   "pt-BR": "alimentos",
+   "fr": "aliments"
+  },
+  "Sin registrar": {
+   "en": "Not logged yet",
+   "pt-BR": "Sem registro",
+   "fr": "Pas encore enregistré"
+  },
+  "+ Registrar": {
+   "en": "+ Log",
+   "pt-BR": "+ Registrar",
+   "fr": "+ Enregistrer"
+  },
+  "Plan de tu especialista": {
+   "en": "Your specialist's plan",
+   "pt-BR": "Plano do seu especialista",
+   "fr": "Plan de votre spécialiste"
+  },
+  "Registrar el plan": {
+   "en": "Log the plan",
+   "pt-BR": "Registrar o plano",
+   "fr": "Enregistrer le plan"
+  },
+  "Meta sugerida": {
+   "en": "Suggested target",
+   "pt-BR": "Meta sugerida",
+   "fr": "Objectif suggéré"
+  },
+  "Meta diaria": {
+   "en": "Daily target",
+   "pt-BR": "Meta diária",
+   "fr": "Objectif quotidien"
+  },
+  "consumidas": {
+   "en": "eaten",
+   "pt-BR": "consumidas",
+   "fr": "consommées"
+  },
+  "meta de tu especialista": {
+   "en": "target set by your specialist",
+   "pt-BR": "meta do seu especialista",
+   "fr": "objectif fixé par votre spécialiste"
+  },
+  "Calcular mi meta": {
+   "en": "Calculate my target",
+   "pt-BR": "Calcular minha meta",
+   "fr": "Calculer mon objectif"
+  },
+  "Agua": {
+   "en": "Water",
+   "pt-BR": "Água",
+   "fr": "Eau"
+  },
+  "vasos": {
+   "en": "glasses",
+   "pt-BR": "copos",
+   "fr": "verres"
+  },
+  "Editar metas": {
+   "en": "Edit targets",
+   "pt-BR": "Editar metas",
+   "fr": "Modifier les objectifs"
+  },
   "Carga recomendada por serie": {
    "en": "Recommended load per set",
    "pt-BR": "Carga recomendada por série",

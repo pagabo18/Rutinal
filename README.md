@@ -189,3 +189,7 @@ En teléfono (menos de 640 px de ancho) las hojas que antes subían desde abajo 
 ### Cargas recomendadas por serie
 
 Cada ejercicio puede llevar `loads`: la carga recomendada de cada serie, en kg (si hay menos cargas que series, la última se repite). Se capturan en el editor de rutina ("Carga recomendada por serie") y, para un entrenado concreto, desde su ficha en modo especialista: **Planes → Cargas por serie** en la rutina asignada. Eso cambia solo la copia de ese entrenado (se guarda en la asignación) y su app actualiza las cargas en la siguiente consulta, sin tocar lo que ya registró. En el entrenamiento aparecen como "Carga recomendada" y como valor sugerido de cada serie.
+
+## Comida (rediseño)
+
+La pestaña Comida abre con la tarjeta **Meta diaria** (calorías objetivo, lo que falta o lo que se pasó, y barras de proteína, carbos y grasa) en lugar de los anillos. Cada comida es una tarjeta con icono, calorías, alimentos, macros y botón para añadir; las que están vacías muestran *+ Registrar* y, si el nutriólogo asignó una dieta, el plan de esa comida con *Registrar el plan*. Al final hay una tarjeta de **Agua** que usa la misma cuenta que Hábitos.
