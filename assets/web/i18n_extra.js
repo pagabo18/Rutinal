@@ -3731,6 +3731,236 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Crear rutina nueva": {
+   "en": "Create new routine",
+   "pt-BR": "Criar rotina nova",
+   "fr": "Créer une nouvelle routine"
+  },
+  "O usa una de tu Gym": {
+   "en": "Or use one from your Gym",
+   "pt-BR": "Ou use uma do seu Gym",
+   "fr": "Ou utilisez une de votre Gym"
+  },
+  "Todavía no tienes rutinas en tu pestaña Gym.": {
+   "en": "You don't have routines in your Gym tab yet.",
+   "pt-BR": "Você ainda não tem rotinas na aba Gym.",
+   "fr": "Vous n'avez pas encore de routines dans l'onglet Gym."
+  },
+  "Editar plantilla": {
+   "en": "Edit template",
+   "pt-BR": "Editar modelo",
+   "fr": "Modifier le modèle"
+  },
+  "Rutina de": {
+   "en": "Routine for",
+   "pt-BR": "Rotina de",
+   "fr": "Routine de"
+  },
+  "Actualicé tu rutina.": {
+   "en": "I updated your routine.",
+   "pt-BR": "Atualizei sua rotina.",
+   "fr": "J'ai mis à jour votre routine."
+  },
+  "Tu semana": {
+   "en": "Your week",
+   "pt-BR": "Sua semana",
+   "fr": "Votre semaine"
+  },
+  "Agenda": {
+   "en": "Schedule",
+   "pt-BR": "Agenda",
+   "fr": "Agenda"
+  },
+  "Citas con tus especialistas o entrenados": {
+   "en": "Appointments with your specialists or trainees",
+   "pt-BR": "Consultas com seus especialistas ou alunos",
+   "fr": "Rendez-vous avec vos spécialistes ou élèves"
+  },
+  "Fotos de progreso": {
+   "en": "Progress photos",
+   "pt-BR": "Fotos de progresso",
+   "fr": "Photos de progression"
+  },
+  "Próxima cita": {
+   "en": "Next appointment",
+   "pt-BR": "Próxima consulta",
+   "fr": "Prochain rendez-vous"
+  },
+  "Próximas citas": {
+   "en": "Upcoming appointments",
+   "pt-BR": "Próximas consultas",
+   "fr": "Prochains rendez-vous"
+  },
+  "Próximas": {
+   "en": "Upcoming",
+   "pt-BR": "Próximas",
+   "fr": "À venir"
+  },
+  "No tienes citas próximas.": {
+   "en": "You have no upcoming appointments.",
+   "pt-BR": "Você não tem consultas próximas.",
+   "fr": "Aucun rendez-vous à venir."
+  },
+  "Abrir agenda": {
+   "en": "Open schedule",
+   "pt-BR": "Abrir agenda",
+   "fr": "Ouvrir l'agenda"
+  },
+  "Cita": {
+   "en": "Appointment",
+   "pt-BR": "Consulta",
+   "fr": "Rendez-vous"
+  },
+  "cita": {
+   "en": "appointment",
+   "pt-BR": "consulta",
+   "fr": "rendez-vous"
+  },
+  "citas": {
+   "en": "appointments",
+   "pt-BR": "consultas",
+   "fr": "rendez-vous"
+  },
+  "Sin citas este día": {
+   "en": "No appointments this day",
+   "pt-BR": "Sem consultas neste dia",
+   "fr": "Aucun rendez-vous ce jour"
+  },
+  "Cancelada": {
+   "en": "Cancelled",
+   "pt-BR": "Cancelada",
+   "fr": "Annulé"
+  },
+  "Nueva cita": {
+   "en": "New appointment",
+   "pt-BR": "Nova consulta",
+   "fr": "Nouveau rendez-vous"
+  },
+  "Editar cita": {
+   "en": "Edit appointment",
+   "pt-BR": "Editar consulta",
+   "fr": "Modifier le rendez-vous"
+  },
+  "Con": {
+   "en": "With",
+   "pt-BR": "Com",
+   "fr": "Avec"
+  },
+  "Motivo": {
+   "en": "Reason",
+   "pt-BR": "Motivo",
+   "fr": "Motif"
+  },
+  "Hora": {
+   "en": "Time",
+   "pt-BR": "Hora",
+   "fr": "Heure"
+  },
+  "Duración": {
+   "en": "Duration",
+   "pt-BR": "Duração",
+   "fr": "Durée"
+  },
+  "Ej. Revisión mensual": {
+   "en": "E.g. Monthly check-in",
+   "pt-BR": "Ex.: Revisão mensal",
+   "fr": "Ex. : Bilan mensuel"
+  },
+  "Cancelar cita": {
+   "en": "Cancel appointment",
+   "pt-BR": "Cancelar consulta",
+   "fr": "Annuler le rendez-vous"
+  },
+  "Escribe el motivo de la cita.": {
+   "en": "Enter the reason for the appointment.",
+   "pt-BR": "Escreva o motivo da consulta.",
+   "fr": "Indiquez le motif du rendez-vous."
+  },
+  "Elige fecha y hora.": {
+   "en": "Choose date and time.",
+   "pt-BR": "Escolha data e hora.",
+   "fr": "Choisissez la date et l'heure."
+  },
+  "Cambié la cita": {
+   "en": "I changed the appointment",
+   "pt-BR": "Mudei a consulta",
+   "fr": "J'ai modifié le rendez-vous"
+  },
+  "Agendé una cita": {
+   "en": "I scheduled an appointment",
+   "pt-BR": "Agendei uma consulta",
+   "fr": "J'ai fixé un rendez-vous"
+  },
+  "Cancelé la cita": {
+   "en": "I cancelled the appointment",
+   "pt-BR": "Cancelei a consulta",
+   "fr": "J'ai annulé le rendez-vous"
+  },
+  "¿Cancelar esta cita?": {
+   "en": "Cancel this appointment?",
+   "pt-BR": "Cancelar esta consulta?",
+   "fr": "Annuler ce rendez-vous ?"
+  },
+  "Para agendar necesitas un vínculo activo con un especialista o un entrenado.": {
+   "en": "To schedule you need an active link with a specialist or a trainee.",
+   "pt-BR": "Para agendar você precisa de um vínculo ativo com um especialista ou aluno.",
+   "fr": "Pour planifier, il faut un lien actif avec un spécialiste ou un élève."
+  },
+  "Tus fotos se guardan en el servidor de Rutinal y solo tú las ves. Tus especialistas solo ven las que marques para compartir.": {
+   "en": "Your photos are stored on Rutinal's server and only you can see them. Your specialists only see the ones you mark to share.",
+   "pt-BR": "Suas fotos ficam no servidor do Rutinal e só você as vê. Seus especialistas só veem as que você marcar para compartilhar.",
+   "fr": "Vos photos sont stockées sur le serveur de Rutinal et vous seul les voyez. Vos spécialistes ne voient que celles que vous partagez."
+  },
+  "Compartir las fotos nuevas con mis especialistas": {
+   "en": "Share new photos with my specialists",
+   "pt-BR": "Compartilhar as fotos novas com meus especialistas",
+   "fr": "Partager les nouvelles photos avec mes spécialistes"
+  },
+  "Compartir con mis especialistas": {
+   "en": "Share with my specialists",
+   "pt-BR": "Compartilhar com meus especialistas",
+   "fr": "Partager avec mes spécialistes"
+  },
+  "Antes y ahora": {
+   "en": "Before and now",
+   "pt-BR": "Antes e agora",
+   "fr": "Avant et maintenant"
+  },
+  "Todas": {
+   "en": "All",
+   "pt-BR": "Todas",
+   "fr": "Toutes"
+  },
+  "Aún no tienes fotos. Toma la primera para ver tu cambio con el tiempo.": {
+   "en": "You have no photos yet. Take the first one to see your change over time.",
+   "pt-BR": "Você ainda não tem fotos. Tire a primeira para ver sua mudança com o tempo.",
+   "fr": "Pas encore de photos. Prenez la première pour voir votre évolution."
+  },
+  "Subiendo…": {
+   "en": "Uploading…",
+   "pt-BR": "Enviando…",
+   "fr": "Envoi…"
+  },
+  "No se pudo leer la imagen.": {
+   "en": "The image could not be read.",
+   "pt-BR": "Não foi possível ler a imagem.",
+   "fr": "Impossible de lire l'image."
+  },
+  "Eliminar foto": {
+   "en": "Delete photo",
+   "pt-BR": "Excluir foto",
+   "fr": "Supprimer la photo"
+  },
+  "¿Eliminar esta foto? No se puede recuperar.": {
+   "en": "Delete this photo? It cannot be recovered.",
+   "pt-BR": "Excluir esta foto? Não dá para recuperar.",
+   "fr": "Supprimer cette photo ? Elle ne pourra pas être récupérée."
+  },
+  "No ha compartido fotos contigo.": {
+   "en": "They haven't shared photos with you.",
+   "pt-BR": "Não compartilhou fotos com você.",
+   "fr": "Aucune photo partagée avec vous."
+  },
   "Total del día": {
    "en": "Day total",
    "pt-BR": "Total do dia",

@@ -230,3 +230,10 @@ Las plantillas de plan de alimentación se arman en un editor propio (`openDietE
 ### Gráficas con degradado
 
 Las barras (`gymBarsSvg`, `spBars`) y las áreas bajo las líneas (`gymLineSvg`, `spWeightChart`) usan un degradado vertical generado con `svgGrad(color, de, a)`. Cada gráfica define su propio `<linearGradient>` dentro del SVG, así también salen en el PDF.
+
+## Editor de rutinas, resumen semanal, agenda y fotos
+
+- **Editor de rutinas**: las plantillas de rutina se crean y editan en el editor completo (`openRoutineEditorFor`), sin armarlas antes en el Gym propio. Desde la ficha del entrenado, **Planes → Editar** cambia la rutina ya asignada solo para esa persona; su app reemplaza su copia conservando el mismo id, así que sus registros no se pierden (`asgSig` detecta el cambio).
+- **Tu semana**: tarjeta en Hoy con entrenamientos, días con comidas (y promedio contra la meta), hábitos y cambio de peso de los últimos 7 días.
+- **Agenda**: tabla `public.appointments` (ver `supabase/rutinal_agenda_photos.sql`). Cualquiera de las dos partes de un vínculo activo puede agendar, cambiar o cancelar; cada movimiento deja un mensaje en el chat. Se abre desde Más → Agenda, la tarjeta "Próxima cita" de Hoy, el inicio del especialista y el botón *Cita* de la ficha. No hay recordatorios con la app cerrada.
+- **Fotos de progreso**: bucket privado `progress` y tabla `public.progress_photos`. La foto se reduce a 1280 px en JPEG antes de subirla. Solo la ve su dueño; sus especialistas ven únicamente las marcadas como compartidas (`shared`), y nadie más. Se abren desde Más → Fotos de progreso; el especialista las ve en la pestaña Progreso de la ficha.
