@@ -3731,6 +3731,211 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Rutina": {
+   "en": "Routine",
+   "pt-BR": "Rotina",
+   "fr": "Routine"
+  },
+  "Plan de alimentación": {
+   "en": "Meal plan",
+   "pt-BR": "Plano alimentar",
+   "fr": "Plan alimentaire"
+  },
+  "Metas de nutrición": {
+   "en": "Nutrition targets",
+   "pt-BR": "Metas de nutrição",
+   "fr": "Objectifs de nutrition"
+  },
+  "Mis plantillas": {
+   "en": "My templates",
+   "pt-BR": "Meus modelos",
+   "fr": "Mes modèles"
+  },
+  "Para:": {
+   "en": "For:",
+   "pt-BR": "Para:",
+   "fr": "Pour :"
+  },
+  "Aún no tienes plantillas de este tipo.": {
+   "en": "You don't have templates of this kind yet.",
+   "pt-BR": "Você ainda não tem modelos deste tipo.",
+   "fr": "Vous n'avez pas encore de modèles de ce type."
+  },
+  "Nueva plantilla": {
+   "en": "New template",
+   "pt-BR": "Novo modelo",
+   "fr": "Nouveau modèle"
+  },
+  "Asignar": {
+   "en": "Assign",
+   "pt-BR": "Atribuir",
+   "fr": "Attribuer"
+  },
+  "Eliminar": {
+   "en": "Delete",
+   "pt-BR": "Excluir",
+   "fr": "Supprimer"
+  },
+  "¿Eliminar esta plantilla? Lo que ya asignaste no cambia.": {
+   "en": "Delete this template? What you already assigned doesn't change.",
+   "pt-BR": "Excluir este modelo? O que você já atribuiu não muda.",
+   "fr": "Supprimer ce modèle ? Ce que vous avez déjà attribué ne change pas."
+  },
+  "Rutina de tu pestaña Gym": {
+   "en": "Routine from your Gym tab",
+   "pt-BR": "Rotina da sua aba Gym",
+   "fr": "Routine de votre onglet Gym"
+  },
+  "Primero arma la rutina en tu pestaña Gym; aquí la guardas como plantilla.": {
+   "en": "First build the routine in your Gym tab; here you save it as a template.",
+   "pt-BR": "Primeiro monte a rotina na sua aba Gym; aqui você a salva como modelo.",
+   "fr": "Créez d'abord la routine dans votre onglet Gym ; ici vous l'enregistrez comme modèle."
+  },
+  "Registra en tu pestaña Comida el menú de un día y guárdalo aquí como plan.": {
+   "en": "Log one day's menu in your Meal tab and save it here as a plan.",
+   "pt-BR": "Registre na sua aba Refeição o cardápio de um dia e salve aqui como plano.",
+   "fr": "Enregistrez le menu d'une journée dans votre onglet Repas et sauvegardez-le ici comme plan."
+  },
+  "Día de tu registro": {
+   "en": "Day from your log",
+   "pt-BR": "Dia do seu registro",
+   "fr": "Jour de votre journal"
+  },
+  "Proteína (g)": {
+   "en": "Protein (g)",
+   "pt-BR": "Proteína (g)",
+   "fr": "Protéines (g)"
+  },
+  "Carbohidratos (g)": {
+   "en": "Carbs (g)",
+   "pt-BR": "Carboidratos (g)",
+   "fr": "Glucides (g)"
+  },
+  "Grasa (g)": {
+   "en": "Fat (g)",
+   "pt-BR": "Gordura (g)",
+   "fr": "Lipides (g)"
+  },
+  "Nombre de la plantilla": {
+   "en": "Template name",
+   "pt-BR": "Nome do modelo",
+   "fr": "Nom du modèle"
+  },
+  "Ese día no tiene comidas registradas.": {
+   "en": "That day has no meals logged.",
+   "pt-BR": "Esse dia não tem refeições registradas.",
+   "fr": "Ce jour n'a aucun repas enregistré."
+  },
+  "Escribe las calorías diarias (mínimo 800).": {
+   "en": "Enter the daily calories (minimum 800).",
+   "pt-BR": "Informe as calorias diárias (mínimo 800).",
+   "fr": "Saisissez les calories quotidiennes (minimum 800)."
+  },
+  "Escribe las indicaciones.": {
+   "en": "Write the instructions.",
+   "pt-BR": "Escreva as orientações.",
+   "fr": "Rédigez les consignes."
+  },
+  "Ponle un nombre a la plantilla.": {
+   "en": "Give the template a name.",
+   "pt-BR": "Dê um nome ao modelo.",
+   "fr": "Donnez un nom au modèle."
+  },
+  "Entrenados": {
+   "en": "Trainees",
+   "pt-BR": "Alunos",
+   "fr": "Élèves"
+  },
+  "No tienes entrenados a los que puedas asignar este tipo de plantilla.": {
+   "en": "You have no trainees you can assign this kind of template to.",
+   "pt-BR": "Você não tem alunos a quem atribuir este tipo de modelo.",
+   "fr": "Vous n'avez aucun élève à qui attribuer ce type de modèle."
+  },
+  "Nota para el entrenado (opcional)": {
+   "en": "Note for the trainee (optional)",
+   "pt-BR": "Nota para o aluno (opcional)",
+   "fr": "Note pour l'élève (facultatif)"
+  },
+  "Reemplaza lo que ya le hayas asignado de este mismo tipo.": {
+   "en": "It replaces what you already assigned of this same kind.",
+   "pt-BR": "Substitui o que você já atribuiu deste mesmo tipo.",
+   "fr": "Cela remplace ce que vous avez déjà attribué du même type."
+  },
+  "Elige al menos un entrenado.": {
+   "en": "Choose at least one trainee.",
+   "pt-BR": "Escolha pelo menos um aluno.",
+   "fr": "Choisissez au moins un élève."
+  },
+  "Aún no hay notas.": {
+   "en": "No notes yet.",
+   "pt-BR": "Ainda não há notas.",
+   "fr": "Pas encore de notes."
+  },
+  "Escribe una nota…": {
+   "en": "Write a note…",
+   "pt-BR": "Escreva uma nota…",
+   "fr": "Écrivez une note…"
+  },
+  "Enviar": {
+   "en": "Send",
+   "pt-BR": "Enviar",
+   "fr": "Envoyer"
+  },
+  "De tus especialistas": {
+   "en": "From your specialists",
+   "pt-BR": "Dos seus especialistas",
+   "fr": "De vos spécialistes"
+  },
+  "De tu especialista": {
+   "en": "From your specialist",
+   "pt-BR": "Do seu especialista",
+   "fr": "De votre spécialiste"
+  },
+  "Ya está en tu pestaña Gym, lista para registrar.": {
+   "en": "It's already in your Gym tab, ready to log.",
+   "pt-BR": "Já está na sua aba Gym, pronta para registrar.",
+   "fr": "Elle est déjà dans votre onglet Gym, prête à être enregistrée."
+  },
+  "Ir a Gym": {
+   "en": "Go to Gym",
+   "pt-BR": "Ir para Gym",
+   "fr": "Aller à Gym"
+  },
+  "Registrar en hoy": {
+   "en": "Log for today",
+   "pt-BR": "Registrar hoje",
+   "fr": "Enregistrer aujourd'hui"
+  },
+  "Registrado": {
+   "en": "Logged",
+   "pt-BR": "Registrado",
+   "fr": "Enregistré"
+  },
+  "Ya se usan como tu meta diaria en Comida.": {
+   "en": "They are already used as your daily target in Meal.",
+   "pt-BR": "Já são usadas como sua meta diária em Refeição.",
+   "fr": "Ils servent déjà d'objectif quotidien dans Repas."
+  },
+  "Asignado": {
+   "en": "Assigned",
+   "pt-BR": "Atribuído",
+   "fr": "Attribué"
+  },
+  "Nada asignado todavía.": {
+   "en": "Nothing assigned yet.",
+   "pt-BR": "Nada atribuído ainda.",
+   "fr": "Rien d'attribué pour l'instant."
+  },
+  "Asignar plantilla": {
+   "en": "Assign template",
+   "pt-BR": "Atribuir modelo",
+   "fr": "Attribuer un modèle"
+  },
+  "¿Quitar esta asignación? Dejará de aparecerle al entrenado.": {
+   "en": "Remove this assignment? The trainee will stop seeing it.",
+   "pt-BR": "Remover esta atribuição? O aluno deixará de vê-la.",
+   "fr": "Retirer cette attribution ? L'élève ne la verra plus."
+  },
   "Especialistas y entrenados": {
    "en": "Specialists and trainees",
    "pt-BR": "Especialistas e alunos",

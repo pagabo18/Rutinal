@@ -128,6 +128,10 @@ Opcional y con consentimiento (Editar → Ajustes → Cuenta → Respaldo en la 
 
 Editar → Ajustes → Cuenta → Especialistas y entrenados. Un especialista (cuenta con especialidad de coach, nutriólogo o fisioterapeuta) genera un código de invitación; el entrenado lo escribe, ve qué va a compartir y acepta. Cualquiera de los dos puede terminar el vínculo. El especialista ve a sus entrenados con indicadores de los últimos 7 días (último registro, comidas, entrenamientos, dolor máximo) y una ficha de solo lectura de 30 días. Qué puede leer cada rol lo decide el servidor (`private.role_keys` y la política de `user_docs` en `supabase/rutinal_sync_links.sql`): coach → entrenamientos, rutinas y peso; nutriólogo → comidas, metas, agua y peso; fisioterapeuta → entrenamientos y rutinas.
 
+## Plantillas, asignaciones y notas
+
+El especialista guarda plantillas en Especialistas y entrenados → Mis plantillas: **rutina** (una rutina de su pestaña Gym), **plan de alimentación** (el menú de un día de su pestaña Comida), **metas de nutrición** e **indicaciones**. Al asignarla a uno o varios entrenados se entrega una copia (`public.assignments`); un plan o unas metas nuevas reemplazan a los anteriores del mismo especialista. El entrenado las recibe al sincronizar: la rutina aparece en su Gym marcada como asignada, las metas pasan a ser su meta diaria, y el plan y las indicaciones se ven en la tarjeta "De tus especialistas" de Hoy (el plan permite registrar cada comida en el día). Cada vínculo tiene un hilo de notas. Qué puede asignar cada rol lo valida el servidor (`supabase/rutinal_templates.sql`); al terminar un vínculo se terminan sus asignaciones.
+
 ## APIs de nutrición
 
 - **USDA FoodData Central**: `api.nal.usda.gov/fdc/v1/foods/search`. Con `DEMO_KEY` funciona con rate limit compartido; para uso intensivo registra una key gratis en [api.data.gov/signup](https://api.data.gov/signup/) y pégala en **Editar → Ajustes → USDA API key**.

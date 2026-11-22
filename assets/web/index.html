@@ -2075,6 +2075,15 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  .asg-card { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin: 0 0 12px; background: var(--surface); }
+  .asg-card .lk-h { margin: 0 0 6px; }
+  .asg-item { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid var(--border); cursor: pointer; }
+  .asg-item:first-of-type { border-top: none; }
+  .asg-item .lk-n { font-size: 14px; }
+  .nt-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .nt { max-width: 85%; padding: 9px 12px; border-radius: 14px; font-size: 14px; line-height: 1.4; background: var(--surface-2); align-self: flex-start; white-space: pre-wrap; word-break: break-word; }
+  .nt.me { align-self: flex-end; background: var(--text); color: var(--bg); }
+  .nt-t { font-size: 10px; opacity: .6; margin-top: 3px; }
   .cd-day { border-bottom: 1px solid var(--border); padding: 10px 0; }
   .cd-day summary { display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none; font-size: 14px; }
   .cd-day summary::-webkit-details-marker { display: none; }
@@ -2200,6 +2209,7 @@ try {
   <section id="tab-hoy" class="active">
     <div class="split-col split-col-a">
       <div id="now-wrap"></div>
+      <div id="asg-card"></div>
       <button class="impr-btn" id="impr-btn">
         <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
         <div>
@@ -6990,7 +7000,7 @@ function calcNutriTargets(pIn) {
   const fatG = Math.round(fatKcal / 9);
   const carbG = Math.round(carbKcal / 4);
 
-  return {
+  const out = {
     bmr,
     tdee,
     kcal: kcalGoal,
@@ -6999,6 +7009,15 @@ function calcNutriTargets(pIn) {
     carbs: carbG,
     proteinKcal, fatKcal, carbKcal,
   };
+  // Metas asignadas por el nutriólogo (solo para la cuenta propia, no al ver a un entrenado)
+  if (!pIn && typeof assignedTargets === 'function') {
+    const a = assignedTargets();
+    if (a && a.kcal > 0) {
+      out.kcal = a.kcal; out.protein = a.protein || out.protein; out.carbs = a.carbs || out.carbs; out.fat = a.fat || out.fat;
+      out.proteinKcal = out.protein * 4; out.carbKcal = out.carbs * 4; out.fatKcal = out.fat * 9; out.assigned = true;
+    }
+  }
+  return out;
 }
 
 function nutriTargetsToday() {
@@ -8138,6 +8157,7 @@ const AUTH_ERRORS = {
 };
 function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
 function authEndSession(msg, info) {
+  try { localStorage.removeItem('__asg'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
   const s = authGet();
   authSet(s && s.user ? { user: s.user } : null);
   authShowGate(msg, info);
@@ -8503,6 +8523,7 @@ async function syncNow() {
     const m = syncMeta(); m.lastOk = Date.now(); syncSave(m);
     if (res.changed) syncRefreshUi();
     ok = true;
+    asgRefresh(false);
   } catch (e) {
     if (e && e.code === 'session') authVerify(true);
   }
@@ -8593,6 +8614,7 @@ function onAuthReady() {
   }
   if (!m.uid) { m = { uid: s.uid, user: s.user, dirty: {} }; syncSave(m); }
   syncRenderStatus();
+  asgRenderCard(); asgRefresh(true);
   if (m.consent === true) syncSchedule(800);
   else if (m.consent === undefined) setTimeout(() => { if (!document.querySelector('#sheet.show, .sheet.show')) openSyncSheet(true); }, 600);
 }
@@ -8632,7 +8654,8 @@ async function openLinks() {
   const s = authGet() || {}, specs = s.specs || [];
   const mine = r.as_client.map(l => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name)}</div><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span></div>
       <div class="lk-d"><span>Puede ver:</span> ${linkSees(l.keys)}</div>
-      <button class="btn-secondary" data-lk-end="${l.id}" style="margin-top:8px;padding:8px 12px;">Dejar de compartir</button></div>`).join('');
+      <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-secondary" data-lk-notes="${l.id}" data-lk-name="${escapeHtml(l.name)}" style="padding:8px 12px;flex:1;">Notas</button>
+      <button class="btn-secondary" data-lk-end="${l.id}" style="padding:8px 12px;flex:1;">Dejar de compartir</button></div></div>`).join('');
   const clients = r.as_specialist.filter(l => l.status === 'active'), pend = r.as_specialist.filter(l => l.status === 'pending');
   const cRows = clients.map((l, i) => {
     const ago = linkAgo(l.last_activity), bits = [];
@@ -8648,7 +8671,8 @@ async function openLinks() {
   openSheet('Especialistas y entrenados', `
     ${specs.length ? `<div class="lk-h" style="margin-top:0;">Mis entrenados</div>
       ${cRows || '<div class="lk-d" style="margin-bottom:8px;">Aún no tienes entrenados vinculados.</div>'}${pRows}
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">${specs.map(k => `<button class="btn-secondary" data-lk-invite="${k}" style="flex:1;"><span>Invitar como</span> ${AUTH_SPECS[k]}</button>`).join('')}</div>` : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">${specs.map(k => `<button class="btn-secondary" data-lk-invite="${k}" style="flex:1;"><span>Invitar como</span> ${AUTH_SPECS[k]}</button>`).join('')}</div>
+      <button class="btn-secondary" id="lk-templates" style="width:100%;margin-top:8px;">Mis plantillas</button>` : ''}
     <div class="lk-h"${specs.length ? '' : ' style="margin-top:0;"'}>Mis especialistas</div>
     ${mine || '<div class="lk-d" style="margin-bottom:8px;">Nadie más ve tus datos.</div>'}
     <label class="auth-field" style="margin-top:12px;"><span>Código de invitación</span>
@@ -8673,6 +8697,8 @@ async function openLinks() {
     document.getElementById('lk-back').addEventListener('click', openLinks);
   }));
   document.querySelectorAll('[data-lk-open]').forEach(el => el.addEventListener('click', () => openClientDetail(clients[+el.dataset.lkOpen])));
+  document.querySelectorAll('[data-lk-notes]').forEach(b => b.addEventListener('click', () => openNotes(b.dataset.lkNotes, b.dataset.lkName, openLinks)));
+  if (document.getElementById('lk-templates')) document.getElementById('lk-templates').addEventListener('click', () => openTemplates(null));
   document.getElementById('lk-go').addEventListener('click', async () => {
     const code = document.getElementById('lk-code').value.trim().toUpperCase();
     if (!code) return;
@@ -8768,11 +8794,254 @@ async function openClientDetail(l) {
         <div class="lk-d">${ws.slice(-8).map(d => `${escapeHtml(cdFmtDay(d))}: ${D.weight_log[d]} kg`).join(' · ')}</div></div>`);
     }
   }
+  // --- Asignado por mí ---
+  let asg = [];
+  try { asg = await sbRest('assignments?select=id,kind,name,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent((authGet() || {}).uid) + '&role=eq.' + l.role + '&status=eq.active&order=created_at.desc'); } catch (e) {}
+  parts.push(`<div class="lk-h">Asignado</div>${asg.map(a => `<div class="lk-row"><div class="lk-top"><div class="lk-n">${escapeHtml(a.name)}</div><span class="usr-badge">${ASG_KINDS[a.kind] || a.kind}</span></div>
+      <div class="lk-d">${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><button class="btn-secondary" data-asg-end="${a.id}" style="margin-top:8px;padding:8px 12px;">Quitar</button></div>`).join('') || '<div class="lk-d" style="margin-bottom:8px;">Nada asignado todavía.</div>'}
+    <div style="display:flex;gap:8px;"><button class="btn-secondary" id="cd-assign" style="flex:1;">Asignar plantilla</button><button class="btn-secondary" id="cd-notes" style="flex:1;">Notas</button></div>`);
   parts.push('<button class="btn-secondary" id="cd-back" style="width:100%;margin-top:16px;">Volver</button>');
   openSheet(title, parts.join(''));
   document.getElementById('cd-back').addEventListener('click', openLinks);
+  document.getElementById('cd-assign').addEventListener('click', () => openTemplates(l));
+  document.getElementById('cd-notes').addEventListener('click', () => openNotes(l.id, l.name, () => openClientDetail(l)));
+  document.querySelectorAll('[data-asg-end]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('¿Quitar esta asignación? Dejará de aparecerle al entrenado.')) return;
+    try { await sbRest('assignments?id=eq.' + b.dataset.asgEnd, { method: 'PATCH', body: { status: 'ended' }, headers: { Prefer: 'return=minimal' } }); } catch (e) {}
+    openClientDetail(l);
+  }));
 }
 document.getElementById('btn-acct-links').addEventListener('click', openLinks);
+
+// ============================================================
+// PLANTILLAS, ASIGNACIONES Y NOTAS
+// El especialista guarda plantillas (rutina, plan de alimentación, metas, indicaciones) y las
+// asigna a sus entrenados; cada asignación es una copia. El entrenado las recibe al sincronizar.
+// ============================================================
+const ASG_KINDS = { routine: 'Rutina', diet: 'Plan de alimentación', targets: 'Metas de nutrición', note: 'Indicaciones' };
+const ASG_ROLE_KINDS = { coach: ['routine', 'note'], fisioterapeuta: ['routine', 'note'], nutriologo: ['diet', 'targets', 'note'] };
+const ASG_MEALS = [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['dinner', 'Cena'], ['snack', 'Snacks']];
+async function sbRest(path, opt) {
+  const r = await sbFetch('/rest/v1/' + path, opt);
+  if (!r.ok) throw authErrObj('network');
+  if (r.status === 204 || r.status === 201 && !(r.headers.get('content-type') || '').includes('json')) return null;
+  return r.json().catch(() => null);
+}
+function asgMealsKcal(meals) { let k = 0; ASG_MEALS.forEach(([m]) => ((meals || {})[m] || []).forEach(it => { k += calcItemMacros(it).kcal; })); return Math.round(k); }
+function asgSummary(kind, p) {
+  if (kind === 'routine') return `${(p.exercises || []).length} <span>ejercicios</span>`;
+  if (kind === 'diet') return `${asgMealsKcal(p.meals)} kcal`;
+  if (kind === 'targets') return `${p.kcal} kcal · P ${p.protein || 0} g · C ${p.carbs || 0} g · G ${p.fat || 0} g`;
+  return escapeHtml(String(p.text || '').slice(0, 70));
+}
+// ---- Especialista: biblioteca ----
+let _tpls = [];
+async function openTemplates(forClient) {
+  const title = 'Mis plantillas';
+  openSheet(title, '<div class="food-loader">Cargando...</div>');
+  try { _tpls = await sbRest('templates?select=id,kind,name,payload,updated_at&order=updated_at.desc') || []; }
+  catch (e) { openSheet(title, `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
+  const specs = (authGet() || {}).specs || [];
+  const kinds = Object.keys(ASG_KINDS).filter(k => specs.some(sp => (ASG_ROLE_KINDS[sp] || []).includes(k)));
+  const usable = forClient ? (ASG_ROLE_KINDS[forClient.role] || []) : kinds;
+  const rows = _tpls.filter(tp => usable.includes(tp.kind)).map(tp => `<div class="lk-row"><div class="lk-top"><div class="lk-n">${escapeHtml(tp.name)}</div><span class="usr-badge">${ASG_KINDS[tp.kind]}</span></div>
+      <div class="lk-d">${asgSummary(tp.kind, tp.payload || {})}</div>
+      <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-primary" data-tp-assign="${tp.id}" style="padding:8px 12px;flex:1;">Asignar</button>${forClient ? '' : `<button class="btn-secondary" data-tp-del="${tp.id}" style="padding:8px 12px;flex:1;">Eliminar</button>`}</div></div>`).join('');
+  openSheet(title, `${forClient ? `<div class="lk-d" style="margin:0 0 10px;"><span>Para:</span> <b translate="no">${escapeHtml(forClient.name || '')}</b></div>` : ''}
+    ${rows || '<div class="lk-d" style="margin-bottom:10px;">Aún no tienes plantillas de este tipo.</div>'}
+    <div class="lk-h">Nueva plantilla</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">${usable.map(k => `<button class="btn-secondary" data-tp-new="${k}" style="flex:1 1 45%;">${ASG_KINDS[k]}</button>`).join('')}</div>
+    <div class="auth-msg" id="tp-msg"></div>
+    <button class="btn-secondary" id="tp-back" style="width:100%;margin-top:12px;">Volver</button>`);
+  document.getElementById('tp-back').addEventListener('click', () => forClient ? openClientDetail(forClient) : openLinks());
+  document.querySelectorAll('[data-tp-new]').forEach(b => b.addEventListener('click', () => openTemplateEditor(b.dataset.tpNew, forClient)));
+  document.querySelectorAll('[data-tp-del]').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('¿Eliminar esta plantilla? Lo que ya asignaste no cambia.')) return;
+    try { await sbRest('templates?id=eq.' + b.dataset.tpDel, { method: 'DELETE', headers: { Prefer: 'return=minimal' } }); } catch (e) {}
+    openTemplates(forClient);
+  }));
+  document.querySelectorAll('[data-tp-assign]').forEach(b => b.addEventListener('click', () => openAssign(_tpls.find(x => x.id === b.dataset.tpAssign), forClient)));
+}
+function openTemplateEditor(kind, forClient) {
+  let body = '';
+  const today = keyDate();
+  if (kind === 'routine') {
+    const rs = gymRoutines().filter(r => !r.assigned);
+    body = rs.length ? `<label class="auth-field"><span>Rutina de tu pestaña Gym</span><select class="auth-in" id="te-src">${rs.map(r => `<option value="${r.id}">${escapeHtml(r.name)}</option>`).join('')}</select></label>`
+      : '<p class="auth-msg info">Primero arma la rutina en tu pestaña Gym; aquí la guardas como plantilla.</p>';
+  } else if (kind === 'diet') {
+    body = `<p style="color:var(--text-2);font-size:14px;line-height:1.5;margin-bottom:10px;">Registra en tu pestaña Comida el menú de un día y guárdalo aquí como plan.</p>
+      <label class="auth-field"><span>Día de tu registro</span><input class="auth-in" id="te-src" type="date" value="${today}" max="${today}"></label>
+      <div class="lk-d" id="te-prev"></div>`;
+  } else if (kind === 'targets') {
+    body = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <label class="auth-field"><span>Calorías</span><input class="auth-in" id="te-kcal" type="number" inputmode="numeric" min="800" max="6000"></label>
+      <label class="auth-field"><span>Proteína (g)</span><input class="auth-in" id="te-p" type="number" inputmode="numeric" min="0" max="500"></label>
+      <label class="auth-field"><span>Carbohidratos (g)</span><input class="auth-in" id="te-c" type="number" inputmode="numeric" min="0" max="900"></label>
+      <label class="auth-field"><span>Grasa (g)</span><input class="auth-in" id="te-f" type="number" inputmode="numeric" min="0" max="400"></label></div>`;
+  } else {
+    body = `<label class="auth-field"><span>Indicaciones</span><textarea class="auth-in" id="te-text" rows="6" maxlength="2000" style="resize:vertical;font-family:inherit;"></textarea></label>`;
+  }
+  openSheet(ASG_KINDS[kind], `<label class="auth-field"><span>Nombre de la plantilla</span><input class="auth-in" id="te-name" type="text" maxlength="80"></label>
+    ${body}<div class="auth-msg" id="te-msg"></div>`, async () => {
+    const msg = document.getElementById('te-msg');
+    let name = document.getElementById('te-name').value.trim(), payload = null;
+    if (kind === 'routine') {
+      const src = document.getElementById('te-src');
+      const r = src && gymRoutines().find(x => x.id === src.value);
+      if (!r) { msg.textContent = 'Primero arma la rutina en tu pestaña Gym; aquí la guardas como plantilla.'; return; }
+      payload = JSON.parse(JSON.stringify(r)); delete payload.assigned;
+      if (!name) name = r.name;
+    } else if (kind === 'diet') {
+      const day = mealLog()[document.getElementById('te-src').value];
+      if (!day || !asgMealsKcal(day)) { msg.textContent = 'Ese día no tiene comidas registradas.'; return; }
+      payload = { meals: JSON.parse(JSON.stringify(day)) };
+    } else if (kind === 'targets') {
+      const n = id => Math.round(+document.getElementById(id).value || 0);
+      payload = { kcal: n('te-kcal'), protein: n('te-p'), carbs: n('te-c'), fat: n('te-f') };
+      if (payload.kcal < 800) { msg.textContent = 'Escribe las calorías diarias (mínimo 800).'; return; }
+    } else {
+      payload = { text: document.getElementById('te-text').value.trim() };
+      if (!payload.text) { msg.textContent = 'Escribe las indicaciones.'; return; }
+    }
+    if (!name) { msg.textContent = 'Ponle un nombre a la plantilla.'; return; }
+    try { await sbRest('templates', { method: 'POST', body: { kind, name, payload }, headers: { Prefer: 'return=minimal' } }); }
+    catch (e) { msg.textContent = authErr(e.code); return; }
+    openTemplates(forClient);
+  });
+  if (kind === 'diet') {
+    const upd = () => { const d = mealLog()[document.getElementById('te-src').value]; document.getElementById('te-prev').textContent = d && asgMealsKcal(d) ? asgMealsKcal(d) + ' kcal' : t('Ese día no tiene comidas registradas.'); };
+    document.getElementById('te-src').addEventListener('change', upd); upd();
+  }
+}
+async function openAssign(tp, forClient) {
+  if (!tp) return;
+  let clients = [];
+  if (forClient) clients = [forClient];
+  else {
+    const r = await linkRpc('rutinal_my_links');
+    clients = r.ok ? r.as_specialist.filter(l => l.status === 'active' && (ASG_ROLE_KINDS[l.role] || []).includes(tp.kind)) : [];
+  }
+  openSheet('Asignar', `<div class="lk-row"><div class="lk-top"><div class="lk-n">${escapeHtml(tp.name)}</div><span class="usr-badge">${ASG_KINDS[tp.kind]}</span></div><div class="lk-d">${asgSummary(tp.kind, tp.payload || {})}</div></div>
+    <div class="lk-h">Entrenados</div>
+    ${clients.map((l, i) => `<label class="usr-check"><input type="checkbox" data-as-c="${i}" ${forClient ? 'checked' : ''}><span translate="no">${escapeHtml(l.name || '')}</span> <span class="usr-badge spec">${AUTH_SPECS[l.role]}</span></label>`).join('') || '<div class="lk-d">No tienes entrenados a los que puedas asignar este tipo de plantilla.</div>'}
+    <label class="auth-field" style="margin-top:12px;"><span>Nota para el entrenado (opcional)</span><input class="auth-in" id="as-note" type="text" maxlength="300"></label>
+    ${tp.kind === 'diet' || tp.kind === 'targets' ? '<div class="fit-note">Reemplaza lo que ya le hayas asignado de este mismo tipo.</div>' : ''}
+    <div class="auth-msg" id="as-msg"></div>`, async () => {
+    const msg = document.getElementById('as-msg');
+    const sel = Array.from(document.querySelectorAll('[data-as-c]')).filter(c => c.checked).map(c => clients[+c.dataset.asC]);
+    if (!sel.length) { msg.textContent = 'Elige al menos un entrenado.'; return; }
+    const s = authGet() || {}, note = document.getElementById('as-note').value.trim() || null;
+    try {
+      if (tp.kind === 'diet' || tp.kind === 'targets') {
+        for (const l of sel) await sbRest('assignments?specialist_id=eq.' + encodeURIComponent(s.uid) + '&client_id=eq.' + encodeURIComponent(l.client_id) + '&kind=eq.' + tp.kind + '&status=eq.active', { method: 'PATCH', body: { status: 'ended' }, headers: { Prefer: 'return=minimal' } });
+      }
+      await sbRest('assignments', { method: 'POST', headers: { Prefer: 'return=minimal' },
+        body: sel.map(l => ({ client_id: l.client_id, role: l.role, kind: tp.kind, name: tp.name, payload: tp.payload, note, author_name: s.name || s.user })) });
+    } catch (e) { msg.textContent = authErr(e.code); return; }
+    if (forClient) openClientDetail(forClient); else openTemplates(null);
+  });
+}
+// ---- Notas (hilo por vínculo) ----
+async function openNotes(linkId, name, back) {
+  const title = name || '';
+  openSheet(title, '<div class="food-loader">Cargando...</div>');
+  let rows = [];
+  try { rows = await sbRest('notes?select=id,author_id,body,created_at&link_id=eq.' + encodeURIComponent(linkId) + '&order=created_at.asc&limit=300') || []; }
+  catch (e) { openSheet(title, `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
+  const me = (authGet() || {}).uid;
+  const fmt = iso => { try { return new Date(iso).toLocaleString(_loc(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+  openSheet(title, `<div class="lk-h" style="margin-top:0;">Notas</div>
+    <div class="nt-list">${rows.map(n => `<div class="nt ${n.author_id === me ? 'me' : ''}" translate="no">${escapeHtml(n.body)}<div class="nt-t">${escapeHtml(fmt(n.created_at))}</div></div>`).join('') || '<div class="lk-d">Aún no hay notas.</div>'}</div>
+    <textarea class="auth-in" id="nt-text" rows="3" maxlength="1000" style="resize:vertical;font-family:inherit;" placeholder="Escribe una nota…"></textarea>
+    <div class="auth-msg" id="nt-msg"></div>
+    <button class="btn-primary" id="nt-send" style="width:100%;margin:8px 0;">Enviar</button>
+    <button class="btn-secondary" id="nt-back" style="width:100%;">Volver</button>`);
+  document.getElementById('nt-back').addEventListener('click', () => back ? back() : closeSheet());
+  document.getElementById('nt-send').addEventListener('click', async () => {
+    const body = document.getElementById('nt-text').value.trim();
+    if (!body) return;
+    try { await sbRest('notes', { method: 'POST', body: { link_id: linkId, body }, headers: { Prefer: 'return=minimal' } }); }
+    catch (e) { document.getElementById('nt-msg').textContent = authErr(e.code); return; }
+    openNotes(linkId, name, back);
+  });
+  const list = document.querySelector('.nt-list'); if (list && list.lastElementChild) list.lastElementChild.scrollIntoView({ block: 'nearest' });
+}
+// ---- Entrenado: lo que le asignaron ----
+function asgList() { try { const a = JSON.parse(localStorage.getItem('__asg') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+function assignedTargets() {
+  const a = asgList().filter(x => x.kind === 'targets').sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)))[0];
+  return a ? a.payload : null;
+}
+function asgApplyRoutines() {
+  const list = asgList().filter(a => a.kind === 'routine');
+  const want = new Map(list.map(a => ['asg_' + a.id, a]));
+  let rs = gymRoutines(), changed = false;
+  const kept = rs.filter(r => !r.assigned || want.has(r.id));
+  if (kept.length !== rs.length) { rs = kept; changed = true; }
+  want.forEach((a, id) => {
+    if (rs.some(r => r.id === id)) return;
+    rs.push(Object.assign({}, JSON.parse(JSON.stringify(a.payload || {})), { id, assigned: { by: a.author_name || '', role: a.role } }));
+    changed = true;
+  });
+  if (changed) S.set('gym_routines', rs);
+  return changed;
+}
+let _asgLast = 0;
+async function asgRefresh(force) {
+  const s = authGet();
+  if (!s || !s.refresh || !s.uid || navigator.onLine === false) return;
+  if (!force && Date.now() - _asgLast < 120000) return;
+  _asgLast = Date.now();
+  let rows;
+  try { rows = await sbRest('assignments?select=id,kind,name,payload,note,author_name,role,created_at&client_id=eq.' + encodeURIComponent(s.uid) + '&status=eq.active&order=created_at.desc'); }
+  catch (e) { return; }
+  const before = localStorage.getItem('__asg') || '[]', after = JSON.stringify(rows || []);
+  if (before === after) return;
+  try { localStorage.setItem('__asg', after); } catch (e) {}
+  asgApplyRoutines();
+  asgRenderCard();
+  syncRefreshUi();
+}
+function asgRenderCard() {
+  const el = document.getElementById('asg-card');
+  if (!el) return;
+  const list = authLogged() ? asgList() : [];
+  if (!list.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="asg-card"><div class="lk-h">De tus especialistas</div>${list.map((a, i) => `<div class="asg-item" data-asg="${i}"><div style="flex:1;min-width:0;"><div class="lk-n">${escapeHtml(a.name)}</div>
+      <div class="lk-d" style="margin-top:2px;"><span>${ASG_KINDS[a.kind] || a.kind}</span>${a.author_name ? ' · ' + escapeHtml(a.author_name) : ''}</div></div><span style="color:var(--text-3);font-size:18px;">›</span></div>`).join('')}</div>`;
+  el.querySelectorAll('[data-asg]').forEach(x => x.addEventListener('click', () => openAssignmentView(list[+x.dataset.asg])));
+}
+function openAssignmentView(a) {
+  const p = a.payload || {};
+  let body = '';
+  if (a.kind === 'routine') {
+    body = `<div class="cd-items">${(p.exercises || []).map(ex => `<b>${escapeHtml(ex.name || '')}</b>${ex.sets ? ` · ${ex.sets}×${escapeHtml(String(ex.reps || ''))}` : ''}`).join('<br>')}</div>
+      <div class="fit-note" style="margin:10px 0;">Ya está en tu pestaña Gym, lista para registrar.</div>
+      <button class="btn-primary" id="av-go" style="width:100%;">Ir a Gym</button>`;
+  } else if (a.kind === 'diet') {
+    body = ASG_MEALS.map(([mid, lab]) => { const its = (p.meals || {})[mid] || []; if (!its.length) return '';
+      const k = its.reduce((x, it) => x + calcItemMacros(it).kcal, 0);
+      return `<div class="lk-row"><div class="lk-top"><div class="lk-n">${lab}</div><span class="cd-num">${Math.round(k)} kcal</span></div>
+        <div class="cd-items">${its.map(it => `${escapeHtml(it.name || '')} (${Math.round(it.grams || 0)} g)`).join('<br>')}</div>
+        <button class="btn-secondary" data-av-log="${mid}" style="margin-top:8px;padding:8px 12px;">Registrar en hoy</button></div>`; }).join('');
+  } else if (a.kind === 'targets') {
+    body = `<div class="lk-row"><div class="lk-n">${p.kcal} kcal</div><div class="lk-d">P ${p.protein || 0} g · C ${p.carbs || 0} g · G ${p.fat || 0} g</div></div>
+      <div class="fit-note" style="margin:10px 0;">Ya se usan como tu meta diaria en Comida.</div>`;
+  } else body = `<div class="lk-row" style="white-space:pre-wrap;font-size:14px;line-height:1.5;" translate="no">${escapeHtml(p.text || '')}</div>`;
+  openSheet(a.name, `<div class="lk-d" style="margin:0 0 10px;"><span class="usr-badge spec">${ASG_KINDS[a.kind] || a.kind}</span>${a.author_name ? ' · ' + escapeHtml(a.author_name) : ''}</div>
+    ${a.note ? `<div class="fit-note" style="margin-bottom:10px;" translate="no">“${escapeHtml(a.note)}”</div>` : ''}${body}`);
+  const go = document.getElementById('av-go');
+  if (go) go.addEventListener('click', () => { closeSheet(); const b = document.querySelector('nav button[data-tab="gym"]'); if (b) b.click(); });
+  document.querySelectorAll('[data-av-log]').forEach(b => b.addEventListener('click', () => {
+    const log = mealLog(), day = log[keyDate()] || (log[keyDate()] = {});
+    const mid = b.dataset.avLog;
+    day[mid] = (day[mid] || []).concat(JSON.parse(JSON.stringify((p.meals || {})[mid] || [])));
+    saveMealLog(log);
+    b.textContent = t('Registrado'); b.disabled = true;
+    syncRefreshUi();
+  }));
+}
 
 // ============================================================
 // INIT
@@ -11189,6 +11458,7 @@ function renderGym() {
       <div class="gym-routine-body">
         <div class="gym-routine-name">${escapeHtml(r.name)}</div>
         <div class="gym-routine-meta">${r.exercises.length} ejercicios${days ? ' · ' + escapeHtml(days) : ''}</div>
+        ${r.assigned ? `<div class="gym-routine-meta"><span class="usr-badge spec">De tu especialista</span>${r.assigned.by ? ' ' + escapeHtml(r.assigned.by) : ''}</div>` : ''}
       </div>
       <button class="gym-icon-btn" data-gym-edit="${r.id}" aria-label="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
     </div>`;
