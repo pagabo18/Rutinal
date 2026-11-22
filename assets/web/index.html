@@ -2075,6 +2075,44 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  /* Registro de entrenamiento (rediseño v0) */
+  .gym-wo-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .gym-unit { display: inline-flex; background: var(--surface-2); border-radius: 999px; padding: 2px; flex-shrink: 0; }
+  .gym-unit button { border: 0; background: transparent; color: var(--text-3); font: inherit; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 999px; cursor: pointer; }
+  .gym-unit button.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .gym-ex { border-radius: 18px; padding: 14px; }
+  .gym-ex.open { border-color: var(--border-strong); box-shadow: 0 8px 24px rgba(0,0,0,.07); }
+  .gym-ex.open .gym-ex-name { font-size: 18px; letter-spacing: -0.01em; }
+  .gym-ex.open .gym-ex-body { order: 1; } .gym-ex.open .gym-ex-state { order: 2; } .gym-ex.open .gym-ex-media { order: 3; }
+  .gym-sets { margin-top: 12px; }
+  .gym-set { grid-template-columns: 54px 1fr 1fr 48px; gap: 8px; padding: 0; }
+  .gym-set-h { padding: 0 10px 2px; text-align: center; font-size: 10px; letter-spacing: .1em; }
+  .gym-set-h > div:first-child { text-align: left; }
+  .gym-set[data-ex] { background: var(--surface-2); border-radius: 12px; padding: 7px 10px; margin-top: 6px; }
+  .gym-set-target { display: flex; flex-direction: column; line-height: 1.15; overflow: visible; }
+  .gym-set-target b { width: auto; font-size: 15px; color: var(--text); }
+  .gym-set-target small { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .gym-set[data-ex] .gym-in { background: var(--surface); border-color: transparent; border-radius: 9px; font-size: 17px; font-weight: 700; padding: 9px 4px; }
+  .gym-set[data-ex] .gym-in::placeholder { font-weight: 500; color: var(--text-3); opacity: .7; }
+  .gym-set[data-ex] .gym-in:focus { outline: none; border-color: var(--text); }
+  .gym-check { width: 30px; height: 30px; justify-self: center; border-radius: 8px; border: 2px solid var(--border-strong); color: transparent; font-size: 16px; font-weight: 700; padding: 0; line-height: 1; }
+  .gym-set.done .gym-check { color: #fff; }
+  .gym-set.done[data-ex] { background: rgba(34,197,94,.10); }
+  .gym-set.done .gym-in { border-color: transparent; }
+  .gym-setbtns { display: flex; gap: 8px; margin-top: 8px; }
+  .gym-addset { flex: 1; padding: 11px; border-radius: 12px; border: 1px dashed var(--border-strong); background: transparent; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .gym-addset.rm { flex: 0 0 auto; color: var(--text-3); }
+  .gym-swap-btn { border-style: solid; border-color: var(--border); border-radius: 12px; }
+  .gym-resti { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 14px; padding: 12px 14px; border-radius: 18px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+  .gym-resti-ic { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .gym-resti-b { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .gym-resti-b b { font-size: 14px; } .gym-resti-b small { font-size: 12px; color: var(--text-3); }
+  .gym-resti-t { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .gym-cta-wrap { position: sticky; bottom: -1px; z-index: 2; margin: 14px -4px 0; padding: 10px 4px calc(10px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to bottom, transparent, var(--surface) 28%); }
+  .gym-cta-wrap .gym-cta { margin-top: 0; border-radius: 14px; }
+  .gym-wo-bar { top: -16px; margin-top: -16px; padding-top: 18px; }
+  .gym-cta-wrap { bottom: -20px; margin-bottom: -20px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+
   /* Tablero de Hoy (entrenado) */
   .hd-hello { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 2px 0 12px; }
   .hd-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; margin-bottom: 10px; }
@@ -8492,7 +8530,7 @@ function openAuthUserEditor(u) {
 const SYNC_DATED = ['meal_log', 'gym_logs', 'habitLog', 'weight_log', 'hydration_log'];
 const SYNC_WHOLE = ['nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'habits', 'habitTimes', 'cats', 'catGoals',
   'sch_weekday', 'sch_saturday', 'sch_sunday', 'imprevistos', 'plan', 'planTasks', 'plan_start', 'hydration_settings',
-  'custom_foods', 'dishes', 'diary', 'achievements', 'bestStreak', 'streak_pauses', 'pomo_settings', 'pomo_sessions'];
+  'custom_foods', 'dishes', 'diary', 'gym_unit', 'achievements', 'bestStreak', 'streak_pauses', 'pomo_settings', 'pomo_sessions'];
 const SYNC_MAX_DOC = 300000; // caracteres; documentos más grandes (p. ej. con fotos) no se suben
 function syncMeta() { try { return JSON.parse(localStorage.getItem('__sync') || '{}') || {}; } catch (e) { return {}; } }
 function syncSave(m) { try { localStorage.setItem('__sync', JSON.stringify(m)); } catch (e) {} }
@@ -9222,7 +9260,7 @@ async function spOpenClient(l) {
       const lg = D.gym_logs[d] || {}, rt = routines.find(x => x.id === lg.routineId) || { name: '', exercises: [] }, lines = [];
       Object.keys(lg.ex || {}).forEach(exId => {
         const ex = (rt.exercises || []).find(x => x.id === exId) || {}, sw = lg.swap && lg.swap[exId];
-        const sets = (lg.ex[exId] || []).filter(x => x && x.done).map(x => `${x.kg || 0}×${x.reps || 0}`);
+        const sets = (lg.ex[exId] || []).filter(x => x && x.done).map(x => `${gymDispW(x.kg) || 0}×${x.reps || 0}`);
         if (!sets.length) return;
         const ef = (lg.exFeel && lg.exFeel[exId]) || {};
         lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}`);
@@ -11781,7 +11819,7 @@ function renderGym() {
         </div>
         <div class="gym-today-count"><b>${doneSets}</b>/${totalSets}<span>series</span></div>
       </div>
-      <div class="gym-prog"><div style="width:${Math.round(doneSets / Math.max(1, totalSets) * 100)}%"></div></div>
+      <div class="gym-prog"><div style="width:${Math.min(100, Math.round(doneSets / Math.max(1, totalSets) * 100))}%"></div></div>
       <div class="gym-prev-list">${preview}</div>
       <button class="btn-primary gym-cta" id="gym-start">${state === 'done' ? 'Ver entrenamiento' : (state === 'going' ? 'Continuar' : 'Empezar')}</button>
     </div>`;
@@ -11891,7 +11929,7 @@ function gymHistoryHtml() {
     return `<div class="gym-hist" data-gym-hist="${k}">
       <div class="gym-hist-d">${escapeHtml(f.format(new Date(k + 'T00:00:00')))}</div>
       <div class="gym-hist-n">${escapeHtml(r ? r.name : '—')}</div>
-      <div class="gym-hist-v">${sets} series${vol ? ' · ' + Math.round(vol).toLocaleString(_loc()) + ' kg' : ''}${lg.feel && lg.feel.mood ? ' ' + GYM_MOODS[lg.feel.mood - 1][0] : ''}${lg.feel && lg.feel.pain != null ? ` <span class="gym-hist-pain p${lg.feel.pain === 0 ? 0 : lg.feel.pain <= 3 ? 1 : lg.feel.pain <= 6 ? 2 : 3}">${lg.feel.pain}</span>` : ''}</div>
+      <div class="gym-hist-v">${sets} series${vol ? ' · ' + Math.round(gymVolU(vol)).toLocaleString(_loc()) + ' ' + gymUnit() : ''}${lg.feel && lg.feel.mood ? ' ' + GYM_MOODS[lg.feel.mood - 1][0] : ''}${lg.feel && lg.feel.pain != null ? ` <span class="gym-hist-pain p${lg.feel.pain === 0 ? 0 : lg.feel.pain <= 3 ? 1 : lg.feel.pain <= 6 ? 2 : 3}">${lg.feel.pain}</span>` : ''}</div>
     </div>`;
   }).join('');
 }
@@ -11928,11 +11966,13 @@ function openGymWorkout(routineId, dateKey, focusId) {
   const exCard = (exOrig) => {
     const sw = lg.swap && lg.swap[exOrig.id];
     const ex = sw ? Object.assign({}, exOrig, { name: sw.name, dbId: sw.dbId, photo: null }) : exOrig;
-    const n = Math.max(1, gymTotalSets(ex));
+    const base = Math.max(1, gymTotalSets(ex));
     const cur = lg.ex[ex.id] || [];
+    const n = Math.max(base, cur.length);
     const done = exDoneCount(ex);
-    const complete = done >= n;
+    const complete = done >= base;
     const isOpen = ex.id === openId;
+    const U = gymUnit();
     const last = gymLastLog(ex.id, dateKey, sw ? sw.name : null);
     const head = `<div class="gym-ex-head" data-gym-toggle="${ex.id}">
         <div class="gym-ex-media"${sw ? '' : ` data-gym-info="${ex.id}"`}>${gymMediaHtml(ex, isOpen ? 64 : 44)}</div>
@@ -11948,17 +11988,17 @@ function openGymWorkout(routineId, dateKey, focusId) {
       const s = cur[i] || {};
       const prev = last && last.sets[i];
       return `<div class="gym-set${s.done ? ' done' : ''}" data-ex="${ex.id}" data-i="${i}">
-        <div class="gym-set-target"><b>${i + 1}</b> ${escapeHtml(gymSetRepsForIndex(ex, i))}</div>
-        <input class="gym-in" inputmode="decimal" data-f="kg" value="${escapeHtml(s.kg || '')}" placeholder="${prev && prev.kg ? escapeHtml(prev.kg) : 'kg'}">
+        <div class="gym-set-target"><b>${i + 1}</b><small>${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small></div>
+        <input class="gym-in" inputmode="decimal" data-f="kg" value="${escapeHtml(gymDispW(s.kg))}" placeholder="${prev && prev.kg ? escapeHtml(gymDispW(prev.kg)) : U}">
         <input class="gym-in" inputmode="numeric" data-f="reps" value="${escapeHtml(s.reps || '')}" placeholder="${prev && prev.reps ? escapeHtml(prev.reps) : 'reps'}">
-        <button class="gym-check" aria-label="✓">✓</button>
+        <button class="gym-check" aria-label="Hecho">✓</button>
       </div>`;
     }).join('');
     const tempo = ex.tempo || r.tempo;
     const best1rm = gymBestE1RM(ex.id, dateKey);
     const pr = gymRange(ex.pct1rm);
-    const pctTxt = pr ? (best1rm ? `${ex.pct1rm}% ≈ ${gymFmtKg(gymRound(best1rm * pr[0] / 100))}${pr[1] !== pr[0] ? '–' + gymFmtKg(gymRound(best1rm * pr[1] / 100)) : ''} kg` : `${ex.pct1rm}%`) : '';
-    const extra = [chip('%1RM', pctTxt), chip('Tempo', tempo), chip('Descanso', ex.rest), best1rm ? chip('1RM est.', gymFmtKg(best1rm) + ' kg') : ''].join('');
+    const pctTxt = pr ? (best1rm ? `${ex.pct1rm}% ≈ ${gymFmtLoad(best1rm * pr[0] / 100)}${pr[1] !== pr[0] ? '–' + gymFmtLoad(best1rm * pr[1] / 100) : ''} ${U}` : `${ex.pct1rm}%`) : '';
+    const extra = [chip('%1RM', pctTxt), chip('Tempo', tempo), chip('Descanso', ex.rest), best1rm ? chip('1RM est.', gymFmtKg(best1rm) + ' ' + U) : ''].join('');
     const adv = sw ? null : gymAdvice(r, ex, dateKey);
     const advHtml = adv ? `<div class="gym-adv ${adv.kind}"><b>${adv.title}</b> <span>${escapeHtml(adv.text)}</span></div>` : '';
     const ef = (lg.exFeel && lg.exFeel[ex.id]) || {};
@@ -11966,13 +12006,14 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const swapBtn = sw
       ? `<button class="gym-swap-btn" data-gym-unswap="${ex.id}">↺ Volver al original</button>`
       : `<button class="gym-swap-btn" data-gym-swap="${ex.id}">⇄ Reemplazar ejercicio</button>`;
-    const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${s.kg || '?'}×${s.reps || '?'}`).join('  '))}</div>` : '';
+    const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${gymDispW(s.kg) || '?'}×${s.reps || '?'}`).join('  '))}</div>` : '';
     return `<div class="gym-ex open${complete ? ' complete' : ''}" data-ex-card="${ex.id}">${head}
       ${extra ? `<div class="gym-chips">${extra}</div>` : ''}
       ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
       ${advHtml}
       ${lastTxt}
-      <div class="gym-sets"><div class="gym-set gym-set-h"><div data-i18n-ctx="set">Objetivo</div><div>kg</div><div>reps</div><div></div></div>${rows}</div>
+      <div class="gym-sets"><div class="gym-set gym-set-h"><div>Serie</div><div translate="no">${U}</div><div>Reps</div><div>Hecho</div></div>${rows}</div>
+      <div class="gym-setbtns"><button class="gym-addset" data-gym-addset="${ex.id}">+ Agregar serie</button>${cur.length > base ? `<button class="gym-addset rm" data-gym-rmset="${ex.id}">Quitar serie</button>` : ''}</div>
       ${feelHtml}
       ${swapBtn}
     </div>`;
@@ -11990,7 +12031,9 @@ function openGymWorkout(routineId, dateKey, focusId) {
   const dLabel = dateKey === keyDate() ? 'Hoy' : new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(dateKey + 'T00:00:00'));
 
   const draw = () => {
-    const totalSets = r.exercises.reduce((a, ex) => a + Math.max(1, gymTotalSets(ex)), 0);
+    const totalSets = r.exercises.reduce((a, ex) => a + Math.max(1, gymTotalSets(ex), (lg.ex[ex.id] || []).length), 0);
+    const U = gymUnit();
+    const rs = restDefault, restTxt = Math.floor(rs / 60) + ':' + String(rs % 60).padStart(2, '0');
     const doneSets = r.exercises.reduce((a, ex) => a + exDoneCount(ex), 0);
     const body = groups.map(g => {
       const head = g.circuit != null && g.items.length > 1 ? `<div class="gym-circ"><span>Circuito</span> ${g.circuit} · <span>alternar ejercicios</span></div>` : '';
@@ -12000,21 +12043,27 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const keepScroll = sb ? sb.scrollTop : 0;
     sb.innerHTML = `<div class="gym-wo">
       <div class="gym-wo-bar">
-        <div class="gym-wo-prog"><div class="gym-prog"><div style="width:${Math.round(doneSets / Math.max(1, totalSets) * 100)}%"></div></div>
+        <div class="gym-wo-prog"><div class="gym-prog"><div style="width:${Math.min(100, Math.round(doneSets / Math.max(1, totalSets) * 100))}%"></div></div>
           <span><b>${doneSets}</b>/${totalSets} <span>series</span></span></div>
         <div class="gym-rest" id="gym-rest" style="display:none"></div>
       </div>
       <div class="gym-wo-top">
-        <div class="gym-wo-date">${escapeHtml(dLabel)}${m.musculos ? ' · ' + escapeHtml(m.musculos) : ''}</div>
+        <div class="gym-wo-head"><div class="gym-wo-date">${escapeHtml(dLabel)}${m.musculos ? ' · ' + escapeHtml(m.musculos) : ''}</div>
+          <div class="gym-unit" translate="no"><button data-gym-unit="kg" class="${U === 'kg' ? 'on' : ''}">kg</button><button data-gym-unit="lb" class="${U === 'lb' ? 'on' : ''}">lb</button></div></div>
         <div class="gym-chips">${freq ? chip('Frecuencia', freq + '×/sem') : ''}${chip('Descanso', '2–3 min')}${chip('Tempo', r.tempo)}</div>
         ${info ? `<details class="gym-info"><summary>Indicaciones del coach</summary>${info}</details>` : ''}
       </div>
       ${body}
+      <button class="gym-resti" id="gym-rest-idle">
+        <span class="gym-resti-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7.5"/><path d="M12 10v4l2.5 2M9.5 2.5h5M12 2.5v4"/></svg></span>
+        <span class="gym-resti-b"><b>Temporizador de descanso</b><small>Toca para iniciar el descanso</small></span>
+        <span class="gym-resti-t">${restTxt}</span>
+      </button>
       <div class="gym-wo-btns">
         <button class="btn-secondary" id="gym-share">Compartir cargas</button>
         <button class="btn-secondary" id="gym-edit">Editar rutina</button>
       </div>
-      <button class="btn-primary gym-cta" id="gym-finish">${lg.done ? '✓ Entrenamiento terminado · editar cómo me sentí' : 'Terminar entrenamiento'}</button>
+      <div class="gym-cta-wrap"><button class="btn-primary gym-cta" id="gym-finish">${lg.done ? '✓ Entrenamiento terminado · editar cómo me sentí' : 'Terminar entrenamiento'}</button></div>
     </div>`;
     sb.scrollTop = keepScroll;
     bind(sb);
@@ -12041,15 +12090,30 @@ function openGymWorkout(routineId, dateKey, focusId) {
     }));
     sb.querySelectorAll('.gym-set[data-ex] .gym-in').forEach(inp => inp.addEventListener('input', () => {
       const row = inp.closest('.gym-set');
-      setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.value.replace(',', '.').trim());
+      const v = inp.value.replace(',', '.').trim();
+      setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.dataset.f === 'kg' ? gymStoreW(v) : v);
     }));
+    sb.querySelectorAll('[data-gym-unit]').forEach(b => b.addEventListener('click', () => { S.set('gym_unit', b.dataset.gymUnit); draw(); }));
+    sb.querySelectorAll('[data-gym-addset]').forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.gymAddset, ex = r.exercises.find(e => e.id === id);
+      const arr = lg.ex[id] || (lg.ex[id] = []), base = Math.max(1, ex ? gymTotalSets(ex) : 1);
+      while (arr.length < base) arr.push({});
+      arr.push({}); persist(); openId = id; draw();
+    }));
+    sb.querySelectorAll('[data-gym-rmset]').forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.gymRmset, ex = r.exercises.find(e => e.id === id);
+      const arr = lg.ex[id] || [], base = Math.max(1, ex ? gymTotalSets(ex) : 1);
+      if (arr.length > base) { arr.pop(); persist(); draw(); }
+    }));
+    const idle = sb.querySelector('#gym-rest-idle');
+    if (idle) idle.addEventListener('click', () => { gymRestStart(restDefault); sb.scrollTop = 0; });
     sb.querySelectorAll('.gym-set[data-ex] .gym-check').forEach(btn => btn.addEventListener('click', () => {
       const row = btn.closest('.gym-set');
       const exId = row.dataset.ex, i = +row.dataset.i;
       const was = !!((lg.ex[exId] || [])[i] || {}).done;
       if (!was) {
         // Sin datos: usar lo de la última vez (placeholder)
-        row.querySelectorAll('.gym-in').forEach(inp => { if (!inp.value && inp.placeholder && !/^(kg|reps)$/.test(inp.placeholder)) { inp.value = inp.placeholder; setVal(exId, i, inp.dataset.f, inp.value); } });
+        row.querySelectorAll('.gym-in').forEach(inp => { if (!inp.value && inp.placeholder && !/^(kg|lb|reps)$/.test(inp.placeholder)) { inp.value = inp.placeholder; setVal(exId, i, inp.dataset.f, inp.dataset.f === 'kg' ? gymStoreW(inp.value) : inp.value); } });
       }
       setVal(exId, i, 'done', !was);
       if (!was && !lg.start) { lg.start = Date.now(); persist(); }
@@ -12179,7 +12243,7 @@ function gymShareLoads(r, dateKey) {
     any = true;
     const sw = lg.swap && lg.swap[ex.id];
     const nm = sw ? `${sw.name} (${t('en lugar de')} ${ex.name})` : ex.name;
-    lines.push(`${nm}: ${sets.map(s => `${s.kg || '?'} kg × ${s.reps || '?'}`).join(', ')}`);
+    lines.push(`${nm}: ${sets.map(s => `${gymDispW(s.kg) || '?'} ${gymUnit()} × ${s.reps || '?'}`).join(', ')}`);
   });
   if (!any) { alert(t('Todavía no registras cargas en este entrenamiento.')); return; }
   const fe = (lg && lg.feel) || {};
@@ -12285,7 +12349,24 @@ function gymE1RM(kg, reps) {
   return reps <= 1 ? kg : kg * (1 + reps / 30);
 }
 function gymRound(kg, step) { step = step || 0.5; return Math.round(kg / step) * step; }
-function gymFmtKg(kg) { return (Math.round(kg * 10) / 10).toLocaleString(_loc()); }
+// Unidad de las cargas del gym: los registros se guardan siempre en kg y se muestran en kg o lb
+const GYM_LB = 2.2046226218;
+function gymUnit() { return S.get('gym_unit', 'kg') === 'lb' ? 'lb' : 'kg'; }
+function gymVolU(kg) { return gymUnit() === 'lb' ? kg * GYM_LB : kg; }
+function gymDispW(kg) {
+  if (kg == null || kg === '') return '';
+  if (gymUnit() === 'kg') return String(kg);
+  const n = gymNum(kg); return isNaN(n) ? String(kg) : String(Math.round(n * GYM_LB * 10) / 10);
+}
+function gymStoreW(v) {
+  if (gymUnit() === 'kg') return v;
+  const n = gymNum(v); return isNaN(n) ? v : String(Math.round(n / GYM_LB * 100) / 100);
+}
+function gymFmtKg(kg) { return (Math.round(gymVolU(kg) * 10) / 10).toLocaleString(_loc()); }
+// Carga sugerida, redondeada a discos reales (0.5 kg o 2.5 lb)
+function gymFmtLoad(kg) {
+  return gymUnit() === 'lb' ? (Math.round(kg * GYM_LB / 2.5) * 2.5).toLocaleString(_loc()) : (Math.round(gymRound(kg) * 10) / 10).toLocaleString(_loc());
+}
 
 // Historial de un ejercicio (sin días en que se reemplazó por otro)
 function gymExHistory(exId, beforeKey) {
@@ -12320,7 +12401,7 @@ function gymAdvice(r, ex, dateKey) {
   const last = hist[hist.length - 1];
   const prev = hist.length > 1 ? hist[hist.length - 2] : null;
   const pain = last.pain != null ? last.pain : last.sessPain;
-  if (pain != null && pain >= 4) return { kind: 'down', title: 'Regresar', text: `Dolor ${pain}/10 la última vez: baja ~10% la carga (≈ ${gymFmtKg(gymRound(last.maxKg * 0.9))} kg) o quita 1 serie. Cambia solo una cosa.` };
+  if (pain != null && pain >= 4) return { kind: 'down', title: 'Regresar', text: `Dolor ${pain}/10 la última vez: baja ~10% la carga (≈ ${gymFmtLoad(last.maxKg * 0.9)} ${gymUnit()}) o quita 1 serie. Cambia solo una cosa.` };
   if (prev && pain != null && prev.pain != null && pain - prev.pain >= 2) return { kind: 'down', title: 'Regresar', text: `El dolor subió de ${prev.pain} a ${pain}/10: baja ~10% la carga o el volumen.` };
   const since = ex.changedAt || r.createdAt || 0;
   const weeks = Math.floor((Date.now() - since) / (7 * 864e5));
@@ -12332,7 +12413,7 @@ function gymAdvice(r, ex, dateKey) {
   const rpeOk = last.rpe == null || !rpeT || last.rpe <= rpeT[1];
   if (top && rpeOk && (pain == null || pain <= 2)) {
     const inc = last.maxKg >= 20 ? 2.5 : 1;
-    return { kind: 'up', title: 'Progresar', text: `Cumpliste el tope de reps: sube solo 1 variable, ej. +${gymFmtKg(inc)} kg (≈ ${gymFmtKg(last.maxKg + inc)} kg).` };
+    return { kind: 'up', title: 'Progresar', text: `Cumpliste el tope de reps: sube solo 1 variable, ej. +${gymUnit() === 'lb' ? (inc >= 2.5 ? '5' : '2.5') : gymFmtKg(inc)} ${gymUnit()} (≈ ${gymFmtLoad(last.maxKg + inc)} ${gymUnit()}).` };
   }
   const rr = gymRepRange(ex);
   return { kind: 'hold', title: 'Mantener', text: rr ? `Mantén la carga hasta llegar a ${rr[1]} reps en todas las series.` : 'Mantén la carga.' };
@@ -12366,9 +12447,9 @@ function openGymFinish(r, dateKey, lg, persist, onDone) {
   openSheet('¿Cómo te sentiste?', `<div class="gym-finish">
     <div class="gym-fin-stats">
       <div><b>${st.sets}</b><span>series</span></div>
-      <div><b>${Math.round(st.vol).toLocaleString(_loc())}</b><span>kg de volumen</span></div>
+      <div><b>${Math.round(gymVolU(st.vol)).toLocaleString(_loc())}</b><span>${gymUnit()} de volumen</span></div>
       ${st.mins >= 1 ? `<div><b>${Math.round(st.mins)}</b><span>min</span></div>` : ''}
-      ${st.density ? `<div><b>${Math.round(st.density)}</b><span>kg/min (densidad)</span></div>` : ''}
+      ${st.density ? `<div><b>${Math.round(gymVolU(st.density))}</b><span>${gymUnit()}/min (densidad)</span></div>` : ''}
     </div>
     <div class="fe-lbl">Al terminar, ¿cómo te sentiste?</div>
     <div class="gym-moods">${moods}</div>
@@ -12448,9 +12529,9 @@ function openGymProgress(selExId) {
     const kpis = `<div class="gym-kpis">
       ${card(`${thisWeek.length}<small>/${planned || '—'}</small>`, 'Frecuencia (sesiones)')}
       ${card(wSets, 'Series (volumen)')}
-      ${card(Math.round(wVol).toLocaleString(_loc()), 'kg totales')}
+      ${card(Math.round(gymVolU(wVol)).toLocaleString(_loc()), gymUnit() + ' totales')}
       ${card(avg(wRpe) != null ? avg(wRpe).toFixed(1) : '—', 'RPE promedio (intensidad)')}
-      ${card(avg(wDens) != null ? Math.round(avg(wDens)) : '—', 'kg/min (densidad)')}
+      ${card(avg(wDens) != null ? Math.round(gymVolU(avg(wDens))) : '—', gymUnit() + '/min (densidad)')}
       ${card(avg(wPain) != null ? avg(wPain).toFixed(1) : '—', 'Dolor NPRS promedio')}
     </div>`;
 
@@ -12470,7 +12551,7 @@ function openGymProgress(selExId) {
 
     // Volumen por semana (8 semanas)
     const weeks = Array.from({ length: 8 }, (_, i) => { const d = new Date(ws); d.setDate(d.getDate() - (7 - i) * 7); return d; });
-    const wVals = weeks.map(w => keys.filter(k => wkKey(k) === keyDate(w)).reduce((a, k) => a + gymSessionStats(logs[k]).vol, 0));
+    const wVals = weeks.map(w => keys.filter(k => wkKey(k) === keyDate(w)).reduce((a, k) => a + gymVolU(gymSessionStats(logs[k]).vol), 0));
     const wLbl = weeks.map(w => fmt.format(w));
 
     // Series por músculo esta semana
@@ -12498,12 +12579,12 @@ function openGymProgress(selExId) {
     let e1Chart = '<div class="empty">Registra cargas para ver tu 1RM estimado.</div>';
     if (sel) {
       const h = gymExHistory(sel.id).slice(-15);
-      const vals = h.map(x => x.e1rm);
+      const vals = h.map(x => gymVolU(x.e1rm));
       const lo = Math.floor(Math.min(...vals) * 0.95), hi = Math.ceil(Math.max(...vals) * 1.05);
       const nn = Math.max(1, h.length - 1);
-      e1Chart = gymLineSvg([{ color: '#A855F7', pts: h.map((x, i) => ({ x: h.length === 1 ? 0.5 : i / nn, y: x.e1rm })) }],
+      e1Chart = gymLineSvg([{ color: '#A855F7', pts: h.map((x, i) => ({ x: h.length === 1 ? 0.5 : i / nn, y: vals[i] })) }],
         { min: lo, max: Math.max(hi, lo + 1), ticks: [lo, Math.max(hi, lo + 1)], labels: [0, h.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(i => ({ x: h.length === 1 ? 0.5 : i / nn, t: fmt.format(new Date(h[i].date + 'T00:00:00')) })), h: 120 })
-        + `<div class="gym-e1">${h.length ? `<span>1RM estimado</span> <b>${gymFmtKg(vals[vals.length - 1])} kg</b>` : ''}</div>`;
+        + `<div class="gym-e1">${h.length ? `<span>1RM estimado</span> <b>${(Math.round(vals[vals.length - 1] * 10) / 10).toLocaleString(_loc())} ${gymUnit()}</b>` : ''}</div>`;
     }
     const exSelect = exOpts.length ? `<select class="field-select" id="gym-e1-sel">${exOpts.map(o => `<option value="${o.id}"${sel && o.id === sel.id ? ' selected' : ''}>${escapeHtml(o.name)}</option>`).join('')}</select>` : '';
 
@@ -12512,7 +12593,7 @@ function openGymProgress(selExId) {
       ${kpis}
       <h2>Dolor, fatiga y cómo te sentiste</h2>
       ${feelChart}
-      <h2>Volumen por semana (kg)</h2>
+      <h2>Volumen por semana (${gymUnit()})</h2>
       ${gymBarsSvg(wVals, wLbl, '#3B82F6', 120)}
       <h2>Series por músculo esta semana</h2>
       ${musRows}

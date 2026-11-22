@@ -3731,6 +3731,61 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Serie": {
+   "en": "Set",
+   "pt-BR": "Série",
+   "fr": "Série"
+  },
+  "Reps": {
+   "en": "Reps",
+   "pt-BR": "Reps",
+   "fr": "Rép."
+  },
+  "Hecho": {
+   "en": "Done",
+   "pt-BR": "Feito",
+   "fr": "Fait"
+  },
+  "+ Agregar serie": {
+   "en": "+ Add set",
+   "pt-BR": "+ Adicionar série",
+   "fr": "+ Ajouter une série"
+  },
+  "Quitar serie": {
+   "en": "Remove set",
+   "pt-BR": "Remover série",
+   "fr": "Retirer la série"
+  },
+  "Temporizador de descanso": {
+   "en": "Rest timer",
+   "pt-BR": "Temporizador de descanso",
+   "fr": "Minuteur de repos"
+  },
+  "Toca para iniciar el descanso": {
+   "en": "Tap to start the rest",
+   "pt-BR": "Toque para iniciar o descanso",
+   "fr": "Touchez pour lancer le repos"
+  },
+  "lb de volumen": {
+   "en": "lb of volume",
+   "pt-BR": "lb de volume",
+   "fr": "lb de volume"
+  },
+  "lb/min (densidad)": {
+   "en": "lb/min (density)",
+   "pt-BR": "lb/min (densidade)",
+   "fr": "lb/min (densité)"
+  },
+  "Volumen por semana (lb)": {
+   "en": "Volume per week (lb)",
+   "pt-BR": "Volume por semana (lb)",
+   "fr": "Volume par semaine (lb)"
+  },
+  "lb totales": {
+   "en": "total lb",
+   "pt-BR": "lb totais",
+   "fr": "lb au total"
+  },
   "restantes": {
    "en": "remaining",
    "pt-BR": "restantes",
@@ -5438,10 +5493,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "{{n}} séries",
    "fr": "{{n}} séries"
   },
-  "{{n}} series · {{x}} kg": {
-   "en": "{{n}} sets · {{x}} kg",
-   "pt-BR": "{{n}} séries · {{x}} kg",
-   "fr": "{{n}} séries · {{x}} kg"
+  "{{n}} series · {{x}} {{u}}": {
+   "en": "{{n}} sets · {{x}} {{u}}",
+   "pt-BR": "{{n}} séries · {{x}} {{u}}",
+   "fr": "{{n}} séries · {{x}} {{u}}"
   },
   "{{x}}: ¿qué rutina toca?": {
    "en": "{{x}}: which routine?",
@@ -5488,10 +5543,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "{{n}} / {{n2}} séries",
    "fr": "{{n}} / {{n2}} séries"
   },
-  "Dolor {{n}}/10 la última vez: baja ~10% la carga (≈ {{x}} kg) o quita 1 serie. Cambia solo una cosa.": {
-   "en": "Pain {{n}}/10 last time: lower the load ~10% (≈ {{x}} kg) or drop 1 set. Change only one thing.",
-   "pt-BR": "Dor {{n}}/10 na última vez: reduza ~10% a carga (≈ {{x}} kg) ou tire 1 série. Mude só uma coisa.",
-   "fr": "Douleur {{n}}/10 la dernière fois : baissez la charge d'~10 % (≈ {{x}} kg) ou retirez 1 série. Ne changez qu'une chose."
+  "Dolor {{n}}/10 la última vez: baja ~10% la carga (≈ {{x}} {{u}}) o quita 1 serie. Cambia solo una cosa.": {
+   "en": "Pain {{n}}/10 last time: lower the load ~10% (≈ {{x}} {{u}}) or drop 1 set. Change only one thing.",
+   "pt-BR": "Dor {{n}}/10 na última vez: reduza ~10% a carga (≈ {{x}} {{u}}) ou tire 1 série. Mude só uma coisa.",
+   "fr": "Douleur {{n}}/10 la dernière fois : baissez la charge d'~10 % (≈ {{x}} {{u}}) ou retirez 1 série. Ne changez qu'une chose."
   },
   "El dolor subió de {{n}} a {{n2}}/10: baja ~10% la carga o el volumen.": {
    "en": "Pain went up from {{n}} to {{n2}}/10: lower the load or volume ~10%.",
@@ -5503,10 +5558,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Semana {{n}} com esta prescrição: progrida em 2–3 semanas.",
    "fr": "Semaine {{n}} avec cette prescription : progressez au bout de 2–3 semaines."
   },
-  "Cumpliste el tope de reps: sube solo 1 variable, ej. +{{x}} kg (≈ {{y}} kg).": {
-   "en": "You hit the top of the rep range: raise only 1 variable, e.g. +{{x}} kg (≈ {{y}} kg).",
-   "pt-BR": "Você atingiu o máximo de reps: suba só 1 variável, ex. +{{x}} kg (≈ {{y}} kg).",
-   "fr": "Haut de la fourchette atteint : augmentez une seule variable, ex. +{{x}} kg (≈ {{y}} kg)."
+  "Cumpliste el tope de reps: sube solo 1 variable, ej. +{{x}} {{u}} (≈ {{y}} {{u}}).": {
+   "en": "You hit the top of the rep range: raise only 1 variable, e.g. +{{x}} {{u}} (≈ {{y}} {{u}}).",
+   "pt-BR": "Você atingiu o máximo de reps: suba só 1 variável, ex. +{{x}} {{u}} (≈ {{y}} {{u}}).",
+   "fr": "Haut de la fourchette atteint : augmentez une seule variable, ex. +{{x}} {{u}} (≈ {{y}} {{u}})."
   },
   "Mantén la carga hasta llegar a {{n}} reps en todas las series.": {
    "en": "Keep the load until you reach {{n}} reps on every set.",

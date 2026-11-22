@@ -175,3 +175,9 @@ MIT
 ## Tablero de Hoy (entrenado)
 
 Arriba de la pestaña **Hoy** hay un tablero con saludo y tres tarjetas: el entrenamiento programado (con botón *Empezar/Continuar*), la comida del día contra la meta de calorías y el peso actual (toca para registrarlo). Usa los mismos datos que Gym, Comida y el perfil de nutrición; si un nutriólogo asignó metas, se usan esas.
+
+## Registro de entrenamiento
+
+La pantalla de entrenamiento muestra cada ejercicio como tarjeta con tabla **Serie / carga / Reps / Hecho**, botón *+ Agregar serie* (series extra además de las prescritas), temporizador de descanso (automático al marcar una serie o manual) y *Terminar entrenamiento* siempre visible. Se conservan RIR, RPE, tempo, dolor (NPRS), esfuerzo por ejercicio, reemplazo de ejercicio y el cierre de "cómo te sentiste".
+
+Las cargas se pueden ver en **kg o lb** (selector arriba de la pantalla, clave `gym_unit`). Los registros se guardan siempre en kg; la conversión es solo de presentación, así el especialista y el historial no cambian al alternar la unidad.
