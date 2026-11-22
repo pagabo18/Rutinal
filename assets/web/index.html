@@ -1933,6 +1933,28 @@
   }
   .sheet-save { color: var(--accent); font-weight: 600; }
   .sheet-body { padding: 16px 20px 20px; overflow-y: auto; }
+  /* Teléfono: las hojas son páginas a pantalla completa (flecha de regreso, título centrado) */
+  @media (max-width: 639px) {
+    .backdrop { display: none; }
+    .sheet {
+      top: 0; max-height: none; height: 100%; border-radius: 0;
+      background: var(--bg);
+      transform: translateX(100%); visibility: hidden;
+      transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.26s;
+      padding-top: env(safe-area-inset-top);
+    }
+    .sheet.show { transform: none; visibility: visible; transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s; }
+    .sheet-handle { display: none; }
+    .sheet-head { display: grid; grid-template-columns: minmax(44px, 1fr) minmax(0, auto) minmax(44px, 1fr); gap: 8px; padding: 10px 12px; background: var(--bg); }
+    .sheet-title { font-size: 17px; font-weight: 700; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sheet-close { justify-self: start; width: 40px; height: 40px; padding: 0; font-size: 0; border-radius: 50%; position: relative; }
+    .sheet-close::before { content: ''; position: absolute; left: 16px; top: 13px; width: 11px; height: 11px; border-left: 2.4px solid var(--text); border-bottom: 2.4px solid var(--text); transform: rotate(45deg); border-radius: 1px; }
+    .sheet-close:active { background: var(--surface-2); }
+    .sheet-save { justify-self: end; font-size: 15px; padding: 8px 10px; }
+    .sheet-body { flex: 1; min-height: 0; padding-bottom: 28px; }
+    .gym-wo-bar, .gym-cta-wrap { background: var(--bg); }
+    .gym-cta-wrap { background: linear-gradient(to bottom, transparent, var(--bg) 28%); }
+  }
 
   .field { margin-bottom: 14px; }
   .field-label { font-size: 11px; font-weight: 600; color: var(--text-3); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; }
@@ -7685,6 +7707,8 @@ function openSheet(title, body, onSave) {
   sheet.classList.add('show');
   backdrop.classList.add('show');
   sheetCtx = { onSave };
+  // El botón "atrás" del teléfono cierra la página en vez de salir de la app
+  if (!_sheetHist) { try { history.pushState({ sheet: 1 }, ''); _sheetHist = true; } catch (e) {} }
   // Visibilidad del botón Guardar según si hay callback
   const saveBtn = document.getElementById('sheet-save');
   const closeBtn = document.getElementById('sheet-close');
@@ -7697,7 +7721,16 @@ function closeSheet() {
   sheet.classList.remove('show');
   backdrop.classList.remove('show');
   sheetCtx = null;
+  // Quitar la entrada del historial, salvo que en este mismo instante se abra otra página
+  if (_sheetHist) setTimeout(() => {
+    if (_sheetHist && !sheet.classList.contains('show')) { _sheetHist = false; _sheetPopSkip++; try { history.back(); } catch (e) { _sheetPopSkip--; } }
+  }, 0);
 }
+let _sheetHist = false, _sheetPopSkip = 0;
+window.addEventListener('popstate', () => {
+  if (_sheetPopSkip > 0) { _sheetPopSkip--; return; }
+  if (_sheetHist) { _sheetHist = false; closeSheet(); }
+});
 backdrop.addEventListener('click', closeSheet);
 document.getElementById('sheet-close').addEventListener('click', closeSheet);
 document.getElementById('sheet-save').addEventListener('click', () => { if (sheetCtx?.onSave) sheetCtx.onSave(); });

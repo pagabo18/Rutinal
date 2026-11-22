@@ -181,3 +181,7 @@ Arriba de la pestaña **Hoy** hay un tablero con saludo y tres tarjetas: el entr
 La pantalla de entrenamiento muestra cada ejercicio como tarjeta con tabla **Serie / carga / Reps / Hecho**, botón *+ Agregar serie* (series extra además de las prescritas), temporizador de descanso (automático al marcar una serie o manual) y *Terminar entrenamiento* siempre visible. Se conservan RIR, RPE, tempo, dolor (NPRS), esfuerzo por ejercicio, reemplazo de ejercicio y el cierre de "cómo te sentiste".
 
 Las cargas se pueden ver en **kg o lb** (selector arriba de la pantalla, clave `gym_unit`). Los registros se guardan siempre en kg; la conversión es solo de presentación, así el especialista y el historial no cambian al alternar la unidad.
+
+## Páginas a pantalla completa
+
+En teléfono (menos de 640 px de ancho) las hojas que antes subían desde abajo ahora son páginas completas: flecha de regreso a la izquierda, título centrado y *Guardar* a la derecha. El botón "atrás" de Android cierra la página en vez de salir de la app (se usa una entrada del historial mientras hay una página abierta). En tableta y escritorio siguen siendo un panel centrado.
