@@ -2516,92 +2516,6 @@
   .task.done .mini svg { display: block; }
   .task .mini svg { width: 10px; height: 10px; display: none; stroke: currentColor; fill: none; stroke-width: 3; }
   .task.done { color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--text-4); }
-
-  /* ===== Identidad de color: marca índigo → violeta, gradientes y barras con color ===== */
-  :root {
-    --brand: #5B4FF5; --brand-2: #8B5CF6; --brand-3: #D946EF;
-    --brand-grad: linear-gradient(135deg, #4F46E5 0%, #7C3AED 55%, #C026D3 118%);
-    --brand-grad-h: linear-gradient(90deg, #4F46E5, #8B5CF6 60%, #D946EF);
-    --brand-soft: rgba(99, 82, 245, .10); --brand-bd: rgba(99, 82, 245, .24);
-    --brand-shadow: 0 6px 18px rgba(99, 70, 235, .30);
-    --card-shadow: 0 1px 2px rgba(30, 27, 75, .04), 0 8px 24px rgba(30, 27, 75, .06);
-    --bg: #F4F3FC; --surface-2: #EEEDF8; --surface-3: #E2E0F2; --border: #E4E2F1; --accent: #5B4FF5; --accent-soft: #ECEAFD;
-  }
-  :root[data-theme="dark"] {
-    --brand: #A396FF; --brand-soft: rgba(139, 124, 255, .16); --brand-bd: rgba(139, 124, 255, .34);
-    --brand-shadow: 0 6px 20px rgba(124, 58, 237, .38); --card-shadow: none;
-    --bg: #0B0A14; --surface: #14131F; --surface-2: #1C1A2B; --surface-3: #29263D; --border: #25233A; --accent: #A396FF; --accent-soft: #25223F;
-  }
-  @media (prefers-color-scheme: dark) { :root[data-theme="auto"] {
-    --brand: #A396FF; --brand-soft: rgba(139, 124, 255, .16); --brand-bd: rgba(139, 124, 255, .34);
-    --brand-shadow: 0 6px 20px rgba(124, 58, 237, .38); --card-shadow: none;
-    --bg: #0B0A14; --surface: #14131F; --surface-2: #1C1A2B; --surface-3: #29263D; --border: #25233A; --accent: #A396FF; --accent-soft: #25223F;
-  } }
-  body {
-    background:
-      radial-gradient(720px 360px at 105% -6%, rgba(192, 38, 211, .13), transparent 62%),
-      radial-gradient(640px 340px at -12% 2%, rgba(79, 70, 229, .16), transparent 62%),
-      var(--bg);
-    background-attachment: fixed;
-  }
-  .h-title, .auth-title, .sp-hello, .hd-hello { background: var(--brand-grad-h); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: var(--brand); width: fit-content; }
-  .auth-title { margin-left: auto; margin-right: auto; }
-  /* Rellenos principales */
-  .btn-primary, .hd-btn:not(.ghost), .sp-act.primary, .fab, .food-action-btn.primary, .habits-btn-primary, .nutri-btn-primary,
-  .wiz-next, .chat-send, .mc-add, .chat .nt.me, .nt.me, .cal-cell.selected, .ag-d.sel, .chip.selected, .day-btn.selected,
-  .portion-meal-chip.selected, .acct-av, .ge-ex-btns .ge-done, .ge-circ, .diary-hist-today, .habit.done .check, .diary-item.done .diary-item-check {
-    background: var(--brand-grad); color: #fff; border-color: transparent;
-  }
-  .btn-primary, .hd-btn:not(.ghost), .sp-act.primary, .fab, .food-action-btn.primary, .habits-btn-primary, .nutri-btn-primary, .wiz-next, .chat-send, .mc-add { box-shadow: var(--brand-shadow); }
-  .fab .icon { color: #fff; }
-  .btn-primary:disabled { box-shadow: none; }
-  /* Barras de progreso */
-  .hd-bar, .ft-bar, .gym-prog, .gym-mus-bar, .now-track, .pomo-track, .wiz-progress, .food-goal-bar, .streak-progress-bar { background: var(--brand-soft); }
-  .hd-bar i:not(.over), .now-fill, .pomo-fill, .wiz-progress-bar, .plan-progress-fill, .bar-week-fill { background: var(--brand-grad-h); }
-  .hd-bar i.over { background: linear-gradient(90deg, #F97316, #DC2626); }
-  .gym-prog div { background: linear-gradient(90deg, #22C55E, #14B8A6); }
-  .gym-mus-bar div { background: linear-gradient(90deg, #3B82F6, #8B5CF6); }
-  /* Navegación y controles */
-  nav button.active, nav button[data-tab="mas"].sub { color: var(--brand); }
-  nav button.active::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 26px; height: 3px; border-radius: 0 0 4px 4px; background: var(--brand-grad-h); }
-  #mode-bar button.on, .sp-tabs button.on { color: var(--brand); }
-  .sp-tabs button.on { border-bottom-color: var(--brand); }
-  .auth-field input:focus, .auth-in:focus, .sp-search:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
-  /* Tarjetas */
-  .hd-card, .mas-card, .mas-profile, .sp-row, .sp-stat, .sp-kpi, .sp-alert, .ft-card, .gym-today { box-shadow: var(--card-shadow); }
-  .hd-card.hd-hero { background: var(--brand-grad); border-color: transparent; color: #fff; box-shadow: var(--brand-shadow); position: relative; overflow: hidden; }
-  .hd-card.hd-hero::after { content: ''; position: absolute; right: -40px; top: -50px; width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.26), transparent 68%); pointer-events: none; }
-  .hd-hero .hd-k, .hd-hero .hd-d { color: rgba(255, 255, 255, .84); }
-  .hd-hero .hd-badge, [data-theme="dark"] .hd-hero .hd-badge { background: rgba(255, 255, 255, .22); color: #fff; }
-  .hd-hero .hd-btn:not(.ghost) { background: #fff; color: #4F46E5; box-shadow: 0 4px 14px rgba(20, 10, 80, .25); position: relative; z-index: 1; }
-  .hd-hero .hd-btn.ghost { background: rgba(255, 255, 255, .2); color: #fff; }
-  .hd-card.hd-food { background: linear-gradient(150deg, rgba(34, 197, 94, .13), var(--surface) 58%); }
-  .hd-card.hd-food .hd-bar { background: rgba(34, 197, 94, .16); }
-  .hd-card.hd-food .hd-bar i:not(.over) { background: linear-gradient(90deg, #22C55E, #14B8A6); }
-  .hd-card.hd-weight { background: linear-gradient(150deg, rgba(59, 130, 246, .13), var(--surface) 58%); }
-  .hd-card.hd-appt { background: linear-gradient(150deg, rgba(245, 158, 11, .15), var(--surface) 58%); }
-  .hd-card.hd-wk { background: linear-gradient(150deg, rgba(139, 92, 246, .13), var(--surface) 58%); }
-  .hd-wk .hd-w b { color: var(--brand); }
-  .gym-today { background: linear-gradient(155deg, var(--brand-soft), var(--surface) 62%); border-color: var(--brand-bd); }
-  .ft-card { background: linear-gradient(170deg, var(--brand-soft), var(--surface) 55%); }
-  .ft-big { background: var(--brand-grad-h); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
-  .ft-big small { -webkit-text-fill-color: var(--text-3); }
-  .sp-stat:nth-child(1) { background: var(--brand-grad); border-color: transparent; box-shadow: var(--brand-shadow); }
-  .sp-stat:nth-child(2) { background: linear-gradient(135deg, #F59E0B, #F97316 70%, #EF4444 130%); border-color: transparent; box-shadow: 0 6px 18px rgba(249, 115, 22, .28); }
-  .sp-stat:nth-child(-n+2) .sp-stat-k, .sp-stat:nth-child(-n+2) .sp-stat-s { color: rgba(255, 255, 255, .86); }
-  .sp-stat:nth-child(-n+2) .sp-stat-v { color: #fff; }
-  .sp-kpi:nth-child(4n+1) { background: linear-gradient(150deg, rgba(34, 197, 94, .12), var(--surface) 60%); }
-  .sp-kpi:nth-child(4n+2) { background: linear-gradient(150deg, rgba(245, 158, 11, .14), var(--surface) 60%); }
-  .sp-kpi:nth-child(4n+3) { background: linear-gradient(150deg, rgba(139, 92, 246, .13), var(--surface) 60%); }
-  .sp-kpi:nth-child(4n+4) { background: linear-gradient(150deg, rgba(239, 68, 68, .11), var(--surface) 60%); }
-  .sp-av { background: linear-gradient(135deg, rgba(79, 70, 229, .18), rgba(217, 70, 239, .18)); color: var(--brand); }
-  .who-card { background: linear-gradient(150deg, var(--brand-soft), var(--surface) 60%); }
-  .mas-ic { background: var(--brand-soft); color: var(--brand); }
-  .mas-row:nth-child(5n+2) .mas-ic { background: rgba(34, 197, 94, .14); color: #16A34A; }
-  .mas-row:nth-child(5n+3) .mas-ic { background: rgba(245, 158, 11, .16); color: #D97706; }
-  .mas-row:nth-child(5n+4) .mas-ic { background: rgba(59, 130, 246, .14); color: #2563EB; }
-  .mas-row:nth-child(5n+5) .mas-ic { background: rgba(236, 72, 153, .14); color: #DB2777; }
-  .mas-row[data-mas="logout"] .mas-ic { background: rgba(220, 38, 38, .12); color: #DC2626; }
 </style>
 </head>
 <body>
@@ -10627,15 +10541,15 @@ function renderHoyDash() {
     const started = lg && Object.keys(lg.ex || {}).some(k => (lg.ex[k] || []).some(x => x && x.done));
     if (lg && lg.done) {
       const rt = gymRoutineById(lg.routineId) || r || { name: '' };
-      gym = `<div class="hd-card hd-hero"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge ok">Completado</span></div><div class="hd-t">${escapeHtml(rt.name || '')}</div>
+      gym = `<div class="hd-card"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge ok">Completado</span></div><div class="hd-t">${escapeHtml(rt.name || '')}</div>
         <div class="hd-row"><div class="hd-d">Buen trabajo. Ya quedó registrado.</div><button class="hd-btn ghost" data-hd="gym">Ver detalle</button></div></div>`;
     } else if (r) {
       const names = (r.exercises || []).slice(0, 3).map(e => escapeHtml(e.name || '')).join(' · ');
-      gym = `<div class="hd-card hd-hero"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge plan">${started ? 'En curso' : 'Programado'}</span></div><div class="hd-t">${escapeHtml(r.name)}</div>
+      gym = `<div class="hd-card"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge plan">${started ? 'En curso' : 'Programado'}</span></div><div class="hd-t">${escapeHtml(r.name)}</div>
         <div class="hd-d">${names}${(r.exercises || []).length > 3 ? ' …' : ''}</div>
         <div class="hd-row"><div class="hd-d"><span>${(r.exercises || []).length}</span> <span>ejercicios</span></div><button class="hd-btn" data-hd-start="${escapeHtml(r.id)}">${started ? 'Continuar' : 'Empezar'}</button></div></div>`;
     } else if (gymRoutines().length) {
-      gym = `<div class="hd-card hd-hero"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge">Descanso</span></div>
+      gym = `<div class="hd-card"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge">Descanso</span></div>
         <div class="hd-row"><div class="hd-d">Hoy no tienes rutina programada.</div><button class="hd-btn ghost" data-hd="gym">Ver rutinas</button></div></div>`;
     }
   } catch (e) {}
@@ -10644,7 +10558,7 @@ function renderHoyDash() {
   try {
     const info = fitGoalInfo(), tot = dayMealTotals(today) || { kcal: 0, protein: 0, carbs: 0, fat: 0 };
     const goal = info.t.kcal || 0, left = goal - tot.kcal, pct = goal ? Math.min(100, Math.round(tot.kcal / goal * 100)) : 0;
-    food = `<div class="hd-card hd-food"><div class="hd-k"><span>Comida de hoy</span><span>${tot.kcal} / ${goal} kcal</span></div>
+    food = `<div class="hd-card"><div class="hd-k"><span>Comida de hoy</span><span>${tot.kcal} / ${goal} kcal</span></div>
       <div class="hd-bar"><i class="${left < 0 ? 'over' : ''}" style="width:${pct}%"></i></div>
       <div class="hd-row"><div class="hd-d">${left >= 0 ? `${left} kcal <span>restantes</span>` : `<span>Te pasaste por</span> ${-left} kcal`} · P ${tot.protein}/${info.t.protein} g</div><button class="hd-btn ghost" data-hd="comida">Registrar</button></div></div>`;
   } catch (e) {}
@@ -10656,17 +10570,17 @@ function renderHoyDash() {
       const last = +wl[ks[ks.length - 1]], prev = ks.length > 1 ? +wl[ks[ks.length - 2]] : null;
       const diff = prev == null ? null : last - prev;
       const ago = Math.round((parseKey(today) - parseKey(ks[ks.length - 1])) / 864e5);
-      weight = `<div class="hd-card hd-weight" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span>${diff == null ? '' : `<span class="hd-badge" translate="no">${bwDiff(diff)} ${bwUnit()}</span>`}</div>
+      weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span>${diff == null ? '' : `<span class="hd-badge" translate="no">${bwDiff(diff)} ${bwUnit()}</span>`}</div>
         <div class="hd-big" translate="no">${bwDisp(last)} <small>${bwUnit()}</small></div><div class="hd-d">${ago === 0 ? '<span>Registrado hoy</span>' : ago === 1 ? '<span>Registrado ayer</span>' : `<span>Registrado hace ${ago} días</span>`}</div></div>`;
     } else {
-      weight = `<div class="hd-card hd-weight" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span></div><div class="hd-d" style="margin-top:8px;">Toca para registrar tu peso.</div></div>`;
+      weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span></div><div class="hd-d" style="margin-top:8px;">Toca para registrar tu peso.</div></div>`;
     }
   } catch (e) {}
   // --- próxima cita ---
   let appt = '';
   try {
     const nx = apptUpcoming()[0];
-    if (nx) appt = `<div class="hd-card hd-appt" data-hd-agenda="1" style="cursor:pointer;"><div class="hd-k"><span>Próxima cita</span><span class="hd-badge plan" translate="no">${escapeHtml(apptWhen(nx.starts_at))}</span></div>
+    if (nx) appt = `<div class="hd-card" data-hd-agenda="1" style="cursor:pointer;"><div class="hd-k"><span>Próxima cita</span><span class="hd-badge plan" translate="no">${escapeHtml(apptWhen(nx.starts_at))}</span></div>
       <div class="hd-t" translate="no">${escapeHtml(nx.title || '')}</div><div class="hd-d"><span translate="no">${escapeHtml(apptName(nx.link_id))}</span> · <span translate="no">${nx.minutes} min</span></div></div>`;
   } catch (e) {}
   // --- tu semana (últimos 7 días) ---
@@ -10682,7 +10596,7 @@ function renderHoyDash() {
     const wl = S.get('weight_log', {}) || {}, wk = Object.keys(wl).sort(), w7 = wk.filter(k => k >= ks[6]);
     const wd = w7.length >= 2 ? +wl[w7[w7.length - 1]] - +wl[w7[0]] : null;
     const cell = (v, l, sub) => `<div class="hd-w"><b translate="no">${v}</b><span>${l}</span>${sub ? `<small>${sub}</small>` : ''}</div>`;
-    if (wo || mt.length || hd || wd != null) week = `<div class="hd-card hd-wk"><div class="hd-k"><span>Tu semana</span><span class="hd-badge">Últimos 7 días</span></div><div class="hd-week">
+    if (wo || mt.length || hd || wd != null) week = `<div class="hd-card"><div class="hd-k"><span>Tu semana</span><span class="hd-badge">Últimos 7 días</span></div><div class="hd-week">
       ${cell(planned ? `${wo}/${planned}` : wo, 'Entrenamientos')}
       ${cell(`${mt.length}/7`, 'Días con comidas', avgK ? `<span translate="no">${avgK.toLocaleString(_loc())} kcal</span>${goalK ? ` · <span translate="no">${Math.round(avgK / goalK * 100)}%</span> <span>de la meta</span>` : ''}` : '')}
       ${habits.length ? cell(`${hp ? Math.round(hd / hp * 100) : 0}%`, 'Hábitos') : ''}
@@ -12933,13 +12847,13 @@ function renderFoodTarget(cur, tg, suggested) {
   const bar = (label, color, c, g) => {
     const pct = g > 0 ? Math.min(100, c / g * 100) : 0, over = g > 0 && c > g * 1.1;
     return `<div class="ft-row"><div class="ft-row-h"><span>${label}</span><span class="ft-row-v${over ? ' over' : ''}" translate="no">${Math.round(c)} / ${Math.round(g)} g</span></div>
-      <div class="ft-bar"><i style="width:${pct.toFixed(1)}%;background:${over ? '#EF4444' : `linear-gradient(90deg, color-mix(in srgb, ${color} 55%, #fff), ${color})`}"></i></div></div>`;
+      <div class="ft-bar"><i style="width:${pct.toFixed(1)}%;background:${over ? '#EF4444' : color}"></i></div></div>`;
   };
   el.innerHTML = `<div class="ft-card">
     <div class="ft-k">${suggested ? 'Meta sugerida' : 'Meta diaria'}</div>
     <div class="ft-big" translate="no">${fmt(tg.kcal)} <small>kcal</small></div>
     <div class="ft-rem ${left < 0 ? 'over' : 'ok'}">${left >= 0 ? `<span translate="no">${fmt(left)} kcal</span> <span>restantes</span>` : `<span>Te pasaste por</span> <span translate="no">${fmt(-left)} kcal</span>`}</div>
-    <div class="ft-bar big"><i style="width:${Math.min(100, tg.kcal ? cur.kcal / tg.kcal * 100 : 0).toFixed(1)}%;background:${left < 0 ? 'linear-gradient(90deg,#F97316,#DC2626)' : 'var(--brand-grad-h)'}"></i></div>
+    <div class="ft-bar big"><i style="width:${Math.min(100, tg.kcal ? cur.kcal / tg.kcal * 100 : 0).toFixed(1)}%;background:${left < 0 ? '#EF4444' : 'var(--text)'}"></i></div>
     <div class="ft-sub"><span translate="no">${fmt(cur.kcal)} kcal</span> <span>consumidas</span>${tg.assigned ? ' · <span>meta de tu especialista</span>' : ''}</div>
     ${suggested ? '<button class="ft-set" id="ft-set">Calcular mi meta</button>' : ''}
     ${bar('Proteína', '#22C55E', cur.protein, tg.protein)}${bar('Carbos', '#7C9CFF', cur.carbs, tg.carbs)}${bar('Grasa', '#F59E0B', cur.fat, tg.fat)}
