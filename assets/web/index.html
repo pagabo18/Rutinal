@@ -3049,6 +3049,12 @@ try {
         </div>
         <div id="usda-key-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
       </div>
+      <div class="setting" id="chat-bg-setting" style="display:none;">
+        <div class="setting-label">Avisos de mensajes</div>
+        <div style="font-size:13px; color:var(--text-3); margin-bottom:10px; line-height:1.4;">Recibe una notificación cuando te escriban, aunque la app esté cerrada. Rutinal revisa cada 15 minutos, así que el aviso puede tardar un poco.</div>
+        <div id="chat-bg-status" style="font-size:14px; margin-bottom:10px;"></div>
+        <button class="btn-secondary" id="chat-bg-btn"></button>
+      </div>
       <div class="setting" id="notif-setting" style="display:none;">
         <div class="setting-label">Notificaciones</div>
         <div id="notif-status" style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;"></div>
@@ -8569,6 +8575,7 @@ const AUTH_ERRORS = {
 };
 function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
 function authEndSession(msg, info) {
+  try { if (typeof chatBgOff === 'function') chatBgOff(false); } catch (e) {}
   try { localStorage.removeItem('__asg'); localStorage.removeItem('__msgs'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
   try { document.documentElement.dataset.mode = ''; document.documentElement.classList.remove('is-spec'); localStorage.removeItem('__mode'); document.querySelector('nav button[data-tab="hoy"]').click(); } catch (e) {}
   const s = authGet();
@@ -8612,6 +8619,7 @@ function authRenderAccount() {
     <div class="acct-id"><div class="acct-name" translate="no">${escapeHtml(s.name || s.user || '')}</div>
       <div class="acct-sub"><span translate="no">@${escapeHtml(s.user || '')}</span> · ${authRolesHtml(s.specs, s.admin)}</div></div>`;
   document.getElementById('btn-acct-users').style.display = s.admin ? '' : 'none';
+  try { chatBgRender(); } catch (e) {}
 }
 async function authLogout() {
   if (!confirm('¿Cerrar sesión? Tus datos se quedan guardados en este dispositivo.')) return;
@@ -8649,9 +8657,66 @@ function openAuthChangePass() {
     try { r = await sbFetch('/auth/v1/user', { method: 'PUT', body: { password: n, current_password: o } }); j = await r.json().catch(() => ({})); }
     catch (e) { msg.textContent = authErr(e.code); return; }
     if (!r.ok) { msg.textContent = authErr(j.error_code === 'weak_password' ? 'weak' : j.error_code === 'same_password' ? 'same' : 'network'); return; }
+    try { if (chatBgOn()) chatBgSetup((authGet() || {}).user, n); } catch (e) {}
     closeSheet();
     alert('Contraseña actualizada.');
   });
+}
+// ---- Avisos de mensajes con la app cerrada (solo app Android) ----
+// El APK revisa el servidor cada ~15 min con una sesión aparte de la del WebView.
+function chatBgOk() { return !!(window.Android && window.Android.chatEnable && window.Android.chatEnabled); }
+function chatBgOn() { try { return chatBgOk() && !!window.Android.chatEnabled(); } catch (e) { return false; } }
+// Crea la sesión aparte (pide tokens con usuario y contraseña) y se la entrega al APK
+async function chatBgSetup(user, pass) {
+  if (!chatBgOk()) return 'network';
+  const g = await authPasswordGrant(user, pass);
+  if (!g.ok) return g.error;
+  try {
+    window.Android.chatEnable(JSON.stringify({ url: SB_URL, key: SB_KEY, uid: (g.tok.user && g.tok.user.id) || '', access: g.tok.access_token, refresh: g.tok.refresh_token, exp: Date.now() + (g.tok.expires_in || 3600) * 1000 }));
+    localStorage.removeItem('__chat_bg');
+  } catch (e) { return 'network'; }
+  chatBgMeta(); chatBgRender();
+  return '';
+}
+function chatBgOff(userChoice) {
+  try { if (chatBgOk()) window.Android.chatDisable(); if (userChoice) localStorage.setItem('__chat_bg', 'off'); } catch (e) {}
+  chatBgRender();
+}
+// Nombres de cada conversación y textos traducidos para la notificación
+function chatBgMeta() {
+  if (!chatBgOk()) return;
+  try {
+    const c = msgCache(), names = {};
+    (c.links || []).forEach(l => { names[l.id] = l.name || ''; });
+    Object.keys(c.specNames || {}).forEach(id => { names[id] = c.specNames[id]; });
+    window.Android.chatMeta(JSON.stringify({ names, one: t('Mensaje nuevo'), many: t('mensajes nuevos') }));
+    let max = '';
+    Object.keys(c.last || {}).forEach(id => { const x = c.last[id].created_at; if (x && (!max || Date.parse(x) > Date.parse(max))) max = x; });
+    if (max && window.Android.chatSeen) window.Android.chatSeen(max);
+  } catch (e) {}
+}
+function chatBgRender() {
+  const box = document.getElementById('chat-bg-setting');
+  if (!box) return;
+  const s = authGet();
+  box.style.display = chatBgOk() && s && s.refresh ? '' : 'none';
+  if (box.style.display === 'none') return;
+  const on = chatBgOn();
+  document.getElementById('chat-bg-status').innerHTML = on ? '<b>Activados</b>' : '<span>Desactivados</span>';
+  const b = document.getElementById('chat-bg-btn');
+  b.textContent = t(on ? 'Desactivar avisos' : 'Activar avisos');
+  b.onclick = () => {
+    if (on) { chatBgOff(true); return; }
+    openSheet('Avisos de mensajes', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;margin-bottom:12px;">Para avisarte con la app cerrada, Rutinal guarda en este teléfono una sesión aparte que solo revisa si tienes mensajes nuevos. Escribe tu contraseña para activarla.</p>
+      <label class="auth-field"><span>Contraseña</span><input class="auth-in" id="cb-pass" type="password" autocomplete="current-password" maxlength="72"></label>
+      <div class="auth-msg" id="cb-msg"></div>`, async () => {
+      const m = document.getElementById('cb-msg'), pw = document.getElementById('cb-pass').value;
+      if (!pw) return;
+      const err = await chatBgSetup((authGet() || {}).user, pw);
+      if (err) { m.textContent = err === 'invalid' ? t('La contraseña no es correcta.') : authErr(err); return; }
+      closeSheet();
+    });
+  };
 }
 // ---- Administración de usuarios (solo administradores) ----
 async function authAdmin(action, args) {
@@ -8769,6 +8834,7 @@ function openAuthUserEditor(u) {
     }
     btn.disabled = false; btn.textContent = 'Entrar';
     if (err) { msg.textContent = authErr(err); return; }
+    try { if (chatBgOk() && localStorage.getItem('__chat_bg') !== 'off') chatBgSetup(user, pass); } catch (e) {}
     authHideGate();
     authRenderAccount();
     if (typeof onAuthReady === 'function') onAuthReady();
@@ -9282,6 +9348,7 @@ function ntMarkSeen(linkId, iso) {
   if (!iso) return;
   const m = ntSeen();
   if (!m[linkId] || Date.parse(m[linkId]) < Date.parse(iso)) { m[linkId] = iso; try { localStorage.setItem('__nt_seen', JSON.stringify(m)); } catch (e) {} }
+  try { if (window.Android && window.Android.chatSeen) window.Android.chatSeen(iso); } catch (e) {}
 }
 function msgCache() { try { const c = JSON.parse(localStorage.getItem('__msgs') || 'null'); return c && c.last ? c : { links: [], spec: [], last: {} }; } catch (e) { return { links: [], spec: [], last: {} }; } }
 function ntIsUnread(linkId, n) {
@@ -9309,9 +9376,11 @@ async function msgRefresh(force) {
   } catch (e) { return; }
   const last = {};
   notes.forEach(n => { if (!last[n.link_id]) last[n.link_id] = { author_id: n.author_id, body: String(n.body || '').slice(0, 120), created_at: n.created_at }; });
-  const c = { links: (r.as_client || []).map(l => ({ id: l.id, name: l.name, role: l.role })), spec: (r.as_specialist || []).filter(l => l.status === 'active').map(l => l.id), last };
+  const c = { links: (r.as_client || []).map(l => ({ id: l.id, name: l.name, role: l.role })), spec: (r.as_specialist || []).filter(l => l.status === 'active').map(l => l.id), last, specNames: {} };
+  (r.as_specialist || []).filter(l => l.status === 'active').forEach(l => { c.specNames[l.id] = l.name || ''; });
   try { localStorage.setItem('__msgs', JSON.stringify(c)); } catch (e) {}
   msgPaint();
+  try { chatBgMeta(); } catch (e) {}
 }
 function ntRefLabel(ref) { return ref && ref.t === 'asg' ? `${t(ASG_KINDS[ref.kind] || 'Plan')} · ${ref.name || ''}` : ''; }
 // Enviar un mensaje (con referencia opcional). Si el servidor aún no acepta `ref`, se manda como texto.

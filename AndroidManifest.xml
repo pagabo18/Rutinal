@@ -7,6 +7,7 @@
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
@@ -97,6 +98,15 @@
             android:exported="false">
             <intent-filter>
                 <action android:name="com.pagabo18.rutinal.HYDRATION_REMINDER" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Avisos de mensajes del chat (revisión periódica en segundo plano) -->
+        <receiver
+            android:name=".ChatPollReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.pagabo18.rutinal.CHAT_POLL" />
             </intent-filter>
         </receiver>
 

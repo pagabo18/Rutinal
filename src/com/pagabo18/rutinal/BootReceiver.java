@@ -15,6 +15,7 @@ public class BootReceiver extends BroadcastReceiver {
             try { NotificationScheduler.scheduleHabitReminder(ctx); } catch (Exception ignored) {}
             try { NotificationScheduler.scheduleMealReminder(ctx); } catch (Exception ignored) {}
             try { NotificationScheduler.scheduleHydrationReminders(ctx); } catch (Exception ignored) {}
+            try { ChatPollReceiver.schedule(ctx, 120000L); } catch (Exception ignored) {}
             try { WidgetRefresher.refreshAll(ctx); } catch (Exception ignored) {}
         }
     }

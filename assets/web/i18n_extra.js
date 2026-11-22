@@ -3731,6 +3731,56 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Avisos de mensajes": {
+   "en": "Message alerts",
+   "pt-BR": "Avisos de mensagens",
+   "fr": "Alertes de messages"
+  },
+  "Recibe una notificación cuando te escriban, aunque la app esté cerrada. Rutinal revisa cada 15 minutos, así que el aviso puede tardar un poco.": {
+   "en": "Get a notification when someone writes to you, even with the app closed. Rutinal checks every 15 minutes, so the alert may take a little while.",
+   "pt-BR": "Receba uma notificação quando te escreverem, mesmo com o app fechado. O Rutinal verifica a cada 15 minutos, então o aviso pode demorar um pouco.",
+   "fr": "Recevez une notification quand on vous écrit, même si l'appli est fermée. Rutinal vérifie toutes les 15 minutes, l'alerte peut donc tarder un peu."
+  },
+  "Activados": {
+   "en": "On",
+   "pt-BR": "Ativados",
+   "fr": "Activées"
+  },
+  "Desactivados": {
+   "en": "Off",
+   "pt-BR": "Desativados",
+   "fr": "Désactivées"
+  },
+  "Activar avisos": {
+   "en": "Turn alerts on",
+   "pt-BR": "Ativar avisos",
+   "fr": "Activer les alertes"
+  },
+  "Desactivar avisos": {
+   "en": "Turn alerts off",
+   "pt-BR": "Desativar avisos",
+   "fr": "Désactiver les alertes"
+  },
+  "Para avisarte con la app cerrada, Rutinal guarda en este teléfono una sesión aparte que solo revisa si tienes mensajes nuevos. Escribe tu contraseña para activarla.": {
+   "en": "To alert you with the app closed, Rutinal keeps a separate session on this phone that only checks whether you have new messages. Enter your password to turn it on.",
+   "pt-BR": "Para te avisar com o app fechado, o Rutinal guarda neste telefone uma sessão separada que só verifica se você tem mensagens novas. Digite sua senha para ativá-la.",
+   "fr": "Pour vous alerter quand l'appli est fermée, Rutinal garde sur ce téléphone une session distincte qui vérifie seulement si vous avez de nouveaux messages. Saisissez votre mot de passe pour l'activer."
+  },
+  "La contraseña no es correcta.": {
+   "en": "The password is not correct.",
+   "pt-BR": "A senha não está correta.",
+   "fr": "Le mot de passe est incorrect."
+  },
+  "Mensaje nuevo": {
+   "en": "New message",
+   "pt-BR": "Nova mensagem",
+   "fr": "Nouveau message"
+  },
+  "mensajes nuevos": {
+   "en": "new messages",
+   "pt-BR": "novas mensagens",
+   "fr": "nouveaux messages"
+  },
   "Mensajes": {
    "en": "Messages",
    "pt-BR": "Mensagens",

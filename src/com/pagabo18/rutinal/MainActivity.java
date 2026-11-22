@@ -20,6 +20,8 @@ import android.webkit.WebViewClient;
 import android.graphics.Color;
 
 public class MainActivity extends Activity {
+    /** true mientras la app está a la vista (el revisor de mensajes no avisa entonces). */
+    public static volatile boolean FOREGROUND = false;
     private static final int REQ_CAMERA_WEB = 4301;
     private static final int REQ_FILE_CHOOSER = 4302;
     private WebView webView;
@@ -300,8 +302,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        FOREGROUND = false;
         // Al salir de la app (p.ej. a la pantalla de inicio) los widgets se
         // refrescan con el estado más reciente.
         try { WidgetRefresher.refreshAll(getApplicationContext()); } catch (Exception ignored) {}
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FOREGROUND = true;
     }
 }

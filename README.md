@@ -214,3 +214,12 @@ Las "notas" por vínculo ahora son un **chat**: burbujas por autor, separadores 
 - **No leídos**: punto rojo en *Mensajes* (especialista) o en *Hoy* (entrenado), y en cada conversación. Lo "visto" se guarda en el dispositivo (`__nt_seen`), no en el servidor.
 - **Dónde está**: el entrenado ve la tarjeta *Mensajes* en Hoy con cada especialista; el especialista tiene la pestaña *Mensajes* y el botón *Mensajes* en la ficha de cada entrenado.
 - No hay notificaciones con la app cerrada: los mensajes nuevos se revisan al abrir la app, al volver a ella y cada 2 minutos.
+
+### Avisos de mensajes con la app cerrada (solo APK)
+
+No se usa un servicio de push. `ChatPollReceiver` se despierta cada ~15 minutos con una alarma, pregunta al servidor por mensajes nuevos que no haya escrito la propia cuenta y muestra una notificación. Detalles:
+
+- Usa una **sesión propia**, distinta a la del WebView (si compartieran el refresh token se invalidarían entre sí). La app la crea al iniciar sesión o desde **Ajustes → Avisos de mensajes** (pide la contraseña) y la entrega con `Android.chatEnable(json)`. Se guarda en `SharedPreferences` (`rutinal_chat`).
+- `Android.chatMeta` pasa los nombres de cada conversación y los textos traducidos; `Android.chatSeen` evita avisar de lo que la app ya mostró. Con la app a la vista no se avisa.
+- Al cerrar sesión se llama `Android.chatDisable()`, que borra la sesión guardada y la cierra en el servidor. Si el servidor rechaza la sesión (cuenta desactivada, etc.), el revisor se apaga solo.
+- Límites: el aviso puede tardar 15 minutos o más (el ahorro de batería de Android retrasa las alarmas) y en la PWA no existe.

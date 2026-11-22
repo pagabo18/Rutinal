@@ -263,6 +263,33 @@ public class WebAppInterface {
         try { return WidgetActionQueue.consume(ctx); } catch (Exception e) { return "[]"; }
     }
 
+    // ----- Avisos de mensajes del chat con la app cerrada -----
+
+    @JavascriptInterface
+    public void chatEnable(String json) {
+        try { ChatPollReceiver.enable(ctx, json); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public void chatDisable() {
+        try { ChatPollReceiver.disable(ctx); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public boolean chatEnabled() {
+        try { return ChatPollReceiver.isEnabled(ctx); } catch (Exception e) { return false; }
+    }
+
+    @JavascriptInterface
+    public void chatMeta(String json) {
+        try { ChatPollReceiver.setMeta(ctx, json); } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public void chatSeen(String iso) {
+        try { ChatPollReceiver.markSeen(ctx, iso); } catch (Exception ignored) {}
+    }
+
     @JavascriptInterface
     public String getState() {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
