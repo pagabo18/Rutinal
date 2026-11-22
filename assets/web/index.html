@@ -2188,6 +2188,7 @@
   .chat-pick-e { font-size: 13px; color: var(--text-3); padding: 8px; }
   nav button { position: relative; }
   nav button.has-dot::after { content: ''; position: absolute; top: 6px; left: calc(50% + 8px); width: 9px; height: 9px; border-radius: 50%; background: #EF4444; border: 2px solid var(--surface); }
+  .sp-roles { display: inline-flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
   .sp-row.unread .sp-row-n, .sp-row.unread .sp-row-d { font-weight: 700; color: var(--text); }
   .sp-row.unread .sp-chev { width: 10px; height: 10px; border-radius: 50%; background: #EF4444; font-size: 0; }
   .hd-chat { padding-bottom: 6px; }
@@ -8034,7 +8035,7 @@ function openSheet(title, body, onSave) {
   // Visibilidad del botón Guardar según si hay callback
   const saveBtn = document.getElementById('sheet-save');
   const closeBtn = document.getElementById('sheet-close');
-  if (saveBtn) saveBtn.style.display = onSave ? '' : 'none';
+  if (saveBtn) { saveBtn.style.display = onSave ? '' : 'none'; saveBtn.textContent = 'Guardar'; }
   if (closeBtn) closeBtn.textContent = onSave ? 'Cancelar' : 'Cerrar';
 }
 function closeSheet() {
@@ -8768,6 +8769,7 @@ function chatBgMeta() {
     const c = msgCache(), names = {};
     (c.links || []).forEach(l => { names[l.id] = l.name || ''; });
     Object.keys(c.specNames || {}).forEach(id => { names[id] = c.specNames[id]; });
+    Object.keys(c.names || {}).forEach(id => { names[id] = c.names[id]; });
     window.Android.chatMeta(JSON.stringify({ names, one: t('Mensaje nuevo'), many: t('mensajes nuevos') }));
     let max = '';
     Object.keys(c.last || {}).forEach(id => { const x = c.last[id].created_at; if (x && (!max || Date.parse(x) > Date.parse(max))) max = x; });
@@ -9216,22 +9218,23 @@ async function openLinks() {
   if (!r.ok) { openSheet('Especialistas y entrenados', `<p class="auth-msg">${escapeHtml(linkErr(r.error))}</p>`); return; }
   _links = r;
   const s = authGet() || {}, specs = s.specs || [];
-  const mine = r.as_client.map(l => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name)}</div><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span></div>
+  const mineG = mySpecialists(r);
+  const mine = mineG.map((l, i) => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name)}</div><span class="sp-roles">${rolesBadges(l)}</span></div>
       <div class="lk-d"><span>Puede ver:</span> ${linkSees(l.keys)}</div>
-      <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-secondary" data-lk-notes="${l.id}" data-lk-name="${escapeHtml(l.name)}" data-lk-role="${l.role}" style="padding:8px 12px;flex:1;">Mensajes</button>
-      <button class="btn-secondary" data-lk-end="${l.id}" style="padding:8px 12px;flex:1;">Dejar de compartir</button></div></div>`).join('');
-  const clients = r.as_specialist.filter(l => l.status === 'active'), pend = r.as_specialist.filter(l => l.status === 'pending');
+      <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-secondary" data-lk-notes="${i}" style="padding:8px 12px;flex:1;">Mensajes</button>
+      <button class="btn-secondary" data-lk-end="${l.ids.join(',')}" style="padding:8px 12px;flex:1;">Dejar de compartir</button></div></div>`).join('');
+  const clients = spClients(r), pend = linkGroup(r.as_specialist.filter(l => l.status === 'pending'), l => l.code || l.id);
   const cRows = clients.map((l, i) => {
     const ago = linkAgo(l.last_activity), bits = [];
     bits.push(ago == null ? '<span class="warn">Sin registros todavía</span>' : ago >= 3 ? `<span class="warn">Sin registros desde hace ${ago} días</span>` : ago === 0 ? '<span>Registró hoy</span>' : `<span>Último registro hace ${ago} días</span>`);
     if (l.meals7 != null) bits.push(`<span>Comidas registradas: ${l.meals7} de 7 días</span>`);
     if (l.workouts7 != null) bits.push(`<span>Entrenamientos en 7 días: ${l.workouts7}</span>`);
     if (l.pain7 != null) bits.push(`<span class="${l.pain7 >= 6 ? 'warn' : ''}">Dolor máximo: ${l.pain7}/10</span>`);
-    return `<div class="lk-row tap" data-lk-open="${i}"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name || '')}</div><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span><span style="color:var(--text-3);font-size:18px;">›</span></div>
+    return `<div class="lk-row tap" data-lk-open="${i}"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name || '')}</div><span class="sp-roles">${rolesBadges(l)}</span><span style="color:var(--text-3);font-size:18px;">›</span></div>
       <div class="lk-d">${bits.join(' · ')}</div></div>`;
   }).join('');
-  const pRows = pend.map(l => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><span class="usr-badge">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span></div>
-      <div class="lk-d"><span>Invitación sin usar</span></div><button class="btn-secondary" data-lk-end="${l.id}" style="margin-top:8px;padding:8px 12px;">Cancelar invitación</button></div>`).join('');
+  const pRows = pend.map(l => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><span class="sp-roles">${rolesBadges(l, '')}</span></div>
+      <div class="lk-d"><span>Invitación sin usar</span></div><button class="btn-secondary" data-lk-end="${l.ids.join(',')}" style="margin-top:8px;padding:8px 12px;">Cancelar invitación</button></div>`).join('');
   openSheet('Especialistas y entrenados', `
     ${specs.length ? `<button class="btn-primary" id="lk-specmode" style="width:100%;margin-bottom:6px;">Abrir modo especialista</button>
       <div class="fit-note">Tus entrenados, plantillas y notas están en el modo especialista.</div>` : ''}
@@ -9244,8 +9247,7 @@ async function openLinks() {
   const msg = document.getElementById('lk-msg');
   document.querySelectorAll('[data-lk-end]').forEach(b => b.addEventListener('click', async () => {
     if (!confirm('¿Terminar este vínculo? La otra persona dejará de ver los datos.')) return;
-    const e = await linkRpc('rutinal_link_end', { p_id: b.dataset.lkEnd });
-    if (!e.ok) { msg.textContent = linkErr(e.error); return; }
+    for (const id of b.dataset.lkEnd.split(',')) { const e = await linkRpc('rutinal_link_end', { p_id: id }); if (!e.ok) { msg.textContent = linkErr(e.error); return; } }
     openLinks();
   }));
   document.querySelectorAll('[data-lk-invite]').forEach(b => b.addEventListener('click', async () => {
@@ -9259,7 +9261,7 @@ async function openLinks() {
     document.getElementById('lk-back').addEventListener('click', openLinks);
   }));
   document.querySelectorAll('[data-lk-open]').forEach(el => el.addEventListener('click', () => openClientDetail(clients[+el.dataset.lkOpen])));
-  document.querySelectorAll('[data-lk-notes]').forEach(b => b.addEventListener('click', () => openNotes(b.dataset.lkNotes, b.dataset.lkName, openLinks, { spec: false, role: b.dataset.lkRole })));
+  document.querySelectorAll('[data-lk-notes]').forEach(b => b.addEventListener('click', () => { const l = mineG[+b.dataset.lkNotes]; openNotes(l.id, l.name, openLinks, { spec: false, role: l.role, roles: l.roles, ids: l.ids }); }));
   if (document.getElementById('lk-specmode')) document.getElementById('lk-specmode').addEventListener('click', () => { closeSheet(); spSetMode(true); });
   document.getElementById('lk-go').addEventListener('click', async () => {
     const code = document.getElementById('lk-code').value.trim().toUpperCase();
@@ -9268,7 +9270,7 @@ async function openLinks() {
     if (!syncOn()) { msg.textContent = 'Activa primero el respaldo en la nube; sin él no hay datos que compartir.'; return; }
     const pv = await linkRpc('rutinal_invite_preview', { p_code: code });
     if (!pv.ok) { msg.textContent = linkErr(pv.error); return; }
-    openSheet('Aceptar invitación', `<p style="font-size:15px;line-height:1.5;"><b translate="no">${escapeHtml(pv.specialist)}</b> <span>quiere acompañarte como</span> <b>${escapeHtml(AUTH_SPECS[pv.role] || pv.role)}</b>.</p>
+    openSheet('Aceptar invitación', `<p style="font-size:15px;line-height:1.5;"><b translate="no">${escapeHtml(pv.specialist)}</b> <span>quiere acompañarte como</span> ${(pv.roles || [pv.role]).map(r => `<b>${escapeHtml(AUTH_SPECS[r] || r)}</b>`).join(' <span>y</span> ')}.</p>
       <div class="lk-row"><div class="lk-d" style="margin-top:0;font-size:14px;color:var(--text-2);"><span>Podrá ver:</span> ${linkSees(pv.keys)}</div></div>
       <div class="fit-note" style="margin:10px 0;">No podrá cambiar tus registros. Puedes dejar de compartir cuando quieras desde esta misma pantalla.</div>
       <div class="auth-msg" id="lk-msg2"></div>
@@ -9278,7 +9280,7 @@ async function openLinks() {
     document.getElementById('lk-accept').addEventListener('click', async () => {
       const a = await linkRpc('rutinal_invite_accept', { p_code: code });
       if (!a.ok) { document.getElementById('lk-msg2').textContent = linkErr(a.error); return; }
-      syncNow();
+      syncNow(); try { msgRefresh(true); } catch (e) {}
       openLinks();
     });
   });
@@ -9318,7 +9320,7 @@ async function openTemplates(forClient) {
   catch (e) { openSheet(title, `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
   const specs = (authGet() || {}).specs || [];
   const kinds = Object.keys(ASG_KINDS).filter(k => specs.some(sp => (ASG_ROLE_KINDS[sp] || []).includes(k)));
-  const usable = forClient ? (ASG_ROLE_KINDS[forClient.role] || []) : kinds;
+  const usable = forClient ? asgKindsFor(forClient).filter(k => kinds.includes(k)) : kinds;
   const rows = _tpls.filter(tp => usable.includes(tp.kind)).map(tp => `<div class="lk-row"><div class="lk-top"><div class="lk-n">${escapeHtml(tp.name)}</div><span class="usr-badge">${ASG_KINDS[tp.kind]}</span></div>
       <div class="lk-d">${asgSummary(tp.kind, tp.payload || {})}</div>
       <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-primary" data-tp-assign="${tp.id}" style="padding:8px 12px;flex:1;">Asignar</button>${forClient ? '' : `<button class="btn-secondary" data-tp-del="${tp.id}" style="padding:8px 12px;flex:1;">Eliminar</button>`}</div></div>`).join('');
@@ -9505,11 +9507,11 @@ async function openAssign(tp, forClient) {
   if (forClient) clients = [forClient];
   else {
     const r = await linkRpc('rutinal_my_links');
-    clients = r.ok ? r.as_specialist.filter(l => l.status === 'active' && (ASG_ROLE_KINDS[l.role] || []).includes(tp.kind)) : [];
+    clients = r.ok ? spClients(r).filter(l => asgRoleFor(l, tp.kind)) : [];
   }
   openSheet('Asignar', `<div class="lk-row"><div class="lk-top"><div class="lk-n">${escapeHtml(tp.name)}</div><span class="usr-badge">${ASG_KINDS[tp.kind]}</span></div><div class="lk-d">${asgSummary(tp.kind, tp.payload || {})}</div></div>
     <div class="lk-h">Entrenados</div>
-    ${clients.map((l, i) => `<label class="usr-check"><input type="checkbox" data-as-c="${i}" ${forClient ? 'checked' : ''}><span translate="no">${escapeHtml(l.name || '')}</span> <span class="usr-badge spec">${AUTH_SPECS[l.role]}</span></label>`).join('') || '<div class="lk-d">No tienes entrenados a los que puedas asignar este tipo de plantilla.</div>'}
+    ${clients.map((l, i) => `<label class="usr-check"><input type="checkbox" data-as-c="${i}" ${forClient ? 'checked' : ''}><span translate="no">${escapeHtml(l.name || '')}</span> ${rolesBadges(l)}</label>`).join('') || '<div class="lk-d">No tienes entrenados a los que puedas asignar este tipo de plantilla.</div>'}
     <label class="auth-field" style="margin-top:12px;"><span>Nota para el entrenado (opcional)</span><input class="auth-in" id="as-note" type="text" maxlength="300"></label>
     ${tp.kind === 'diet' || tp.kind === 'targets' ? '<div class="fit-note">Reemplaza lo que ya le hayas asignado de este mismo tipo.</div>' : ''}
     <div class="auth-msg" id="as-msg"></div>`, async () => {
@@ -9522,7 +9524,7 @@ async function openAssign(tp, forClient) {
         for (const l of sel) await sbRest('assignments?specialist_id=eq.' + encodeURIComponent(s.uid) + '&client_id=eq.' + encodeURIComponent(l.client_id) + '&kind=eq.' + tp.kind + '&status=eq.active', { method: 'PATCH', body: { status: 'ended' }, headers: { Prefer: 'return=minimal' } });
       }
       await sbRest('assignments', { method: 'POST', headers: { Prefer: 'return=minimal' },
-        body: sel.map(l => ({ client_id: l.client_id, role: l.role, kind: tp.kind, name: tp.name, payload: tp.payload, note, author_name: s.name || s.user })) });
+        body: sel.map(l => ({ client_id: l.client_id, role: asgRoleFor(l, tp.kind) || l.role, kind: tp.kind, name: tp.name, payload: tp.payload, note, author_name: s.name || s.user })) });
     } catch (e) { msg.textContent = authErr(e.code); return; }
     // Aviso en el chat de cada entrenado, con lo asignado adjunto
     for (const l of sel) { if (l.id) { try { await ntPost(l.id, note || t('Te dejé esto en tu app.'), { t: 'asg', kind: tp.kind, name: tp.name }); } catch (e) {} } }
@@ -9563,10 +9565,12 @@ async function msgRefresh(force) {
     r = await linkRpc('rutinal_my_links'); if (!r.ok) return;
     notes = await sbRest('notes?select=link_id,author_id,body,created_at&order=created_at.desc&limit=200') || [];
   } catch (e) { return; }
-  const last = {};
-  notes.forEach(n => { if (!last[n.link_id]) last[n.link_id] = { author_id: n.author_id, body: String(n.body || '').slice(0, 120), created_at: n.created_at }; });
-  const c = { links: (r.as_client || []).map(l => ({ id: l.id, name: l.name, role: l.role })), spec: (r.as_specialist || []).filter(l => l.status === 'active').map(l => l.id), last, specNames: {} };
-  (r.as_specialist || []).filter(l => l.status === 'active').forEach(l => { c.specNames[l.id] = l.name || ''; });
+  const mine = mySpecialists(r), cls = spClients(r), prim = {}, last = {};
+  mine.concat(cls).forEach(g => g.ids.forEach(id => { prim[id] = g.id; }));
+  notes.forEach(n => { const k = prim[n.link_id] || n.link_id; if (!last[k]) last[k] = { author_id: n.author_id, body: String(n.body || '').slice(0, 120), created_at: n.created_at }; });
+  const c = { links: mine.map(l => ({ id: l.id, ids: l.ids, name: l.name, role: l.role, roles: l.roles })), spec: cls.map(l => l.id), last, specNames: {}, prim, names: {} };
+  cls.forEach(l => { c.specNames[l.id] = l.name || ''; });
+  mine.concat(cls).forEach(g => g.ids.forEach(id => { c.names[id] = g.name || ''; }));
   try { localStorage.setItem('__msgs', JSON.stringify(c)); } catch (e) {}
   msgPaint();
   try { chatBgMeta(); } catch (e) {}
@@ -9591,7 +9595,7 @@ async function openNotes(linkId, name, back, opts) {
   if (_ntTimer) { clearInterval(_ntTimer); _ntTimer = null; }
   let pending = null, rows = [], lastSig = '';
   openSheet(title, `<div class="chat" id="nt-chat" data-link="${escapeHtml(String(linkId))}">
-      ${opts.role ? `<div class="chat-sub"><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[opts.role] || opts.role)}</span></div>` : ''}
+      ${(opts.roles || (opts.role ? [opts.role] : [])).length ? `<div class="chat-sub">${rolesBadges({ roles: opts.roles || [opts.role] })}</div>` : ''}
       <div class="nt-list" id="nt-list"><div class="food-loader">Cargando...</div></div>
       <div class="chat-bar">
         <div class="chat-pick" id="nt-pick" hidden></div>
@@ -9640,7 +9644,8 @@ async function openNotes(linkId, name, back, opts) {
   const load = async (toEnd) => {
     let rs;
     try {
-      const q = cols => sbRest('notes?select=' + cols + '&link_id=eq.' + encodeURIComponent(linkId) + '&order=created_at.asc&limit=300');
+      const ids = opts.ids && opts.ids.length > 1 ? opts.ids : null;
+      const q = cols => sbRest('notes?select=' + cols + '&link_id=' + (ids ? 'in.(' + ids.map(encodeURIComponent).join(',') + ')' : 'eq.' + encodeURIComponent(linkId)) + '&order=created_at.asc&limit=300');
       if (_ntRefCol) { try { rs = await q('id,author_id,body,ref,created_at'); } catch (e) { if (e && e.code === 'session') throw e; _ntRefCol = false; } }
       if (!_ntRefCol) rs = await q('id,author_id,body,created_at');
     } catch (e) {
@@ -9674,7 +9679,8 @@ async function openNotes(linkId, name, back, opts) {
     if (opts.spec && opts.link) { openTemplates(opts.link); return; }
     const pick = document.getElementById('nt-pick');
     if (!pick.hidden) { pick.hidden = true; return; }
-    const items = asgList().filter(a => !opts.role || a.role === opts.role);
+    const rs = opts.roles || (opts.role ? [opts.role] : []);
+    const items = asgList().filter(a => !rs.length || rs.includes(a.role));
     pick.innerHTML = `<div class="chat-pick-h">Pregunta sobre algo que te dejaron</div>` + (items.map((a, i) => `<button class="chat-pick-i" data-nt-pick="${i}"><b>${ASG_KINDS[a.kind] || a.kind}</b> · <span translate="no">${escapeHtml(a.name || '')}</span></button>`).join('') || '<div class="chat-pick-e">Todavía no tienes rutinas ni planes de este especialista.</div>');
     pick.hidden = false;
     pick.querySelectorAll('[data-nt-pick]').forEach(b => b.addEventListener('click', () => { const a = items[+b.dataset.ntPick]; setRef({ t: 'asg', kind: a.kind, name: a.name }); pick.hidden = true; txt.focus(); }));
@@ -9836,7 +9842,31 @@ async function spLoad(force) {
   if (r.ok) { _sp.links = r; _sp.at = Date.now(); }
   return r.ok ? r : (_sp.links || { ok: false, error: r.error, as_specialist: [], as_client: [] });
 }
-function spClients(r) { return (r.as_specialist || []).filter(l => l.status === 'active'); }
+// Varios servicios con la misma persona = una sola relación. El grupo es el vínculo más antiguo
+// con `roles`, `ids` (todos los vínculos) y los datos resumidos de todos.
+function linkGroup(list, keyFn) {
+  const m = new Map();
+  (list || []).forEach(l => {
+    const k = keyFn(l); let g = m.get(k);
+    if (!g) { g = Object.assign({}, l, { roles: [], ids: [], keys: [] }); m.set(k, g); }
+    if (!g.roles.includes(l.role)) g.roles.push(l.role);
+    g.ids.push(l.id);
+    (l.keys || []).forEach(x => { if (!g.keys.includes(x)) g.keys.push(x); });
+    ['meals7', 'workouts7'].forEach(f => { if (l[f] != null && g[f] == null) g[f] = l[f]; });
+    if (l.pain7 != null && (g.pain7 == null || l.pain7 > g.pain7)) g.pain7 = l.pain7;
+    if (l.last_activity && (!g.last_activity || Date.parse(l.last_activity) > Date.parse(g.last_activity))) g.last_activity = l.last_activity;
+  });
+  return Array.from(m.values());
+}
+function linkRoles(l) { return (l && l.roles && l.roles.length) ? l.roles : (l && l.role ? [l.role] : []); }
+function linkIds(l) { return (l && l.ids && l.ids.length) ? l.ids : (l && l.id ? [l.id] : []); }
+function rolesBadges(l, cls) { return linkRoles(l).map(r => `<span class="usr-badge ${cls == null ? 'spec' : cls}">${escapeHtml(AUTH_SPECS[r] || r)}</span>`).join(' '); }
+function rolesText(l) { return linkRoles(l).map(r => t(AUTH_SPECS[r] || r)).join(' · '); }
+// El servicio (rol) con el que se puede dejar un tipo de plantilla a esta persona
+function asgRoleFor(l, kind) { return linkRoles(l).find(r => (ASG_ROLE_KINDS[r] || []).includes(kind)) || null; }
+function asgKindsFor(l) { const out = []; linkRoles(l).forEach(r => (ASG_ROLE_KINDS[r] || []).forEach(k => { if (!out.includes(k)) out.push(k); })); return out; }
+function spClients(r) { return linkGroup((r.as_specialist || []).filter(l => l.status === 'active'), l => l.client_id); }
+function mySpecialists(r) { return linkGroup(r.as_client || [], l => l.username || l.name || l.id); }
 function spStatusLine(l) {
   const ago = linkAgo(l.last_activity), bits = [];
   bits.push(ago == null ? '<span class="warn">Sin registros todavía</span>' : ago >= 3 ? `<span class="warn">Sin registros desde hace ${ago} días</span>` : ago === 0 ? '<span>Registró hoy</span>' : `<span>Último registro hace ${ago} días</span>`);
@@ -9846,23 +9876,30 @@ function spStatusLine(l) {
 function spRowHtml(l, i) {
   return `<div class="sp-row" data-sp-open="${i}"><div class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</div>
     <div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(l.name || '')}</div><div class="sp-row-d">${spStatusLine(l)}</div></div>
-    <span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span><span class="sp-chev">›</span></div>`;
+    <span class="sp-roles">${rolesBadges(l)}</span><span class="sp-chev">›</span></div>`;
 }
 async function spInvite() {
   const specs = (authGet() || {}).specs || [];
-  const make = async (role) => {
-    const e = await linkRpc('rutinal_invite', { p_role: role });
+  const make = async (roles) => {
+    const e = await linkRpc('rutinal_invite_many', { p_roles: roles });
     if (!e.ok) { openSheet('Invitación', `<p class="auth-msg">${escapeHtml(linkErr(e.error))}</p>`); return; }
     _sp.at = 0;
     openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu entrenado. Lo escribe en Más → Especialistas y entrenados. Vence en 14 días.</p>
+      <div class="chat-sub" style="margin:0 0 4px;">${rolesBadges({ roles })}</div>
       <div class="lk-code" translate="no">${escapeHtml(e.code)}</div>
-      <button class="btn-primary" id="lk-copy" style="width:100%;">Copiar</button>`);
+      <button class="btn-primary" id="lk-copy" style="width:100%;">Copiar</button>
+      <div class="fit-note" style="margin-top:10px;">Si la persona ya es tu entrenado, este código le suma los servicios nuevos a la misma relación.</div>`);
     document.getElementById('lk-copy').addEventListener('click', async (ev) => { let ok = false; try { await navigator.clipboard.writeText(e.code); ok = true; } catch (x) {} ev.target.textContent = ok ? 'Copiado' : 'No se pudo copiar'; });
   };
-  if (specs.length === 1) return make(specs[0]);
-  openSheet('Invitar entrenado', `<p style="color:var(--text-3);font-size:14px;margin-bottom:12px;">¿Con qué especialidad lo vas a acompañar?</p>
-    ${specs.map(k => `<button class="btn-secondary" data-inv="${k}" style="width:100%;margin-bottom:8px;">${AUTH_SPECS[k]}</button>`).join('')}`);
-  document.querySelectorAll('[data-inv]').forEach(b => b.addEventListener('click', () => make(b.dataset.inv)));
+  if (specs.length === 1) return make(specs);
+  openSheet('Invitar entrenado', `<p style="color:var(--text-3);font-size:14px;margin-bottom:12px;">¿Qué servicios le vas a dar? Puedes elegir varios; será una sola relación.</p>
+    ${specs.map(k => `<label class="usr-check"><input type="checkbox" data-inv="${k}" checked><span>${AUTH_SPECS[k]}</span></label>`).join('')}
+    <div class="auth-msg" id="inv-msg"></div>`, () => {
+    const roles = Array.from(document.querySelectorAll('[data-inv]')).filter(c => c.checked).map(c => c.dataset.inv);
+    if (!roles.length) { document.getElementById('inv-msg').textContent = t('Elige al menos un servicio.'); return; }
+    make(roles);
+  });
+  const sv = document.getElementById('sheet-save'); if (sv) sv.textContent = t('Crear código');
 }
 // ---- Inicio ----
 tabRenderers['sp-home'] = async function () {
@@ -9894,7 +9931,7 @@ tabRenderers['sp-clients'] = async function () {
   const el = document.getElementById('tab-sp-clients');
   if (_sp.client) return spOpenClient(_sp.client);
   if (!el.innerHTML) el.innerHTML = '<div class="food-loader">Cargando...</div>';
-  const r = await spLoad(false), cs = spClients(r), pend = (r.as_specialist || []).filter(l => l.status === 'pending');
+  const r = await spLoad(false), cs = spClients(r), pend = linkGroup((r.as_specialist || []).filter(l => l.status === 'pending'), l => l.code || l.id);
   if (_sp.client) return;
   const q = normalizeFoodQuery(_sp.q || '');
   const shown = cs.filter(l => !q || normalizeFoodQuery((l.name || '') + ' ' + (l.username || '')).includes(q));
@@ -9902,12 +9939,12 @@ tabRenderers['sp-clients'] = async function () {
     <input class="sp-search" id="sp-q" type="search" placeholder="Buscar por nombre…" value="${escapeHtml(_sp.q || '')}">
     <div class="sp-h" style="margin-top:0;"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Entrenados</span><small><span>${cs.length}</span> <span>${cs.length === 1 ? 'activo' : 'activos'}</span></small></div>
     <div id="sp-list">${shown.map(l => spRowHtml(l, cs.indexOf(l))).join('') || `<div class="sp-empty">${cs.length ? 'Nadie coincide con la búsqueda.' : 'Aún no tienes entrenados. Invita al primero con un código.'}</div>`}</div>
-    ${pend.length ? `<div class="sp-h"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Invitaciones sin usar</span></div>${pend.map(l => `<div class="sp-row" style="cursor:default;"><div class="sp-row-b"><div class="sp-row-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><div class="sp-row-d">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</div></div><button class="btn-secondary" data-sp-cancel="${l.id}" style="padding:8px 12px;width:auto;">Cancelar</button></div>`).join('')}` : ''}
+    ${pend.length ? `<div class="sp-h"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Invitaciones sin usar</span></div>${pend.map(l => `<div class="sp-row" style="cursor:default;"><div class="sp-row-b"><div class="sp-row-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><div class="sp-row-d">${linkRoles(l).map(x => `<span>${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join(' · ')}</div></div><button class="btn-secondary" data-sp-cancel="${linkIds(l).join(',')}" style="padding:8px 12px;width:auto;">Cancelar</button></div>`).join('')}` : ''}
     <div class="sp-actions" style="grid-template-columns:1fr;"><button class="sp-act primary" id="sp-invite2">Invitar entrenado</button></div>`;
   const inp = document.getElementById('sp-q');
   inp.addEventListener('input', () => { _sp.q = inp.value; const pos = inp.selectionStart; tabRenderers['sp-clients']().then(() => { const n = document.getElementById('sp-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } }); });
   el.querySelectorAll('[data-sp-open]').forEach(x => x.addEventListener('click', () => spOpenClient(cs[+x.dataset.spOpen])));
-  el.querySelectorAll('[data-sp-cancel]').forEach(x => x.addEventListener('click', async () => { await linkRpc('rutinal_link_end', { p_id: x.dataset.spCancel }); _sp.at = 0; tabRenderers['sp-clients'](); }));
+  el.querySelectorAll('[data-sp-cancel]').forEach(x => x.addEventListener('click', async () => { for (const id of x.dataset.spCancel.split(',')) await linkRpc('rutinal_link_end', { p_id: id }); _sp.at = 0; tabRenderers['sp-clients'](); }));
   document.getElementById('sp-invite2').addEventListener('click', spInvite);
 };
 function spWeightChart(wl) {
@@ -9937,7 +9974,7 @@ function spBars(vals, labels, o) {
 }
 // Resumen de los últimos 7 días (contra los 7 anteriores) y gráficas de 8 semanas
 function spClientReport(D, l, asg) {
-  const nutri = l.role === 'nutriologo', today = parseKey(keyDate()).getTime();
+  const nutri = linkRoles(l).includes('nutriologo'), gymR = linkRoles(l).some(r => r !== 'nutriologo'), today = parseKey(keyDate()).getTime();
   const ago = k => Math.round((today - parseKey(k).getTime()) / 864e5);
   const dm = new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' });
   const fmt = n => Math.round(n).toLocaleString(_loc());
@@ -9969,7 +10006,8 @@ function spClientReport(D, l, asg) {
       charts.push(card('<span>Calorías por día</span>', spBars(kc, lab, { target: tg && tg.kcal, color: '#F59E0B' }) + '<div class="sp-card-d"><span>Últimos 14 días</span>' + (tg && tg.kcal ? ' · <span>la línea es la meta</span>' : '') + '</div>'));
       charts.push(card('<span>Proteína por día (g)</span>', spBars(pr, lab, { target: tg && tg.protein, color: '#22C55E' })));
     }
-  } else {
+  }
+  if (gymR) {
     const WN = 8, ses = Array(WN).fill(0), vol = Array(WN).fill(0), lab = [], feel = [], e1 = {};
     for (let i = 0; i < WN; i++) lab.push(dm.format(new Date(today - ((WN - i) * 7 - 1) * 864e5)));
     const routines = Array.isArray(D.gym_routines) ? D.gym_routines : [];
@@ -10050,12 +10088,12 @@ async function spOpenClient(l) {
     const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(l.client_id) + '&or=(sub.eq.,sub.gte.' + from + ')&limit=2000');
     if (!r.ok) throw authErrObj('network');
     rows = await r.json();
-    asg = await sbRest('assignments?select=id,kind,name,payload,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent(me) + '&role=eq.' + l.role + '&status=eq.active&order=created_at.desc') || [];
+    asg = await sbRest('assignments?select=id,kind,name,payload,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent(me) + '&role=in.(' + linkRoles(l).join(',') + ')&status=eq.active&order=created_at.desc') || [];
   } catch (e) { el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Entrenados</span></button><p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); }); return; }
   if (_sp.client !== l) return;
   const D = {};
   rows.forEach(x => { if (x.value === null) return; if (x.sub) (D[x.key] = D[x.key] || {})[x.sub] = x.value; else D[x.key] = x.value; });
-  const nutri = l.role === 'nutriologo', d7 = keyDate(new Date(Date.now() - 6 * 864e5));
+  const nutri = linkRoles(l).includes('nutriologo'), gymR = linkRoles(l).some(r => r !== 'nutriologo'), d7 = keyDate(new Date(Date.now() - 6 * 864e5));
   // --- Registros ---
   const logs = [], kpis = [];
   if (nutri) {
@@ -10078,7 +10116,8 @@ async function spOpenClient(l) {
     if (logs.length <= (tg && tg.kcal ? 1 : 0)) logs.push('<div class="sp-empty">Sin comidas registradas en este periodo.</div>');
     kpis.push(`<div class="sp-kpi"><span>Días con comidas (7)</span><b class="${n7 < 4 ? 'warn' : ''}">${n7}/7</b></div>`);
     kpis.push(`<div class="sp-kpi"><span>Promedio diario</span><b>${n7 ? Math.round(k7 / n7) : 0} kcal</b></div>`);
-  } else {
+  }
+  if (gymR) {
     const routines = Array.isArray(D.gym_routines) ? D.gym_routines : [];
     let n7 = 0, pmax = null;
     Object.keys(D.gym_logs || {}).sort().reverse().forEach(d => {
@@ -10115,12 +10154,12 @@ async function spOpenClient(l) {
   const rep = spClientReport(D, l, asg);
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button>',
     progress: `<div class="sp-rep-btns"><button class="sp-act" id="sp-rep-copy">Copiar resumen</button><button class="sp-act" id="sp-rep-pdf">Guardar PDF</button></div>
-      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${rep}${weight || (l.role === 'fisioterapeuta' ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}</div><div id="sp-photos"></div>`,
+      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${rep}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}</div><div id="sp-photos"></div>`,
     logs: logs.join('') };
   if (!tabs[_sp.tab]) _sp.tab = 'plans';
   el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Entrenados</span></button>
     <div class="sp-center"><div class="sp-av big">${escapeHtml((l.name || '?').slice(0, 1))}</div><div class="sp-name" translate="no">${escapeHtml(l.name || '')}</div>
-      <div class="sp-sub" style="margin-bottom:0;"><span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span> · ${spStatusLine(l)}</div></div>
+      <div class="sp-sub" style="margin-bottom:0;">${rolesBadges(l)} · ${spStatusLine(l)}</div></div>
     <div class="sp-actions"><button class="sp-act" id="sp-c-notes">Mensajes</button><button class="sp-act" id="sp-c-appt">Cita</button><button class="sp-act" id="sp-c-assign">Asignar</button></div>
     <div class="sp-tabs"><button data-sp-t="plans" class="${_sp.tab === 'plans' ? 'on' : ''}">Planes</button><button data-sp-t="progress" class="${_sp.tab === 'progress' ? 'on' : ''}">Progreso</button><button data-sp-t="logs" class="${_sp.tab === 'logs' ? 'on' : ''}">Registros</button></div>
     <div id="sp-tabbody">${tabs[_sp.tab]}</div>
@@ -10140,7 +10179,7 @@ async function spOpenClient(l) {
     if (rp) rp.addEventListener('click', () => {
       const body = document.getElementById('sp-report');
       const title = `Rutinal - ${l.name || ''} - ${keyDate()}`;
-      spPrintReport(title, `<h1>${escapeHtml(l.name || '')}</h1><div class="sub">${escapeHtml(tt(AUTH_SPECS[l.role] || l.role))} · ${escapeHtml(new Date().toLocaleDateString(_loc(), { day: 'numeric', month: 'long', year: 'numeric' }))} · Rutinal</div>${body ? body.innerHTML : ''}`);
+      spPrintReport(title, `<h1>${escapeHtml(l.name || '')}</h1> <div class="sub">${escapeHtml(rolesText(l))} · ${escapeHtml(new Date().toLocaleDateString(_loc(), { day: 'numeric', month: 'long', year: 'numeric' }))} · Rutinal</div>${body ? body.innerHTML : ''}`);
     });
     el.querySelectorAll('[data-asg-loads]').forEach(b => b.addEventListener('click', () => {
       const a = asg.find(x => String(x.id) === b.dataset.asgLoads);
@@ -10174,12 +10213,13 @@ async function spOpenClient(l) {
   wire();
   document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); });
   el.querySelectorAll('[data-sp-t]').forEach(b => b.addEventListener('click', () => { _sp.tab = b.dataset.spT; el.querySelectorAll('[data-sp-t]').forEach(x => x.classList.toggle('on', x === b)); document.getElementById('sp-tabbody').innerHTML = tabs[_sp.tab]; wire(); }));
-  document.getElementById('sp-c-notes').addEventListener('click', () => openNotes(l.id, l.name, null, { spec: true, link: l }));
+  document.getElementById('sp-c-notes').addEventListener('click', () => openNotes(l.id, l.name, null, { spec: true, link: l, ids: linkIds(l), roles: linkRoles(l) }));
   document.getElementById('sp-c-assign').addEventListener('click', () => openTemplates(l));
   document.getElementById('sp-c-appt').addEventListener('click', async () => { await msgRefresh(false); openApptEditor(null, l); });
   document.getElementById('sp-c-end').addEventListener('click', async () => {
     if (!confirm('¿Terminar este vínculo? La otra persona dejará de ver los datos.')) return;
-    await linkRpc('rutinal_link_end', { p_id: l.id }); _sp.at = 0; _sp.client = null; tabRenderers['sp-clients']();
+    for (const id of linkIds(l)) await linkRpc('rutinal_link_end', { p_id: id });
+    _sp.at = 0; _sp.client = null; tabRenderers['sp-clients']();
   });
 }
 function tplDone(forClient) { closeSheet(); _sp.tpls = null; if (forClient && spCurrentTab() === 'sp-clients') spOpenClient(forClient); else spRender(); }
@@ -10221,7 +10261,8 @@ tabRenderers['sp-notes'] = async function () {
   let notes = [];
   try { notes = await sbRest('notes?select=link_id,author_id,body,created_at&order=created_at.desc&limit=300') || []; } catch (e) {}
   const last = {};
-  notes.forEach(n => { if (!last[n.link_id]) last[n.link_id] = n; });
+  const prim = {}; cs.forEach(g => g.ids.forEach(id => { prim[id] = g.id; }));
+  notes.forEach(n => { const k = prim[n.link_id] || n.link_id; if (!last[k]) last[k] = n; });
   const ids = new Set(cs.map(l => l.id));
   const sorted = cs.slice().sort((a, b) => Date.parse((last[b.id] || {}).created_at || 0) - Date.parse((last[a.id] || {}).created_at || 0));
   try { const c = msgCache(); c.spec = cs.map(l => l.id); cs.forEach(l => { const n = last[l.id]; if (n) c.last[l.id] = { author_id: n.author_id, body: String(n.body || '').slice(0, 120), created_at: n.created_at }; }); localStorage.setItem('__msgs', JSON.stringify(c)); } catch (e) {}
@@ -10229,8 +10270,8 @@ tabRenderers['sp-notes'] = async function () {
   el.innerHTML = `<div class="sp-hello">Mensajes</div><div class="sp-sub">Conversaciones con tus entrenados</div>
     ${sorted.map(l => { const n = last[l.id]; return `<div class="sp-row${ntIsUnread(l.id, n) ? ' unread' : ''}" data-sp-note="${cs.indexOf(l)}"><div class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</div>
       <div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(l.name || '')}</div><div class="sp-row-d" translate="no">${n ? (n.author_id === me ? '<span translate="yes">Tú</span>: ' : '') + escapeHtml(n.body) : '<span translate="yes">Sin mensajes todavía</span>'}</div></div>
-      <span class="usr-badge spec">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span><span class="sp-chev">›</span></div>`; }).join('') || '<div class="sp-empty">Cuando tengas entrenados, aquí aparecen sus conversaciones.</div>'}`;
-  el.querySelectorAll('[data-sp-note]').forEach(x => x.addEventListener('click', () => { const l = cs[+x.dataset.spNote]; openNotes(l.id, l.name, () => { tabRenderers['sp-notes'](); }, { spec: true, link: l }); }));
+      <span class="sp-roles">${rolesBadges(l)}</span><span class="sp-chev">›</span></div>`; }).join('') || '<div class="sp-empty">Cuando tengas entrenados, aquí aparecen sus conversaciones.</div>'}`;
+  el.querySelectorAll('[data-sp-note]').forEach(x => x.addEventListener('click', () => { const l = cs[+x.dataset.spNote]; openNotes(l.id, l.name, () => { tabRenderers['sp-notes'](); }, { spec: true, link: l, ids: linkIds(l), roles: linkRoles(l) }); }));
 };
 (function spInit() {
   document.querySelectorAll('#mode-bar button').forEach(b => b.addEventListener('click', () => spSetMode(b.dataset.modeSet === 'spec')));
@@ -10248,7 +10289,7 @@ function apptLinks() {
   (c.spec || []).forEach(id => out.push({ id, name: (c.specNames || {})[id] || '', role: '', mine: true }));
   return out;
 }
-function apptName(linkId) { const l = apptLinks().find(x => x.id === linkId); if (l) return l.name; try { const c = ((_sp.links || {}).as_specialist || []).find(x => x.id === linkId); return c ? c.name || '' : ''; } catch (e) { return ''; } }
+function apptName(linkId) { const nm = (msgCache().names || {})[linkId]; if (nm) return nm; const l = apptLinks().find(x => x.id === linkId); if (l) return l.name; try { const c = ((_sp.links || {}).as_specialist || []).find(x => x.id === linkId); return c ? c.name || '' : ''; } catch (e) { return ''; } }
 function apptUpcoming() { const now = Date.now() - 30 * 60000; return apptCache().filter(a => a.status === 'scheduled' && Date.parse(a.starts_at) >= now).sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at)); }
 function apptWhen(iso) {
   const d = new Date(iso), k = keyDate(d), tm = new Date(); tm.setDate(tm.getDate() + 1);
@@ -10551,11 +10592,11 @@ function renderHoyDash() {
     const mc = msgCache();
     if ((mc.links || []).length) chat = `<div class="hd-card hd-chat"><div class="hd-k"><span>Mensajes</span></div>${mc.links.map((l, i) => { const n = mc.last[l.id], un = ntIsUnread(l.id, n);
       return `<button class="hd-chat-row${un ? ' unread' : ''}" data-hd-chat="${i}"><span class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</span><span class="hd-chat-b"><b translate="no">${escapeHtml(l.name || '')}</b>
-        <small translate="no">${n ? (n.author_id === s.uid ? `<span translate="yes">Tú</span>: ` : '') + escapeHtml(n.body) : `<span translate="yes">${escapeHtml(AUTH_SPECS[l.role] || l.role)}</span> · <span translate="yes">Escríbele</span>`}</small></span>${un ? '<i class="hd-dot"></i>' : '<span class="mas-chev">›</span>'}</button>`; }).join('')}</div>`;
+        <small translate="no">${n ? (n.author_id === s.uid ? `<span translate="yes">Tú</span>: ` : '') + escapeHtml(n.body) : `${linkRoles(l).map(r => `<span translate="yes">${escapeHtml(AUTH_SPECS[r] || r)}</span>`).join(' · ')} · <span translate="yes">Escríbele</span>`}</small></span>${un ? '<i class="hd-dot"></i>' : '<span class="mas-chev">›</span>'}</button>`; }).join('')}</div>`;
   } catch (e) {}
   el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${appt}${chat}${food}${weight}${week}`;
   el.querySelectorAll('[data-hd-agenda]').forEach(c => c.addEventListener('click', () => openAgenda()));
-  el.querySelectorAll('[data-hd-chat]').forEach(b => b.addEventListener('click', () => { const l = msgCache().links[+b.dataset.hdChat]; if (l) openNotes(l.id, l.name, null, { spec: false, role: l.role }); }));
+  el.querySelectorAll('[data-hd-chat]').forEach(b => b.addEventListener('click', () => { const l = msgCache().links[+b.dataset.hdChat]; if (l) openNotes(l.id, l.name, null, { spec: false, role: l.role, roles: linkRoles(l), ids: linkIds(l) }); }));
   el.querySelectorAll('[data-hd]').forEach(b => b.addEventListener('click', (ev) => { ev.stopPropagation(); const n = document.querySelector(`nav button[data-tab="${b.dataset.hd}"]`); if (n) n.click(); }));
   el.querySelectorAll('[data-hd-start]').forEach(b => b.addEventListener('click', () => openGymWorkout(b.dataset.hdStart, keyDate())));
   el.querySelectorAll('[data-hd-weight]').forEach(c => c.addEventListener('click', openWeightQuick));

@@ -242,3 +242,12 @@ Las barras (`gymBarsSvg`, `spBars`) y las áreas bajo las líneas (`gymLineSvg`,
 
 - **Unidades** (Más → Ajustes): peso corporal (`body_unit`) y cargas del gym (`gym_unit`) en kg o lb. Todo se guarda en kg; la conversión es de presentación. El perfil de nutrición y las tendencias de comida siguen en kg.
 - **Recordatorio de citas** (solo APK): la app entrega las citas próximas con `Android.setAppointments(json)` y `ApptReminderReceiver` programa un aviso 30 minutos antes de cada una (se reprograma al reiniciar el teléfono y se cancela al cerrar sesión). Solo conoce las citas que la app ya descargó, así que una cita agendada por la otra persona se avisa después de abrir la app al menos una vez.
+
+## Una sola relación por persona, con varios servicios
+
+Si alguien es a la vez tu coach y tu nutriólogo, aparece **una sola vez** con sus servicios como insignias: una conversación, una ficha y una entrada en las listas. Por dentro sigue habiendo una fila de `public.links` por servicio (los permisos de cada especialidad no cambian); la app los agrupa por persona con `linkGroup` (`spClients` para mis entrenados, `mySpecialists` para mis especialistas).
+
+- **Invitación**: el especialista elige los servicios y sale un solo código (`rutinal_invite_many`, ver `supabase/rutinal_multi_service.sql`). La vista previa muestra todos los servicios y la unión de lo que podrá ver; al aceptar se activan juntos. Un código nuevo para alguien que ya es tu entrenado le suma servicios a la misma relación.
+- **Ficha y plantillas**: la ficha muestra lo de todos los servicios y solo se pueden asignar los tipos de plantilla que esos servicios permiten; cada asignación se guarda con el servicio que le corresponde (`asgRoleFor`).
+- **Chat**: se leen juntos los mensajes de todos los vínculos de la pareja y los nuevos se escriben en el más antiguo.
+- **Terminar**: "Dejar de compartir" o "Terminar vínculo" cierra todos los servicios con esa persona.

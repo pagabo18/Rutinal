@@ -3731,6 +3731,31 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "y": {
+   "en": "and",
+   "pt-BR": "e",
+   "fr": "et"
+  },
+  "Si la persona ya es tu entrenado, este código le suma los servicios nuevos a la misma relación.": {
+   "en": "If the person is already your trainee, this code adds the new services to the same relationship.",
+   "pt-BR": "Se a pessoa já é seu aluno, este código soma os novos serviços à mesma relação.",
+   "fr": "Si la personne est déjà votre élève, ce code ajoute les nouveaux services à la même relation."
+  },
+  "¿Qué servicios le vas a dar? Puedes elegir varios; será una sola relación.": {
+   "en": "Which services will you provide? You can pick several; it will be a single relationship.",
+   "pt-BR": "Quais serviços você vai oferecer? Pode escolher vários; será uma única relação.",
+   "fr": "Quels services allez-vous proposer ? Vous pouvez en choisir plusieurs ; ce sera une seule relation."
+  },
+  "Elige al menos un servicio.": {
+   "en": "Choose at least one service.",
+   "pt-BR": "Escolha pelo menos um serviço.",
+   "fr": "Choisissez au moins un service."
+  },
+  "Crear código": {
+   "en": "Create code",
+   "pt-BR": "Criar código",
+   "fr": "Créer le code"
+  },
   "Unidades": {
    "en": "Units",
    "pt-BR": "Unidades",
