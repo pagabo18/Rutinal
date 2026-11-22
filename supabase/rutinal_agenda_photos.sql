@@ -1,6 +1,6 @@
 -- Rutinal · agenda de citas y fotos de progreso (aplicada como migración `rutinal_agenda_photos`, 22 nov 2026)
 
--- ---------- Agenda de citas entre especialista y entrenado ----------
+-- ---------- Agenda de citas entre especialista y atleta ----------
 create table public.appointments (
   id         uuid primary key default gen_random_uuid(),
   link_id    uuid not null references public.links(id) on delete cascade,

@@ -2156,7 +2156,7 @@
   .de-mac b { color: var(--text); }
   @media (max-width: 639px) { .de-total { bottom: -28px; margin-bottom: -28px; } }
 
-  /* Chat entre especialista y entrenado */
+  /* Chat entre especialista y atleta */
   .chat { display: flex; flex-direction: column; min-height: 100%; }
   .chat-sub { text-align: center; margin: -6px 0 8px; }
   .chat .nt-list { flex: 1; gap: 2px; margin-bottom: 8px; }
@@ -2200,7 +2200,7 @@
   .hd-chat-row.unread small { color: var(--text); font-weight: 600; }
   .hd-dot { width: 10px; height: 10px; border-radius: 50%; background: #EF4444; flex-shrink: 0; }
 
-  /* Ficha del entrenado: resumen semanal y gráficas */
+  /* Ficha del atleta: resumen semanal y gráficas */
   .sp-rep-btns { display: flex; gap: 8px; margin-bottom: 12px; }
   .sp-rep-btns .sp-act { flex: 1; }
   .sp-sum-l { font-size: 14px; margin-top: 8px; line-height: 1.4; color: var(--text-2); }
@@ -2368,7 +2368,7 @@
   .gym-wo-bar { top: -16px; margin-top: -16px; padding-top: 18px; }
   .gym-cta-wrap { bottom: -20px; margin-bottom: -20px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
 
-  /* Tablero de Hoy (entrenado) */
+  /* Tablero de Hoy (atleta) */
   .hd-hello { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 2px 0 12px; }
   .hd-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; margin-bottom: 10px; }
   .hd-k { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; justify-content: space-between; }
@@ -2577,7 +2577,7 @@ try {
   <div class="search-results" id="search-results"></div>
 </div>
 
-<div id="mode-bar"><button data-mode-set="">Entrenado</button><button data-mode-set="spec">Especialista</button></div>
+<div id="mode-bar"><button data-mode-set="">Atleta</button><button data-mode-set="spec">Especialista</button></div>
 
 <main>
   <!-- MODO ESPECIALISTA -->
@@ -3081,7 +3081,7 @@ try {
         <div class="acct-user" id="acct-user"></div>
         <div style="display:flex; flex-direction:column; gap:8px;">
           <button class="btn-secondary" id="btn-acct-users" style="display:none;">Administrar usuarios</button>
-          <button class="btn-secondary" id="btn-acct-links">Especialistas y entrenados</button>
+          <button class="btn-secondary" id="btn-acct-links">Especialistas y atletas</button>
           <button class="btn-secondary" id="btn-acct-sync">Respaldo en la nube</button>
           <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
           <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
@@ -3276,7 +3276,7 @@ try {
   </button>
   <button data-tab="sp-clients" data-mode="spec">
     <svg class="icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14c2.6.2 4.5 2 4.5 5"/></svg>
-    Entrenados
+    Atletas
   </button>
   <button data-tab="sp-templates" data-mode="spec">
     <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="3" width="13" height="16" rx="2"/><path d="M8 8h5M8 12h5M20 7v12a2 2 0 0 1-2 2H8"/></svg>
@@ -3716,7 +3716,7 @@ function renderMas() {
     <h2>Tu contenido</h2>
     <div class="mas-card">${row('blocks', I.blocks, 'Bloques', 'Tu horario del día')}${row('habits', I.check, 'Hábitos', 'Crea y ordena tus hábitos')}${row('imprs', I.alert, 'Imprevistos')}${row('cats', I.tag, 'Categorías')}${row('nutri', I.food, 'Nutrición', 'Perfil y metas de comida')}${row('plan', I.goal, 'Metas semanales')}</div>
     <h2>Cuenta y app</h2>
-    <div class="mas-card">${row('ajustes', I.gear, 'Ajustes', 'Tema, idioma y recordatorios')}${logged ? row('agenda', I.cal, 'Agenda', 'Citas con tus especialistas o entrenados') + row('photos', I.photo, 'Fotos de progreso') + row('links', I.people, 'Especialistas y entrenados') + row('sync', I.cloud, 'Respaldo en la nube') + row('logout', I.out, 'Cerrar sesión') : ''}</div>`;
+    <div class="mas-card">${row('ajustes', I.gear, 'Ajustes', 'Tema, idioma y recordatorios')}${logged ? row('agenda', I.cal, 'Agenda', 'Citas con tus especialistas o atletas') + row('photos', I.photo, 'Fotos de progreso') + row('links', I.people, 'Especialistas y atletas') + row('sync', I.cloud, 'Respaldo en la nube') + row('logout', I.out, 'Cerrar sesión') : ''}</div>`;
   el.querySelectorAll('[data-mas]').forEach(b => b.addEventListener('click', () => {
     const k = b.dataset.mas;
     if (k === 'pomo' || k === 'cal') masGo(k);
@@ -7492,7 +7492,7 @@ function calcNutriTargets(pIn, foreign) {
     carbs: carbG,
     proteinKcal, fatKcal, carbKcal,
   };
-  // Metas asignadas por el nutriólogo (solo para la cuenta propia, no al ver a un entrenado)
+  // Metas asignadas por el nutriólogo (solo para la cuenta propia, no al ver a un atleta)
   if (!foreign && typeof assignedTargets === 'function') {
     const a = assignedTargets();
     if (a && a.kcal > 0) {
@@ -8538,7 +8538,7 @@ function openImprSheet(existing) {
 // ============================================================
 // ACCESO: inicio de sesión con usuario y contraseña (Supabase Auth)
 // Las cuentas las da de alta el administrador (Ajustes → Cuenta → Administrar usuarios).
-// Cada cuenta tiene un perfil (public.profiles) con sus especialidades: todos son entrenados y,
+// Cada cuenta tiene un perfil (public.profiles) con sus especialidades: todos son atletas y,
 // si tienen alguna especialidad (coach, nutriólogo, fisioterapeuta), además son especialistas.
 // El usuario entra con su nombre de usuario; por dentro es el correo <usuario>@rutinal.invalid.
 // ============================================================
@@ -8686,7 +8686,7 @@ async function authVerify(force) {
 function authRolesHtml(specs, admin) {
   const parts = [];
   if (specs && specs.length) parts.push(`<span>Especialista</span>: ${specs.map(x => `<span>${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join(', ')}`);
-  else parts.push('<span>Entrenado</span>');
+  else parts.push('<span>Atleta</span>');
   if (admin) parts.push('<span>Administrador</span>');
   return parts.join(' · ');
 }
@@ -8842,7 +8842,7 @@ function openAuthUserEditor(u) {
     <label class="auth-field"><span>Nombre (opcional)</span><input class="auth-in" id="ue-name" type="text" maxlength="80" value="${isNew ? '' : escapeHtml(u.display_name || '')}"></label>
     <label class="auth-field"><span>Nota (opcional)</span><input class="auth-in" id="ue-note" type="text" maxlength="80" value="${isNew ? '' : escapeHtml(u.note || '')}" placeholder="Teléfono, plan, etc."></label>
     <div class="setting-label" style="margin-top:14px;">Especialista en</div>
-    <div class="fit-note" style="margin:-4px 0 4px;">Sin marcar ninguna, la cuenta es solo de entrenado.</div>
+    <div class="fit-note" style="margin:-4px 0 4px;">Sin marcar ninguna, la cuenta es solo de atleta.</div>
     ${Object.keys(AUTH_SPECS).map(k => `<label class="usr-check"><input type="checkbox" data-spec="${k}" ${has(k) ? 'checked' : ''}><span>${AUTH_SPECS[k]}</span></label>`).join('')}
     ${self ? '' : `<div class="setting-label" style="margin-top:14px;">Acceso</div>
     <label class="usr-check"><input type="checkbox" id="ue-active" ${isNew || u.active ? 'checked' : ''}><span>Acceso activo</span></label>
@@ -9191,12 +9191,12 @@ function onAuthReady() {
 })();
 
 // ============================================================
-// ESPECIALISTAS Y ENTRENADOS (vínculos y panel de solo lectura)
-// El especialista genera un código de invitación; el entrenado lo acepta viendo qué comparte.
+// ESPECIALISTAS Y ATLETAS (vínculos y panel de solo lectura)
+// El especialista genera un código de invitación; el atleta lo acepta viendo qué comparte.
 // El servidor decide qué documentos puede leer cada rol (política de user_docs).
 // ============================================================
 const LINK_KEY_LABELS = { gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
-const LINK_ERRORS = { bad_code: 'Ese código no existe o ya venció.', own_code: 'Ese código es tuyo; compártelo con tu entrenado.', too_many: 'Tienes demasiadas invitaciones pendientes. Cancela alguna.', forbidden: 'Tu cuenta no tiene esa especialidad.' };
+const LINK_ERRORS = { bad_code: 'Ese código no existe o ya venció.', own_code: 'Ese código es tuyo; compártelo con tu atleta.', too_many: 'Tienes demasiadas invitaciones pendientes. Cancela alguna.', forbidden: 'Tu cuenta no tiene esa especialidad.' };
 function linkErr(code) { return LINK_ERRORS[code] || authErr(code); }
 async function linkRpc(fn, args) {
   try {
@@ -9212,9 +9212,9 @@ function linkAgo(iso) {
 }
 let _links = { as_client: [], as_specialist: [] };
 async function openLinks() {
-  openSheet('Especialistas y entrenados', '<div class="food-loader">Cargando...</div>');
+  openSheet('Especialistas y atletas', '<div class="food-loader">Cargando...</div>');
   const r = await linkRpc('rutinal_my_links');
-  if (!r.ok) { openSheet('Especialistas y entrenados', `<p class="auth-msg">${escapeHtml(linkErr(r.error))}</p>`); return; }
+  if (!r.ok) { openSheet('Especialistas y atletas', `<p class="auth-msg">${escapeHtml(linkErr(r.error))}</p>`); return; }
   _links = r;
   const s = authGet() || {}, specs = s.specs || [];
   const mineG = mySpecialists(r);
@@ -9234,9 +9234,9 @@ async function openLinks() {
   }).join('');
   const pRows = pend.map(l => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><span class="sp-roles">${rolesBadges(l, '')}</span></div>
       <div class="lk-d"><span>Invitación sin usar</span></div><button class="btn-secondary" data-lk-end="${l.ids.join(',')}" style="margin-top:8px;padding:8px 12px;">Cancelar invitación</button></div>`).join('');
-  openSheet('Especialistas y entrenados', `
+  openSheet('Especialistas y atletas', `
     ${specs.length ? `<button class="btn-primary" id="lk-specmode" style="width:100%;margin-bottom:6px;">Abrir modo especialista</button>
-      <div class="fit-note">Tus entrenados, plantillas y notas están en el modo especialista.</div>` : ''}
+      <div class="fit-note">Tus atletas, plantillas y notas están en el modo especialista.</div>` : ''}
     <div class="lk-h"${specs.length ? '' : ' style="margin-top:0;"'}>Mis especialistas</div>
     ${mine || '<div class="lk-d" style="margin-bottom:8px;">Nadie más ve tus datos.</div>'}
     <label class="auth-field" style="margin-top:12px;"><span>Código de invitación</span>
@@ -9253,7 +9253,7 @@ async function openLinks() {
   document.querySelectorAll('[data-lk-invite]').forEach(b => b.addEventListener('click', async () => {
     const e = await linkRpc('rutinal_invite', { p_role: b.dataset.lkInvite });
     if (!e.ok) { msg.textContent = linkErr(e.error); return; }
-    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu entrenado. Lo escribe en Más → Especialistas y entrenados. Vence en 14 días.</p>
+    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu atleta. Lo escribe en Más → Especialistas y atletas. Vence en 14 días.</p>
       <div class="lk-code" translate="no">${escapeHtml(e.code)}</div>
       <button class="btn-primary" id="lk-copy" style="width:100%;margin-bottom:8px;">Copiar</button>
       <button class="btn-secondary" id="lk-back" style="width:100%;">Volver</button>`);
@@ -9285,7 +9285,7 @@ async function openLinks() {
     });
   });
 }
-// ---- Ficha de un entrenado (solo lectura) ----
+// ---- Ficha de un atleta (solo lectura) ----
 function cdFmtDay(k) { try { return parseKey(k).toLocaleDateString(_loc(), { weekday: 'short', day: 'numeric', month: 'short' }); } catch (e) { return k; } }
 function openClientDetail(l) { closeSheet(); if (!spMode()) spSetMode(true); spGo('sp-clients'); spOpenClient(l); }
 document.getElementById('btn-acct-links').addEventListener('click', openLinks);
@@ -9293,7 +9293,7 @@ document.getElementById('btn-acct-links').addEventListener('click', openLinks);
 // ============================================================
 // PLANTILLAS, ASIGNACIONES Y NOTAS
 // El especialista guarda plantillas (rutina, plan de alimentación, metas, indicaciones) y las
-// asigna a sus entrenados; cada asignación es una copia. El entrenado las recibe al sincronizar.
+// asigna a sus atletas; cada asignación es una copia. El atleta las recibe al sincronizar.
 // ============================================================
 const ASG_KINDS = { routine: 'Rutina', diet: 'Plan de alimentación', targets: 'Metas de nutrición', note: 'Indicaciones' };
 const ASG_ROLE_KINDS = { coach: ['routine', 'note'], fisioterapeuta: ['routine', 'note'], nutriologo: ['diet', 'targets', 'note'] };
@@ -9340,7 +9340,7 @@ async function openTemplates(forClient) {
   document.querySelectorAll('[data-tp-assign]').forEach(b => b.addEventListener('click', () => openAssign(_tpls.find(x => x.id === b.dataset.tpAssign), forClient)));
 }
 // Editor de dieta: comidas con alimentos y gramos, y total del día.
-// target: { tpl } edita o crea una plantilla; { asg, link } edita la copia asignada a un entrenado.
+// target: { tpl } edita o crea una plantilla; { asg, link } edita la copia asignada a un atleta.
 function openDietEditor(target, forClient) {
   target = target || {};
   const src = target.asg || target.tpl || null;
@@ -9510,14 +9510,14 @@ async function openAssign(tp, forClient) {
     clients = r.ok ? spClients(r).filter(l => asgRoleFor(l, tp.kind)) : [];
   }
   openSheet('Asignar', `<div class="lk-row"><div class="lk-top"><div class="lk-n">${escapeHtml(tp.name)}</div><span class="usr-badge">${ASG_KINDS[tp.kind]}</span></div><div class="lk-d">${asgSummary(tp.kind, tp.payload || {})}</div></div>
-    <div class="lk-h">Entrenados</div>
-    ${clients.map((l, i) => `<label class="usr-check"><input type="checkbox" data-as-c="${i}" ${forClient ? 'checked' : ''}><span translate="no">${escapeHtml(l.name || '')}</span> ${rolesBadges(l)}</label>`).join('') || '<div class="lk-d">No tienes entrenados a los que puedas asignar este tipo de plantilla.</div>'}
-    <label class="auth-field" style="margin-top:12px;"><span>Nota para el entrenado (opcional)</span><input class="auth-in" id="as-note" type="text" maxlength="300"></label>
+    <div class="lk-h">Atletas</div>
+    ${clients.map((l, i) => `<label class="usr-check"><input type="checkbox" data-as-c="${i}" ${forClient ? 'checked' : ''}><span translate="no">${escapeHtml(l.name || '')}</span> ${rolesBadges(l)}</label>`).join('') || '<div class="lk-d">No tienes atletas a los que puedas asignar este tipo de plantilla.</div>'}
+    <label class="auth-field" style="margin-top:12px;"><span>Nota para el atleta (opcional)</span><input class="auth-in" id="as-note" type="text" maxlength="300"></label>
     ${tp.kind === 'diet' || tp.kind === 'targets' ? '<div class="fit-note">Reemplaza lo que ya le hayas asignado de este mismo tipo.</div>' : ''}
     <div class="auth-msg" id="as-msg"></div>`, async () => {
     const msg = document.getElementById('as-msg');
     const sel = Array.from(document.querySelectorAll('[data-as-c]')).filter(c => c.checked).map(c => clients[+c.dataset.asC]);
-    if (!sel.length) { msg.textContent = 'Elige al menos un entrenado.'; return; }
+    if (!sel.length) { msg.textContent = 'Elige al menos un atleta.'; return; }
     const s = authGet() || {}, note = document.getElementById('as-note').value.trim() || null;
     try {
       if (tp.kind === 'diet' || tp.kind === 'targets') {
@@ -9526,12 +9526,12 @@ async function openAssign(tp, forClient) {
       await sbRest('assignments', { method: 'POST', headers: { Prefer: 'return=minimal' },
         body: sel.map(l => ({ client_id: l.client_id, role: asgRoleFor(l, tp.kind) || l.role, kind: tp.kind, name: tp.name, payload: tp.payload, note, author_name: s.name || s.user })) });
     } catch (e) { msg.textContent = authErr(e.code); return; }
-    // Aviso en el chat de cada entrenado, con lo asignado adjunto
+    // Aviso en el chat de cada atleta, con lo asignado adjunto
     for (const l of sel) { if (l.id) { try { await ntPost(l.id, note || t('Te dejé esto en tu app.'), { t: 'asg', kind: tp.kind, name: tp.name }); } catch (e) {} } }
     tplDone(forClient);
   });
 }
-// ---- Mensajes: chat por vínculo entre especialista y entrenado ----
+// ---- Mensajes: chat por vínculo entre especialista y atleta ----
 // Los mensajes viven en public.notes; `ref` adjunta algo asignado (rutina, dieta, metas, indicaciones).
 let _ntRefCol = true, _ntTimer = null, _msgAt = 0;
 function ntSeen() { try { return JSON.parse(localStorage.getItem('__nt_seen') || '{}') || {}; } catch (e) { return {}; } }
@@ -9675,7 +9675,7 @@ async function openNotes(linkId, name, back, opts) {
     if (ref) document.getElementById('nt-refx').addEventListener('click', () => setRef(null));
   };
   document.getElementById('nt-plus').addEventListener('click', () => {
-    // El especialista adjunta asignando una plantilla; el entrenado elige sobre qué pregunta
+    // El especialista adjunta asignando una plantilla; el atleta elige sobre qué pregunta
     if (opts.spec && opts.link) { openTemplates(opts.link); return; }
     const pick = document.getElementById('nt-pick');
     if (!pick.hidden) { pick.hidden = true; return; }
@@ -9701,7 +9701,7 @@ async function openNotes(linkId, name, back, opts) {
 // Revisar mensajes nuevos al volver a la app y cada par de minutos
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') msgRefresh(false); });
 setInterval(() => { if (document.visibilityState === 'visible') msgRefresh(false); }, 120000);
-// ---- Entrenado: lo que le asignaron ----
+// ---- Atleta: lo que le asignaron ----
 function asgList() { try { const a = JSON.parse(localStorage.getItem('__asg') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 function assignedTargets() {
   const a = asgList().filter(x => x.kind === 'targets').sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)))[0];
@@ -9788,7 +9788,7 @@ function openAssignmentView(a) {
   }));
 }
 
-// Cargas recomendadas por serie de una rutina asignada (cambian solo para ese entrenado)
+// Cargas recomendadas por serie de una rutina asignada (cambian solo para ese atleta)
 function openAsgLoads(a, l, onDone) {
   const p = JSON.parse(JSON.stringify(a.payload || {})), U = gymUnit();
   const rows = (p.exercises || []).map((ex, i) => `<label class="auth-field"><span><b translate="no">${escapeHtml(ex.name || '')}</b>${Array.isArray(ex.sets) && ex.sets.length ? ' · <span translate="no">' + escapeHtml(gymSetsText(ex.sets)) + '</span>' : ''}</span>
@@ -9808,8 +9808,8 @@ function openAsgLoads(a, l, onDone) {
 }
 
 // ============================================================
-// MODO ESPECIALISTA (pantallas propias: Inicio, Entrenados, Plantillas, Notas)
-// Una cuenta con especialidad puede cambiar entre su app de entrenado y este modo.
+// MODO ESPECIALISTA (pantallas propias: Inicio, Atletas, Plantillas, Notas)
+// Una cuenta con especialidad puede cambiar entre su app de atleta y este modo.
 // ============================================================
 let _sp = { links: null, at: 0, client: null, tab: 'plans', q: '', tq: '', tpls: null };
 function spMode() { return document.documentElement.dataset.mode === 'spec'; }
@@ -9832,8 +9832,8 @@ function spSetMode(on) {
 }
 function openModeChooser() {
   openSheet('¿Quién eres hoy?', `<p style="color:var(--text-3);font-size:14px;margin-bottom:14px;">Elige con qué quieres empezar. Puedes cambiar cuando quieras desde arriba.</p>
-    <div class="who-card" data-who="spec"><b>Especialista</b><span>Revisa a tus entrenados, arma plantillas y deja rutinas, planes e indicaciones.</span></div>
-    <div class="who-card" data-who=""><b>Entrenado</b><span>Registra tus comidas, entrenamientos y hábitos, y revisa lo que te dejaron.</span></div>`);
+    <div class="who-card" data-who="spec"><b>Especialista</b><span>Revisa a tus atletas, arma plantillas y deja rutinas, planes e indicaciones.</span></div>
+    <div class="who-card" data-who=""><b>Atleta</b><span>Registra tus comidas, entrenamientos y hábitos, y revisa lo que te dejaron.</span></div>`);
   document.querySelectorAll('[data-who]').forEach(c => c.addEventListener('click', () => { closeSheet(); spSetMode(c.dataset.who === 'spec'); }));
 }
 async function spLoad(force) {
@@ -9900,15 +9900,15 @@ async function spInvite() {
     const e = await linkRpc('rutinal_invite_many', { p_roles: roles });
     if (!e.ok) { openSheet('Invitación', `<p class="auth-msg">${escapeHtml(linkErr(e.error))}</p>`); return; }
     _sp.at = 0;
-    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu entrenado. Lo escribe en Más → Especialistas y entrenados. Vence en 14 días.</p>
+    openSheet('Invitación', `<p style="color:var(--text-2);font-size:14px;line-height:1.5;">Comparte este código con tu atleta. Lo escribe en Más → Especialistas y atletas. Vence en 14 días.</p>
       <div class="chat-sub" style="margin:0 0 4px;">${rolesBadges({ roles })}</div>
       <div class="lk-code" translate="no">${escapeHtml(e.code)}</div>
       <button class="btn-primary" id="lk-copy" style="width:100%;">Copiar</button>
-      <div class="fit-note" style="margin-top:10px;">Si la persona ya es tu entrenado, este código le suma los servicios nuevos a la misma relación.</div>`);
+      <div class="fit-note" style="margin-top:10px;">Si la persona ya es tu atleta, este código le suma los servicios nuevos a la misma relación.</div>`);
     document.getElementById('lk-copy').addEventListener('click', async (ev) => { let ok = false; try { await navigator.clipboard.writeText(e.code); ok = true; } catch (x) {} ev.target.textContent = ok ? 'Copiado' : 'No se pudo copiar'; });
   };
   if (specs.length === 1) return make(specs);
-  openSheet('Invitar entrenado', `<p style="color:var(--text-3);font-size:14px;margin-bottom:12px;">¿Qué servicios le vas a dar? Puedes elegir varios; será una sola relación.</p>
+  openSheet('Invitar atleta', `<p style="color:var(--text-3);font-size:14px;margin-bottom:12px;">¿Qué servicios le vas a dar? Puedes elegir varios; será una sola relación.</p>
     ${specs.map(k => `<label class="usr-check"><input type="checkbox" data-inv="${k}" checked><span>${AUTH_SPECS[k]}</span></label>`).join('')}
     <div class="auth-msg" id="inv-msg"></div>`, () => {
     const roles = Array.from(document.querySelectorAll('[data-inv]')).filter(c => c.checked).map(c => c.dataset.inv);
@@ -9926,23 +9926,23 @@ tabRenderers['sp-home'] = async function () {
   const pain = cs.filter(l => l.pain7 != null && l.pain7 >= 6);
   const recent = cs.filter(l => l.last_activity).sort((a, b) => Date.parse(b.last_activity) - Date.parse(a.last_activity)).slice(0, 5);
   el.innerHTML = `<div class="sp-hello"><span>Hola</span>, <span translate="no">${escapeHtml(s.name || s.user || '')}</span></div><div class="sp-sub">Tu resumen de hoy</div>
-    <div class="sp-stats"><div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Entrenados activos</div><div class="sp-stat-v">${cs.length}</div></div>
+    <div class="sp-stats"><div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Atletas activos</div><div class="sp-stat-v">${cs.length}</div></div>
       <div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Invitaciones pendientes</div><div class="sp-stat-v">${pend.length}</div></div></div>
     <div class="sp-h">Avisos</div>
     ${quiet.length ? `<div class="sp-alert"><div class="sp-alert-t"><span>Sin registrar:</span> ${quiet.length}</div><div class="sp-alert-d" translate="no">${quiet.map(l => escapeHtml(l.name || '')).join(', ')}</div></div>` : ''}
     ${pain.length ? `<div class="sp-alert"><div class="sp-alert-t"><span>Dolor alto esta semana:</span> ${pain.length}</div><div class="sp-alert-d" translate="no">${pain.map(l => escapeHtml(l.name || '') + ' (' + l.pain7 + '/10)').join(', ')}</div></div>` : ''}
-    ${!quiet.length && !pain.length ? `<div class="sp-alert ok"><div class="sp-alert-t">${cs.length ? 'Todo en orden' : 'Aún no tienes entrenados'}</div><div class="sp-alert-d">${cs.length ? 'Nadie lleva más de 2 días sin registrar ni reportó dolor alto.' : 'Invita a tu primer entrenado con un código.'}</div></div>` : ''}
+    ${!quiet.length && !pain.length ? `<div class="sp-alert ok"><div class="sp-alert-t">${cs.length ? 'Todo en orden' : 'Aún no tienes atletas'}</div><div class="sp-alert-d">${cs.length ? 'Nadie lleva más de 2 días sin registrar ni reportó dolor alto.' : 'Invita a tu primer atleta con un código.'}</div></div>` : ''}
     <div class="sp-h">Próximas citas</div>
     ${apptUpcoming().slice(0, 4).map(a => `<div class="sp-row" data-sp-agenda="1"><div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(a.title || '')}</div><div class="sp-row-d" translate="no">${escapeHtml(apptName(a.link_id))} · ${escapeHtml(apptWhen(a.starts_at))}</div></div><span class="sp-chev">›</span></div>`).join('') || '<div class="sp-alert ok"><div class="sp-alert-d">No tienes citas próximas.</div></div>'}
     <button class="sp-act" data-sp-agenda="1" style="width:100%;margin-bottom:6px;">Abrir agenda</button>
     ${recent.length ? `<div class="sp-h">Actividad reciente</div>${recent.map(l => spRowHtml(l, cs.indexOf(l))).join('')}` : ''}
-    <div class="sp-actions"><button class="sp-act primary" id="sp-invite">Invitar entrenado</button><button class="sp-act" data-sp-tab="sp-templates">Mis plantillas</button></div>`;
+    <div class="sp-actions"><button class="sp-act primary" id="sp-invite">Invitar atleta</button><button class="sp-act" data-sp-tab="sp-templates">Mis plantillas</button></div>`;
   el.querySelectorAll('[data-sp-tab]').forEach(x => x.addEventListener('click', () => spGo(x.dataset.spTab)));
   el.querySelectorAll('[data-sp-open]').forEach(x => x.addEventListener('click', () => { spGo('sp-clients'); spOpenClient(cs[+x.dataset.spOpen]); }));
   document.getElementById('sp-invite').addEventListener('click', spInvite);
   el.querySelectorAll('[data-sp-agenda]').forEach(x => x.addEventListener('click', () => openAgenda()));
 };
-// ---- Entrenados (lista y ficha) ----
+// ---- Atletas (lista y ficha) ----
 tabRenderers['sp-clients'] = async function () {
   const el = document.getElementById('tab-sp-clients');
   if (_sp.client) return spOpenClient(_sp.client);
@@ -9951,12 +9951,12 @@ tabRenderers['sp-clients'] = async function () {
   if (_sp.client) return;
   const q = normalizeFoodQuery(_sp.q || '');
   const shown = cs.filter(l => !q || normalizeFoodQuery((l.name || '') + ' ' + (l.username || '')).includes(q));
-  el.innerHTML = `<div class="sp-hello">Entrenados</div><div class="sp-sub">Las personas que acompañas</div>
+  el.innerHTML = `<div class="sp-hello">Atletas</div><div class="sp-sub">Las personas que acompañas</div>
     <input class="sp-search" id="sp-q" type="search" placeholder="Buscar por nombre…" value="${escapeHtml(_sp.q || '')}">
-    <div class="sp-h" style="margin-top:0;"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Entrenados</span><small><span>${cs.length}</span> <span>${cs.length === 1 ? 'activo' : 'activos'}</span></small></div>
-    <div id="sp-list">${shown.map(l => spRowHtml(l, cs.indexOf(l))).join('') || `<div class="sp-empty">${cs.length ? 'Nadie coincide con la búsqueda.' : 'Aún no tienes entrenados. Invita al primero con un código.'}</div>`}</div>
+    <div class="sp-h" style="margin-top:0;"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Atletas</span><small><span>${cs.length}</span> <span>${cs.length === 1 ? 'activo' : 'activos'}</span></small></div>
+    <div id="sp-list">${shown.map(l => spRowHtml(l, cs.indexOf(l))).join('') || `<div class="sp-empty">${cs.length ? 'Nadie coincide con la búsqueda.' : 'Aún no tienes atletas. Invita al primero con un código.'}</div>`}</div>
     ${pend.length ? `<div class="sp-h"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Invitaciones sin usar</span></div>${pend.map(l => `<div class="sp-row" style="cursor:default;"><div class="sp-row-b"><div class="sp-row-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><div class="sp-row-d">${linkRoles(l).map(x => `<span>${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join(' · ')}</div></div><button class="btn-secondary" data-sp-cancel="${linkIds(l).join(',')}" style="padding:8px 12px;width:auto;">Cancelar</button></div>`).join('')}` : ''}
-    <div class="sp-actions" style="grid-template-columns:1fr;"><button class="sp-act primary" id="sp-invite2">Invitar entrenado</button></div>`;
+    <div class="sp-actions" style="grid-template-columns:1fr;"><button class="sp-act primary" id="sp-invite2">Invitar atleta</button></div>`;
   const inp = document.getElementById('sp-q');
   inp.addEventListener('input', () => { _sp.q = inp.value; const pos = inp.selectionStart; tabRenderers['sp-clients']().then(() => { const n = document.getElementById('sp-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } }); });
   el.querySelectorAll('[data-sp-open]').forEach(x => x.addEventListener('click', () => spOpenClient(cs[+x.dataset.spOpen])));
@@ -10105,7 +10105,7 @@ async function spOpenClient(l) {
     if (!r.ok) throw authErrObj('network');
     rows = await r.json();
     asg = await sbRest('assignments?select=id,kind,name,payload,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent(me) + '&role=in.(' + linkRoles(l).join(',') + ')&status=eq.active&order=created_at.desc') || [];
-  } catch (e) { el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Entrenados</span></button><p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); }); return; }
+  } catch (e) { el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Atletas</span></button><p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); }); return; }
   if (_sp.client !== l) return;
   const D = {};
   rows.forEach(x => { if (x.value === null) return; if (x.sub) (D[x.key] = D[x.key] || {})[x.sub] = x.value; else D[x.key] = x.value; });
@@ -10173,7 +10173,7 @@ async function spOpenClient(l) {
       <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${rep}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}</div><div id="sp-photos"></div>`,
     logs: logs.join('') };
   if (!tabs[_sp.tab]) _sp.tab = 'plans';
-  el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Entrenados</span></button>
+  el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Atletas</span></button>
     <div class="sp-center"><div class="sp-av big">${escapeHtml((l.name || '?').slice(0, 1))}</div><div class="sp-name" translate="no">${escapeHtml(l.name || '')}</div>
       <div class="sp-sub" style="margin-bottom:0;">${rolesBadges(l)} · ${spStatusLine(l)}</div></div>
     <div class="sp-actions"><button class="sp-act" id="sp-c-notes">Mensajes</button><button class="sp-act" id="sp-c-appt">Cita</button><button class="sp-act" id="sp-c-assign">Asignar</button></div>
@@ -10221,7 +10221,7 @@ async function spOpenClient(l) {
       if (a) openDietEditor({ asg: a, link: l, onDone: () => spOpenClient(l) });
     }));
     el.querySelectorAll('[data-asg-end]').forEach(b => b.addEventListener('click', async () => {
-      if (!confirm('¿Quitar esta asignación? Dejará de aparecerle al entrenado.')) return;
+      if (!confirm('¿Quitar esta asignación? Dejará de aparecerle al atleta.')) return;
       try { await sbRest('assignments?id=eq.' + b.dataset.asgEnd, { method: 'PATCH', body: { status: 'ended' }, headers: { Prefer: 'return=minimal' } }); } catch (e) {}
       spOpenClient(l);
     }));
@@ -10251,7 +10251,7 @@ tabRenderers['sp-templates'] = async function () {
   const kinds = Object.keys(ASG_KINDS).filter(k => specs.some(sp => (ASG_ROLE_KINDS[sp] || []).includes(k)));
   const q = normalizeFoodQuery(_sp.tq || '');
   const shown = list.filter(tp => kinds.includes(tp.kind) && (!q || normalizeFoodQuery(tp.name).includes(q)));
-  el.innerHTML = `<div class="sp-hello">Plantillas</div><div class="sp-sub">Lo que dejas a tus entrenados</div>
+  el.innerHTML = `<div class="sp-hello">Plantillas</div><div class="sp-sub">Lo que dejas a tus atletas</div>
     <input class="sp-search" id="sp-tq" type="search" placeholder="Buscar plantillas…" value="${escapeHtml(_sp.tq || '')}">
     ${shown.map(tp => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(tp.name)}</div><span class="usr-badge">${ASG_KINDS[tp.kind]}</span></div>
       <div class="sp-card-d">${asgSummary(tp.kind, tp.payload || {})}</div>
@@ -10283,10 +10283,10 @@ tabRenderers['sp-notes'] = async function () {
   const sorted = cs.slice().sort((a, b) => Date.parse((last[b.id] || {}).created_at || 0) - Date.parse((last[a.id] || {}).created_at || 0));
   try { const c = msgCache(); c.spec = cs.map(l => l.id); cs.forEach(l => { const n = last[l.id]; if (n) c.last[l.id] = { author_id: n.author_id, body: String(n.body || '').slice(0, 120), created_at: n.created_at }; }); localStorage.setItem('__msgs', JSON.stringify(c)); } catch (e) {}
   const nb = document.querySelector('nav button[data-tab="sp-notes"]'); if (nb) nb.classList.toggle('has-dot', msgUnread(true) > 0);
-  el.innerHTML = `<div class="sp-hello">Mensajes</div><div class="sp-sub">Conversaciones con tus entrenados</div>
+  el.innerHTML = `<div class="sp-hello">Mensajes</div><div class="sp-sub">Conversaciones con tus atletas</div>
     ${sorted.map(l => { const n = last[l.id]; return `<div class="sp-row${ntIsUnread(l.id, n) ? ' unread' : ''}" data-sp-note="${cs.indexOf(l)}"><div class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</div>
       <div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(l.name || '')}</div><div class="sp-row-d" translate="no">${n ? (n.author_id === me ? '<span translate="yes">Tú</span>: ' : '') + escapeHtml(n.body) : '<span translate="yes">Sin mensajes todavía</span>'}</div></div>
-      <span class="sp-roles">${rolesBadges(l)}</span><span class="sp-chev">›</span></div>`; }).join('') || '<div class="sp-empty">Cuando tengas entrenados, aquí aparecen sus conversaciones.</div>'}`;
+      <span class="sp-roles">${rolesBadges(l)}</span><span class="sp-chev">›</span></div>`; }).join('') || '<div class="sp-empty">Cuando tengas atletas, aquí aparecen sus conversaciones.</div>'}`;
   el.querySelectorAll('[data-sp-note]').forEach(x => x.addEventListener('click', () => { const l = cs[+x.dataset.spNote]; openNotes(l.id, l.name, () => { tabRenderers['sp-notes'](); }, { spec: true, link: l, ids: linkIds(l), roles: linkRoles(l) }); }));
 };
 (function spInit() {
@@ -10295,10 +10295,10 @@ tabRenderers['sp-notes'] = async function () {
 })();
 
 // ============================================================
-// AGENDA DE CITAS (especialista ↔ entrenado) — tabla public.appointments
+// AGENDA DE CITAS (especialista ↔ atleta) — tabla public.appointments
 // ============================================================
 function apptCache() { try { const a = JSON.parse(localStorage.getItem('__appts') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
-// Vínculos con los que puedo agendar: mis especialistas y mis entrenados
+// Vínculos con los que puedo agendar: mis especialistas y mis atletas
 function apptLinks() {
   const c = msgCache(), out = [];
   (c.links || []).forEach(l => out.push({ id: l.id, name: l.name || '', role: l.role, mine: false }));
@@ -10381,7 +10381,7 @@ async function openAgenda(preLink) {
 function openApptEditor(appt, link) {
   const links = apptLinks();
   if (link && !links.some(x => x.id === link.id)) links.unshift({ id: link.id, name: link.name || '', role: link.role || '', mine: true });
-  if (!links.length) { openSheet('Agenda', '<div class="sp-empty">Para agendar necesitas un vínculo activo con un especialista o un entrenado.</div>'); return; }
+  if (!links.length) { openSheet('Agenda', '<div class="sp-empty">Para agendar necesitas un vínculo activo con un especialista o un atleta.</div>'); return; }
   const d0 = appt ? new Date(appt.starts_at) : null;
   const date = appt ? keyDate(d0) : (_ag.day && _ag.day >= keyDate() ? _ag.day : keyDate());
   const time = appt ? String(d0.getHours()).padStart(2, '0') + ':' + String(d0.getMinutes()).padStart(2, '0') : '10:00';
@@ -10510,7 +10510,7 @@ function openPhotoView(p) {
     closeSheet();
   });
 }
-// Ficha del entrenado: las fotos que decidió compartir
+// Ficha del atleta: las fotos que decidió compartir
 async function spClientPhotos(l) {
   const box = document.getElementById('sp-photos'); if (!box) return;
   let rows = [];
@@ -10524,7 +10524,7 @@ async function spClientPhotos(l) {
 }
 
 // ============================================================
-// TABLERO DE HOY (entrenado): entrenamiento, comida y peso de un vistazo
+// TABLERO DE HOY (atleta): entrenamiento, comida y peso de un vistazo
 // ============================================================
 function hoyDashGreeting() {
   const h = new Date().getHours();

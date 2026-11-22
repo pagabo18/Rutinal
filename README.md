@@ -123,17 +123,17 @@ La app pide iniciar sesión al abrir. Las cuentas las crea el administrador desd
 
 Opcional y con consentimiento (Editar → Ajustes → Cuenta → Respaldo en la nube). La app sigue leyendo y escribiendo en el dispositivo; `S.set`/`S.del` anotan qué cambió y el motor de sincronización sube esos documentos a `public.user_docs` (uno por clave y, en registros diarios, uno por día) y baja los cambios de otros dispositivos. En conflicto gana lo último que llega al servidor, por documento. Los datos locales pertenecen a una sola cuenta: si otra cuenta inicia sesión en el dispositivo, se pide borrar los datos locales antes de continuar. Esquema y permisos en `supabase/rutinal_sync_links.sql`.
 
-## Especialistas y entrenados
+## Especialistas y atletas
 
-Editar → Ajustes → Cuenta → Especialistas y entrenados. Un especialista (cuenta con especialidad de coach, nutriólogo o fisioterapeuta) genera un código de invitación; el entrenado lo escribe, ve qué va a compartir y acepta. Cualquiera de los dos puede terminar el vínculo. El especialista ve a sus entrenados con indicadores de los últimos 7 días (último registro, comidas, entrenamientos, dolor máximo) y una ficha de solo lectura de 30 días. Qué puede leer cada rol lo decide el servidor (`private.role_keys` y la política de `user_docs` en `supabase/rutinal_sync_links.sql`): coach → entrenamientos, rutinas y peso; nutriólogo → comidas, metas, agua y peso; fisioterapeuta → entrenamientos y rutinas.
+Editar → Ajustes → Cuenta → Especialistas y atletas. Un especialista (cuenta con especialidad de coach, nutriólogo o fisioterapeuta) genera un código de invitación; el atleta lo escribe, ve qué va a compartir y acepta. Cualquiera de los dos puede terminar el vínculo. El especialista ve a sus atletas con indicadores de los últimos 7 días (último registro, comidas, entrenamientos, dolor máximo) y una ficha de solo lectura de 30 días. Qué puede leer cada rol lo decide el servidor (`private.role_keys` y la política de `user_docs` en `supabase/rutinal_sync_links.sql`): coach → entrenamientos, rutinas y peso; nutriólogo → comidas, metas, agua y peso; fisioterapeuta → entrenamientos y rutinas.
 
 ## Modo especialista
 
-Las cuentas con especialidad tienen arriba un selector Entrenado / Especialista (y al iniciar sesión se pregunta "¿Quién eres hoy?"). El modo especialista cambia la navegación a cuatro pantallas propias, basadas en los diseños de v0: **Inicio** (entrenados activos, invitaciones, avisos, actividad reciente), **Entrenados** (búsqueda, lista y ficha con pestañas Planes / Progreso / Registros), **Plantillas** (biblioteca, crear y asignar) y **Notas** (conversaciones por entrenado). En Ajustes → Cuenta solo queda lo del entrenado: sus especialistas y el código de invitación.
+Las cuentas con especialidad tienen arriba un selector Atleta / Especialista (y al iniciar sesión se pregunta "¿Quién eres hoy?"). El modo especialista cambia la navegación a cuatro pantallas propias, basadas en los diseños de v0: **Inicio** (atletas activos, invitaciones, avisos, actividad reciente), **Atletas** (búsqueda, lista y ficha con pestañas Planes / Progreso / Registros), **Plantillas** (biblioteca, crear y asignar) y **Notas** (conversaciones por atleta). En Ajustes → Cuenta solo queda lo del atleta: sus especialistas y el código de invitación.
 
 ## Plantillas, asignaciones y notas
 
-El especialista guarda plantillas en Especialistas y entrenados → Mis plantillas: **rutina** (una rutina de su pestaña Gym), **plan de alimentación** (el menú de un día de su pestaña Comida), **metas de nutrición** e **indicaciones**. Al asignarla a uno o varios entrenados se entrega una copia (`public.assignments`); un plan o unas metas nuevas reemplazan a los anteriores del mismo especialista. El entrenado las recibe al sincronizar: la rutina aparece en su Gym marcada como asignada, las metas pasan a ser su meta diaria, y el plan y las indicaciones se ven en la tarjeta "De tus especialistas" de Hoy (el plan permite registrar cada comida en el día). Cada vínculo tiene un hilo de notas. Qué puede asignar cada rol lo valida el servidor (`supabase/rutinal_templates.sql`); al terminar un vínculo se terminan sus asignaciones.
+El especialista guarda plantillas en Especialistas y atletas → Mis plantillas: **rutina** (una rutina de su pestaña Gym), **plan de alimentación** (el menú de un día de su pestaña Comida), **metas de nutrición** e **indicaciones**. Al asignarla a uno o varios atletas se entrega una copia (`public.assignments`); un plan o unas metas nuevas reemplazan a los anteriores del mismo especialista. El atleta las recibe al sincronizar: la rutina aparece en su Gym marcada como asignada, las metas pasan a ser su meta diaria, y el plan y las indicaciones se ven en la tarjeta "De tus especialistas" de Hoy (el plan permite registrar cada comida en el día). Cada vínculo tiene un hilo de notas. Qué puede asignar cada rol lo valida el servidor (`supabase/rutinal_templates.sql`); al terminar un vínculo se terminan sus asignaciones.
 
 ## APIs de nutrición
 
@@ -171,7 +171,7 @@ El especialista guarda plantillas en Especialistas y entrenados → Mis plantill
 
 MIT
 
-## Tablero de Hoy (entrenado)
+## Tablero de Hoy (atleta)
 
 Arriba de la pestaña **Hoy** hay un tablero con saludo y tres tarjetas: el entrenamiento programado (con botón *Empezar/Continuar*), la comida del día contra la meta de calorías y el peso actual (toca para registrarlo). Usa los mismos datos que Gym, Comida y el perfil de nutrición; si un nutriólogo asignó metas, se usan esas.
 
@@ -187,7 +187,7 @@ En teléfono (menos de 640 px de ancho) las hojas que antes subían desde abajo 
 
 ### Cargas recomendadas por serie
 
-Cada ejercicio puede llevar `loads`: la carga recomendada de cada serie, en kg (si hay menos cargas que series, la última se repite). Se capturan en el editor de rutina ("Carga recomendada por serie") y, para un entrenado concreto, desde su ficha en modo especialista: **Planes → Cargas por serie** en la rutina asignada. Eso cambia solo la copia de ese entrenado (se guarda en la asignación) y su app actualiza las cargas en la siguiente consulta, sin tocar lo que ya registró. En el entrenamiento aparecen como "Carga recomendada" y como valor sugerido de cada serie.
+Cada ejercicio puede llevar `loads`: la carga recomendada de cada serie, en kg (si hay menos cargas que series, la última se repite). Se capturan en el editor de rutina ("Carga recomendada por serie") y, para un atleta concreto, desde su ficha en modo especialista: **Planes → Cargas por serie** en la rutina asignada. Eso cambia solo la copia de ese atleta (se guarda en la asignación) y su app actualiza las cargas en la siguiente consulta, sin tocar lo que ya registró. En el entrenamiento aparecen como "Carga recomendada" y como valor sugerido de cada serie.
 
 ## Comida (rediseño)
 
@@ -199,19 +199,19 @@ Hábitos, Reloj, Calendario, Gym y Editar usan el mismo lenguaje visual que las 
 
 ## Barra inferior de 5 pestañas y "Más"
 
-En teléfono y tableta (menos de 1024 px) la barra inferior muestra **Hoy · Comida · Gym · Hábitos · Más**. Reloj, Calendario y Editar siguen existiendo como pantallas, pero se entra desde **Más**, que reúne: perfil (lleva a Ajustes), herramientas (Reloj, Calendario), tu contenido (Bloques, Hábitos, Imprevistos, Categorías, Nutrición, Metas semanales) y cuenta (Ajustes, Especialistas y entrenados, Respaldo en la nube, Cerrar sesión). Cada una de esas pantallas tiene un regreso "‹ Más". En modo especialista la barra es Inicio · Entrenados · Plantillas · Notas · Más. En escritorio se conserva la barra lateral con todas las pestañas.
+En teléfono y tableta (menos de 1024 px) la barra inferior muestra **Hoy · Comida · Gym · Hábitos · Más**. Reloj, Calendario y Editar siguen existiendo como pantallas, pero se entra desde **Más**, que reúne: perfil (lleva a Ajustes), herramientas (Reloj, Calendario), tu contenido (Bloques, Hábitos, Imprevistos, Categorías, Nutrición, Metas semanales) y cuenta (Ajustes, Especialistas y atletas, Respaldo en la nube, Cerrar sesión). Cada una de esas pantallas tiene un regreso "‹ Más". En modo especialista la barra es Inicio · Atletas · Plantillas · Notas · Más. En escritorio se conserva la barra lateral con todas las pestañas.
 
-### Ficha del entrenado: resumen semanal, gráficas y PDF
+### Ficha del atleta: resumen semanal, gráficas y PDF
 
 La pestaña **Progreso** de la ficha (modo especialista) trae ahora 8 semanas de datos y muestra: resumen de los últimos 7 días contra los 7 anteriores, y gráficas según la especialidad. Coach y fisioterapeuta ven entrenamientos y volumen por semana, dolor y esfuerzo por sesión y 1RM estimado por ejercicio; el nutriólogo ve calorías y proteína por día (14 días) con la línea de la meta, que es la asignada por él si existe. **Copiar resumen** lo deja como texto para pegar en un mensaje y **Guardar PDF** imprime el reporte (impresión nativa en la app, diálogo de impresión en el navegador).
 
-## Chat entre especialista y entrenado
+## Chat entre especialista y atleta
 
 Las "notas" por vínculo ahora son un **chat**: burbujas por autor, separadores por día, barra de escritura fija abajo y actualización cada 12 s mientras está abierto. Los mensajes siguen en `public.notes` (solo los ven las dos partes del vínculo); la migración `supabase/rutinal_chat.sql` agrega `ref`, la referencia opcional a algo asignado.
 
-- **Adjuntos**: al asignar una plantilla (o cambiar las cargas por serie) queda un mensaje en el chat con la rutina, dieta, metas o indicaciones adjuntas. El entrenado toca el adjunto para abrirlo. Con **+**, el especialista asigna una plantilla desde el chat y el entrenado elige sobre qué rutina o plan pregunta.
-- **No leídos**: punto rojo en *Mensajes* (especialista) o en *Hoy* (entrenado), y en cada conversación. Lo "visto" se guarda en el dispositivo (`__nt_seen`), no en el servidor.
-- **Dónde está**: el entrenado ve la tarjeta *Mensajes* en Hoy con cada especialista; el especialista tiene la pestaña *Mensajes* y el botón *Mensajes* en la ficha de cada entrenado.
+- **Adjuntos**: al asignar una plantilla (o cambiar las cargas por serie) queda un mensaje en el chat con la rutina, dieta, metas o indicaciones adjuntas. El atleta toca el adjunto para abrirlo. Con **+**, el especialista asigna una plantilla desde el chat y el atleta elige sobre qué rutina o plan pregunta.
+- **No leídos**: punto rojo en *Mensajes* (especialista) o en *Hoy* (atleta), y en cada conversación. Lo "visto" se guarda en el dispositivo (`__nt_seen`), no en el servidor.
+- **Dónde está**: el atleta ve la tarjeta *Mensajes* en Hoy con cada especialista; el especialista tiene la pestaña *Mensajes* y el botón *Mensajes* en la ficha de cada atleta.
 - No hay notificaciones con la app cerrada: los mensajes nuevos se revisan al abrir la app, al volver a ella y cada 2 minutos.
 
 ### Avisos de mensajes con la app cerrada (solo APK)
@@ -225,7 +225,7 @@ No se usa un servicio de push. `ChatPollReceiver` se despierta cada ~15 minutos 
 
 ### Editor de dieta
 
-Las plantillas de plan de alimentación se arman en un editor propio (`openDietEditor`): nombre, las cuatro comidas con sus alimentos y gramos, buscador integrado (mis alimentos, base local, USDA y Open Food Facts) y el total del día fijo abajo. También permite copiar un día del registro propio como punto de partida, editar plantillas ya guardadas y, desde la ficha del entrenado (**Planes → Editar**), ajustar el plan ya asignado solo para esa persona; ese cambio le llega a su app y queda avisado en el chat.
+Las plantillas de plan de alimentación se arman en un editor propio (`openDietEditor`): nombre, las cuatro comidas con sus alimentos y gramos, buscador integrado (mis alimentos, base local, USDA y Open Food Facts) y el total del día fijo abajo. También permite copiar un día del registro propio como punto de partida, editar plantillas ya guardadas y, desde la ficha del atleta (**Planes → Editar**), ajustar el plan ya asignado solo para esa persona; ese cambio le llega a su app y queda avisado en el chat.
 
 ### Gráficas con degradado
 
@@ -233,7 +233,7 @@ Las barras (`gymBarsSvg`, `spBars`) y las áreas bajo las líneas (`gymLineSvg`,
 
 ## Editor de rutinas, resumen semanal, agenda y fotos
 
-- **Editor de rutinas**: las plantillas de rutina se crean y editan en el editor completo (`openRoutineEditorFor`), sin armarlas antes en el Gym propio. Desde la ficha del entrenado, **Planes → Editar** cambia la rutina ya asignada solo para esa persona; su app reemplaza su copia conservando el mismo id, así que sus registros no se pierden (`asgSig` detecta el cambio).
+- **Editor de rutinas**: las plantillas de rutina se crean y editan en el editor completo (`openRoutineEditorFor`), sin armarlas antes en el Gym propio. Desde la ficha del atleta, **Planes → Editar** cambia la rutina ya asignada solo para esa persona; su app reemplaza su copia conservando el mismo id, así que sus registros no se pierden (`asgSig` detecta el cambio).
 - **Tu semana**: tarjeta en Hoy con entrenamientos, días con comidas (y promedio contra la meta), hábitos y cambio de peso de los últimos 7 días.
 - **Agenda**: tabla `public.appointments` (ver `supabase/rutinal_agenda_photos.sql`). Cualquiera de las dos partes de un vínculo activo puede agendar, cambiar o cancelar; cada movimiento deja un mensaje en el chat. Se abre desde Más → Agenda, la tarjeta "Próxima cita" de Hoy, el inicio del especialista y el botón *Cita* de la ficha. No hay recordatorios con la app cerrada.
 - **Fotos de progreso**: bucket privado `progress` y tabla `public.progress_photos`. La foto se reduce a 1280 px en JPEG antes de subirla. Solo la ve su dueño; sus especialistas ven únicamente las marcadas como compartidas (`shared`), y nadie más. Se abren desde Más → Fotos de progreso; el especialista las ve en la pestaña Progreso de la ficha.
@@ -245,9 +245,9 @@ Las barras (`gymBarsSvg`, `spBars`) y las áreas bajo las líneas (`gymLineSvg`,
 
 ## Una sola relación por persona, con varios servicios
 
-Si alguien es a la vez tu coach y tu nutriólogo, aparece **una sola vez** con sus servicios como insignias: una conversación, una ficha y una entrada en las listas. Por dentro sigue habiendo una fila de `public.links` por servicio (los permisos de cada especialidad no cambian); la app los agrupa por persona con `linkGroup` (`spClients` para mis entrenados, `mySpecialists` para mis especialistas).
+Si alguien es a la vez tu coach y tu nutriólogo, aparece **una sola vez** con sus servicios como insignias: una conversación, una ficha y una entrada en las listas. Por dentro sigue habiendo una fila de `public.links` por servicio (los permisos de cada especialidad no cambian); la app los agrupa por persona con `linkGroup` (`spClients` para mis atletas, `mySpecialists` para mis especialistas).
 
-- **Invitación**: el especialista elige los servicios y sale un solo código (`rutinal_invite_many`, ver `supabase/rutinal_multi_service.sql`). La vista previa muestra todos los servicios y la unión de lo que podrá ver; al aceptar se activan juntos. Un código nuevo para alguien que ya es tu entrenado le suma servicios a la misma relación.
+- **Invitación**: el especialista elige los servicios y sale un solo código (`rutinal_invite_many`, ver `supabase/rutinal_multi_service.sql`). La vista previa muestra todos los servicios y la unión de lo que podrá ver; al aceptar se activan juntos. Un código nuevo para alguien que ya es tu atleta le suma servicios a la misma relación.
 - **Ficha y plantillas**: la ficha muestra lo de todos los servicios y solo se pueden asignar los tipos de plantilla que esos servicios permiten; cada asignación se guarda con el servicio que le corresponde (`asgRoleFor`).
 - **Chat**: se leen juntos los mensajes de todos los vínculos de la pareja y los nuevos se escriben en el más antiguo.
 - **Terminar**: "Dejar de compartir" o "Terminar vínculo" cierra todos los servicios con esa persona.

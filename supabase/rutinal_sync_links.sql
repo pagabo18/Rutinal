@@ -1,5 +1,5 @@
 -- Fase 2: copia en el servidor de los datos de cada cuenta (un documento por clave y, en los
--- registros diarios, por día). Fase 3: vínculos especialista–entrenado y permisos por rol.
+-- registros diarios, por día). Fase 3: vínculos especialista–atleta y permisos por rol.
 -- PENDIENTE DE APLICAR en el proyecto de Supabase `rutinal` (migración rutinal_sync_links).
 
 -- ---------- documentos sincronizados ----------
@@ -143,7 +143,7 @@ begin
   return jsonb_build_object('ok', true);
 end $$;
 
--- Mis vínculos: como entrenado (mis especialistas) y como especialista (mis entrenados, con resumen)
+-- Mis vínculos: como atleta (mis especialistas) y como especialista (mis atletas, con resumen)
 create function public.rutinal_my_links() returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare me public.profiles; d7 text := to_char((now() at time zone 'America/Mexico_City')::date - 6, 'YYYY-MM-DD');

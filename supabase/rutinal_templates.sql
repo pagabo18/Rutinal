@@ -1,4 +1,4 @@
--- Fase 5: plantillas del especialista y asignaciones a sus entrenados. Fase 6: notas por vínculo.
+-- Fase 5: plantillas del especialista y asignaciones a sus atletas. Fase 6: notas por vínculo.
 
 create function private.kind_allowed(p_role text, p_kind text) returns boolean language sql immutable set search_path = '' as $$
   select case p_kind when 'routine' then p_role in ('coach','fisioterapeuta')
@@ -6,7 +6,7 @@ create function private.kind_allowed(p_role text, p_kind text) returns boolean l
                      when 'targets' then p_role = 'nutriologo'
                      when 'note' then true else false end
 $$;
--- ¿Quien llama tiene un vínculo activo como especialista de ese entrenado con ese rol?
+-- ¿Quien llama tiene un vínculo activo como especialista de ese atleta con ese rol?
 create function private.is_my_client(p_client uuid, p_role text) returns boolean
 language sql stable security definer set search_path = '' as $$
   select exists (select 1 from public.links l where l.specialist_id = (select auth.uid()) and l.client_id = p_client
@@ -39,7 +39,7 @@ grant all on public.templates to service_role;
 create policy templates_own on public.templates for all to authenticated
   using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
 
--- ---------- asignaciones (copia de una plantilla entregada a un entrenado) ----------
+-- ---------- asignaciones (copia de una plantilla entregada a un atleta) ----------
 create table public.assignments (
   id            uuid primary key default gen_random_uuid(),
   specialist_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
@@ -68,7 +68,7 @@ create policy assignments_specialist_update on public.assignments for update to 
   using (specialist_id = (select auth.uid()))
   with check (specialist_id = (select auth.uid()) and private.kind_allowed(role, kind));
 
--- ---------- notas entre especialista y entrenado ----------
+-- ---------- notas entre especialista y atleta ----------
 create table public.notes (
   id         uuid primary key default gen_random_uuid(),
   link_id    uuid not null references public.links(id) on delete cascade,

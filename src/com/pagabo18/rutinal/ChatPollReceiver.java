@@ -251,7 +251,7 @@ public class ChatPollReceiver extends BroadcastReceiver {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null || nm.getNotificationChannel(CHANNEL_ID) != null) return;
         NotificationChannel ch = new NotificationChannel(CHANNEL_ID, "Mensajes", NotificationManager.IMPORTANCE_DEFAULT);
-        ch.setDescription("Mensajes de tus especialistas o entrenados.");
+        ch.setDescription("Mensajes de tus especialistas o atletas.");
         nm.createNotificationChannel(ch);
     }
 

@@ -3761,10 +3761,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "e",
    "fr": "et"
   },
-  "Si la persona ya es tu entrenado, este código le suma los servicios nuevos a la misma relación.": {
-   "en": "If the person is already your trainee, this code adds the new services to the same relationship.",
-   "pt-BR": "Se a pessoa já é seu aluno, este código soma os novos serviços à mesma relação.",
-   "fr": "Si la personne est déjà votre élève, ce code ajoute les nouveaux services à la même relation."
+  "Si la persona ya es tu atleta, este código le suma los servicios nuevos a la misma relación.": {
+   "en": "If the person is already your athlete, this code adds the new services to the same relationship.",
+   "pt-BR": "Se a pessoa já é seu atleta, este código soma os novos serviços à mesma relação.",
+   "fr": "Si la personne est déjà votre athlète, ce code ajoute les nouveaux services à la même relation."
   },
   "¿Qué servicios le vas a dar? Puedes elegir varios; será una sola relación.": {
    "en": "Which services will you provide? You can pick several; it will be a single relationship.",
@@ -3846,10 +3846,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Agenda",
    "fr": "Agenda"
   },
-  "Citas con tus especialistas o entrenados": {
-   "en": "Appointments with your specialists or trainees",
-   "pt-BR": "Consultas com seus especialistas ou alunos",
-   "fr": "Rendez-vous avec vos spécialistes ou élèves"
+  "Citas con tus especialistas o atletas": {
+   "en": "Appointments with your specialists or athletes",
+   "pt-BR": "Consultas com seus especialistas ou atletas",
+   "fr": "Rendez-vous avec vos spécialistes ou athlètes"
   },
   "Fotos de progreso": {
    "en": "Progress photos",
@@ -3976,10 +3976,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Cancelar esta consulta?",
    "fr": "Annuler ce rendez-vous ?"
   },
-  "Para agendar necesitas un vínculo activo con un especialista o un entrenado.": {
-   "en": "To schedule you need an active link with a specialist or a trainee.",
-   "pt-BR": "Para agendar você precisa de um vínculo ativo com um especialista ou aluno.",
-   "fr": "Pour planifier, il faut un lien actif avec un spécialiste ou un élève."
+  "Para agendar necesitas un vínculo activo con un especialista o un atleta.": {
+   "en": "To schedule you need an active link with a specialist or an athlete.",
+   "pt-BR": "Para agendar você precisa de um vínculo ativo com um especialista ou atleta.",
+   "fr": "Pour planifier, il faut un lien actif avec un spécialiste ou un athlète."
   },
   "Tus fotos se guardan en el servidor de Rutinal y solo tú las ves. Tus especialistas solo ven las que marques para compartir.": {
    "en": "Your photos are stored on Rutinal's server and only you can see them. Your specialists only see the ones you mark to share.",
@@ -4151,10 +4151,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Mensagens",
    "fr": "Messages"
   },
-  "Conversaciones con tus entrenados": {
-   "en": "Conversations with your trainees",
-   "pt-BR": "Conversas com seus alunos",
-   "fr": "Conversations avec vos élèves"
+  "Conversaciones con tus atletas": {
+   "en": "Conversations with your athletes",
+   "pt-BR": "Conversas com seus atletas",
+   "fr": "Conversations avec vos athlètes"
   },
   "Sin mensajes todavía": {
    "en": "No messages yet",
@@ -4601,10 +4601,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Abrir modo especialista",
    "fr": "Ouvrir le mode spécialiste"
   },
-  "Tus entrenados, plantillas y notas están en el modo especialista.": {
-   "en": "Your trainees, templates and notes are in specialist mode.",
-   "pt-BR": "Seus alunos, modelos e notas estão no modo especialista.",
-   "fr": "Vos élèves, modèles et notes sont dans le mode spécialiste."
+  "Tus atletas, plantillas y notas están en el modo especialista.": {
+   "en": "Your athletes, templates and notes are in specialist mode.",
+   "pt-BR": "Seus atletas, modelos e notas estão no modo especialista.",
+   "fr": "Vos athlètes, modèles et notes sont dans le mode spécialiste."
   },
   "¿Quién eres hoy?": {
    "en": "Who are you today?",
@@ -4616,20 +4616,20 @@ window.__I18N_EXTRA = {
    "pt-BR": "Escolha por onde começar. Você pode trocar quando quiser no topo.",
    "fr": "Choisissez par où commencer. Vous pouvez changer à tout moment en haut."
   },
-  "Revisa a tus entrenados, arma plantillas y deja rutinas, planes e indicaciones.": {
-   "en": "Check on your trainees, build templates and hand out routines, plans and instructions.",
-   "pt-BR": "Acompanhe seus alunos, monte modelos e deixe rotinas, planos e orientações.",
-   "fr": "Suivez vos élèves, créez des modèles et donnez routines, plans et consignes."
+  "Revisa a tus atletas, arma plantillas y deja rutinas, planes e indicaciones.": {
+   "en": "Check on your athletes, build templates and hand out routines, plans and instructions.",
+   "pt-BR": "Acompanhe seus atletas, monte modelos e deixe rotinas, planos e orientações.",
+   "fr": "Suivez vos athlètes, créez des modèles et donnez routines, plans et consignes."
   },
   "Registra tus comidas, entrenamientos y hábitos, y revisa lo que te dejaron.": {
    "en": "Log your meals, workouts and habits, and check what was assigned to you.",
    "pt-BR": "Registre suas refeições, treinos e hábitos, e veja o que deixaram para você.",
    "fr": "Enregistrez vos repas, entraînements et habitudes, et consultez ce qu'on vous a attribué."
   },
-  "Invitar entrenado": {
-   "en": "Invite trainee",
-   "pt-BR": "Convidar aluno",
-   "fr": "Inviter un élève"
+  "Invitar atleta": {
+   "en": "Invite athlete",
+   "pt-BR": "Convidar atleta",
+   "fr": "Inviter un athlète"
   },
   "¿Con qué especialidad lo vas a acompañar?": {
    "en": "Which specialty will you work with them as?",
@@ -4646,10 +4646,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Seu resumo de hoje",
    "fr": "Votre résumé du jour"
   },
-  "Entrenados activos": {
-   "en": "Active trainees",
-   "pt-BR": "Alunos ativos",
-   "fr": "Élèves actifs"
+  "Atletas activos": {
+   "en": "Active athletes",
+   "pt-BR": "Atletas ativos",
+   "fr": "Athlètes actifs"
   },
   "Invitaciones pendientes": {
    "en": "Pending invitations",
@@ -4676,20 +4676,20 @@ window.__I18N_EXTRA = {
    "pt-BR": "Tudo em ordem",
    "fr": "Tout va bien"
   },
-  "Aún no tienes entrenados": {
-   "en": "You don't have trainees yet",
-   "pt-BR": "Você ainda não tem alunos",
-   "fr": "Vous n'avez pas encore d'élèves"
+  "Aún no tienes atletas": {
+   "en": "You don't have athletes yet",
+   "pt-BR": "Você ainda não tem atletas",
+   "fr": "Vous n'avez pas encore d'athlètes"
   },
   "Nadie lleva más de 2 días sin registrar ni reportó dolor alto.": {
    "en": "Nobody has gone more than 2 days without logging or reported high pain.",
    "pt-BR": "Ninguém está há mais de 2 dias sem registrar nem relatou dor alta.",
    "fr": "Personne n'a passé plus de 2 jours sans saisie ni signalé de douleur élevée."
   },
-  "Invita a tu primer entrenado con un código.": {
-   "en": "Invite your first trainee with a code.",
-   "pt-BR": "Convide seu primeiro aluno com um código.",
-   "fr": "Invitez votre premier élève avec un code."
+  "Invita a tu primer atleta con un código.": {
+   "en": "Invite your first athlete with a code.",
+   "pt-BR": "Convide seu primeiro atleta com um código.",
+   "fr": "Invitez votre premier athlète avec un code."
   },
   "Actividad reciente": {
    "en": "Recent activity",
@@ -4716,10 +4716,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Ninguém corresponde à busca.",
    "fr": "Personne ne correspond à la recherche."
   },
-  "Aún no tienes entrenados. Invita al primero con un código.": {
-   "en": "You don't have trainees yet. Invite the first one with a code.",
-   "pt-BR": "Você ainda não tem alunos. Convide o primeiro com um código.",
-   "fr": "Vous n'avez pas encore d'élèves. Invitez le premier avec un code."
+  "Aún no tienes atletas. Invita al primero con un código.": {
+   "en": "You don't have athletes yet. Invite the first one with a code.",
+   "pt-BR": "Você ainda não tem atletas. Convide o primeiro com um código.",
+   "fr": "Vous n'avez pas encore d'athlètes. Invitez le premier avec un code."
   },
   "Invitaciones sin usar": {
    "en": "Unused invitations",
@@ -4766,10 +4766,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Encerrar vínculo",
    "fr": "Mettre fin au lien"
   },
-  "Lo que dejas a tus entrenados": {
-   "en": "What you hand to your trainees",
-   "pt-BR": "O que você deixa para seus alunos",
-   "fr": "Ce que vous donnez à vos élèves"
+  "Lo que dejas a tus atletas": {
+   "en": "What you hand to your athletes",
+   "pt-BR": "O que você deixa para seus atletas",
+   "fr": "Ce que vous donnez à vos athlètes"
   },
   "Buscar plantillas…": {
    "en": "Search templates…",
@@ -4786,10 +4786,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você ainda não tem modelos. Crie o primeiro aqui embaixo.",
    "fr": "Vous n'avez pas encore de modèles. Créez le premier ci-dessous."
   },
-  "Mensajes con tus entrenados": {
-   "en": "Messages with your trainees",
-   "pt-BR": "Mensagens com seus alunos",
-   "fr": "Messages avec vos élèves"
+  "Mensajes con tus atletas": {
+   "en": "Messages with your athletes",
+   "pt-BR": "Mensagens com seus atletas",
+   "fr": "Messages avec vos athlètes"
   },
   "Tú": {
    "en": "You",
@@ -4801,10 +4801,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Ainda sem notas",
    "fr": "Pas encore de notes"
   },
-  "Cuando tengas entrenados, aquí aparecen sus conversaciones.": {
-   "en": "Once you have trainees, their conversations show up here.",
-   "pt-BR": "Quando você tiver alunos, as conversas aparecem aqui.",
-   "fr": "Quand vous aurez des élèves, leurs conversations apparaîtront ici."
+  "Cuando tengas atletas, aquí aparecen sus conversaciones.": {
+   "en": "Once you have athletes, their conversations show up here.",
+   "pt-BR": "Quando você tiver atletas, as conversas aparecem aqui.",
+   "fr": "Quand vous aurez des athlètes, leurs conversations apparaîtront ici."
   },
   "Rutina": {
    "en": "Routine",
@@ -4916,30 +4916,30 @@ window.__I18N_EXTRA = {
    "pt-BR": "Dê um nome ao modelo.",
    "fr": "Donnez un nom au modèle."
   },
-  "Entrenados": {
-   "en": "Trainees",
-   "pt-BR": "Alunos",
-   "fr": "Élèves"
+  "Atletas": {
+   "en": "Athletes",
+   "pt-BR": "Atletas",
+   "fr": "Athlètes"
   },
-  "No tienes entrenados a los que puedas asignar este tipo de plantilla.": {
-   "en": "You have no trainees you can assign this kind of template to.",
-   "pt-BR": "Você não tem alunos a quem atribuir este tipo de modelo.",
-   "fr": "Vous n'avez aucun élève à qui attribuer ce type de modèle."
+  "No tienes atletas a los que puedas asignar este tipo de plantilla.": {
+   "en": "You have no athletes you can assign this kind of template to.",
+   "pt-BR": "Você não tem atletas a quem atribuir este tipo de modelo.",
+   "fr": "Vous n'avez aucun athlète à qui attribuer ce type de modèle."
   },
-  "Nota para el entrenado (opcional)": {
-   "en": "Note for the trainee (optional)",
-   "pt-BR": "Nota para o aluno (opcional)",
-   "fr": "Note pour l'élève (facultatif)"
+  "Nota para el atleta (opcional)": {
+   "en": "Note for the athlete (optional)",
+   "pt-BR": "Nota para o atleta (opcional)",
+   "fr": "Note pour l'athlète (facultatif)"
   },
   "Reemplaza lo que ya le hayas asignado de este mismo tipo.": {
    "en": "It replaces what you already assigned of this same kind.",
    "pt-BR": "Substitui o que você já atribuiu deste mesmo tipo.",
    "fr": "Cela remplace ce que vous avez déjà attribué du même type."
   },
-  "Elige al menos un entrenado.": {
-   "en": "Choose at least one trainee.",
-   "pt-BR": "Escolha pelo menos um aluno.",
-   "fr": "Choisissez au moins un élève."
+  "Elige al menos un atleta.": {
+   "en": "Choose at least one athlete.",
+   "pt-BR": "Escolha pelo menos um atleta.",
+   "fr": "Choisissez au moins un athlète."
   },
   "Aún no hay notas.": {
    "en": "No notes yet.",
@@ -5006,15 +5006,15 @@ window.__I18N_EXTRA = {
    "pt-BR": "Atribuir modelo",
    "fr": "Attribuer un modèle"
   },
-  "¿Quitar esta asignación? Dejará de aparecerle al entrenado.": {
-   "en": "Remove this assignment? The trainee will stop seeing it.",
-   "pt-BR": "Remover esta atribuição? O aluno deixará de vê-la.",
-   "fr": "Retirer cette attribution ? L'élève ne la verra plus."
+  "¿Quitar esta asignación? Dejará de aparecerle al atleta.": {
+   "en": "Remove this assignment? The athlete will stop seeing it.",
+   "pt-BR": "Remover esta atribuição? O atleta deixará de vê-la.",
+   "fr": "Retirer cette attribution ? L'athlète ne la verra plus."
   },
-  "Especialistas y entrenados": {
-   "en": "Specialists and trainees",
-   "pt-BR": "Especialistas e alunos",
-   "fr": "Spécialistes et élèves"
+  "Especialistas y atletas": {
+   "en": "Specialists and athletes",
+   "pt-BR": "Especialistas e atletas",
+   "fr": "Spécialistes et athlètes"
   },
   "entrenamientos": {
    "en": "workouts",
@@ -5051,10 +5051,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Esse código não existe ou já expirou.",
    "fr": "Ce code n'existe pas ou a expiré."
   },
-  "Ese código es tuyo; compártelo con tu entrenado.": {
-   "en": "That code is yours; share it with your trainee.",
-   "pt-BR": "Esse código é seu; compartilhe com seu aluno.",
-   "fr": "Ce code est le vôtre ; partagez-le avec votre élève."
+  "Ese código es tuyo; compártelo con tu atleta.": {
+   "en": "That code is yours; share it with your athlete.",
+   "pt-BR": "Esse código é seu; compartilhe com seu atleta.",
+   "fr": "Ce code est le vôtre ; partagez-le avec votre athlète."
   },
   "Tienes demasiadas invitaciones pendientes. Cancela alguna.": {
    "en": "You have too many pending invitations. Cancel one.",
@@ -5101,15 +5101,15 @@ window.__I18N_EXTRA = {
    "pt-BR": "Cancelar convite",
    "fr": "Annuler l'invitation"
   },
-  "Mis entrenados": {
-   "en": "My trainees",
-   "pt-BR": "Meus alunos",
-   "fr": "Mes élèves"
+  "Mis atletas": {
+   "en": "My athletes",
+   "pt-BR": "Meus atletas",
+   "fr": "Mes athlètes"
   },
-  "Aún no tienes entrenados vinculados.": {
-   "en": "You don't have any linked trainees yet.",
-   "pt-BR": "Você ainda não tem alunos vinculados.",
-   "fr": "Vous n'avez pas encore d'élèves liés."
+  "Aún no tienes atletas vinculados.": {
+   "en": "You don't have any linked athletes yet.",
+   "pt-BR": "Você ainda não tem atletas vinculados.",
+   "fr": "Vous n'avez pas encore d'athlètes liés."
   },
   "Invitar como": {
    "en": "Invite as",
@@ -5141,10 +5141,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Convite",
    "fr": "Invitation"
   },
-  "Comparte este código con tu entrenado. Lo escribe en Más → Especialistas y entrenados. Vence en 14 días.": {
-   "en": "Share this code with your trainee. They enter it in More → Specialists and trainees. It expires in 14 days.",
-   "pt-BR": "Compartilhe este código com seu aluno. Ele o digita em Mais → Especialistas e alunos. Expira em 14 dias.",
-   "fr": "Partagez ce code avec votre élève. Il le saisit dans Plus → Spécialistes et élèves. Il expire dans 14 jours."
+  "Comparte este código con tu atleta. Lo escribe en Más → Especialistas y atletas. Vence en 14 días.": {
+   "en": "Share this code with your athlete. They enter it in More → Specialists and athletes. It expires in 14 days.",
+   "pt-BR": "Compartilhe este código com seu atleta. Ele o digita em Mais → Especialistas e atletas. Expira em 14 dias.",
+   "fr": "Partagez ce code avec votre athlète. Il le saisit dans Plus → Spécialistes et athlètes. Il expire dans 14 jours."
   },
   "Volver": {
    "en": "Back",
@@ -5366,11 +5366,6 @@ window.__I18N_EXTRA = {
    "pt-BR": "Especialista",
    "fr": "Spécialiste"
   },
-  "Entrenado": {
-   "en": "Trainee",
-   "pt-BR": "Aluno",
-   "fr": "Élève"
-  },
   "Administrador": {
    "en": "Admin",
    "pt-BR": "Administrador",
@@ -5406,10 +5401,10 @@ window.__I18N_EXTRA = {
    "pt-BR": "Especialista em",
    "fr": "Spécialiste en"
   },
-  "Sin marcar ninguna, la cuenta es solo de entrenado.": {
-   "en": "With none checked, the account is trainee only.",
-   "pt-BR": "Sem marcar nenhuma, a conta é só de aluno.",
-   "fr": "Sans aucune case cochée, le compte est seulement élève."
+  "Sin marcar ninguna, la cuenta es solo de atleta.": {
+   "en": "With none checked, the account is athlete only.",
+   "pt-BR": "Sem marcar nenhuma, a conta é só de atleta.",
+   "fr": "Sans aucune case cochée, le compte est seulement athlète."
   },
   "Acceso": {
    "en": "Access",
