@@ -12786,6 +12786,8 @@ function fitAlternatives(item, info, totals, score) {
   const names = new Set([n]);
   offMxSameCategory(item, 80).forEach(({ i, level }) => {
     const alt = offMxItem(i);
+    // Solo productos con tabla completa: sin azúcares o sodio la calificación saldría inflada
+    if (alt.per100g.sugars == null || alt.per100g.sodium == null) return;
     const key = normalizeFoodQuery(alt.name + '|' + alt.brand);
     if (names.has(key) || names.has(normalizeFoodQuery(alt.name))) return;
     const q = fitQuality(alt, info.kind);

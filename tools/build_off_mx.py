@@ -104,7 +104,8 @@ def main():
         rows.append((scans, [code, name, brand, idxs, int(kcal), prot, carbs, num(n, 'sugars_100g'), fat,
                              num(n, 'saturated-fat_100g'), num(n, 'trans-fat_100g'), num(n, 'fiber_100g'),
                              num(n, 'sodium_100g', 3), ns, nova, liquid]))
-    rows.sort(key=lambda r: -r[0])  # los más escaneados primero
+    # Primero los códigos mexicanos (prefijo GS1 750) y, dentro de cada grupo, los más escaneados
+    rows.sort(key=lambda r: (not r[1][0].startswith('750'), -r[0]))
     out = {
         'v': 1,
         'built': time.strftime('%Y-%m-%d', time.gmtime()),
