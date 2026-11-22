@@ -3485,6 +3485,226 @@ window.__I18N_EXTRA = {
    "en": "is",
    "pt-BR": "são",
    "fr": "fait"
+  },
+  "Calorías": {
+   "en": "Calories",
+   "pt-BR": "Calorias",
+   "fr": "Calories"
+  },
+  "Proteína": {
+   "en": "Protein",
+   "pt-BR": "Proteína",
+   "fr": "Protéines"
+  },
+  "Azúcares": {
+   "en": "Sugars",
+   "pt-BR": "Açúcares",
+   "fr": "Sucres"
+  },
+  "Grasa saturada": {
+   "en": "Saturated fat",
+   "pt-BR": "Gordura saturada",
+   "fr": "Graisses saturées"
+  },
+  "Fibra": {
+   "en": "Fiber",
+   "pt-BR": "Fibra",
+   "fr": "Fibres"
+  },
+  "Sodio": {
+   "en": "Sodium",
+   "pt-BR": "Sódio",
+   "fr": "Sodium"
+  },
+  "Bajo": {
+   "en": "Low",
+   "pt-BR": "Baixo",
+   "fr": "Faible"
+  },
+  "Medio": {
+   "en": "Medium",
+   "pt-BR": "Médio",
+   "fr": "Moyen"
+  },
+  "Sobresale": {
+   "en": "Stands out",
+   "pt-BR": "Destaque",
+   "fr": "Excellent"
+  },
+  "Suficiente": {
+   "en": "Enough",
+   "pt-BR": "Suficiente",
+   "fr": "Suffisant"
+  },
+  "Poca": {
+   "en": "Low",
+   "pt-BR": "Pouca",
+   "fr": "Peu"
+  },
+  "Se pasa": {
+   "en": "Over",
+   "pt-BR": "Passa",
+   "fr": "Dépasse"
+  },
+  "Denso": {
+   "en": "Dense",
+   "pt-BR": "Denso",
+   "fr": "Dense"
+  },
+  "Tabla nutricional": {
+   "en": "Nutrition facts",
+   "pt-BR": "Tabela nutricional",
+   "fr": "Valeurs nutritionnelles"
+  },
+  "Tu porción": {
+   "en": "Your serving",
+   "pt-BR": "Sua porção",
+   "fr": "Votre portion"
+  },
+  "Sobresale / bien": {
+   "en": "Stands out / good",
+   "pt-BR": "Destaque / bom",
+   "fr": "Excellent / bien"
+  },
+  "Alto o se pasa": {
+   "en": "High or over",
+   "pt-BR": "Alto ou passa",
+   "fr": "Élevé ou dépasse"
+  },
+  "% = parte de tu meta del día que cubre tu porción": {
+   "en": "% = share of your daily goal covered by your serving",
+   "pt-BR": "% = parte da sua meta do dia que sua porção cobre",
+   "fr": "% = part de votre objectif du jour couverte par votre portion"
+  },
+  "Sobresale en": {
+   "en": "Stands out for",
+   "pt-BR": "Destaca-se em",
+   "fr": "Points forts"
+  },
+  "Cuidado con": {
+   "en": "Watch out for",
+   "pt-BR": "Cuidado com",
+   "fr": "Attention à"
+  },
+  "Cantidad recomendada": {
+   "en": "Recommended amount",
+   "pt-BR": "Quantidade recomendada",
+   "fr": "Quantité recommandée"
+  },
+  "Puedes comer hasta": {
+   "en": "You can eat up to",
+   "pt-BR": "Você pode comer até",
+   "fr": "Vous pouvez manger jusqu'à"
+  },
+  "Puedes comerlo sin problema": {
+   "en": "You can eat it freely",
+   "pt-BR": "Pode comer sem problema",
+   "fr": "Vous pouvez en manger sans souci"
+  },
+  "Mejor déjalo para otro día": {
+   "en": "Better leave it for another day",
+   "pt-BR": "Melhor deixar para outro dia",
+   "fr": "Mieux vaut le garder pour un autre jour"
+  },
+  "Según las calorías que te quedan hoy.": {
+   "en": "Based on the calories you have left today.",
+   "pt-BR": "Conforme as calorias que restam hoje.",
+   "fr": "Selon les calories qu'il vous reste aujourd'hui."
+  },
+  "Según la grasa que te queda hoy.": {
+   "en": "Based on the fat you have left today.",
+   "pt-BR": "Conforme a gordura que resta hoje.",
+   "fr": "Selon les lipides qu'il vous reste aujourd'hui."
+  },
+  "Según los carbohidratos que te quedan hoy.": {
+   "en": "Based on the carbs you have left today.",
+   "pt-BR": "Conforme os carboidratos que restam hoje.",
+   "fr": "Selon les glucides qu'il vous reste aujourd'hui."
+  },
+  "Para no pasarte del azúcar recomendado al día.": {
+   "en": "So you stay within the recommended daily sugar.",
+   "pt-BR": "Para não passar do açúcar recomendado por dia.",
+   "fr": "Pour ne pas dépasser le sucre recommandé par jour."
+  },
+  "Para no pasarte del sodio recomendado al día.": {
+   "en": "So you stay within the recommended daily sodium.",
+   "pt-BR": "Para não passar do sódio recomendado por dia.",
+   "fr": "Pour ne pas dépasser le sodium recommandé par jour."
+  },
+  "Es un gusto ocasional: lo ideal es que no pase de ~10% de tus calorías del día.": {
+   "en": "It's an occasional treat: ideally no more than ~10% of your daily calories.",
+   "pt-BR": "É para de vez em quando: o ideal é não passar de ~10% das suas calorias do dia.",
+   "fr": "C'est un plaisir occasionnel : idéalement pas plus de ~10 % de vos calories du jour."
+  },
+  "Ya alcanzaste tus calorías de hoy.": {
+   "en": "You've already reached today's calories.",
+   "pt-BR": "Você já atingiu suas calorias de hoje.",
+   "fr": "Vous avez déjà atteint vos calories du jour."
+  },
+  "Ya alcanzaste tu grasa de hoy.": {
+   "en": "You've already reached today's fat.",
+   "pt-BR": "Você já atingiu sua gordura de hoje.",
+   "fr": "Vous avez déjà atteint vos lipides du jour."
+  },
+  "Ya alcanzaste tus carbohidratos de hoy.": {
+   "en": "You've already reached today's carbs.",
+   "pt-BR": "Você já atingiu seus carboidratos de hoje.",
+   "fr": "Vous avez déjà atteint vos glucides du jour."
+  },
+  "Ya alcanzaste el azúcar recomendado de hoy.": {
+   "en": "You've already reached today's recommended sugar.",
+   "pt-BR": "Você já atingiu o açúcar recomendado de hoje.",
+   "fr": "Vous avez déjà atteint le sucre recommandé du jour."
+  },
+  "Ya alcanzaste el sodio recomendado de hoy.": {
+   "en": "You've already reached today's recommended sodium.",
+   "pt-BR": "Você já atingiu o sódio recomendado de hoje.",
+   "fr": "Vous avez déjà atteint le sodium recommandé du jour."
+  },
+  "Es más de lo recomendado por": {
+   "en": "Over the recommended amount by",
+   "pt-BR": "Passa do recomendado em",
+   "fr": "Dépasse la quantité recommandée de"
+  },
+  "Alta en fibra": {
+   "en": "High in fiber",
+   "pt-BR": "Rica em fibra",
+   "fr": "Riche en fibres"
+  },
+  "Fuente de fibra": {
+   "en": "Source of fiber",
+   "pt-BR": "Fonte de fibra",
+   "fr": "Source de fibres"
+  },
+  "Baja en azúcar": {
+   "en": "Low in sugar",
+   "pt-BR": "Pouco açúcar",
+   "fr": "Peu de sucre"
+  },
+  "Baja en grasa saturada": {
+   "en": "Low in saturated fat",
+   "pt-BR": "Pouca gordura saturada",
+   "fr": "Peu de graisses saturées"
+  },
+  "Baja en sodio": {
+   "en": "Low in sodium",
+   "pt-BR": "Pouco sódio",
+   "fr": "Peu de sodium"
+  },
+  "Ligera en calorías": {
+   "en": "Light in calories",
+   "pt-BR": "Leve em calorias",
+   "fr": "Léger en calories"
+  },
+  "Densa en calorías (útil para subir)": {
+   "en": "Calorie-dense (useful for gaining)",
+   "pt-BR": "Densa em calorias (útil para ganhar)",
+   "fr": "Dense en calories (utile pour prendre)"
+  },
+  "Poco procesado": {
+   "en": "Minimally processed",
+   "pt-BR": "Pouco processado",
+   "fr": "Peu transformé"
   }
  },
  "tpl": {

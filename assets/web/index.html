@@ -1498,6 +1498,29 @@
   .fit-status { font-size: 12px; font-weight: 600; }
   .fit-status.ok { color: #15803D; } .fit-status.over { color: #B91C1C; }
   .fit-status:empty { display: none; }
+  .fit-sec-k { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; }
+  .fit-sec-k.good { color: #15803D; } .fit-sec-k.bad { color: #B91C1C; }
+  .fit-max-k { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); margin-bottom: 2px; }
+  .fit-table { border-top: 1px solid var(--border); padding-top: 8px; }
+  .fit-row { display: grid; grid-template-columns: minmax(0, 1fr) 58px 64px 84px; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .fit-row.sub .fit-n { padding-left: 12px; color: var(--text-2); font-size: 12px; }
+  .fit-head { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); padding-top: 0; }
+  .fit-head div:nth-child(2), .fit-head div:nth-child(3) { text-align: right; }
+  .fit-n { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fit-v { text-align: right; color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 12px; }
+  .fit-p { color: var(--text); line-height: 1.15; } .fit-p b { font-weight: 700; font-size: 13px; display: block; }
+  .fit-p small { font-size: 10px; color: var(--text-3); }
+  .fit-lvw { text-align: right; }
+  .fit-lv { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+  .fit-lv.top { background: #16A34A; color: #fff; }
+  .fit-lv.good { background: rgba(34,197,94,.16); color: #15803D; }
+  .fit-lv.mid { background: rgba(245,158,11,.18); color: #B45309; }
+  .fit-lv.bad { background: #EF4444; color: #fff; }
+  .fit-lv.na { background: var(--surface-2); color: var(--text-3); }
+  .fit-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 10px; color: var(--text-3); margin-top: 8px; }
+  .fit-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .fit-legend i.top { background: #16A34A; } .fit-legend i.mid { background: #F59E0B; } .fit-legend i.bad { background: #EF4444; }
+  .fit-note { font-size: 10px; color: var(--text-3); margin-top: 4px; }
   .portion-preview-num { font-size: 18px; font-weight: 600; color: var(--text-1); line-height: 1.2; }
   .portion-preview-lbl { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
 
@@ -12368,12 +12391,11 @@ function fitGoalInfo() {
 // Totales del día que se está viendo, sin contar el elemento que se edita
 function fitDayTotals(skipMeal, skipIndex) {
   const meals = todaysMeals();
-  const tot = { kcal: 0, protein: 0, carbs: 0, fat: 0, sugars: 0, sodium: 0 };
+  const tot = { kcal: 0, protein: 0, carbs: 0, fat: 0, sugars: 0, sodium: 0, satFat: 0, fiber: 0 };
   Object.keys(meals).forEach(mid => (meals[mid] || []).forEach((it, i) => {
     if (mid === skipMeal && i === skipIndex) return;
     const f = (it.grams || 0) / 100, p = it.per100g || {};
-    tot.kcal += (p.kcal || 0) * f; tot.protein += (p.protein || 0) * f; tot.carbs += (p.carbs || 0) * f;
-    tot.fat += (p.fat || 0) * f; tot.sugars += (p.sugars || 0) * f; tot.sodium += (p.sodium || 0) * f;
+    Object.keys(tot).forEach(k => { tot[k] += (p[k] || 0) * f; });
   }));
   return tot;
 }
@@ -12381,8 +12403,8 @@ function fitDayTotals(skipMeal, skipIndex) {
 function fitQuality(item, kind) {
   const p = item.per100g || {};
   const kcal = p.kcal || 0;
-  const reasons = [];
-  if (kcal <= 0) return { score: null, reasons };
+  const goods = [], bads = [];
+  if (kcal <= 0) return { score: null, goods, bads };
   const protPct = (p.protein || 0) * 4 / kcal;           // fracción de kcal que es proteína
   const sugars = p.sugars || 0, fiber = p.fiber || 0;
   const sat = p.satFat != null ? p.satFat : null;
@@ -12403,17 +12425,26 @@ function fitQuality(item, kind) {
   if (+item.nova === 4) s -= 8;
   s = Math.max(0, Math.min(100, Math.round(s)));
 
-  if (protPct >= 0.3) reasons.push({ good: true, t: 'Alta en proteína' });
-  else if (protPct >= 0.18) reasons.push({ good: true, t: 'Buena proteína' });
-  if (fiber >= 6) reasons.push({ good: true, t: 'Buena fibra' });
-  if (sugars >= 15) reasons.push({ good: false, t: 'Mucha azúcar' });
-  if (sat != null && sat >= 5) reasons.push({ good: false, t: 'Grasa saturada alta' });
-  if (sodium >= 0.6) reasons.push({ good: false, t: 'Mucho sodio' });
-  if (kcal >= 400) reasons.push({ good: kind === 'bulk', t: 'Densa en calorías' });
-  else if (kcal <= 120 && (protPct >= 0.18 || fiber >= 3)) reasons.push({ good: true, t: 'Ligera' });
-  if (+item.nova === 4) reasons.push({ good: false, t: 'Ultraprocesado (NOVA 4)' });
-  if (ns && 'abcde'.includes(ns)) reasons.push({ good: ns <= 'b', t: 'Nutri-Score ' + ns.toUpperCase() });
-  return { score: s, reasons: reasons.slice(0, 4) };
+  // En qué sobresale
+  if (protPct >= 0.3) goods.push('Alta en proteína');
+  else if (protPct >= 0.18) goods.push('Buena proteína');
+  if (fiber >= 6) goods.push('Alta en fibra');
+  else if (fiber >= 3) goods.push('Fuente de fibra');
+  if (p.sugars != null && sugars <= 5 && (p.carbs || 0) >= 5) goods.push('Baja en azúcar');
+  if (sat != null && sat <= 1.5 && (p.fat || 0) >= 1) goods.push('Baja en grasa saturada');
+  if (p.sodium != null && sodium <= 0.12) goods.push('Baja en sodio');
+  if (kcal <= 120 && kind !== 'bulk') goods.push('Ligera en calorías');
+  if (kcal >= 400 && kind === 'bulk') goods.push('Densa en calorías (útil para subir)');
+  if (item.nova && +item.nova <= 2) goods.push('Poco procesado');
+  if (ns === 'a' || ns === 'b') goods.push('Nutri-Score ' + ns.toUpperCase());
+  // Con qué tener cuidado
+  if (sugars > 22.5) bads.push('Mucha azúcar');
+  if (sat != null && sat > 5) bads.push('Grasa saturada alta');
+  if (sodium > 0.6) bads.push('Mucho sodio');
+  if (kcal >= 400 && kind !== 'bulk') bads.push('Densa en calorías');
+  if (+item.nova === 4) bads.push('Ultraprocesado (NOVA 4)');
+  if (ns === 'd' || ns === 'e') bads.push('Nutri-Score ' + ns.toUpperCase());
+  return { score: s, goods: goods.slice(0, 5), bads: bads.slice(0, 5) };
 }
 function fitLabel(score) {
   if (score == null) return { t: 'Sin datos', c: 'na' };
@@ -12423,7 +12454,7 @@ function fitLabel(score) {
   return { t: 'Gusto ocasional', c: 'd' };
 }
 
-// Cuántos gramos te caben hoy
+// Cantidad recomendada (gramos) según lo que queda del día
 function fitMaxGrams(item, info, totals, score) {
   const p = item.per100g || {};
   const t = info.t;
@@ -12438,24 +12469,85 @@ function fitMaxGrams(item, info, totals, score) {
   // En volumen el tope de kcal es más holgado (se permite llegar a la meta + 5%)
   if (info.kind === 'bulk') rem.kcal += t.kcal * 0.05;
   const limits = [];
-  const add = (key, label, per100) => { if (per100 > 0) limits.push({ key, label, g: Math.max(0, rem[key]) / per100 * 100 }); };
-  add('kcal', 'calorías', p.kcal);
+  const add = (key, per100) => { if (per100 > 0) limits.push({ key, g: Math.max(0, rem[key]) / per100 * 100 }); };
+  add('kcal', p.kcal);
   // grasa / carbos: solo limitan si el alimento aporta mucho de eso
-  if ((p.fat || 0) * 9 / p.kcal > 0.35) add('fat', 'grasa', p.fat);
-  if ((p.carbs || 0) * 4 / p.kcal > 0.5 && info.kind === 'cut') add('carbs', 'carbohidratos', p.carbs);
-  if ((p.sugars || 0) >= 5) add('sugars', 'azúcar', p.sugars);
-  if ((p.sodium || 0) >= 0.3) add('sodium', 'sodio', p.sodium);
+  if ((p.fat || 0) * 9 / p.kcal > 0.35) add('fat', p.fat);
+  if ((p.carbs || 0) * 4 / p.kcal > 0.5 && info.kind === 'cut') add('carbs', p.carbs);
+  if ((p.sugars || 0) >= 5) add('sugars', p.sugars);
+  if ((p.sodium || 0) >= 0.3) add('sodium', p.sodium);
   // Tope por calidad: alimentos de baja calidad ≈ 10% de las kcal del día
   if (score != null && score < 55) {
     const share = score < 40 ? 0.10 : 0.18;
-    limits.push({ key: 'quality', label: 'calidad', g: t.kcal * share / p.kcal * 100 });
+    limits.push({ key: 'quality', g: t.kcal * share / p.kcal * 100 });
   }
   if (!limits.length) return null;
   limits.sort((a, b) => a.g - b.g);
   const lim = limits[0];
   let g = Math.floor(lim.g / 5) * 5;
   if (g > 1000) g = 1000;
-  return { grams: Math.max(0, g), by: lim.key, byLabel: lim.label, rem };
+  return { grams: Math.max(0, g), by: lim.key, rem };
+}
+
+// ---- Tabla nutricional con semáforo ----
+// Umbrales por 100 g (semáforo nutricional tipo FSA): grasa 3 / 17.5 g, saturada 1.5 / 5 g,
+// azúcares 5 / 22.5 g, sodio 0.12 / 0.6 g. Proteína: ≥20% de las kcal sobresale, ≥12% suficiente.
+// Fibra: ≥6 g sobresale, ≥3 g suficiente.
+const FIT_FIBER_DAY = 28;
+const FIT_ROWS = [
+  { k: 'kcal', label: 'Calorías', unit: 'kcal' },
+  { k: 'protein', label: 'Proteína', unit: 'g' },
+  { k: 'carbs', label: 'Carbohidratos', unit: 'g' },
+  { k: 'sugars', label: 'Azúcares', unit: 'g', sub: true },
+  { k: 'fat', label: 'Grasa', unit: 'g' },
+  { k: 'satFat', label: 'Grasa saturada', unit: 'g', sub: true },
+  { k: 'fiber', label: 'Fibra', unit: 'g' },
+  { k: 'sodium', label: 'Sodio', unit: 'mg', mult: 1000 },
+];
+function fitDayTargets(t) {
+  return { kcal: t.kcal, protein: t.protein, carbs: t.carbs, fat: t.fat, sugars: FIT_SUGAR_DAY,
+    satFat: Math.round(t.kcal * 0.1 / 9), fiber: FIT_FIBER_DAY, sodium: FIT_SODIUM_DAY };
+}
+function fitLevel(k, p, kind) {
+  const kcal = p.kcal || 0, v = p[k];
+  if (v == null || !(kcal > 0)) return { c: 'na', t: '—' };
+  const tri = (lo, hi) => v <= lo ? { c: 'good', t: 'Bajo' } : v <= hi ? { c: 'mid', t: 'Medio' } : { c: 'bad', t: 'Alto' };
+  switch (k) {
+    case 'protein': { const pct = v * 4 / kcal; return pct >= 0.2 ? { c: 'top', t: 'Sobresale' } : pct >= 0.12 ? { c: 'good', t: 'Suficiente' } : { c: 'na', t: 'Poca' }; }
+    case 'fiber': return v >= 6 ? { c: 'top', t: 'Sobresale' } : v >= 3 ? { c: 'good', t: 'Suficiente' } : { c: 'na', t: 'Poca' };
+    case 'sugars': return tri(5, 22.5);
+    case 'fat': return tri(3, 17.5);
+    case 'satFat': return tri(1.5, 5);
+    case 'sodium': return tri(0.12, 0.6);
+    case 'kcal':
+      if (kind === 'bulk') return v >= 250 ? { c: 'good', t: 'Denso' } : { c: 'na', t: 'Ligero' };
+      if (kind === 'cut') return v <= 150 ? { c: 'good', t: 'Ligero' } : v <= 350 ? { c: 'mid', t: 'Medio' } : { c: 'bad', t: 'Alto' };
+      return v <= 200 ? { c: 'good', t: 'Ligero' } : v <= 400 ? { c: 'mid', t: 'Medio' } : { c: 'bad', t: 'Alto' };
+    default: return { c: 'na', t: '' };
+  }
+}
+function fitRowsHtml(item, grams, info, totals) {
+  const p = item.per100g || {};
+  const tg = fitDayTargets(info.t);
+  const LIMIT = ['kcal', 'carbs', 'fat', 'sugars', 'satFat', 'sodium'];
+  return FIT_ROWS.map(r => {
+    const v100 = p[r.k];
+    const has = v100 != null;
+    const fmt = x => (r.k === 'kcal' || r.mult) ? Math.round(x * (r.mult || 1)) : Math.round(x * 10) / 10;
+    const por = has ? v100 * grams / 100 : 0;
+    let lv = fitLevel(r.k, p, info.kind);
+    const pct = has && tg[r.k] > 0 ? Math.round(por / tg[r.k] * 100) : null;
+    // Con tu porción: ¿se pasa de lo que te queda hoy?
+    let room = tg[r.k] - (totals[r.k] || 0);
+    if (r.k === 'kcal' && info.kind === 'bulk') room += tg.kcal * 0.05;
+    if (has && LIMIT.includes(r.k) && por > 0.05 && por > Math.max(0, room) + 1e-6) lv = { c: 'bad', t: 'Se pasa' };
+    return `<div class="fit-row${r.sub ? ' sub' : ''}">
+      <div class="fit-n">${r.label}</div>
+      <div class="fit-v">${has ? fmt(v100) + ' ' + r.unit : '—'}</div>
+      <div class="fit-v fit-p">${has ? `<b>${fmt(por)} ${r.unit}</b>${pct != null ? `<small>${pct}%</small>` : ''}` : '—'}</div>
+      <div class="fit-lvw">${lv.t ? `<span class="fit-lv ${lv.c}">${lv.t}</span>` : ''}</div>
+    </div>`;
+  }).join('');
 }
 
 function fitHtml(item, mealId, index) {
@@ -12471,25 +12563,32 @@ function fitHtml(item, mealId, index) {
     const u = units.find(u => g >= u.g * 0.75);
     return u ? ` (≈ ${Math.max(1, Math.round(g / u.g * 2) / 2)} × ${u.label})` : '';
   };
-  const byTxt = { kcal: 'las calorías que te quedan', fat: 'la grasa que te queda', carbs: 'los carbohidratos que te quedan',
-    sugars: 'el azúcar recomendado del día', sodium: 'el sodio recomendado del día', quality: 'que es un gusto ocasional (~10% de tus kcal)' };
+  const why = { kcal: 'Según las calorías que te quedan hoy.', fat: 'Según la grasa que te queda hoy.', carbs: 'Según los carbohidratos que te quedan hoy.',
+    sugars: 'Para no pasarte del azúcar recomendado al día.', sodium: 'Para no pasarte del sodio recomendado al día.',
+    quality: 'Es un gusto ocasional: lo ideal es que no pase de ~10% de tus calorías del día.' };
+  const whyNone = { kcal: 'Ya alcanzaste tus calorías de hoy.', fat: 'Ya alcanzaste tu grasa de hoy.', carbs: 'Ya alcanzaste tus carbohidratos de hoy.',
+    sugars: 'Ya alcanzaste el azúcar recomendado de hoy.', sodium: 'Ya alcanzaste el sodio recomendado de hoy.', quality: '' };
   let maxHtml = '';
   // Porción de referencia: la unidad natural del alimento o 100 g
   const ref = units.length ? units[0].g : 100;
   if (mx && mx.grams >= Math.max(300, ref * 3) && (q.score == null || q.score >= 55)) {
     // Alimento de buena calidad que cabe de sobra: no tiene sentido dar un tope enorme
     const refK = Math.round((item.per100g.kcal || 0) * ref / 100);
-    maxHtml = `<div class="fit-max"><div><b class="fit-ok">Te cabe sin problema</b></div>
+    maxHtml = `<div class="fit-max"><div class="fit-max-k">Cantidad recomendada</div>
+      <div><b class="fit-ok">Puedes comerlo sin problema</b></div>
       <div class="fit-why"><span>Una porción de</span> ${ref} g <span>son</span> ${refK} kcal</div>
       <button class="fit-use" id="fit-use" data-g="${ref}">Usar ${ref} g</button></div>`;
   } else if (mx) {
     maxHtml = mx.grams > 0
-      ? `<div class="fit-max"><div><span>Hoy te caben hasta</span> <b>${mx.grams} g</b><span>${escapeHtml(unitTxt(mx.grams))}</span></div>
-           <div class="fit-why"><span>Lo que te limita:</span> <span>${byTxt[mx.by]}</span></div>
+      ? `<div class="fit-max"><div class="fit-max-k">Cantidad recomendada</div>
+           <div><span>Puedes comer hasta</span> <b>${mx.grams} g</b><span>${escapeHtml(unitTxt(mx.grams))}</span></div>
+           <div class="fit-why">${why[mx.by]}</div>
            <button class="fit-use" id="fit-use" data-g="${mx.grams}">Usar ${mx.grams} g</button></div>`
-      : `<div class="fit-max none"><div><b>Hoy ya no te cabe</b></div><div class="fit-why"><span>Lo que te limita:</span> <span>${byTxt[mx.by]}</span></div></div>`;
+      : `<div class="fit-max none"><div class="fit-max-k">Cantidad recomendada</div><div><b>Mejor déjalo para otro día</b></div><div class="fit-why">${whyNone[mx.by]}</div></div>`;
   }
-  const chips = q.reasons.map(r => `<span class="fit-chip ${r.good ? 'good' : 'bad'}">${r.good ? '✓' : '!'} <span>${escapeHtml(r.t)}</span></span>`).join('');
+  const chip = (cls, t) => `<span class="fit-chip ${cls}">${escapeHtml(t)}</span>`;
+  const goods = q.goods.length ? `<div class="fit-sec"><div class="fit-sec-k good">✓ <span>Sobresale en</span></div><div class="fit-chips">${q.goods.map(t => chip('good', t)).join('')}</div></div>` : '';
+  const bads = q.bads.length ? `<div class="fit-sec"><div class="fit-sec-k bad">! <span>Cuidado con</span></div><div class="fit-chips">${q.bads.map(t => chip('bad', t)).join('')}</div></div>` : '';
   return `<div class="fit-card" id="fit-card">
     <div class="fit-top">
       <div class="fit-score ${lab.c}">${q.score == null ? '—' : q.score}</div>
@@ -12498,17 +12597,26 @@ function fitHtml(item, mealId, index) {
         <div class="fit-left">${left >= 0 ? `<span>Te quedan</span> <b>${left}</b> <span>kcal hoy</span>` : `<span>Ya te pasaste</span> <b>${-left}</b> <span>kcal hoy</span>`}</div>
       </div>
     </div>
-    ${chips ? `<div class="fit-chips">${chips}</div>` : ''}
+    ${goods}${bads}
     ${maxHtml}
     <div class="fit-status" id="fit-status"></div>
+    <div class="fit-table">
+      <div class="fit-row fit-head"><div>Tabla nutricional</div><div>100 g</div><div>Tu porción</div><div></div></div>
+      <div id="fit-rows"></div>
+      <div class="fit-legend"><span><i class="top"></i><span>Sobresale / bien</span></span><span><i class="mid"></i><span>Medio</span></span><span><i class="bad"></i><span>Alto o se pasa</span></span></div>
+      <div class="fit-note">% = parte de tu meta del día que cubre tu porción</div>
+    </div>
   </div>`;
 }
-// Estado de la porción elegida frente a lo que cabe
+// Se llama cada vez que cambia la cantidad: tabla con tu porción + estado frente a lo recomendado
 function fitUpdateStatus(item, mealId, index, grams) {
-  const el = document.getElementById('fit-status');
-  if (!el) return;
+  const rows = document.getElementById('fit-rows');
+  if (!rows) return;
   const info = fitGoalInfo();
   const totals = fitDayTotals(mealId, index);
+  rows.innerHTML = fitRowsHtml(item, grams > 0 ? grams : 0, info, totals);
+  const el = document.getElementById('fit-status');
+  if (!el) return;
   const q = fitQuality(item, info.kind);
   const mx = fitMaxGrams(item, info, totals, q.score);
   const p = item.per100g || {};
@@ -12520,7 +12628,7 @@ function fitUpdateStatus(item, mealId, index, grams) {
     el.innerHTML = `✓ <span>Dentro de tu meta</span> · <span>te quedarían</span> ${Math.max(0, leftAfter)} kcal`;
   } else {
     el.className = 'fit-status over';
-    el.innerHTML = `! <span>Te pasas de lo recomendado por</span> ${Math.round(grams - mx.grams)} g`;
+    el.innerHTML = `! <span>Es más de lo recomendado por</span> ${Math.round(grams - mx.grams)} g`;
   }
 }
 
