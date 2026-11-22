@@ -1477,6 +1477,27 @@
   .portion-meal-chip.selected { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
   .portion-preview { display: flex; justify-content: space-between; padding: 12px; background: var(--surface-2); border-radius: 12px; margin-top: 4px; }
   .portion-preview-item { text-align: center; }
+  .fit-card { border: 1px solid var(--border); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .fit-top { display: flex; gap: 12px; align-items: center; }
+  .fit-score { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #fff; flex: 0 0 auto; background: #9CA3AF; }
+  .fit-score.a { background: #16A34A; } .fit-score.b { background: #65A30D; } .fit-score.c { background: #F59E0B; } .fit-score.d { background: #EF4444; }
+  .fit-top-body { min-width: 0; }
+  .fit-title { font-weight: 700; font-size: 15px; }
+  .fit-goal { font-weight: 500; color: var(--text-3); font-size: 12px; }
+  .fit-left { font-size: 12px; color: var(--text-3); margin-top: 2px; } .fit-left b { color: var(--text); }
+  .fit-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fit-chip { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 3px 9px; }
+  .fit-chip.good { background: rgba(34,197,94,.14); color: #15803D; }
+  .fit-chip.bad { background: rgba(239,68,68,.12); color: #B91C1C; }
+  .fit-max { background: var(--surface-2); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+  .fit-max b { font-size: 20px; font-weight: 800; }
+  .fit-max.none b { font-size: 15px; color: #B91C1C; }
+  .fit-max b.fit-ok { font-size: 15px; color: #15803D; }
+  .fit-why { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .fit-use { margin-top: 8px; width: 100%; padding: 9px; border-radius: 10px; border: 1px solid var(--text); background: transparent; color: var(--text); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .fit-status { font-size: 12px; font-weight: 600; }
+  .fit-status.ok { color: #15803D; } .fit-status.over { color: #B91C1C; }
+  .fit-status:empty { display: none; }
   .portion-preview-num { font-size: 18px; font-weight: 600; color: var(--text-1); line-height: 1.2; }
   .portion-preview-lbl { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
 
@@ -11603,6 +11624,7 @@ function parseUsdaFood(f) {
     else if (name === 'fiber, total dietary') map.fiber = val;
     else if (name === 'sugars, total including nfcs' || name === 'sugars, total') map.sugars = val;
     else if (name === 'sodium, na') map.sodium = val / 1000; // mg -> g
+    else if (name === 'fatty acids, total saturated') map.satFat = val;
   });
   // Si energy vino en kJ y no en kcal, aproximar
   if (!map.kcal) {
@@ -11627,6 +11649,7 @@ function parseUsdaFood(f) {
       fiber: +(map.fiber || 0).toFixed(1),
       sugars: +(map.sugars || 0).toFixed(1),
       sodium: +(map.sodium || 0).toFixed(3),
+      satFat: map.satFat != null ? +(+map.satFat).toFixed(1) : undefined,
     },
     serving_size: (f.servingSize && f.servingSizeUnit) ? `${f.servingSize} ${f.servingSizeUnit}` : '',
     source: 'usda',
@@ -11879,7 +11902,10 @@ function parseOffProduct(p) {
       fiber:   n.fiber_100g            || 0,
       sugars:  n.sugars_100g           || 0,
       sodium:  n.sodium_100g           || 0,
+      satFat:  n['saturated-fat_100g'] != null ? +n['saturated-fat_100g'] : undefined,
     },
+    nutriscore: /^[a-e]$/i.test(p.nutriscore_grade || '') ? p.nutriscore_grade.toLowerCase() : '',
+    nova: p.nova_group || null,
     serving_size: p.serving_size || '',
     source: 'off',
   };
@@ -11890,7 +11916,7 @@ async function offSearch(q) {
   // el endpoint correcto para texto libre es cgi/search.pl.
   const url = 'https://world.openfoodfacts.org/cgi/search.pl?search_terms=' + encodeURIComponent(q)
     + '&search_simple=1&action=process&json=1&page_size=20'
-    + '&fields=code,product_name,generic_name,brands,nutriments,serving_size,image_thumb_url,image_url';
+    + '&fields=code,product_name,generic_name,brands,nutriments,serving_size,image_thumb_url,image_url,nutriscore_grade,nova_group';
   const r = await fetch(url);
   if (!r.ok) throw new Error('OFF search failed');
   const j = await r.json();
@@ -12310,6 +12336,194 @@ function openFoodSearch(mealId) {
 }
 
 /* ---------- Editor de porciones ---------- */
+/* ---------- ¿Te conviene? Calidad del alimento + cuánto te cabe hoy según tu meta ----------
+ * Se muestra al escanear o elegir un alimento (editor de porción).
+ *  - Calidad 0–100: densidad de proteína, fibra, azúcar, grasa saturada, sodio, densidad
+ *    calórica, Nutri-Score y NOVA (cuando vienen de Open Food Facts). Se ajusta a la meta
+ *    (en déficit pesa más la proteína y las kcal; en volumen pesan menos las kcal).
+ *  - Cuánto te cabe: lo que queda del día (kcal, grasa, carbos, azúcar, sodio) y un tope para
+ *    alimentos de baja calidad (~10% de las kcal del día, como "gusto"), redondeado a 5 g.
+ */
+const FIT_SUGAR_DAY = 50;   // g de azúcar al día (OMS: <10% de la energía)
+const FIT_SODIUM_DAY = 2.0; // g de sodio al día (OMS)
+
+function fitGoalInfo() {
+  let t = null, goal = 'maintain';
+  try {
+    if (typeof hasNutriProfile === 'function' && hasNutriProfile()) {
+      const p = nutriProfile();
+      t = calcNutriTargets(p);
+      goal = p.goal || 'maintain';
+      if (!(t && t.kcal > 0)) t = null;
+    }
+  } catch (e) { t = null; }
+  if (!t) {
+    const k = parseInt(S.get('food_goal_kcal', 0)) || 2000;
+    t = { kcal: k, protein: Math.round(k * 0.3 / 4), carbs: Math.round(k * 0.4 / 4), fat: Math.round(k * 0.3 / 9) };
+  }
+  const kind = goal === 'cut' ? 'cut' : (goal === 'gain_lean' || goal === 'gain_fast') ? 'bulk' : 'maintain';
+  return { t, goal, kind };
+}
+
+// Totales del día que se está viendo, sin contar el elemento que se edita
+function fitDayTotals(skipMeal, skipIndex) {
+  const meals = todaysMeals();
+  const tot = { kcal: 0, protein: 0, carbs: 0, fat: 0, sugars: 0, sodium: 0 };
+  Object.keys(meals).forEach(mid => (meals[mid] || []).forEach((it, i) => {
+    if (mid === skipMeal && i === skipIndex) return;
+    const f = (it.grams || 0) / 100, p = it.per100g || {};
+    tot.kcal += (p.kcal || 0) * f; tot.protein += (p.protein || 0) * f; tot.carbs += (p.carbs || 0) * f;
+    tot.fat += (p.fat || 0) * f; tot.sugars += (p.sugars || 0) * f; tot.sodium += (p.sodium || 0) * f;
+  }));
+  return tot;
+}
+
+function fitQuality(item, kind) {
+  const p = item.per100g || {};
+  const kcal = p.kcal || 0;
+  const reasons = [];
+  if (kcal <= 0) return { score: null, reasons };
+  const protPct = (p.protein || 0) * 4 / kcal;           // fracción de kcal que es proteína
+  const sugars = p.sugars || 0, fiber = p.fiber || 0;
+  const sat = p.satFat != null ? p.satFat : null;
+  const sodium = p.sodium || 0;                           // g / 100 g
+  let s = 55;
+  const wProt = kind === 'cut' ? 75 : kind === 'bulk' ? 55 : 60;
+  s += Math.min(25, protPct * wProt);
+  s += Math.min(10, fiber * 1.5);
+  s -= Math.min(22, sugars * (kind === 'cut' ? 0.9 : 0.7));
+  if (sat != null) s -= Math.min(15, sat * 1.4);
+  else s -= Math.min(10, Math.max(0, (p.fat || 0) - 15) * 0.4);
+  s -= Math.min(15, sodium * 18);
+  if (kind === 'cut') s -= kcal > 450 ? 14 : kcal > 300 ? 8 : kcal > 200 ? 3 : 0;
+  else if (kind === 'maintain') s -= kcal > 450 ? 8 : kcal > 300 ? 4 : 0;
+  else s -= kcal > 500 && protPct < 0.1 ? 5 : 0;
+  const ns = String(item.nutriscore || '').toLowerCase();
+  s += ({ a: 8, b: 4, c: 0, d: -6, e: -12 })[ns] || 0;
+  if (+item.nova === 4) s -= 8;
+  s = Math.max(0, Math.min(100, Math.round(s)));
+
+  if (protPct >= 0.3) reasons.push({ good: true, t: 'Alta en proteína' });
+  else if (protPct >= 0.18) reasons.push({ good: true, t: 'Buena proteína' });
+  if (fiber >= 6) reasons.push({ good: true, t: 'Buena fibra' });
+  if (sugars >= 15) reasons.push({ good: false, t: 'Mucha azúcar' });
+  if (sat != null && sat >= 5) reasons.push({ good: false, t: 'Grasa saturada alta' });
+  if (sodium >= 0.6) reasons.push({ good: false, t: 'Mucho sodio' });
+  if (kcal >= 400) reasons.push({ good: kind === 'bulk', t: 'Densa en calorías' });
+  else if (kcal <= 120 && (protPct >= 0.18 || fiber >= 3)) reasons.push({ good: true, t: 'Ligera' });
+  if (+item.nova === 4) reasons.push({ good: false, t: 'Ultraprocesado (NOVA 4)' });
+  if (ns && 'abcde'.includes(ns)) reasons.push({ good: ns <= 'b', t: 'Nutri-Score ' + ns.toUpperCase() });
+  return { score: s, reasons: reasons.slice(0, 4) };
+}
+function fitLabel(score) {
+  if (score == null) return { t: 'Sin datos', c: 'na' };
+  if (score >= 75) return { t: 'Excelente', c: 'a' };
+  if (score >= 55) return { t: 'Buena', c: 'b' };
+  if (score >= 40) return { t: 'Con moderación', c: 'c' };
+  return { t: 'Gusto ocasional', c: 'd' };
+}
+
+// Cuántos gramos te caben hoy
+function fitMaxGrams(item, info, totals, score) {
+  const p = item.per100g || {};
+  const t = info.t;
+  if (!(p.kcal > 0)) return null;
+  const rem = {
+    kcal: t.kcal - totals.kcal,
+    fat: t.fat - totals.fat,
+    carbs: t.carbs - totals.carbs,
+    sugars: FIT_SUGAR_DAY - totals.sugars,
+    sodium: FIT_SODIUM_DAY - totals.sodium,
+  };
+  // En volumen el tope de kcal es más holgado (se permite llegar a la meta + 5%)
+  if (info.kind === 'bulk') rem.kcal += t.kcal * 0.05;
+  const limits = [];
+  const add = (key, label, per100) => { if (per100 > 0) limits.push({ key, label, g: Math.max(0, rem[key]) / per100 * 100 }); };
+  add('kcal', 'calorías', p.kcal);
+  // grasa / carbos: solo limitan si el alimento aporta mucho de eso
+  if ((p.fat || 0) * 9 / p.kcal > 0.35) add('fat', 'grasa', p.fat);
+  if ((p.carbs || 0) * 4 / p.kcal > 0.5 && info.kind === 'cut') add('carbs', 'carbohidratos', p.carbs);
+  if ((p.sugars || 0) >= 5) add('sugars', 'azúcar', p.sugars);
+  if ((p.sodium || 0) >= 0.3) add('sodium', 'sodio', p.sodium);
+  // Tope por calidad: alimentos de baja calidad ≈ 10% de las kcal del día
+  if (score != null && score < 55) {
+    const share = score < 40 ? 0.10 : 0.18;
+    limits.push({ key: 'quality', label: 'calidad', g: t.kcal * share / p.kcal * 100 });
+  }
+  if (!limits.length) return null;
+  limits.sort((a, b) => a.g - b.g);
+  const lim = limits[0];
+  let g = Math.floor(lim.g / 5) * 5;
+  if (g > 1000) g = 1000;
+  return { grams: Math.max(0, g), by: lim.key, byLabel: lim.label, rem };
+}
+
+function fitHtml(item, mealId, index) {
+  const info = fitGoalInfo();
+  const totals = fitDayTotals(mealId, index);
+  const q = fitQuality(item, info.kind);
+  const lab = fitLabel(q.score);
+  const mx = fitMaxGrams(item, info, totals, q.score);
+  const goalTxt = { cut: 'Bajar grasa', maintain: 'Mantener', bulk: 'Ganar músculo' }[info.kind];
+  const left = Math.round(info.t.kcal - totals.kcal);
+  const units = naturalUnits(item);
+  const unitTxt = (g) => {
+    const u = units.find(u => g >= u.g * 0.75);
+    return u ? ` (≈ ${Math.max(1, Math.round(g / u.g * 2) / 2)} × ${u.label})` : '';
+  };
+  const byTxt = { kcal: 'las calorías que te quedan', fat: 'la grasa que te queda', carbs: 'los carbohidratos que te quedan',
+    sugars: 'el azúcar recomendado del día', sodium: 'el sodio recomendado del día', quality: 'que es un gusto ocasional (~10% de tus kcal)' };
+  let maxHtml = '';
+  // Porción de referencia: la unidad natural del alimento o 100 g
+  const ref = units.length ? units[0].g : 100;
+  if (mx && mx.grams >= Math.max(300, ref * 3) && (q.score == null || q.score >= 55)) {
+    // Alimento de buena calidad que cabe de sobra: no tiene sentido dar un tope enorme
+    const refK = Math.round((item.per100g.kcal || 0) * ref / 100);
+    maxHtml = `<div class="fit-max"><div><b class="fit-ok">Te cabe sin problema</b></div>
+      <div class="fit-why"><span>Una porción de</span> ${ref} g <span>son</span> ${refK} kcal</div>
+      <button class="fit-use" id="fit-use" data-g="${ref}">Usar ${ref} g</button></div>`;
+  } else if (mx) {
+    maxHtml = mx.grams > 0
+      ? `<div class="fit-max"><div><span>Hoy te caben hasta</span> <b>${mx.grams} g</b><span>${escapeHtml(unitTxt(mx.grams))}</span></div>
+           <div class="fit-why"><span>Lo que te limita:</span> <span>${byTxt[mx.by]}</span></div>
+           <button class="fit-use" id="fit-use" data-g="${mx.grams}">Usar ${mx.grams} g</button></div>`
+      : `<div class="fit-max none"><div><b>Hoy ya no te cabe</b></div><div class="fit-why"><span>Lo que te limita:</span> <span>${byTxt[mx.by]}</span></div></div>`;
+  }
+  const chips = q.reasons.map(r => `<span class="fit-chip ${r.good ? 'good' : 'bad'}">${r.good ? '✓' : '!'} <span>${escapeHtml(r.t)}</span></span>`).join('');
+  return `<div class="fit-card" id="fit-card">
+    <div class="fit-top">
+      <div class="fit-score ${lab.c}">${q.score == null ? '—' : q.score}</div>
+      <div class="fit-top-body">
+        <div class="fit-title"><span>${lab.t}</span> <span class="fit-goal">· <span>para</span> <span>${goalTxt}</span></span></div>
+        <div class="fit-left">${left >= 0 ? `<span>Te quedan</span> <b>${left}</b> <span>kcal hoy</span>` : `<span>Ya te pasaste</span> <b>${-left}</b> <span>kcal hoy</span>`}</div>
+      </div>
+    </div>
+    ${chips ? `<div class="fit-chips">${chips}</div>` : ''}
+    ${maxHtml}
+    <div class="fit-status" id="fit-status"></div>
+  </div>`;
+}
+// Estado de la porción elegida frente a lo que cabe
+function fitUpdateStatus(item, mealId, index, grams) {
+  const el = document.getElementById('fit-status');
+  if (!el) return;
+  const info = fitGoalInfo();
+  const totals = fitDayTotals(mealId, index);
+  const q = fitQuality(item, info.kind);
+  const mx = fitMaxGrams(item, info, totals, q.score);
+  const p = item.per100g || {};
+  if (!mx || !(grams > 0)) { el.innerHTML = ''; return; }
+  const kcal = Math.round((p.kcal || 0) * grams / 100);
+  const leftAfter = Math.round(info.t.kcal - totals.kcal - kcal);
+  if (grams <= mx.grams + 0.5) {
+    el.className = 'fit-status ok';
+    el.innerHTML = `✓ <span>Dentro de tu meta</span> · <span>te quedarían</span> ${Math.max(0, leftAfter)} kcal`;
+  } else {
+    el.className = 'fit-status over';
+    el.innerHTML = `! <span>Te pasas de lo recomendado por</span> ${Math.round(grams - mx.grams)} g`;
+  }
+}
+
 function openPortionEditor(item, mealId, index) {
   const p100 = item.per100g || {};
   const isNew = index < 0;
@@ -12350,6 +12564,7 @@ function openPortionEditor(item, mealId, index) {
         <div class="portion-preview-item"><div class="portion-preview-num" id="pv-c">0</div><div class="portion-preview-lbl">C (g)</div></div>
         <div class="portion-preview-item"><div class="portion-preview-num" id="pv-g">0</div><div class="portion-preview-lbl">G (g)</div></div>
       </div>
+      ${mealId === '__dish__' ? '' : fitHtml(item, mealId, index)}
       <div style="display:flex;gap:8px;margin-top:8px;">
         ${!isNew ? '<button class="btn-secondary" id="portion-del" style="flex:1;">Eliminar</button>' : ''}
         <button class="btn-primary" id="portion-save" style="flex:2;">${isNew ? 'Añadir' : 'Guardar'}</button>
@@ -12377,8 +12592,15 @@ function openPortionEditor(item, mealId, index) {
     document.getElementById('pv-p').textContent = mm.protein;
     document.getElementById('pv-c').textContent = mm.carbs;
     document.getElementById('pv-g').textContent = mm.fat;
+    fitUpdateStatus(item, mealId, index, grams);
   }
   gramsInp.addEventListener('input', updatePreview);
+  const fitUse = document.getElementById('fit-use');
+  if (fitUse) fitUse.addEventListener('click', () => {
+    unitSel.value = '1'; _prevUnitMult = 1;
+    gramsInp.value = fitUse.dataset.g;
+    updatePreview();
+  });
   let _prevUnitMult = parseFloat(unitSel.value) || 1;
   unitSel.addEventListener('change', () => {
     // Convertir el número para conservar los gramos equivalentes: 100 g al
@@ -12449,6 +12671,8 @@ function openPortionEditor(item, mealId, index) {
       grams,
       source: item.source || 'custom',
       barcode: item.barcode || null,
+      nutriscore: item.nutriscore || undefined,
+      nova: item.nova || undefined,
       ts: Date.now(),
     };
 

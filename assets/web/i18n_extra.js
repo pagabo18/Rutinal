@@ -3330,6 +3330,161 @@ window.__I18N_EXTRA = {
    "en": "total kg",
    "pt-BR": "kg totais",
    "fr": "kg au total"
+  },
+  "Alta en proteína": {
+   "en": "High in protein",
+   "pt-BR": "Rica em proteína",
+   "fr": "Riche en protéines"
+  },
+  "Buena proteína": {
+   "en": "Good protein",
+   "pt-BR": "Boa proteína",
+   "fr": "Bon apport en protéines"
+  },
+  "Buena fibra": {
+   "en": "Good fiber",
+   "pt-BR": "Boa fibra",
+   "fr": "Bon apport en fibres"
+  },
+  "Mucha azúcar": {
+   "en": "High in sugar",
+   "pt-BR": "Muito açúcar",
+   "fr": "Beaucoup de sucre"
+  },
+  "Grasa saturada alta": {
+   "en": "High saturated fat",
+   "pt-BR": "Gordura saturada alta",
+   "fr": "Graisses saturées élevées"
+  },
+  "Mucho sodio": {
+   "en": "High in sodium",
+   "pt-BR": "Muito sódio",
+   "fr": "Beaucoup de sodium"
+  },
+  "Densa en calorías": {
+   "en": "Calorie-dense",
+   "pt-BR": "Densa em calorias",
+   "fr": "Dense en calories"
+  },
+  "Ligera": {
+   "en": "Light",
+   "pt-BR": "Leve",
+   "fr": "Léger"
+  },
+  "Ultraprocesado (NOVA 4)": {
+   "en": "Ultra-processed (NOVA 4)",
+   "pt-BR": "Ultraprocessado (NOVA 4)",
+   "fr": "Ultra-transformé (NOVA 4)"
+  },
+  "Buena": {
+   "en": "Good",
+   "pt-BR": "Boa",
+   "fr": "Bon"
+  },
+  "Con moderación": {
+   "en": "In moderation",
+   "pt-BR": "Com moderação",
+   "fr": "Avec modération"
+  },
+  "Gusto ocasional": {
+   "en": "Occasional treat",
+   "pt-BR": "Só de vez em quando",
+   "fr": "Plaisir occasionnel"
+  },
+  "para": {
+   "en": "for",
+   "pt-BR": "para",
+   "fr": "pour"
+  },
+  "Te quedan": {
+   "en": "You have",
+   "pt-BR": "Restam",
+   "fr": "Il vous reste"
+  },
+  "kcal hoy": {
+   "en": "kcal left today",
+   "pt-BR": "kcal hoje",
+   "fr": "kcal aujourd'hui"
+  },
+  "Ya te pasaste": {
+   "en": "You're over by",
+   "pt-BR": "Você já passou",
+   "fr": "Vous avez dépassé de"
+  },
+  "Hoy te caben hasta": {
+   "en": "Today you can have up to",
+   "pt-BR": "Hoje cabem até",
+   "fr": "Aujourd'hui, jusqu'à"
+  },
+  "Lo que te limita:": {
+   "en": "What limits you:",
+   "pt-BR": "O que limita:",
+   "fr": "Ce qui vous limite :"
+  },
+  "las calorías que te quedan": {
+   "en": "the calories you have left",
+   "pt-BR": "as calorias que restam",
+   "fr": "les calories qu'il vous reste"
+  },
+  "la grasa que te queda": {
+   "en": "the fat you have left",
+   "pt-BR": "a gordura que resta",
+   "fr": "les lipides qu'il vous reste"
+  },
+  "los carbohidratos que te quedan": {
+   "en": "the carbs you have left",
+   "pt-BR": "os carboidratos que restam",
+   "fr": "les glucides qu'il vous reste"
+  },
+  "el azúcar recomendado del día": {
+   "en": "the recommended daily sugar",
+   "pt-BR": "o açúcar recomendado do dia",
+   "fr": "le sucre recommandé par jour"
+  },
+  "el sodio recomendado del día": {
+   "en": "the recommended daily sodium",
+   "pt-BR": "o sódio recomendado do dia",
+   "fr": "le sodium recommandé par jour"
+  },
+  "que es un gusto ocasional (~10% de tus kcal)": {
+   "en": "it's an occasional treat (~10% of your kcal)",
+   "pt-BR": "é só de vez em quando (~10% das suas kcal)",
+   "fr": "c'est un plaisir occasionnel (~10 % de vos kcal)"
+  },
+  "Hoy ya no te cabe": {
+   "en": "No room for it today",
+   "pt-BR": "Hoje já não cabe",
+   "fr": "Plus de place aujourd'hui"
+  },
+  "te quedarían": {
+   "en": "you'd have left",
+   "pt-BR": "restariam",
+   "fr": "il vous resterait"
+  },
+  "Te pasas de lo recomendado por": {
+   "en": "Over the recommended amount by",
+   "pt-BR": "Você passa do recomendado em",
+   "fr": "Vous dépassez la quantité conseillée de"
+  },
+  "Dentro de tu meta": {
+   "en": "Within your goal",
+   "pt-BR": "Dentro da sua meta",
+   "fr": "Dans votre objectif"
+  },
+  "Te cabe sin problema": {
+   "en": "Fits your day easily",
+   "pt-BR": "Cabe sem problema",
+   "fr": "Ça rentre sans problème"
+  },
+  "Una porción de": {
+   "en": "A serving of",
+   "pt-BR": "Uma porção de",
+   "fr": "Une portion de"
+  },
+  "son": {
+   "en": "is",
+   "pt-BR": "são",
+   "fr": "fait"
   }
  },
  "tpl": {
@@ -3867,6 +4022,16 @@ window.__I18N_EXTRA = {
    "en": "{{n}}×/wk",
    "pt-BR": "{{n}}×/sem",
    "fr": "{{n}}×/sem"
+  },
+  "Usar {{n}} g": {
+   "en": "Use {{n}} g",
+   "pt-BR": "Usar {{n}} g",
+   "fr": "Utiliser {{n}} g"
+  },
+  "(≈ {{x}} × {{y}})": {
+   "en": "(≈ {{x}} × {{y}})",
+   "pt-BR": "(≈ {{x}} × {{y}})",
+   "fr": "(≈ {{x}} × {{y}})"
   }
  },
  "ctx": {
