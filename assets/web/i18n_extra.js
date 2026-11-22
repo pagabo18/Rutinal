@@ -2831,6 +2831,31 @@ window.__I18N_EXTRA = {
    "pt-BR": "Peito",
    "fr": "Pectoraux"
   },
+  "Pierna": {
+   "en": "Legs",
+   "pt-BR": "Perna",
+   "fr": "Jambes"
+  },
+  "Espalda": {
+   "en": "Back",
+   "pt-BR": "Costas",
+   "fr": "Dos"
+  },
+  "Hombro": {
+   "en": "Shoulder",
+   "pt-BR": "Ombro",
+   "fr": "Épaule"
+  },
+  "Brazo": {
+   "en": "Arms",
+   "pt-BR": "Braço",
+   "fr": "Bras"
+  },
+  "Core": {
+   "en": "Core",
+   "pt-BR": "Core",
+   "fr": "Gainage"
+  },
   "Antebrazos": {
    "en": "Forearms",
    "pt-BR": "Antebraços",

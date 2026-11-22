@@ -2516,6 +2516,42 @@
   .task.done .mini svg { display: block; }
   .task .mini svg { width: 10px; height: 10px; display: none; stroke: currentColor; fill: none; stroke-width: 3; }
   .task.done { color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--text-4); }
+
+  /* ===== Colores con significado =====
+     Nutrición: proteína rojo · carbos ámbar · grasa verde oliva · agua cian · calorías en tinta.
+     Entrenamiento: cada grupo muscular tiene su color.
+     Estados: hecho verde · aviso ámbar · dolor / exceso rojo. */
+  :root {
+    --c-prot: #E5484D; --c-carb: #F2A20C; --c-fat: #6BA31A; --c-water: #0EA5E9; --c-kcal: var(--text);
+    --g-pierna: #EA580C; --g-pecho: #2563EB; --g-espalda: #0D9488; --g-hombro: #CA8A04; --g-brazo: #DB2777; --g-core: #64748B; --g-otro: #8E8E93;
+  }
+  .mc-chip.p { background: color-mix(in srgb, var(--c-prot) 14%, transparent); color: color-mix(in srgb, var(--c-prot) 82%, var(--text)); }
+  .mc-chip.c { background: color-mix(in srgb, var(--c-carb) 18%, transparent); color: color-mix(in srgb, var(--c-carb) 62%, var(--text)); }
+  .mc-chip.g { background: color-mix(in srgb, var(--c-fat) 16%, transparent); color: color-mix(in srgb, var(--c-fat) 70%, var(--text)); }
+  .macro-pill-kcal { background: var(--text); color: var(--bg); }
+  .macro-pill-p { background: var(--c-prot); } .macro-pill-c { background: var(--c-carb); } .macro-pill-g { background: var(--c-fat); }
+  #ring-kcal { stroke: var(--c-kcal); } #ring-p { stroke: var(--c-prot); } #ring-c { stroke: var(--c-carb); } #ring-g { stroke: var(--c-fat); }
+  .hd-macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .hd-m { min-width: 0; }
+  .hd-m-h { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; font-weight: 600; color: var(--text-3); }
+  .hd-m-h b { font-size: 12px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .hd-m-bar { height: 6px; border-radius: 999px; overflow: hidden; margin-top: 5px; background: color-mix(in srgb, var(--mc) 16%, transparent); }
+  .hd-m-bar i { display: block; height: 100%; border-radius: 999px; background: var(--mc); }
+  .ft-bar.m { background: color-mix(in srgb, var(--mc) 15%, transparent); }
+  .ft-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--mc); margin-right: 6px; }
+  /* Grupos musculares */
+  [data-g="pierna"] { --gc: var(--g-pierna); } [data-g="pecho"] { --gc: var(--g-pecho); } [data-g="espalda"] { --gc: var(--g-espalda); }
+  [data-g="hombro"] { --gc: var(--g-hombro); } [data-g="brazo"] { --gc: var(--g-brazo); } [data-g="core"] { --gc: var(--g-core); } [data-g="otro"] { --gc: var(--g-otro); }
+  .gym-media-empty[data-g] { background: color-mix(in srgb, var(--gc) 14%, var(--surface)); }
+  .gym-media-empty[data-g] svg { stroke: var(--gc); }
+  img.gym-media[data-g] { box-shadow: inset 0 -3px 0 var(--gc); border-bottom: 3px solid var(--gc); box-sizing: border-box; }
+  .gym-g { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: color-mix(in srgb, var(--gc) 13%, transparent); color: color-mix(in srgb, var(--gc) 80%, var(--text)); white-space: nowrap; }
+  .gym-g::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gc); }
+  .gym-gs { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .gym-ex[data-g] { border-left: 4px solid var(--gc); }
+  .gym-mus[data-g] .gym-mus-bar { background: color-mix(in srgb, var(--gc) 14%, transparent); }
+  .gym-mus[data-g] .gym-mus-bar div { background: var(--gc); }
+  .gym-mus[data-g] span::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--gc); margin-right: 6px; }
 </style>
 </head>
 <body>
@@ -2918,10 +2954,10 @@ try {
             <circle class="macro-ring-track" cx="130" cy="130" r="66"  stroke-width="14"/>
             <circle class="macro-ring-track" cx="130" cy="130" r="44"  stroke-width="14"/>
             <!-- Fills -->
-            <circle class="macro-ring-fill" id="ring-kcal" cx="130" cy="130" r="110" stroke-width="14" stroke="#EF4444"/>
-            <circle class="macro-ring-fill" id="ring-p"    cx="130" cy="130" r="88"  stroke-width="14" stroke="#22C55E"/>
-            <circle class="macro-ring-fill" id="ring-c"    cx="130" cy="130" r="66"  stroke-width="14" stroke="#7C9CFF"/>
-            <circle class="macro-ring-fill" id="ring-g"    cx="130" cy="130" r="44"  stroke-width="14" stroke="#F59E0B"/>
+            <circle class="macro-ring-fill" id="ring-kcal" cx="130" cy="130" r="110" stroke-width="14" stroke="currentColor"/>
+            <circle class="macro-ring-fill" id="ring-p"    cx="130" cy="130" r="88"  stroke-width="14" stroke="#E5484D"/>
+            <circle class="macro-ring-fill" id="ring-c"    cx="130" cy="130" r="66"  stroke-width="14" stroke="#F2A20C"/>
+            <circle class="macro-ring-fill" id="ring-g"    cx="130" cy="130" r="44"  stroke-width="14" stroke="#6BA31A"/>
           </svg>
           <div class="macro-ring-center">
             <div class="macro-ring-center-num" id="food-total-kcal">0</div>
@@ -2938,22 +2974,22 @@ try {
         <div class="macro-legend-item">
           <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#EF4444;"></span>kcal</div>
           <div class="macro-legend-val" id="leg-kcal">0 / 0</div>
-          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-kcal" style="background:#EF4444;"></div></div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-kcal" style="background:var(--c-kcal);"></div></div>
         </div>
         <div class="macro-legend-item">
-          <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#22C55E;"></span>Proteína</div>
+          <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:var(--c-prot);"></span>Proteína</div>
           <div class="macro-legend-val" id="leg-p">0 / 0g</div>
-          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-p" style="background:#22C55E;"></div></div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-p" style="background:var(--c-prot);"></div></div>
         </div>
         <div class="macro-legend-item">
-          <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#7C9CFF;"></span>Carbos</div>
+          <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:var(--c-carb);"></span>Carbos</div>
           <div class="macro-legend-val" id="leg-c">0 / 0g</div>
-          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-c" style="background:#7C9CFF;"></div></div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-c" style="background:var(--c-carb);"></div></div>
         </div>
         <div class="macro-legend-item">
-          <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:#F59E0B;"></span>Grasa</div>
+          <div class="macro-legend-lbl"><span class="macro-legend-dot" style="background:var(--c-fat);"></span>Grasa</div>
           <div class="macro-legend-val" id="leg-g">0 / 0g</div>
-          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-g" style="background:#F59E0B;"></div></div>
+          <div class="macro-legend-bar"><div class="macro-legend-bar-fill" id="bar-g" style="background:var(--c-fat);"></div></div>
         </div>
       </div>
       <!-- Total macros compacto (para cuando no hay perfil de nutrición) -->
@@ -7553,9 +7589,9 @@ function renderEditNutri() {
       <div class="nutri-sum-lbl">kcal / día objetivo${t.manual || p.manualKcal ? ' · <b style="color:#A855F7;">meta manual</b>' : ''}</div>
       <div class="nutri-sum-sub">BMR ${t.bmr} · TDEE ${t.tdee}${p.bodyFatPct ? ' · Katch-McArdle' : ' · Mifflin-St Jeor'}</div>
       <div class="nutri-sum-macros">
-        <div class="nutri-sum-macro" style="--mc:#F87171;"><b>${t.protein}g</b><span>Proteína</span></div>
-        <div class="nutri-sum-macro" style="--mc:#FBBF24;"><b>${t.carbs}g</b><span>Carbos</span></div>
-        <div class="nutri-sum-macro" style="--mc:#60A5FA;"><b>${t.fat}g</b><span>Grasa</span></div>
+        <div class="nutri-sum-macro" style="--mc:#E5484D;"><b>${t.protein}g</b><span>Proteína</span></div>
+        <div class="nutri-sum-macro" style="--mc:#F2A20C;"><b>${t.carbs}g</b><span>Carbos</span></div>
+        <div class="nutri-sum-macro" style="--mc:#6BA31A;"><b>${t.fat}g</b><span>Grasa</span></div>
       </div>
     </div>
 
@@ -7875,9 +7911,9 @@ function startNutriWizard(initial) {
               <div class="wiz-sum-sub">BMR ${t.bmr} · TDEE ${t.tdee}</div>
             </div>
             <div class="wiz-sum-macros">
-              <div class="wiz-sum-macro" style="--mc:#F87171;"><b>${t.protein}g</b><span>Proteína</span></div>
-              <div class="wiz-sum-macro" style="--mc:#FBBF24;"><b>${t.carbs}g</b><span>Carbos</span></div>
-              <div class="wiz-sum-macro" style="--mc:#60A5FA;"><b>${t.fat}g</b><span>Grasa</span></div>
+              <div class="wiz-sum-macro" style="--mc:#E5484D;"><b>${t.protein}g</b><span>Proteína</span></div>
+              <div class="wiz-sum-macro" style="--mc:#F2A20C;"><b>${t.carbs}g</b><span>Carbos</span></div>
+              <div class="wiz-sum-macro" style="--mc:#6BA31A;"><b>${t.fat}g</b><span>Grasa</span></div>
             </div>
             <div class="wiz-sum-recap">
               <div><span>Sexo</span><b>${draft.sex === 'M' ? 'Hombre' : 'Mujer'}</b></div>
@@ -10019,8 +10055,8 @@ function spClientReport(D, l, asg) {
     if (k0.n) sum.push(line(`<span>Promedio diario</span>: <b>${fmt(k0.avg)} kcal</b>${tg && tg.kcal ? ` (${Math.round(k0.avg / tg.kcal * 100)}% <span>de la meta</span>)` : ''}`));
     if (k0.n) sum.push(line(`<span>Proteína promedio</span>: <b>${fmt(p0.avg)} g</b>${tg && tg.protein ? ` (${Math.round(p0.avg / tg.protein * 100)}% <span>de la meta</span>)` : ''}`));
     if (kc.some(x => x)) {
-      charts.push(card('<span>Calorías por día</span>', spBars(kc, lab, { target: tg && tg.kcal, color: '#F59E0B' }) + '<div class="sp-card-d"><span>Últimos 14 días</span>' + (tg && tg.kcal ? ' · <span>la línea es la meta</span>' : '') + '</div>'));
-      charts.push(card('<span>Proteína por día (g)</span>', spBars(pr, lab, { target: tg && tg.protein, color: '#22C55E' })));
+      charts.push(card('<span>Calorías por día</span>', spBars(kc, lab, { target: tg && tg.kcal, color: '#52525B' }) + '<div class="sp-card-d"><span>Últimos 14 días</span>' + (tg && tg.kcal ? ' · <span>la línea es la meta</span>' : '') + '</div>'));
+      charts.push(card('<span>Proteína por día (g)</span>', spBars(pr, lab, { target: tg && tg.protein, color: '#E5484D' })));
     }
   }
   if (gymR) {
@@ -10052,7 +10088,7 @@ function spClientReport(D, l, asg) {
     if (pmax0 != null) sum.push(line(`<span>Dolor máximo</span>: <b class="${pmax0 >= 6 ? 'warn' : ''}">${pmax0}/10</b>`));
     if (rpe0.length) sum.push(line(`<span>RPE promedio</span>: <b>${(rpe0.reduce((x, y) => x + y, 0) / rpe0.length).toFixed(1)}</b>`));
     if (ses.some(x => x)) {
-      charts.push(card('<span>Entrenamientos por semana</span>', spBars(ses, lab, { color: '#8B5CF6', h: 100 })));
+      charts.push(card('<span>Entrenamientos por semana</span>', spBars(ses, lab, { color: '#52525B', h: 100 })));
       if (vol.some(x => x)) charts.push(card(`<span>Volumen por semana</span> (${U})`, spBars(vol, lab, { color: '#3B82F6' })));
     }
     if (feel.length >= 2) {
@@ -10560,7 +10596,8 @@ function renderHoyDash() {
     const goal = info.t.kcal || 0, left = goal - tot.kcal, pct = goal ? Math.min(100, Math.round(tot.kcal / goal * 100)) : 0;
     food = `<div class="hd-card"><div class="hd-k"><span>Comida de hoy</span><span>${tot.kcal} / ${goal} kcal</span></div>
       <div class="hd-bar"><i class="${left < 0 ? 'over' : ''}" style="width:${pct}%"></i></div>
-      <div class="hd-row"><div class="hd-d">${left >= 0 ? `${left} kcal <span>restantes</span>` : `<span>Te pasaste por</span> ${-left} kcal`} · P ${tot.protein}/${info.t.protein} g</div><button class="hd-btn ghost" data-hd="comida">Registrar</button></div></div>`;
+      <div class="hd-row"><div class="hd-d">${left >= 0 ? `${left} kcal <span>restantes</span>` : `<span>Te pasaste por</span> ${-left} kcal`} </div><button class="hd-btn ghost" data-hd="comida">Registrar</button></div>
+      <div class="hd-macros">${[['Proteína', 'prot', tot.protein, info.t.protein], ['Carbos', 'carb', tot.carbs, info.t.carbs], ['Grasa', 'fat', tot.fat, info.t.fat]].map(m => `<div class="hd-m" style="--mc:var(--c-${m[1]})"><div class="hd-m-h"><span>${m[0]}</span><b translate="no">${Math.round(m[2] || 0)}/${Math.round(m[3] || 0)}</b></div><div class="hd-m-bar"><i style="width:${m[3] ? Math.min(100, (m[2] || 0) / m[3] * 100).toFixed(0) : 0}%"></i></div></div>`).join('')}</div></div>`;
   } catch (e) {}
   // --- peso ---
   let weight = '';
@@ -11516,7 +11553,7 @@ function reviewKcalChart(data) {
 
 // Anillos concéntricos (mismos colores que la pestaña Comida): kcal, proteína,
 // carbohidratos y grasa promedio vs meta. size = lado en px del SVG.
-const REVIEW_RING_COLORS = { kcal: '#EF4444', protein: '#22C55E', carbs: '#7C9CFF', fat: '#F59E0B' };
+const REVIEW_RING_COLORS = { kcal: '#18181B', protein: '#E5484D', carbs: '#F2A20C', fat: '#6BA31A' };
 function reviewGoals(data) {
   if (data.targets) return { kcal: data.targets.kcal, protein: data.targets.protein, carbs: data.targets.carbs, fat: data.targets.fat };
   // Sin perfil: meta sugerida con reparto balanceado 30/40/30
@@ -11561,12 +11598,12 @@ function buildReviewDoc(data) {
   const mk = pk + ck + fk || 1;
   const pct = v => Math.round(v / mk * 100);
   const macroBar = `<div class="rp-macrobar">
-      <div style="width:${pct(pk)}%;background:#22C55E"></div><div style="width:${pct(ck)}%;background:#7C9CFF"></div><div style="width:${pct(fk)}%;background:#F59E0B"></div>
+      <div style="width:${pct(pk)}%;background:#E5484D"></div><div style="width:${pct(ck)}%;background:#F2A20C"></div><div style="width:${pct(fk)}%;background:#6BA31A"></div>
     </div>
     <div class="rp-legend">
-      <span><i style="background:#22C55E"></i><span>Proteína</span> ${pct(pk)}%</span>
-      <span><i style="background:#7C9CFF"></i><span>Carbohidratos</span> ${pct(ck)}%</span>
-      <span><i style="background:#F59E0B"></i><span>Grasa</span> ${pct(fk)}%</span>
+      <span><i style="background:#E5484D"></i><span>Proteína</span> ${pct(pk)}%</span>
+      <span><i style="background:#F2A20C"></i><span>Carbohidratos</span> ${pct(ck)}%</span>
+      <span><i style="background:#6BA31A"></i><span>Grasa</span> ${pct(fk)}%</span>
     </div>`;
 
   const G = reviewGoals(data);
@@ -12045,9 +12082,9 @@ function dominantMacroRgb(p100) {
   if (!p100) return null;
   const pk = (p100.protein || 0) * 4, ck = (p100.carbs || 0) * 4, fk = (p100.fat || 0) * 9;
   if (pk + ck + fk <= 0) return null;
-  if (pk >= ck && pk >= fk) return '34,197,94';
-  if (ck >= fk) return '124,156,255';
-  return '245,158,11';
+  if (pk >= ck && pk >= fk) return '229,72,77';
+  if (ck >= fk) return '242,162,12';
+  return '107,163,26';
 }
 
 function foodTint(item, alpha) {
@@ -12846,8 +12883,8 @@ function renderFoodTarget(cur, tg, suggested) {
   const left = tg.kcal - cur.kcal, fmt = n => Math.round(n).toLocaleString(_loc());
   const bar = (label, color, c, g) => {
     const pct = g > 0 ? Math.min(100, c / g * 100) : 0, over = g > 0 && c > g * 1.1;
-    return `<div class="ft-row"><div class="ft-row-h"><span>${label}</span><span class="ft-row-v${over ? ' over' : ''}" translate="no">${Math.round(c)} / ${Math.round(g)} g</span></div>
-      <div class="ft-bar"><i style="width:${pct.toFixed(1)}%;background:${over ? '#EF4444' : color}"></i></div></div>`;
+    return `<div class="ft-row" style="--mc:${color}"><div class="ft-row-h"><span><i class="ft-dot"></i><span>${label}</span></span><span class="ft-row-v${over ? ' over' : ''}" translate="no">${Math.round(c)} / ${Math.round(g)} g</span></div>
+      <div class="ft-bar m"><i style="width:${pct.toFixed(1)}%;background:${color}"></i></div></div>`;
   };
   el.innerHTML = `<div class="ft-card">
     <div class="ft-k">${suggested ? 'Meta sugerida' : 'Meta diaria'}</div>
@@ -12856,7 +12893,7 @@ function renderFoodTarget(cur, tg, suggested) {
     <div class="ft-bar big"><i style="width:${Math.min(100, tg.kcal ? cur.kcal / tg.kcal * 100 : 0).toFixed(1)}%;background:${left < 0 ? '#EF4444' : 'var(--text)'}"></i></div>
     <div class="ft-sub"><span translate="no">${fmt(cur.kcal)} kcal</span> <span>consumidas</span>${tg.assigned ? ' · <span>meta de tu especialista</span>' : ''}</div>
     ${suggested ? '<button class="ft-set" id="ft-set">Calcular mi meta</button>' : ''}
-    ${bar('Proteína', '#22C55E', cur.protein, tg.protein)}${bar('Carbos', '#7C9CFF', cur.carbs, tg.carbs)}${bar('Grasa', '#F59E0B', cur.fat, tg.fat)}
+    ${bar('Proteína', 'var(--c-prot)', cur.protein, tg.protein)}${bar('Carbos', 'var(--c-carb)', cur.carbs, tg.carbs)}${bar('Grasa', 'var(--c-fat)', cur.fat, tg.fat)}
   </div>`;
   const b = document.getElementById('ft-set');
   if (b) b.addEventListener('click', () => { if (typeof startNutriWizard === 'function') startNutriWizard(); });
@@ -12921,12 +12958,44 @@ function gymDbFrames(id) {
   return Array.from({ length: e.im }, (_, k) => GYM_IMG_CDN + encodeURI(e.i) + '/' + k + '.jpg');
 }
 // Imagen de un ejercicio: foto propia (PDF/cámara) o animación de la base (alterna inicio/fin)
+const GYM_GROUP_OF = { quadriceps: 'pierna', hamstrings: 'pierna', glutes: 'pierna', calves: 'pierna', abductors: 'pierna', adductors: 'pierna',
+  chest: 'pecho', lats: 'espalda', 'middle back': 'espalda', 'lower back': 'espalda', traps: 'espalda',
+  shoulders: 'hombro', neck: 'hombro', biceps: 'brazo', triceps: 'brazo', forearms: 'brazo', abdominals: 'core' };
+const GYM_GROUP_ES = { pierna: 'Pierna', pecho: 'Pecho', espalda: 'Espalda', hombro: 'Hombro', brazo: 'Brazo', core: 'Core', otro: 'Otro' };
+const GYM_GROUP_HEX = { pierna: '#EA580C', pecho: '#2563EB', espalda: '#0D9488', hombro: '#CA8A04', brazo: '#DB2777', core: '#64748B', otro: '#8E8E93' };
+const GYM_GROUP_KW = [
+  ['pierna', /sentadilla|squat|peso muerto|deadlift|zancada|desplante|lunge|prensa|leg |pierna|femoral|cu[aá]driceps|gl[uú]teo|hip thrust|pantorrilla|gemelo|calf|b[uú]lgara|extensi[oó]n de rodilla/],
+  ['pecho', /press (de )?banca|bench|pecho|chest|apertura|aperturas|fly|flexi[oó]n|lagartija|push.?up|fondos/],
+  ['espalda', /remo|row|dominada|pull.?up|chin.?up|jal[oó]n|pulldown|espalda|dorsal|lat |trapecio|encogimiento|hiperextensi/],
+  ['hombro', /hombro|shoulder|militar|overhead|press arnold|elevaci[oó]n lateral|elevaciones laterales|lateral raise|face pull|p[aá]jaro/],
+  ['brazo', /b[ií]ceps|tr[ií]ceps|curl|martillo|antebrazo|extensi[oó]n de codo|copa|patada/],
+  ['core', /abdominal|abdomen|plancha|plank|crunch|core|rueda|elevaci[oó]n de piernas|russian|oblicuo/],
+];
+function gymExGroup(ex) {
+  if (!ex) return 'otro';
+  const db = ex.dbId ? gymDbById(ex.dbId) : null;
+  const m = db && db.p && db.p[0];
+  if (m && GYM_GROUP_OF[m]) return GYM_GROUP_OF[m];
+  const n = String(ex.name || '').toLowerCase();
+  for (const [g, re] of GYM_GROUP_KW) if (re.test(n)) return g;
+  return 'otro';
+}
+function gymRoutineGroups(r) {
+  const c = {};
+  ((r && r.exercises) || []).forEach(ex => { const g = gymExGroup(ex); if (g !== 'otro') c[g] = (c[g] || 0) + 1; });
+  return Object.keys(c).sort((a, b) => c[b] - c[a]);
+}
+function gymGroupChips(r) {
+  const gs = gymRoutineGroups(r);
+  return gs.length ? `<div class="gym-gs">${gs.map(g => `<span class="gym-g" data-g="${g}">${GYM_GROUP_ES[g]}</span>`).join('')}</div>` : '';
+}
 function gymMediaHtml(ex, size) {
+  const G = ` data-g="${gymExGroup(ex)}"`;
   const st = `width:${size}px;height:${size}px;`;
-  if (ex.photo) return `<img class="gym-media" src="${ex.photo}" style="${st}" alt="">`;
+  if (ex.photo) return `<img class="gym-media"${G} src="${ex.photo}" style="${st}" alt="">`;
   const fr = ex.dbId ? gymDbFrames(ex.dbId) : [];
-  if (fr.length) return `<img class="gym-media gym-anim" src="${fr[0]}" data-frames="${fr.join('|')}" style="${st}" alt="" loading="lazy" onerror="this.classList.add('gym-media-err')">`;
-  return `<div class="gym-media gym-media-empty" style="${st}"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg></div>`;
+  if (fr.length) return `<img class="gym-media gym-anim"${G} src="${fr[0]}" data-frames="${fr.join('|')}" style="${st}" alt="" loading="lazy" onerror="this.classList.add('gym-media-err')">`;
+  return `<div class="gym-media gym-media-empty"${G} style="${st}"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg></div>`;
 }
 setInterval(() => {
   document.querySelectorAll('img.gym-anim[data-frames]').forEach(img => {
@@ -13076,7 +13145,7 @@ function renderGym() {
       <div class="gym-today-row">
         <div>
           <div class="gym-today-k">Hoy toca</div>
-          <div class="gym-today-name">${escapeHtml(today.name)}</div>
+          <div class="gym-today-name">${escapeHtml(today.name)}</div>${gymGroupChips(today)}
         </div>
         <div class="gym-today-count"><b>${doneSets}</b>/${totalSets}<span>series</span></div>
       </div>
@@ -13110,7 +13179,7 @@ function renderGym() {
     return `<div class="gym-routine" data-gym-open="${r.id}">
       ${gymMediaHtml(r.exercises[0] || {}, 44)}
       <div class="gym-routine-body">
-        <div class="gym-routine-name">${escapeHtml(r.name)}</div>
+        <div class="gym-routine-name">${escapeHtml(r.name)}</div>${gymGroupChips(r)}
         <div class="gym-routine-meta">${r.exercises.length} ejercicios${days ? ' · ' + escapeHtml(days) : ''}</div>
         ${r.assigned ? `<div class="gym-routine-meta"><span class="usr-badge spec">De tu especialista</span>${r.assigned.by ? ' ' + escapeHtml(r.assigned.by) : ''}</div>` : ''}
       </div>
@@ -13269,7 +13338,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
       ? `<button class="gym-swap-btn" data-gym-unswap="${ex.id}">↺ Volver al original</button>`
       : `<button class="gym-swap-btn" data-gym-swap="${ex.id}">⇄ Reemplazar ejercicio</button>`;
     const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${gymDispW(s.kg) || '?'}×${s.reps || '?'}`).join('  '))}</div>` : '';
-    return `<div class="gym-ex open${complete ? ' complete' : ''}" data-ex-card="${ex.id}">${head}
+    return `<div class="gym-ex open${complete ? ' complete' : ''}" data-g="${gymExGroup(ex)}" data-ex-card="${ex.id}">${head}
       ${extra ? `<div class="gym-chips">${extra}</div>` : ''}
       ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
       ${!sw && exOrig.loads && exOrig.loads.length ? `<div class="gym-rec"><b>Carga recomendada</b>${r.assigned && r.assigned.by ? ` <span translate="no">· ${escapeHtml(r.assigned.by)}</span>` : ''}<span class="gym-rec-v" translate="no">${Array.from({ length: n }, (_, i) => escapeHtml(gymDispW(rec(i)))).join(' · ')} ${U}</span></div>` : ''}
@@ -13856,7 +13925,7 @@ function openGymProgress(selExId) {
     });
     const musRows = Object.entries(mus).sort((a, b) => b[1] - a[1]).map(([m, c]) => {
       const max = Math.max(...Object.values(mus));
-      return `<div class="gym-mus"><span>${escapeHtml(GYM_MUSCLE_ES[m] || m)}</span><div class="gym-mus-bar"><div style="width:${c / max * 100}%"></div></div><b>${c}</b></div>`;
+      return `<div class="gym-mus" data-g="${GYM_GROUP_OF[m] || 'otro'}"><span>${escapeHtml(GYM_MUSCLE_ES[m] || m)}</span><div class="gym-mus-bar"><div style="width:${c / max * 100}%"></div></div><b>${c}</b></div>`;
     }).join('') || '<div class="empty">Sin series esta semana.</div>';
 
     // 1RM estimado por ejercicio
@@ -13869,7 +13938,7 @@ function openGymProgress(selExId) {
       const vals = h.map(x => gymVolU(x.e1rm));
       const lo = Math.floor(Math.min(...vals) * 0.95), hi = Math.ceil(Math.max(...vals) * 1.05);
       const nn = Math.max(1, h.length - 1);
-      e1Chart = gymLineSvg([{ color: '#A855F7', pts: h.map((x, i) => ({ x: h.length === 1 ? 0.5 : i / nn, y: vals[i] })) }],
+      e1Chart = gymLineSvg([{ color: GYM_GROUP_HEX[gymExGroup(sel)] || '#52525B', pts: h.map((x, i) => ({ x: h.length === 1 ? 0.5 : i / nn, y: vals[i] })) }],
         { min: lo, max: Math.max(hi, lo + 1), ticks: [lo, Math.max(hi, lo + 1)], labels: [0, h.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(i => ({ x: h.length === 1 ? 0.5 : i / nn, t: fmt.format(new Date(h[i].date + 'T00:00:00')) })), h: 120 })
         + `<div class="gym-e1">${h.length ? `<span>1RM estimado</span> <b>${(Math.round(vals[vals.length - 1] * 10) / 10).toLocaleString(_loc())} ${gymUnit()}</b>` : ''}</div>`;
     }
