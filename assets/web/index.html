@@ -2258,6 +2258,7 @@
   .gym-day { border-radius: 14px; }
   .gym-routine { border-radius: 18px; padding: 14px; margin-bottom: 10px; }
   .hyd-card { margin-bottom: 16px; }
+  .unit-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; padding: 4px 0; }
   .hyd-pct { font-size: 15px; font-weight: 700; color: #0EA5E9; font-variant-numeric: tabular-nums; }
   .hyd-ctl { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
   .hyd-count { font-size: 24px; font-weight: 700; min-width: 30px; text-align: center; font-variant-numeric: tabular-nums; }
@@ -3084,6 +3085,12 @@ try {
           <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
           <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
         </div>
+      </div>
+      <div class="setting">
+        <div class="setting-label">Unidades</div>
+        <div class="unit-row"><span>Peso corporal</span><div class="gym-unit" translate="no"><button data-unit-k="body_unit" data-unit-v="kg">kg</button><button data-unit-k="body_unit" data-unit-v="lb">lb</button></div></div>
+        <div class="unit-row"><span>Cargas del gym</span><div class="gym-unit" translate="no"><button data-unit-k="gym_unit" data-unit-v="kg">kg</button><button data-unit-k="gym_unit" data-unit-v="lb">lb</button></div></div>
+        <div style="font-size:12px; color:var(--text-3); margin-top:8px; line-height:1.4;">El perfil de nutrición y las tendencias de comida siguen mostrando el peso en kg.</div>
       </div>
       <div class="setting">
         <div class="setting-label">Tema</div>
@@ -5507,7 +5514,7 @@ function renderCal() {
     </div>`;
   const wSel = (S.get('weight_log', {}) || {})[calSel];
   const weightHtml = (wSel != null) ? `<div class="cal-detail-section-title">Peso</div>
-    <div style="font-size:13px;color:var(--text-2);padding:2px 0 4px;">${wSel} kg <span class="food-inline-link" id="cal-edit-weight" style="font-size:12px;margin-left:6px;">Corregir</span></div>` : '';
+    <div style="font-size:13px;color:var(--text-2);padding:2px 0 4px;"><span translate="no">${bwDisp(wSel)} ${bwUnit()}</span> <span class="food-inline-link" id="cal-edit-weight" style="font-size:12px;margin-left:6px;">Corregir</span></div>` : '';
   let pomoHtml = '';
   try {
     const sesSel = pomoSavedSessions().filter(s => s && s.phase === 'focus' && keyDate(new Date(s.ts)) === calSel);
@@ -5568,9 +5575,10 @@ function renderCal() {
   const ewb = document.getElementById('cal-edit-weight');
   if (ewb) ewb.addEventListener('click', () => {
     const cur = (S.get('weight_log', {}) || {})[calSel];
-    const v = prompt('Peso del día en kg (escribe 0 para borrarlo):', cur != null ? String(cur) : '');
+    const tt = x => (window.i18n && window.i18n.t) ? window.i18n.t(x) : x;
+    const v = prompt(bwUnit() === 'lb' ? tt('Peso del día en lb (escribe 0 para borrarlo):') : tt('Peso del día en kg (escribe 0 para borrarlo):'), cur != null ? bwDisp(cur) : '');
     if (v === null) return;
-    const num = parseFloat(String(v).replace(',', '.'));
+    const num = bwStore(v);
     if (isNaN(num) || num < 0 || num > 400) { alert('Valor no válido.'); return; }
     const wl = S.get('weight_log', {});
     if (num === 0) delete wl[calSel]; else wl[calSel] = num;
@@ -5701,6 +5709,10 @@ function applyTheme(mode) {
 }
 function renderAjustes() {
   if (typeof authRenderAccount === 'function') authRenderAccount();
+  document.querySelectorAll('[data-unit-k]').forEach(b => {
+    b.classList.toggle('on', (S.get(b.dataset.unitK, 'kg') === 'lb' ? 'lb' : 'kg') === b.dataset.unitV);
+    if (!b.dataset.bound) { b.dataset.bound = '1'; b.addEventListener('click', () => { S.set(b.dataset.unitK, b.dataset.unitV); renderAjustes(); try { renderHoyDash(); } catch (e) {} }); }
+  });
   const cur = (function(){ try { return localStorage.getItem('theme') || 'auto'; } catch(e) { return 'auto'; }})();
   document.querySelectorAll('#theme-picker .chip').forEach(el => {
     el.classList.toggle('selected', el.dataset.v === cur);
@@ -8642,6 +8654,7 @@ const AUTH_ERRORS = {
 function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
 function authEndSession(msg, info) {
   try { if (typeof chatBgOff === 'function') chatBgOff(false); } catch (e) {}
+  try { if (window.Android && window.Android.setAppointments) window.Android.setAppointments('[]'); } catch (e) {}
   try { localStorage.removeItem('__asg'); localStorage.removeItem('__msgs'); localStorage.removeItem('__appts'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
   try { document.documentElement.dataset.mode = ''; document.documentElement.classList.remove('is-spec'); localStorage.removeItem('__mode'); document.querySelector('nav button[data-tab="hoy"]').click(); } catch (e) {}
   const s = authGet();
@@ -8936,7 +8949,7 @@ function openAuthUserEditor(u) {
 const SYNC_DATED = ['meal_log', 'gym_logs', 'habitLog', 'weight_log', 'hydration_log'];
 const SYNC_WHOLE = ['nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'habits', 'habitTimes', 'cats', 'catGoals',
   'sch_weekday', 'sch_saturday', 'sch_sunday', 'imprevistos', 'plan', 'planTasks', 'plan_start', 'hydration_settings',
-  'custom_foods', 'dishes', 'diary', 'gym_unit', 'achievements', 'bestStreak', 'streak_pauses', 'pomo_settings', 'pomo_sessions'];
+  'custom_foods', 'dishes', 'diary', 'gym_unit', 'body_unit', 'achievements', 'bestStreak', 'streak_pauses', 'pomo_settings', 'pomo_sessions'];
 const SYNC_MAX_DOC = 300000; // caracteres; documentos más grandes (p. ej. con fotos) no se suben
 function syncMeta() { try { return JSON.parse(localStorage.getItem('__sync') || '{}') || {}; } catch (e) { return {}; } }
 function syncSave(m) { try { localStorage.setItem('__sync', JSON.stringify(m)); } catch (e) {} }
@@ -9998,7 +10011,7 @@ function spClientReport(D, l, asg) {
       return `<div class="sp-e1"><span translate="no">${escapeHtml(x.name)}</span><span translate="no">${gymFmtKg(a)} → <b>${gymFmtKg(b)} ${U}</b>${d != null ? ` <i class="${d < 0 ? 'dn' : 'up'}">${sgn(d)}%</i>` : ''}</span></div>`; }).join('')));
   }
   const ws = Object.keys(D.weight_log || {}).sort();
-  if (ws.length >= 2) { const a = +D.weight_log[ws[0]], b = +D.weight_log[ws[ws.length - 1]], d = Math.round((b - a) * 10) / 10; sum.push(line(`<span>Peso</span>: <b>${b} kg</b> (${sgn(d)} kg)`)); }
+  if (ws.length >= 2) { const a = +D.weight_log[ws[0]], b = +D.weight_log[ws[ws.length - 1]]; sum.push(line(`<span>Peso</span>: <b>${bwDisp(b)} ${bwUnit()}</b> (${bwDiff(b - a)} ${bwUnit()})`)); }
   return `<div class="sp-card" id="sp-sum"><div class="sp-card-top"><div class="sp-card-n">Resumen de la semana</div><span class="cd-num"><span>Últimos 7 días</span></span></div>
     ${sum.join('') || '<div class="sp-card-d">Sin registros en los últimos 7 días.</div>'}</div>${charts.join('')}`;
 }
@@ -10092,8 +10105,8 @@ async function spOpenClient(l) {
   let weight = '';
   const ws = Object.keys(D.weight_log || {}).sort();
   if (ws.length) {
-    const first = +D.weight_log[ws[0]], last = +D.weight_log[ws[ws.length - 1]], diff = Math.round((last - first) * 10) / 10;
-    weight = `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n"><span>Peso</span>: ${last} kg</div><span class="cd-num">${diff > 0 ? '+' : ''}${diff} kg</span></div>
+    const first = +D.weight_log[ws[0]], last = +D.weight_log[ws[ws.length - 1]], diff = last - first;
+    weight = `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n"><span>Peso</span>: <span translate="no">${bwDisp(last)} ${bwUnit()}</span></div><span class="cd-num" translate="no">${bwDiff(diff)} ${bwUnit()}</span></div>
       <div class="sp-card-d">${escapeHtml(cdFmtDay(ws[0]))} → ${escapeHtml(cdFmtDay(ws[ws.length - 1]))}</div>${spWeightChart(D.weight_log)}</div>`;
   }
   const plans = asg.map(a => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(a.name)}</div><span class="usr-badge">${ASG_KINDS[a.kind] || a.kind}</span></div>
@@ -10253,6 +10266,17 @@ async function apptRefresh(force) {
   catch (e) { return; }
   try { localStorage.setItem('__appts', JSON.stringify(rows || [])); } catch (e) {}
   try { if (typeof renderHoyDash === 'function') renderHoyDash(); } catch (e) {}
+  apptNativeSync();
+}
+// APK: programa un aviso 30 minutos antes de cada cita próxima
+function apptNativeSync() {
+  try {
+    if (!(window.Android && window.Android.setAppointments)) return;
+    const s = authGet();
+    const list = s && s.refresh ? apptUpcoming().slice(0, 12).map(a => ({ id: String(a.id), at: Date.parse(a.starts_at),
+      title: t('Cita en 30 minutos'), text: `${a.title} · ${apptName(a.link_id)} · ${new Date(a.starts_at).toLocaleTimeString(_loc(), { hour: '2-digit', minute: '2-digit' })}` })) : [];
+    window.Android.setAppointments(JSON.stringify(list));
+  } catch (e) {}
 }
 function apptRowHtml(a) {
   const d = new Date(a.starts_at);
@@ -10487,10 +10511,10 @@ function renderHoyDash() {
     const wl = S.get('weight_log', {}) || {}, ks = Object.keys(wl).sort();
     if (ks.length) {
       const last = +wl[ks[ks.length - 1]], prev = ks.length > 1 ? +wl[ks[ks.length - 2]] : null;
-      const diff = prev == null ? null : Math.round((last - prev) * 10) / 10;
+      const diff = prev == null ? null : last - prev;
       const ago = Math.round((parseKey(today) - parseKey(ks[ks.length - 1])) / 864e5);
-      weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span>${diff == null ? '' : `<span class="hd-badge">${diff > 0 ? '+' : ''}${diff} kg</span>`}</div>
-        <div class="hd-big">${last} <small>kg</small></div><div class="hd-d">${ago === 0 ? '<span>Registrado hoy</span>' : ago === 1 ? '<span>Registrado ayer</span>' : `<span>Registrado hace ${ago} días</span>`}</div></div>`;
+      weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span>${diff == null ? '' : `<span class="hd-badge" translate="no">${bwDiff(diff)} ${bwUnit()}</span>`}</div>
+        <div class="hd-big" translate="no">${bwDisp(last)} <small>${bwUnit()}</small></div><div class="hd-d">${ago === 0 ? '<span>Registrado hoy</span>' : ago === 1 ? '<span>Registrado ayer</span>' : `<span>Registrado hace ${ago} días</span>`}</div></div>`;
     } else {
       weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span></div><div class="hd-d" style="margin-top:8px;">Toca para registrar tu peso.</div></div>`;
     }
@@ -10513,13 +10537,13 @@ function renderHoyDash() {
     const habits = loadHabits() || [], hl = habitLog() || {};
     let hp = 0, hd = 0; ks.forEach(k => habits.forEach(h => { hp++; if (hl[k] && hl[k][h.id]) hd++; }));
     const wl = S.get('weight_log', {}) || {}, wk = Object.keys(wl).sort(), w7 = wk.filter(k => k >= ks[6]);
-    const wd = w7.length >= 2 ? Math.round((+wl[w7[w7.length - 1]] - +wl[w7[0]]) * 10) / 10 : null;
+    const wd = w7.length >= 2 ? +wl[w7[w7.length - 1]] - +wl[w7[0]] : null;
     const cell = (v, l, sub) => `<div class="hd-w"><b translate="no">${v}</b><span>${l}</span>${sub ? `<small>${sub}</small>` : ''}</div>`;
     if (wo || mt.length || hd || wd != null) week = `<div class="hd-card"><div class="hd-k"><span>Tu semana</span><span class="hd-badge">Últimos 7 días</span></div><div class="hd-week">
       ${cell(planned ? `${wo}/${planned}` : wo, 'Entrenamientos')}
       ${cell(`${mt.length}/7`, 'Días con comidas', avgK ? `<span translate="no">${avgK.toLocaleString(_loc())} kcal</span>${goalK ? ` · <span translate="no">${Math.round(avgK / goalK * 100)}%</span> <span>de la meta</span>` : ''}` : '')}
       ${habits.length ? cell(`${hp ? Math.round(hd / hp * 100) : 0}%`, 'Hábitos') : ''}
-      ${wd != null ? cell(`${wd > 0 ? '+' : ''}${wd} kg`, 'Peso') : ''}</div></div>`;
+      ${wd != null ? cell(`${bwDiff(wd)} ${bwUnit()}`, 'Peso') : ''}</div></div>`;
   } catch (e) {}
   // --- mensajes con sus especialistas ---
   let chat = '';
@@ -10539,8 +10563,8 @@ function renderHoyDash() {
 function openWeightQuick() {
   const wl = S.get('weight_log', {}) || {}, today = keyDate();
   const ks = Object.keys(wl).sort(), cur = wl[today] != null ? wl[today] : (ks.length ? wl[ks[ks.length - 1]] : '');
-  openSheet('Peso de hoy', `<label class="auth-field"><span>Peso (kg)</span><input class="auth-in" id="wq-v" type="number" inputmode="decimal" step="0.1" min="20" max="400" value="${cur}"></label><div class="auth-msg" id="wq-msg"></div>`, () => {
-    const v = Math.round(parseFloat(document.getElementById('wq-v').value) * 10) / 10;
+  openSheet('Peso de hoy', `<label class="auth-field"><span><span>Peso</span> (${bwUnit()})</span><input class="auth-in" id="wq-v" type="number" inputmode="decimal" step="0.1" value="${cur === '' ? '' : bwDisp(cur)}"></label><div class="auth-msg" id="wq-msg"></div>`, () => {
+    const v = bwStore(document.getElementById('wq-v').value);
     if (!(v >= 20 && v <= 400)) { document.getElementById('wq-msg').textContent = t('Escribe un peso válido.'); return; }
     const w = S.get('weight_log', {}) || {}; w[keyDate()] = v; S.set('weight_log', w);
     closeSheet(); renderHoyDash();
@@ -13552,6 +13576,11 @@ function gymLoadsText(ex) { return ((ex && ex.loads) || []).map(k => gymDispW(k)
 function gymParseLoads(txt) {
   return String(txt || '').split(/[,;\/\s]+/).map(x => gymNum(x)).filter(n => n > 0 && n < 2000).slice(0, 20).map(n => gymStoreW(String(n)));
 }
+// Peso corporal: se guarda en kg y se muestra en kg o lb (clave body_unit)
+function bwUnit() { return S.get('body_unit', 'kg') === 'lb' ? 'lb' : 'kg'; }
+function bwDisp(kg) { const n = +kg; if (!isFinite(n)) return ''; return String(Math.round((bwUnit() === 'lb' ? n * GYM_LB : n) * 10) / 10); }
+function bwDiff(kg) { const v = Math.round((bwUnit() === 'lb' ? kg * GYM_LB : kg) * 10) / 10; return (v > 0 ? '+' : '') + v; }
+function bwStore(v) { const n = parseFloat(String(v).replace(',', '.')); if (!isFinite(n)) return NaN; return bwUnit() === 'lb' ? Math.round(n / GYM_LB * 100) / 100 : Math.round(n * 10) / 10; }
 // Carga sugerida, redondeada a discos reales (0.5 kg o 2.5 lb)
 function gymFmtLoad(kg) {
   return gymUnit() === 'lb' ? (Math.round(kg * GYM_LB / 2.5) * 2.5).toLocaleString(_loc()) : (Math.round(gymRound(kg) * 10) / 10).toLocaleString(_loc());

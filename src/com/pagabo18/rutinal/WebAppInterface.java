@@ -285,6 +285,12 @@ public class WebAppInterface {
         try { ChatPollReceiver.setMeta(ctx, json); } catch (Exception ignored) {}
     }
 
+    /** Citas próximas para avisar 30 min antes: [{ id, at, title, text }]. "[]" los cancela. */
+    @JavascriptInterface
+    public void setAppointments(String json) {
+        try { ApptReminderReceiver.sync(ctx, json); } catch (Exception ignored) {}
+    }
+
     @JavascriptInterface
     public void chatSeen(String iso) {
         try { ChatPollReceiver.markSeen(ctx, iso); } catch (Exception ignored) {}

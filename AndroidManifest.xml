@@ -101,6 +101,15 @@
             </intent-filter>
         </receiver>
 
+        <!-- Recordatorio de citas (30 min antes) -->
+        <receiver
+            android:name=".ApptReminderReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.pagabo18.rutinal.APPT_REMINDER" />
+            </intent-filter>
+        </receiver>
+
         <!-- Avisos de mensajes del chat (revisión periódica en segundo plano) -->
         <receiver
             android:name=".ChatPollReceiver"

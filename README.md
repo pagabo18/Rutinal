@@ -237,3 +237,8 @@ Las barras (`gymBarsSvg`, `spBars`) y las áreas bajo las líneas (`gymLineSvg`,
 - **Tu semana**: tarjeta en Hoy con entrenamientos, días con comidas (y promedio contra la meta), hábitos y cambio de peso de los últimos 7 días.
 - **Agenda**: tabla `public.appointments` (ver `supabase/rutinal_agenda_photos.sql`). Cualquiera de las dos partes de un vínculo activo puede agendar, cambiar o cancelar; cada movimiento deja un mensaje en el chat. Se abre desde Más → Agenda, la tarjeta "Próxima cita" de Hoy, el inicio del especialista y el botón *Cita* de la ficha. No hay recordatorios con la app cerrada.
 - **Fotos de progreso**: bucket privado `progress` y tabla `public.progress_photos`. La foto se reduce a 1280 px en JPEG antes de subirla. Solo la ve su dueño; sus especialistas ven únicamente las marcadas como compartidas (`shared`), y nadie más. Se abren desde Más → Fotos de progreso; el especialista las ve en la pestaña Progreso de la ficha.
+
+### Unidades y recordatorio de citas
+
+- **Unidades** (Más → Ajustes): peso corporal (`body_unit`) y cargas del gym (`gym_unit`) en kg o lb. Todo se guarda en kg; la conversión es de presentación. El perfil de nutrición y las tendencias de comida siguen en kg.
+- **Recordatorio de citas** (solo APK): la app entrega las citas próximas con `Android.setAppointments(json)` y `ApptReminderReceiver` programa un aviso 30 minutos antes de cada una (se reprograma al reiniciar el teléfono y se cancela al cerrar sesión). Solo conoce las citas que la app ya descargó, así que una cita agendada por la otra persona se avisa después de abrir la app al menos una vez.

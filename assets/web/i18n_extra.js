@@ -3731,6 +3731,31 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Unidades": {
+   "en": "Units",
+   "pt-BR": "Unidades",
+   "fr": "Unités"
+  },
+  "Cargas del gym": {
+   "en": "Gym loads",
+   "pt-BR": "Cargas da academia",
+   "fr": "Charges de musculation"
+  },
+  "El perfil de nutrición y las tendencias de comida siguen mostrando el peso en kg.": {
+   "en": "The nutrition profile and food trends still show weight in kg.",
+   "pt-BR": "O perfil de nutrição e as tendências de alimentação continuam mostrando o peso em kg.",
+   "fr": "Le profil nutritionnel et les tendances alimentaires affichent toujours le poids en kg."
+  },
+  "Peso del día en lb (escribe 0 para borrarlo):": {
+   "en": "Weight for the day in lb (type 0 to clear it):",
+   "pt-BR": "Peso do dia em lb (digite 0 para apagar):",
+   "fr": "Poids du jour en lb (tapez 0 pour l'effacer) :"
+  },
+  "Cita en 30 minutos": {
+   "en": "Appointment in 30 minutes",
+   "pt-BR": "Consulta em 30 minutos",
+   "fr": "Rendez-vous dans 30 minutes"
+  },
   "Crear rutina nueva": {
    "en": "Create new routine",
    "pt-BR": "Criar rotina nova",
