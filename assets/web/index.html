@@ -2075,6 +2075,28 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  /* Tablero de Hoy (entrenado) */
+  .hd-hello { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin: 2px 0 12px; }
+  .hd-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; margin-bottom: 10px; }
+  .hd-k { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; display: flex; align-items: center; justify-content: space-between; }
+  .hd-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); letter-spacing: .04em; }
+  .hd-badge.ok { background: rgba(22,163,74,.14); color: #15803D; }
+  .hd-badge.plan { background: rgba(37,99,235,.12); color: #1D4ED8; }
+  [data-theme="dark"] .hd-badge.ok { background: rgba(34,197,94,.18); color: #4ADE80; }
+  [data-theme="dark"] .hd-badge.plan { background: rgba(96,165,250,.18); color: #93C5FD; }
+  .hd-t { font-size: 18px; font-weight: 700; margin-top: 6px; }
+  .hd-d { font-size: 13px; color: var(--text-3); margin-top: 3px; line-height: 1.45; }
+  .hd-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .hd-row .hd-d { flex: 1; margin-top: 0; }
+  .hd-btn { background: var(--text); color: var(--bg); border: 0; border-radius: 12px; padding: 10px 16px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .hd-btn.ghost { background: var(--surface-2); color: var(--text); }
+  .hd-bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-top: 10px; }
+  .hd-bar i { display: block; height: 100%; border-radius: 999px; background: var(--text); }
+  .hd-bar i.over { background: #DC2626; }
+  .hd-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .hd-big { font-size: 26px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .hd-big small { font-size: 14px; font-weight: 500; color: var(--text-3); }
+
   /* Modo especialista */
   nav button[data-mode="spec"] { display: none; }
   html[data-mode="spec"] nav button { display: none; }
@@ -2269,6 +2291,7 @@ try {
   <!-- HOY -->
   <section id="tab-hoy" class="active">
     <div class="split-col split-col-a">
+      <div id="hoy-dash"></div>
       <div id="now-wrap"></div>
       <div id="asg-card"></div>
       <button class="impr-btn" id="impr-btn">
@@ -3354,6 +3377,7 @@ function renderClock() {
 // ============================================================
 tabRenderers.hoy = renderHoy;
 function renderHoy() {
+  try { if (typeof renderHoyDash === 'function') renderHoyDash(); } catch (e) {}
   const kind = scheduleKindForDate();
   // scheduleForDate respeta los días elegidos por bloque (L, Mi, V…)
   const list = scheduleForDate();
@@ -7031,7 +7055,7 @@ function calcTDEE(p) {
   return Math.round(bmr * lvl.factor);
 }
 
-function calcNutriTargets(pIn) {
+function calcNutriTargets(pIn, foreign) {
   const p = pIn || nutriProfile();
   const bmr = calcBMR(p);
   const tdee = calcTDEE(p);
@@ -7087,7 +7111,7 @@ function calcNutriTargets(pIn) {
     proteinKcal, fatKcal, carbKcal,
   };
   // Metas asignadas por el nutriólogo (solo para la cuenta propia, no al ver a un entrenado)
-  if (!pIn && typeof assignedTargets === 'function') {
+  if (!foreign && typeof assignedTargets === 'function') {
     const a = assignedTargets();
     if (a && a.kcal > 0) {
       out.kcal = a.kcal; out.protein = a.protein || out.protein; out.carbs = a.carbs || out.carbs; out.fat = a.fat || out.fat;
@@ -9173,7 +9197,7 @@ async function spOpenClient(l) {
   const logs = [], kpis = [];
   if (nutri) {
     let tg = null;
-    try { if (D.nutri_profile && D.nutri_profile.heightCm) tg = calcNutriTargets(D.nutri_profile); } catch (e) {}
+    try { if (D.nutri_profile && D.nutri_profile.heightCm) tg = calcNutriTargets(D.nutri_profile, true); } catch (e) {}
     if (!tg && D.food_goal_kcal) tg = { kcal: +D.food_goal_kcal || 0 };
     if (tg && tg.kcal) logs.push(`<div class="lk-d" style="margin-bottom:6px;"><span>Meta diaria:</span> ${tg.kcal} kcal${tg.protein ? ` · P ${tg.protein} g · C ${tg.carbs} g · G ${tg.fat} g` : ''}</div>`);
     let n7 = 0, k7 = 0;
@@ -9304,6 +9328,75 @@ tabRenderers['sp-notes'] = async function () {
   document.querySelectorAll('#mode-bar button').forEach(b => b.addEventListener('click', () => spSetMode(b.dataset.modeSet === 'spec')));
   document.querySelectorAll('nav button[data-mode="spec"]').forEach(b => b.addEventListener('click', () => { if (b.dataset.tab !== 'sp-clients') _sp.client = null; }));
 })();
+
+// ============================================================
+// TABLERO DE HOY (entrenado): entrenamiento, comida y peso de un vistazo
+// ============================================================
+function hoyDashGreeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+}
+function renderHoyDash() {
+  const el = document.getElementById('hoy-dash');
+  if (!el) return;
+  const s = authGet() || {}, today = keyDate();
+  // --- entrenamiento ---
+  let gym = '';
+  try {
+    const r = gymTodayRoutine(today), lg = gymLogs()[today];
+    const started = lg && Object.keys(lg.ex || {}).some(k => (lg.ex[k] || []).some(x => x && x.done));
+    if (lg && lg.done) {
+      const rt = gymRoutineById(lg.routineId) || r || { name: '' };
+      gym = `<div class="hd-card"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge ok">Completado</span></div><div class="hd-t">${escapeHtml(rt.name || '')}</div>
+        <div class="hd-row"><div class="hd-d">Buen trabajo. Ya quedó registrado.</div><button class="hd-btn ghost" data-hd="gym">Ver detalle</button></div></div>`;
+    } else if (r) {
+      const names = (r.exercises || []).slice(0, 3).map(e => escapeHtml(e.name || '')).join(' · ');
+      gym = `<div class="hd-card"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge plan">${started ? 'En curso' : 'Programado'}</span></div><div class="hd-t">${escapeHtml(r.name)}</div>
+        <div class="hd-d">${names}${(r.exercises || []).length > 3 ? ' …' : ''}</div>
+        <div class="hd-row"><div class="hd-d"><span>${(r.exercises || []).length}</span> <span>ejercicios</span></div><button class="hd-btn" data-hd-start="${escapeHtml(r.id)}">${started ? 'Continuar' : 'Empezar'}</button></div></div>`;
+    } else if (gymRoutines().length) {
+      gym = `<div class="hd-card"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge">Descanso</span></div>
+        <div class="hd-row"><div class="hd-d">Hoy no tienes rutina programada.</div><button class="hd-btn ghost" data-hd="gym">Ver rutinas</button></div></div>`;
+    }
+  } catch (e) {}
+  // --- comida ---
+  let food = '';
+  try {
+    const info = fitGoalInfo(), tot = dayMealTotals(today) || { kcal: 0, protein: 0, carbs: 0, fat: 0 };
+    const goal = info.t.kcal || 0, left = goal - tot.kcal, pct = goal ? Math.min(100, Math.round(tot.kcal / goal * 100)) : 0;
+    food = `<div class="hd-card"><div class="hd-k"><span>Comida de hoy</span><span>${tot.kcal} / ${goal} kcal</span></div>
+      <div class="hd-bar"><i class="${left < 0 ? 'over' : ''}" style="width:${pct}%"></i></div>
+      <div class="hd-row"><div class="hd-d">${left >= 0 ? `${left} kcal <span>restantes</span>` : `<span>Te pasaste por</span> ${-left} kcal`} · P ${tot.protein}/${info.t.protein} g</div><button class="hd-btn ghost" data-hd="comida">Registrar</button></div></div>`;
+  } catch (e) {}
+  // --- peso ---
+  let weight = '';
+  try {
+    const wl = S.get('weight_log', {}) || {}, ks = Object.keys(wl).sort();
+    if (ks.length) {
+      const last = +wl[ks[ks.length - 1]], prev = ks.length > 1 ? +wl[ks[ks.length - 2]] : null;
+      const diff = prev == null ? null : Math.round((last - prev) * 10) / 10;
+      const ago = Math.round((parseKey(today) - parseKey(ks[ks.length - 1])) / 864e5);
+      weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span>${diff == null ? '' : `<span class="hd-badge">${diff > 0 ? '+' : ''}${diff} kg</span>`}</div>
+        <div class="hd-big">${last} <small>kg</small></div><div class="hd-d">${ago === 0 ? '<span>Registrado hoy</span>' : ago === 1 ? '<span>Registrado ayer</span>' : `<span>Registrado hace ${ago} días</span>`}</div></div>`;
+    } else {
+      weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span></div><div class="hd-d" style="margin-top:8px;">Toca para registrar tu peso.</div></div>`;
+    }
+  } catch (e) {}
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${food}${weight}`;
+  el.querySelectorAll('[data-hd]').forEach(b => b.addEventListener('click', (ev) => { ev.stopPropagation(); const n = document.querySelector(`nav button[data-tab="${b.dataset.hd}"]`); if (n) n.click(); }));
+  el.querySelectorAll('[data-hd-start]').forEach(b => b.addEventListener('click', () => openGymWorkout(b.dataset.hdStart, keyDate())));
+  el.querySelectorAll('[data-hd-weight]').forEach(c => c.addEventListener('click', openWeightQuick));
+}
+function openWeightQuick() {
+  const wl = S.get('weight_log', {}) || {}, today = keyDate();
+  const ks = Object.keys(wl).sort(), cur = wl[today] != null ? wl[today] : (ks.length ? wl[ks[ks.length - 1]] : '');
+  openSheet('Peso de hoy', `<label class="auth-field"><span>Peso (kg)</span><input class="auth-in" id="wq-v" type="number" inputmode="decimal" step="0.1" min="20" max="400" value="${cur}"></label><div class="auth-msg" id="wq-msg"></div>`, () => {
+    const v = Math.round(parseFloat(document.getElementById('wq-v').value) * 10) / 10;
+    if (!(v >= 20 && v <= 400)) { document.getElementById('wq-msg').textContent = t('Escribe un peso válido.'); return; }
+    const w = S.get('weight_log', {}) || {}; w[keyDate()] = v; S.set('weight_log', w);
+    closeSheet(); renderHoyDash();
+  });
+}
 
 // ============================================================
 // INIT
@@ -13932,6 +14025,7 @@ function fitGoalInfo() {
   if (!t) {
     const k = parseInt(S.get('food_goal_kcal', 0)) || 2000;
     t = { kcal: k, protein: Math.round(k * 0.3 / 4), carbs: Math.round(k * 0.4 / 4), fat: Math.round(k * 0.3 / 9) };
+    try { const a = typeof assignedTargets === 'function' ? assignedTargets() : null; if (a && a.kcal > 0) t = { kcal: a.kcal, protein: a.protein || t.protein, carbs: a.carbs || t.carbs, fat: a.fat || t.fat }; } catch (e) {}
   }
   const kind = goal === 'cut' ? 'cut' : (goal === 'gain_lean' || goal === 'gain_fast') ? 'bulk' : 'maintain';
   return { t, goal, kind };

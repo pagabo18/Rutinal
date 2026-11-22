@@ -3731,6 +3731,101 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "restantes": {
+   "en": "remaining",
+   "pt-BR": "restantes",
+   "fr": "restantes"
+  },
+  "Buenos días": {
+   "en": "Good morning",
+   "pt-BR": "Bom dia",
+   "fr": "Bonjour"
+  },
+  "Buenas tardes": {
+   "en": "Good afternoon",
+   "pt-BR": "Boa tarde",
+   "fr": "Bon après-midi"
+  },
+  "Buenas noches": {
+   "en": "Good evening",
+   "pt-BR": "Boa noite",
+   "fr": "Bonsoir"
+  },
+  "Entrenamiento de hoy": {
+   "en": "Today's workout",
+   "pt-BR": "Treino de hoje",
+   "fr": "Entraînement du jour"
+  },
+  "Completado": {
+   "en": "Completed",
+   "pt-BR": "Concluído",
+   "fr": "Terminé"
+  },
+  "En curso": {
+   "en": "In progress",
+   "pt-BR": "Em andamento",
+   "fr": "En cours"
+  },
+  "Programado": {
+   "en": "Scheduled",
+   "pt-BR": "Programado",
+   "fr": "Prévu"
+  },
+  "Ver detalle": {
+   "en": "View details",
+   "pt-BR": "Ver detalhes",
+   "fr": "Voir le détail"
+  },
+  "Ver rutinas": {
+   "en": "View routines",
+   "pt-BR": "Ver rotinas",
+   "fr": "Voir les routines"
+  },
+  "Comida de hoy": {
+   "en": "Today's food",
+   "pt-BR": "Alimentação de hoje",
+   "fr": "Repas du jour"
+  },
+  "Te pasaste por": {
+   "en": "You're over by",
+   "pt-BR": "Você passou em",
+   "fr": "Dépassement de"
+  },
+  "Peso de hoy": {
+   "en": "Today's weight",
+   "pt-BR": "Peso de hoje",
+   "fr": "Poids du jour"
+  },
+  "Escribe un peso válido.": {
+   "en": "Enter a valid weight.",
+   "pt-BR": "Digite um peso válido.",
+   "fr": "Saisissez un poids valide."
+  },
+  "Registrado hoy": {
+   "en": "Logged today",
+   "pt-BR": "Registrado hoje",
+   "fr": "Enregistré aujourd'hui"
+  },
+  "Registrado ayer": {
+   "en": "Logged yesterday",
+   "pt-BR": "Registrado ontem",
+   "fr": "Enregistré hier"
+  },
+  "Buen trabajo. Ya quedó registrado.": {
+   "en": "Nice work. It's logged.",
+   "pt-BR": "Bom trabalho. Já ficou registrado.",
+   "fr": "Beau travail. C'est enregistré."
+  },
+  "Hoy no tienes rutina programada.": {
+   "en": "No routine scheduled for today.",
+   "pt-BR": "Hoje você não tem rotina programada.",
+   "fr": "Aucune routine prévue aujourd'hui."
+  },
+  "Toca para registrar tu peso.": {
+   "en": "Tap to log your weight.",
+   "pt-BR": "Toque para registrar seu peso.",
+   "fr": "Touchez pour enregistrer votre poids."
+  },
   "activo": {
    "en": "active",
    "pt-BR": "ativo",
@@ -4853,6 +4948,11 @@ window.__I18N_EXTRA = {
   }
  },
  "tpl": {
+  "Registrado hace {{n}} días": {
+   "en": "Logged {{n}} days ago",
+   "pt-BR": "Registrado há {{n}} dias",
+   "fr": "Enregistré il y a {{n}} jours"
+  },
   "Sin registros desde hace {{n}} días": {
    "en": "No records for {{n}} days",
    "pt-BR": "Sem registros há {{n}} dias",

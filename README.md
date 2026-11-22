@@ -171,3 +171,7 @@ El especialista guarda plantillas en Especialistas y entrenados → Mis plantill
 ## Licencia
 
 MIT
+
+## Tablero de Hoy (entrenado)
+
+Arriba de la pestaña **Hoy** hay un tablero con saludo y tres tarjetas: el entrenamiento programado (con botón *Empezar/Continuar*), la comida del día contra la meta de calorías y el peso actual (toca para registrarlo). Usa los mismos datos que Gym, Comida y el perfil de nutrición; si un nutriólogo asignó metas, se usan esas.
