@@ -3731,6 +3731,46 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Herramientas": {
+   "en": "Tools",
+   "pt-BR": "Ferramentas",
+   "fr": "Outils"
+  },
+  "Tu contenido": {
+   "en": "Your content",
+   "pt-BR": "Seu conteúdo",
+   "fr": "Votre contenu"
+  },
+  "Cuenta y app": {
+   "en": "Account and app",
+   "pt-BR": "Conta e app",
+   "fr": "Compte et appli"
+  },
+  "Tu día, semana y mes": {
+   "en": "Your day, week and month",
+   "pt-BR": "Seu dia, semana e mês",
+   "fr": "Votre jour, semaine et mois"
+  },
+  "Tu horario del día": {
+   "en": "Your daily schedule",
+   "pt-BR": "Seu horário do dia",
+   "fr": "Votre emploi du temps"
+  },
+  "Crea y ordena tus hábitos": {
+   "en": "Create and reorder your habits",
+   "pt-BR": "Crie e ordene seus hábitos",
+   "fr": "Créez et ordonnez vos habitudes"
+  },
+  "Perfil y metas de comida": {
+   "en": "Profile and food targets",
+   "pt-BR": "Perfil e metas de alimentação",
+   "fr": "Profil et objectifs alimentaires"
+  },
+  "Tema, idioma y recordatorios": {
+   "en": "Theme, language and reminders",
+   "pt-BR": "Tema, idioma e lembretes",
+   "fr": "Thème, langue et rappels"
+  },
   "alimento": {
    "en": "food",
    "pt-BR": "alimento",

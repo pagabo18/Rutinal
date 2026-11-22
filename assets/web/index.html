@@ -2097,6 +2097,34 @@
   .lk-d { font-size: 12px; color: var(--text-3); margin-top: 4px; line-height: 1.5; }
   .lk-d .warn { color: #B45309; font-weight: 600; }
   .lk-code { font-size: 22px; font-weight: 700; letter-spacing: .12em; text-align: center; padding: 14px; background: var(--surface-2); border-radius: 12px; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+  /* Barra inferior de 5 pestañas (teléfono y tableta): Reloj, Calendario y Editar están en "Más" */
+  nav button[data-tab="mas"] { display: none; }
+  #tab-mas, .mas-back { display: none; }
+  @media (max-width: 1023px) {
+    nav button[data-tab="pomo"], nav button[data-tab="cal"], nav button[data-tab="editar"] { display: none; }
+    nav button[data-tab="mas"] { display: flex; order: 9; }
+    nav button[data-tab="hoy"] { order: 1; } nav button[data-tab="comida"] { order: 2; } nav button[data-tab="gym"] { order: 3; } nav button[data-tab="habitos"] { order: 4; }
+    nav button[data-tab="mas"].sub { color: var(--text); }
+    nav button[data-tab="mas"].sub .icon { stroke-width: 2; }
+    html[data-mode="spec"] nav button[data-tab="mas"] { display: flex; }
+    nav button { font-size: 11px; }
+    nav button .icon { width: 22px; height: 22px; }
+    #tab-mas.active { display: block; }
+    .mas-back { display: inline-flex; align-items: center; gap: 4px; border: 0; background: transparent; color: var(--text-3); font: inherit; font-size: 14px; font-weight: 600; padding: 2px 0 8px; cursor: pointer; }
+  }
+  .mas-profile { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 14px; font: inherit; color: var(--text); cursor: pointer; }
+  .mas-profile .acct-id { flex: 1; display: flex; flex-direction: column; }
+  .mas-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+  .mas-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--border); padding: 12px 14px; font: inherit; color: var(--text); cursor: pointer; }
+  .mas-row:last-child { border-bottom: 0; }
+  .mas-row:active, .mas-profile:active { background: var(--surface-2); }
+  .mas-ic { width: 36px; height: 36px; border-radius: 10px; background: var(--surface-2); color: var(--text-2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mas-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .mas-t b { font-size: 15px; font-weight: 600; }
+  .mas-t small { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+  .mas-chev { color: var(--text-3); font-size: 20px; }
+  .mas-row[data-mas="logout"] b { color: #DC2626; }
+
   /* Unificación de estilo (rediseño v0) en Hábitos, Reloj, Calendario, Gym y Editar */
   .h-title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
   #cal-mode-chips, #day-mode, #pomo-mode-chips, #theme-picker { display: inline-flex; flex-wrap: nowrap; gap: 0; background: var(--surface-2); border-radius: 999px; padding: 3px; max-width: 100%; }
@@ -2548,6 +2576,7 @@ try {
 
   <!-- CALENDARIO (unificado: Día · Semana · Mes) -->
   <section id="tab-cal">
+    <button class="mas-back" data-mas-back="1">‹ <span>Más</span></button>
     <h1 class="h-title" style="margin-bottom:12px;">Calendario</h1>
     <div class="chips cal-chips" id="cal-mode-chips">
       <div class="chip selected" data-cal="day">Día</div>
@@ -2636,6 +2665,7 @@ try {
 
   <!-- POMODORO -->
   <section id="tab-pomo">
+    <button class="mas-back" data-mas-back="1">‹ <span>Más</span></button>
     <h1 class="h-title" style="margin-bottom:4px;">Reloj</h1>
     <div style="color:var(--text-3); font-size:13px; margin-bottom:16px;">Pomodoro y temporizador</div>
 
@@ -2852,6 +2882,12 @@ try {
     </div>
   </section>
 
+  <!-- MÁS (teléfono): perfil, herramientas, contenido y cuenta -->
+  <section id="tab-mas">
+    <h1 class="h-title" style="margin-bottom:12px;">Más</h1>
+    <div id="mas-content"></div>
+  </section>
+
   <!-- GYM -->
   <section id="tab-gym">
     <h1 class="h-title" style="margin-bottom:12px;">Gym</h1>
@@ -2860,6 +2896,7 @@ try {
 
   <!-- EDITAR -->
   <section id="tab-editar">
+    <button class="mas-back" data-mas-back="1">‹ <span>Más</span></button>
     <h1 class="h-title" style="margin-bottom:4px;">Editar</h1>
     <div style="color:var(--text-3); font-size:13px; margin-bottom:16px;">Gestiona todo tu contenido</div>
 
@@ -3121,6 +3158,10 @@ try {
   <button data-tab="editar">
     <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     Editar
+  </button>
+  <button data-tab="mas">
+    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Más
   </button>
 </nav>
 
@@ -3501,6 +3542,60 @@ document.querySelectorAll('nav button').forEach(btn => {
     updateFab(tab);
   });
 });
+// La barra inferior (teléfono) muestra 5 pestañas; Reloj, Calendario y Editar viven dentro de "Más"
+const MAS_TABS = ['mas', 'pomo', 'cal', 'editar'];
+document.querySelectorAll('nav button').forEach(btn => btn.addEventListener('click', () => {
+  const m = document.querySelector('nav button[data-tab="mas"]');
+  if (m && btn !== m) m.classList.toggle('sub', MAS_TABS.includes(btn.dataset.tab));
+  else if (m) m.classList.remove('sub');
+  window.scrollTo(0, 0);
+}));
+document.querySelectorAll('[data-mas-back]').forEach(b => b.addEventListener('click', () => { const m = document.querySelector('nav button[data-tab="mas"]'); if (m) m.click(); }));
+function masGo(tab, chip) {
+  const n = document.querySelector(`nav button[data-tab="${tab}"]`); if (n) n.click();
+  if (chip) { const c = document.querySelector(`#edit-mode .chip[data-v="${chip}"]`); if (c) { c.click(); try { c.scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) {} } }
+}
+function renderMas() {
+  const el = document.getElementById('mas-content');
+  if (!el) return;
+  const s = (typeof authGet === 'function' && authGet()) || {};
+  const ic = d => `<span class="mas-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg></span>`;
+  const row = (k, icon, t1, t2) => `<button class="mas-row" data-mas="${k}">${ic(icon)}<span class="mas-t"><b>${t1}</b>${t2 ? `<small>${t2}</small>` : ''}</span><span class="mas-chev">›</span></button>`;
+  const I = {
+    clock: '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>',
+    cal: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="6"/><line x1="16" y1="3" x2="16" y2="6"/>',
+    blocks: '<rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/>',
+    check: '<polyline points="20 6 9 17 4 12"/>',
+    alert: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/>',
+    tag: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1"/>',
+    food: '<path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2.5 1-4 4-4 8h4"/>',
+    goal: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.3l2-1.5-2-3.400-2.300.9a7 7 0 0 0-2.200-1.3L14 3h-4l-.4 2.400a7 7 0 0 0-2.200 1.3l-2.300-.9-2 3.400 2 1.5a7 7 0 0 0 0 2.600l-2 1.5 2 3.400 2.300-.9a7 7 0 0 0 2.200 1.3L10 21h4l.4-2.400a7 7 0 0 0 2.200-1.3l2.300.9 2-3.400-2-1.5c.1-.4.1-.9.1-1.3z"/>',
+    people: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.600 2.900-6 6.5-6s6.5 2.400 6.5 6"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14c2.600.2 4.5 2 4.5 5"/>',
+    cloud: '<path d="M7 18a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.5 1.5A3.800 3.800 0 0 1 17.5 18z"/>',
+    out: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  };
+  const logged = !!s.user;
+  el.innerHTML = `
+    ${logged ? `<button class="mas-profile" data-mas="ajustes"><span class="acct-av" translate="no">${escapeHtml(String(s.name || s.user || '?').trim().slice(0, 1).toUpperCase())}</span>
+      <span class="acct-id"><span class="acct-name" translate="no">${escapeHtml(s.name || s.user || '')}</span><span class="acct-sub"><span translate="no">@${escapeHtml(s.user || '')}</span> · ${authRolesHtml(s.specs, s.admin)}</span></span><span class="mas-chev">›</span></button>` : ''}
+    <h2>Herramientas</h2>
+    <div class="mas-card">${row('pomo', I.clock, 'Reloj', 'Pomodoro y temporizador')}${row('cal', I.cal, 'Calendario', 'Tu día, semana y mes')}</div>
+    <h2>Tu contenido</h2>
+    <div class="mas-card">${row('blocks', I.blocks, 'Bloques', 'Tu horario del día')}${row('habits', I.check, 'Hábitos', 'Crea y ordena tus hábitos')}${row('imprs', I.alert, 'Imprevistos')}${row('cats', I.tag, 'Categorías')}${row('nutri', I.food, 'Nutrición', 'Perfil y metas de comida')}${row('plan', I.goal, 'Metas semanales')}</div>
+    <h2>Cuenta y app</h2>
+    <div class="mas-card">${row('ajustes', I.gear, 'Ajustes', 'Tema, idioma y recordatorios')}${logged ? row('links', I.people, 'Especialistas y entrenados') + row('sync', I.cloud, 'Respaldo en la nube') + row('logout', I.out, 'Cerrar sesión') : ''}</div>`;
+  el.querySelectorAll('[data-mas]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.mas;
+    if (k === 'pomo' || k === 'cal') masGo(k);
+    else if (k === 'links') openLinks();
+    else if (k === 'sync') openSyncSheet(false);
+    else if (k === 'logout') authLogout();
+    else masGo('editar', k);
+  }));
+}
+tabRenderers.mas = renderMas;
+
 function updateFab(tab) {
   const fab = document.getElementById('fab');
   if (tab === 'hoy') { fab.style.display = 'flex'; fab.onclick = () => openBlockSheet(); }
@@ -10119,7 +10214,7 @@ function timerTick() {
       ch.classList.add('selected');
       const timerMode = ch.dataset.pm === 'timer';
       document.getElementById('timer-card').style.display = timerMode ? '' : 'none';
-      document.querySelectorAll('#tab-pomo > :not(#timer-card):not(#pomo-mode-chips):not(.h-title)').forEach(el => {
+      document.querySelectorAll('#tab-pomo > :not(#timer-card):not(#pomo-mode-chips):not(.h-title):not(.mas-back)').forEach(el => {
         if (el.tagName === 'DIV' && el.style) {
           if (el.id === 'pomo-cat-picker' || el.classList.contains('pomo-card') || el.classList.contains('pomo-settings')) {
             el.style.display = timerMode ? 'none' : (el.id === 'pomo-cat-picker' ? 'flex' : '');
