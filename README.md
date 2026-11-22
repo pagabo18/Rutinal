@@ -113,7 +113,9 @@ Los artefactos salen en:
 ## APIs de nutrición
 
 - **USDA FoodData Central**: `api.nal.usda.gov/fdc/v1/foods/search`. Con `DEMO_KEY` funciona con rate limit compartido; para uso intensivo registra una key gratis en [api.data.gov/signup](https://api.data.gov/signup/) y pégala en **Editar → Ajustes → USDA API key**.
-- **Open Food Facts**: `world.openfoodfacts.org/api/v2/`. Sin key. Bueno para productos europeos/latinos y barcode.
+- **Open Food Facts**: código de barras con `world.openfoodfacts.org/api/v3/product/{código}` (respaldo v2) y búsqueda por texto. Sin key.
+- **Catálogo de México (Open Food Facts)**: `.github/workflows/off-catalog.yml` corre cada semana, filtra el volcado de OFF a los productos vendidos en México con tabla nutricional (`tools/build_off_mx.py`) y publica `off_mx.json` en la rama `off-data`. La app lo descarga una vez, lo guarda en IndexedDB y lo usa para buscar marcas en español, leer códigos de barras sin conexión y sugerir alternativas de la misma categoría. Datos © Open Food Facts, licencia ODbL.
+- **Sellos NOM-051**: se calculan en el dispositivo con la tabla nutricional (Tabla 6 de la norma) y se muestran como "estimados".
 
 ## Permisos requeridos
 

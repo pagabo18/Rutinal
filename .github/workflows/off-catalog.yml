@@ -1,0 +1,46 @@
+name: Catálogo Open Food Facts México
+
+# Descarga el volcado diario de Open Food Facts, se queda con los productos de México que
+# tienen tabla nutricional y publica off_mx.json en la rama huérfana `off-data`. La app lo lee de
+# https://raw.githubusercontent.com/<repo>/off-data/off_mx.json (archivo estático, sin backend).
+on:
+  schedule:
+    - cron: '17 9 * * 1'   # lunes 09:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: off-catalog
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar volcado y filtrar México
+        run: |
+          set -euo pipefail
+          curl -sSL --fail -A "Rutinal/1.10 (https://github.com/${{ github.repository }})" \
+            https://static.openfoodfacts.org/data/openfoodfacts-products.jsonl.gz \
+            | gunzip -c | grep -F '"en:mexico"' | python3 tools/build_off_mx.py > off_mx.json
+          python3 - <<'PY'
+          import json, os
+          d = json.load(open('off_mx.json'))
+          print('productos:', d['n'], '· categorías:', len(d['cats']), '· bytes:', os.path.getsize('off_mx.json'))
+          assert d['n'] >= 2000, 'catálogo sospechosamente pequeño; no se publica'
+          PY
+      - name: Publicar en la rama off-data
+        run: |
+          set -euo pipefail
+          mkdir out && mv off_mx.json out/ && cp tools/OFF_DATA_README.md out/README.md
+          cd out
+          git init -q -b off-data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -qm "Catálogo OFF México $(date -u +%F)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" off-data

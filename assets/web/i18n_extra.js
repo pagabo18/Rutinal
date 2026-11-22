@@ -3711,6 +3711,21 @@ window.__I18N_EXTRA = {
    "pt-BR": "Opções melhores do mesmo tipo",
    "fr": "Meilleures options du même type"
   },
+  "Sellos estimados (NOM-051)": {
+   "en": "Estimated warning labels (NOM-051)",
+   "pt-BR": "Selos estimados (NOM-051)",
+   "fr": "Sceaux estimés (NOM-051)"
+  },
+  "Sin sellos": {
+   "en": "No warning labels",
+   "pt-BR": "Sem selos",
+   "fr": "Aucun sceau"
+  },
+  "Calculados con la tabla nutricional; pueden diferir del empaque.": {
+   "en": "Calculated from the nutrition table; they may differ from the package.",
+   "pt-BR": "Calculados com a tabela nutricional; podem diferir da embalagem.",
+   "fr": "Calculés à partir du tableau nutritionnel ; ils peuvent différer de l'emballage."
+  },
   "Ya cubriste tu proteína de hoy": {
    "en": "You've already covered today's protein",
    "pt-BR": "Você já cobriu sua proteína de hoje",

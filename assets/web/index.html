@@ -1510,6 +1510,10 @@
   .fit-alt-n { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .fit-alt-m { font-size: 11px; color: var(--text-3); margin-top: 1px; }
   .fit-alt-c { color: var(--text-3); font-size: 18px; }
+  .fit-alt-b { font-weight: 500; color: var(--text-3); font-size: 12px; }
+  .fit-sellos { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fit-sello { background: #111; color: #fff; font-size: 9px; font-weight: 800; letter-spacing: .04em; padding: 6px 8px; border-radius: 4px;
+    clip-path: polygon(12% 0, 88% 0, 100% 28%, 100% 72%, 88% 100%, 12% 100%, 0 72%, 0 28%); text-align: center; line-height: 1.15; }
   .fit-sec-k.good { color: #15803D; } .fit-sec-k.bad { color: #B91C1C; }
   .fit-max-k { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); margin-bottom: 2px; }
   .fit-table { border-top: 1px solid var(--border); padding-top: 8px; }
@@ -11900,7 +11904,9 @@ async function foodSearchMulti(q) {
 
   const en = translateEsToEn(q);
   const differs = en && en !== normalizeFoodQuery(q);
-  const tasks = [usdaSearch(q)];
+  // Catálogo local de México (productos de marca en español), antes que las APIs en vivo
+  const tasks = [loadOffMx().then(() => offMxSearch(q, 12)).catch(() => [])];
+  tasks.push(usdaSearch(q));
   if (differs) tasks.push(usdaSearch(en));
   // OFF recibe SIEMPRE la query original (tiene muchos productos en español)
   // y además la traducción cuando difiere.
@@ -11919,13 +11925,129 @@ async function foodSearchMulti(q) {
   return results;
 }
 
+/* ---------- Catálogo local de productos de México (Open Food Facts) ----------
+ * Archivo estático que genera cada semana .github/workflows/off-catalog.yml a partir del
+ * volcado de Open Food Facts (rama off-data). Se guarda en IndexedDB y permite buscar por
+ * texto en español, resolver códigos de barras y sugerir alternativas de marca sin conexión
+ * y sin gastar la cuota de la API. Datos © Open Food Facts (ODbL).
+ */
+const OFFMX_URL = 'https://raw.githubusercontent.com/pagabo18/Rutinal/off-data/off_mx.json';
+const OFFMX_TTL = 7 * 864e5;
+let _offMx = null, _offMxPromise = null, _offMxLastTry = 0;
+function rutinalIdb() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) return reject(new Error('no idb'));
+    const rq = indexedDB.open('rutinal-cache', 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+    rq.onsuccess = () => resolve(rq.result);
+    rq.onerror = () => reject(rq.error);
+  });
+}
+function idbGet(key) {
+  return rutinalIdb().then(db => new Promise((resolve, reject) => {
+    const rq = db.transaction('kv').objectStore('kv').get(key);
+    rq.onsuccess = () => resolve(rq.result); rq.onerror = () => reject(rq.error);
+  }));
+}
+function idbSet(key, val) {
+  return rutinalIdb().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction('kv', 'readwrite');
+    tx.objectStore('kv').put(val, key);
+    tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error);
+  }));
+}
+// Normaliza texto para buscar en el catálogo (sin acentos y con variantes comunes unificadas)
+function offMxNorm(t) {
+  return normalizeFoodQuery(t).replace(/\byog(?:h?o?urt|ur)(?:h|e|es|s)?\b/g, 'yogur').replace(/[^a-z0-9ñ ]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function offMxIndex(d) {
+  const byCode = new Map(), byCat = new Map(), norm = new Array(d.p.length);
+  d.p.forEach((r, i) => {
+    byCode.set(String(r[0]).replace(/^0+/, ''), i);
+    norm[i] = ' ' + offMxNorm(r[1] + ' ' + (r[2] || '')) + ' ';
+    (r[3] || []).forEach(c => { let a = byCat.get(c); if (!a) byCat.set(c, a = []); a.push(i); });
+  });
+  const catIdx = new Map(d.cats.map((c, i) => [c, i]));
+  _offMx = { d, byCode, byCat, norm, catIdx };
+}
+function offMxItem(i) {
+  const r = _offMx.d.p[i];
+  const per100g = { kcal: r[4] || 0, protein: r[5] || 0, carbs: r[6] || 0, fat: r[8] || 0 };
+  if (r[7] != null) per100g.sugars = r[7];
+  if (r[9] != null) per100g.satFat = r[9];
+  if (r[10] != null) per100g.transFat = r[10];
+  if (r[11] != null) per100g.fiber = r[11];
+  if (r[12] != null) per100g.sodium = r[12];
+  return { barcode: r[0], name: r[1], brand: r[2] || '', image: '', per100g, nutriscore: r[13] || '', nova: r[14] || null,
+    cats: (r[3] || []).map(c => _offMx.d.cats[c]), liquid: !!r[15], serving_size: '', source: 'off', mx: true };
+}
+// Carga el catálogo: de IndexedDB si existe; lo descarga si falta o tiene más de una semana.
+function loadOffMx() {
+  if (_offMx && !_offMx.stale) return Promise.resolve(_offMx);
+  if (_offMxPromise) return _offMxPromise;
+  _offMxPromise = (async () => {
+    let rec = null;
+    try { rec = await idbGet('off_mx'); } catch (e) {}
+    if (rec && rec.data && Array.isArray(rec.data.p) && !_offMx) offMxIndex(rec.data);
+    const fresh = rec && (Date.now() - rec.t) < OFFMX_TTL;
+    if (!fresh && navigator.onLine !== false && Date.now() - _offMxLastTry > 10 * 60000) {
+      _offMxLastTry = Date.now();
+      const dl = fetch(OFFMX_URL).then(r => r.ok ? r.json() : null).then(d => {
+        if (d && Array.isArray(d.p) && Array.isArray(d.cats)) { offMxIndex(d); idbSet('off_mx', { t: Date.now(), data: d }).catch(() => {}); }
+      }).catch(() => {});
+      if (!_offMx) await dl; // primera vez: esperar la descarga
+    }
+    _offMxPromise = null;
+    return _offMx;
+  })();
+  return _offMxPromise;
+}
+function offMxSearch(q, limit) {
+  if (!_offMx) return [];
+  const toks = offMxNorm(q).split(' ').filter(t => t.length >= 2);
+  if (!toks.length) return [];
+  const exact = [], partial = [];
+  const max = limit || 15;
+  for (let i = 0; i < _offMx.norm.length && exact.length < max; i++) {
+    const n = _offMx.norm[i];
+    if (!toks.every(t => n.includes(t))) continue;
+    (toks.every(t => n.includes(' ' + t)) ? exact : partial).push(i); // inicio de palabra primero
+  }
+  return exact.concat(partial).slice(0, max).map(offMxItem);
+}
+function offMxByBarcode(code) {
+  if (!_offMx) return null;
+  const i = _offMx.byCode.get(String(code).replace(/^0+/, ''));
+  return i == null ? null : offMxItem(i);
+}
+// Productos de marca del catálogo en la misma categoría (de la más específica a la más general)
+function offMxSameCategory(item, limit) {
+  if (!_offMx || !item.cats || !item.cats.length) return [];
+  const self = String(item.barcode || '').replace(/^0+/, '');
+  const out = [], seen = new Set();
+  for (let k = item.cats.length - 1; k >= 0 && out.length < (limit || 60); k--) {
+    const ci = _offMx.catIdx.get(item.cats[k]);
+    if (ci == null) continue;
+    for (const i of (_offMx.byCat.get(ci) || [])) {
+      if (seen.has(i)) continue; seen.add(i);
+      if (String(_offMx.d.p[i][0]).replace(/^0+/, '') === self) continue;
+      out.push({ i, level: item.cats.length - 1 - k });
+      if (out.length >= (limit || 60)) break;
+    }
+    if (k <= item.cats.length - 2 && out.length >= 8) break; // no subir más si ya hay suficientes
+  }
+  return out;
+}
+
 /* ---------- Open Food Facts ---------- */
+const OFF_FIELDS = 'code,product_name,product_name_es,generic_name,brands,nutriments,serving_size,image_thumb_url,image_url,nutriscore_grade,nova_group,categories_tags';
+const OFF_APP = 'app_name=Rutinal&app_version=1.10';
 function parseOffProduct(p) {
   if (!p) return null;
   const n = p.nutriments || {};
   return {
     barcode: p.code,
-    name: p.product_name || p.generic_name || 'Alimento',
+    name: p.product_name_es || p.product_name || p.generic_name || 'Alimento',
     brand: (p.brands || '').split(',')[0].trim(),
     image: p.image_thumb_url || p.image_url || '',
     per100g: {
@@ -11937,7 +12059,11 @@ function parseOffProduct(p) {
       sugars:  n.sugars_100g           || 0,
       sodium:  n.sodium_100g           || 0,
       satFat:  n['saturated-fat_100g'] != null ? +n['saturated-fat_100g'] : undefined,
+      transFat: n['trans-fat_100g'] != null ? +n['trans-fat_100g'] : undefined,
+      addedSugars: n['added-sugars_100g'] != null ? +n['added-sugars_100g'] : undefined,
     },
+    cats: (p.categories_tags || []).filter(t => /^en:/.test(t)).slice(-4),
+    liquid: (p.categories_tags || []).includes('en:beverages'),
     nutriscore: /^[a-e]$/i.test(p.nutriscore_grade || '') ? p.nutriscore_grade.toLowerCase() : '',
     nova: p.nova_group || null,
     serving_size: p.serving_size || '',
@@ -11950,7 +12076,7 @@ async function offSearch(q) {
   // el endpoint correcto para texto libre es cgi/search.pl.
   const url = 'https://world.openfoodfacts.org/cgi/search.pl?search_terms=' + encodeURIComponent(q)
     + '&search_simple=1&action=process&json=1&page_size=20'
-    + '&fields=code,product_name,generic_name,brands,nutriments,serving_size,image_thumb_url,image_url,nutriscore_grade,nova_group';
+    + '&fields=' + OFF_FIELDS + '&' + OFF_APP;
   const r = await fetch(url);
   if (!r.ok) throw new Error('OFF search failed');
   const j = await r.json();
@@ -11964,12 +12090,28 @@ async function offByBarcode(barcode) {
   if (cache[barcode] && (now - cache[barcode].t) < OFF_CACHE_TTL) {
     return cache[barcode].p;
   }
-  const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json`;
-  const r = await fetch(url, { headers: { 'User-Agent': 'Rutinal/1.2 (Android)' } });
-  if (!r.ok) throw new Error('OFF barcode failed');
-  const j = await r.json();
-  if (j.status !== 1 && !j.product) return null;
-  const parsed = parseOffProduct(j.product);
+  // Catálogo local de México: instantáneo y sin conexión
+  const local = offMxByBarcode(barcode);
+  if (local && navigator.onLine === false) return local;
+  // API v3 (la v2 está obsoleta); si falla por red o servidor se usa lo local o la v2
+  let product = null, notFound = false;
+  try {
+    const r3 = await fetch(`https://world.openfoodfacts.org/api/v3/product/${encodeURIComponent(barcode)}?fields=${OFF_FIELDS}&${OFF_APP}`);
+    const j3 = await r3.json().catch(() => null);
+    if (j3 && j3.product && (j3.product.product_name || j3.product.product_name_es || j3.product.nutriments)) product = j3.product;
+    else if (r3.status === 404 || (j3 && j3.result && j3.result.id === 'product_not_found')) notFound = true;
+    else throw new Error('OFF v3 ' + r3.status);
+  } catch (e) {
+    if (local) return local;
+    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json?fields=${OFF_FIELDS}&${OFF_APP}`);
+    if (!r.ok) throw new Error('OFF barcode failed');
+    const j = await r.json();
+    if (j.status !== 1 && !j.product) notFound = true; else product = j.product;
+  }
+  if (notFound || !product) return local;
+  let parsed = parseOffProduct(product);
+  if (parsed && !(parsed.per100g.kcal > 0) && local) parsed = local; // en vivo sin tabla: usar el catálogo
+  else if (parsed && local && !parsed.cats.length) { parsed.cats = local.cats; parsed.liquid = local.liquid; }
   if (parsed) {
     cache[barcode] = { p: parsed, t: now };
     saveOffCache(cache);
@@ -12262,6 +12404,7 @@ function openFoodsImport() {
 
 function openFoodSearch(mealId) {
   _foodSearchMealId = mealId || 'lunch';
+  loadOffMx().catch(() => {}); // precargar el catálogo de México
   const body = `
     <input type="text" class="food-search-input" id="food-q" placeholder="Busca por nombre... (ej: plátano, leche)" autocomplete="off" />
     <div style="display:flex;gap:8px;margin:8px 0 10px;">
@@ -12296,7 +12439,7 @@ function openFoodSearch(mealId) {
           ? `<span class="food-source-badge local" title="Base local Rutinal">LOCAL</span>`
           : (p.source === 'custom'
             ? `<span class="food-source-badge mine" title="Creado por ti">MÍO</span>`
-            : `<span class="food-source-badge off" title="Open Food Facts">OFF</span>`));
+            : `<span class="food-source-badge off" title="Open Food Facts">${p.mx ? 'OFF·MX' : 'OFF'}</span>`));
       const img = safeFoodImage(p.image);
       el.innerHTML = `
         ${img ? `<img class="food-result-img" src="${escapeHtml(img)}" alt="" onerror="this.style.display='none'"/>` : '<div class="food-result-img"></div>'}
@@ -12620,6 +12763,24 @@ function fitAlternatives(item, info, totals, score) {
     if (cat && cat !== 'platillo') cands = LOCAL_FOODS.filter(f => f.g === cat);
   }
   const out = [];
+  // 1) Productos de marca de México en la misma categoría de Open Food Facts
+  const names = new Set([n]);
+  offMxSameCategory(item, 80).forEach(({ i, level }) => {
+    const alt = offMxItem(i);
+    const key = normalizeFoodQuery(alt.name + '|' + alt.brand);
+    if (names.has(key) || names.has(normalizeFoodQuery(alt.name))) return;
+    const q = fitQuality(alt, info.kind);
+    if (q.score == null || q.score < score + 10) return;
+    names.add(key);
+    const mx = fitMaxGrams(alt, info, totals, q.score);
+    out.push({ item: alt, score: q.score - level * 3, shown: q.score, lab: fitLabel(q.score), grams: mx ? mx.grams : null });
+  });
+  out.sort((x, y) => y.score - x.score);
+  out.splice(3);
+  out.forEach(o => { o.score = o.shown; });
+  if (out.length >= 3) return out;
+  // 2) Completar con alimentos genéricos del mismo grupo
+  const gen = [];
   cands.forEach(f => {
     const alt = fitLocalItem(f);
     if (normalizeFoodQuery(alt.name) === n) return;
@@ -12628,10 +12789,32 @@ function fitAlternatives(item, info, totals, score) {
     // Dentro del mismo grupo basta con que sea claramente mejor que el producto
     if (q.score == null || q.score < score + 10) return;
     const mx = fitMaxGrams(alt, info, totals, q.score);
-    out.push({ item: alt, score: q.score, lab: fitLabel(q.score), grams: mx ? mx.grams : null });
+    gen.push({ item: alt, score: q.score, lab: fitLabel(q.score), grams: mx ? mx.grams : null });
   });
-  out.sort((x, y) => y.score - x.score);
-  return out.slice(0, 3);
+  gen.sort((x, y) => y.score - x.score);
+  return out.concat(gen).slice(0, 3);
+}
+
+// ---- Sellos de advertencia NOM-051 (estimados a partir de la tabla nutricional) ----
+// Tabla 6 de la Modificación a la NOM-051-SCFI/SSA1-2010 (DOF 27/03/2020), por 100 g o 100 ml.
+// Es una estimación: la norma usa azúcares libres/añadidos y en la Fase 2 solo evalúa los
+// nutrimentos añadidos; aquí se usan los datos disponibles del producto.
+function nomSellos(item) {
+  const p = item.per100g || {};
+  const kcal = p.kcal || 0;
+  const packaged = item.source === 'off' || !!item.barcode;
+  if (!packaged || +item.nova === 1) return null;
+  if (!(kcal > 0) && !(p.sodium > 0)) return null;
+  const liquid = !!item.liquid || (item.cats || []).includes('en:beverages') || foodCatOf(item) === 'bebida';
+  const sug = p.addedSugars != null ? p.addedSugars : p.sugars;
+  const naMg = (p.sodium || 0) * 1000;
+  const out = [];
+  if (liquid ? (kcal >= 70 || (sug || 0) * 4 >= 8) : kcal >= 275) out.push('EXCESO CALORÍAS');
+  if (kcal > 0 && sug != null && sug * 4 / kcal >= 0.10) out.push('EXCESO AZÚCARES');
+  if (kcal > 0 && p.satFat != null && p.satFat * 9 / kcal >= 0.10) out.push('EXCESO GRASAS SATURADAS');
+  if (kcal > 0 && p.transFat != null && p.transFat * 9 / kcal >= 0.01) out.push('EXCESO GRASAS TRANS');
+  if (kcal > 0 ? (naMg / kcal >= 1 || naMg >= 300) : (liquid && naMg >= 45)) out.push('EXCESO SODIO');
+  return out;
 }
 
 function fitHtml(item, mealId, index) {
@@ -12688,11 +12871,15 @@ function fitHtml(item, mealId, index) {
   const altsHtml = _fitAlts.length ? `<div class="fit-sec"><div class="fit-sec-k">Mejores opciones del mismo tipo</div>
     ${_fitAlts.map((a, i) => `<div class="fit-alt" data-fit-alt="${i}">
       <div class="fit-score sm ${a.lab.c}">${a.score}</div>
-      <div class="fit-alt-body"><div class="fit-alt-n">${escapeHtml(a.item.name)}</div>
+      <div class="fit-alt-body"><div class="fit-alt-n">${escapeHtml(a.item.name)}${a.item.brand ? ` <span class="fit-alt-b">${escapeHtml(a.item.brand)}</span>` : ''}</div>
         <div class="fit-alt-m">${a.grams != null && a.grams < 300 ? `${a.item.per100g.kcal} kcal/100 g · hasta ${a.grams} g` : `${a.item.per100g.kcal} kcal/100 g · sin problema`}</div></div>
       <div class="fit-alt-c">›</div>
     </div>`).join('')}</div>` : '';
   const chip = (cls, t) => `<span class="fit-chip ${cls}">${escapeHtml(t)}</span>`;
+  const sellos = nomSellos(item);
+  const sellosHtml = sellos ? `<div class="fit-sec"><div class="fit-sec-k">Sellos estimados (NOM-051)</div>
+    <div class="fit-sellos">${sellos.length ? sellos.map(t => `<span class="fit-sello" translate="no">${t}</span>`).join('') : '<span class="fit-chip good">Sin sellos</span>'}</div>
+    <div class="fit-note">Calculados con la tabla nutricional; pueden diferir del empaque.</div></div>` : '';
   const goods = q.goods.length ? `<div class="fit-sec"><div class="fit-sec-k good">✓ <span>Sobresale en</span></div><div class="fit-chips">${q.goods.map(t => chip('good', t)).join('')}</div></div>` : '';
   const bads = q.bads.length ? `<div class="fit-sec"><div class="fit-sec-k bad">! <span>Cuidado con</span></div><div class="fit-chips">${q.bads.map(t => chip('bad', t)).join('')}</div></div>` : '';
   return `<div class="fit-card" id="fit-card">
@@ -12704,6 +12891,7 @@ function fitHtml(item, mealId, index) {
       </div>
     </div>
     ${goods}${bads}
+    ${sellosHtml}
     ${maxHtml}
     <div class="fit-status" id="fit-status"></div>
     <div class="fit-need" id="fit-need"></div>
@@ -12914,6 +13102,8 @@ function openPortionEditor(item, mealId, index) {
       barcode: item.barcode || null,
       nutriscore: item.nutriscore || undefined,
       nova: item.nova || undefined,
+      cats: item.cats && item.cats.length ? item.cats : undefined,
+      liquid: item.liquid || undefined,
       ts: Date.now(),
     };
 
@@ -13070,6 +13260,8 @@ async function handleScannedBarcode(barcode) {
   closeSheet();
   openSheet('Buscando...', '<div class="food-loader">Consultando bases de datos...</div>');
   try {
+    // Catálogo de México: esperar poco (si ya está guardado es inmediato)
+    await Promise.race([loadOffMx().catch(() => {}), new Promise(r => setTimeout(r, 2500))]);
     // Intentar OFF primero (más completo para productos europeos/latinos)
     let p = null;
     try { p = await offByBarcode(barcode); } catch(e){}
