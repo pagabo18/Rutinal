@@ -3730,9 +3730,304 @@ window.__I18N_EXTRA = {
    "en": "You've already covered today's protein",
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
+  },
+  "Inicia sesión para continuar": {
+   "en": "Sign in to continue",
+   "pt-BR": "Entre para continuar",
+   "fr": "Connectez-vous pour continuer"
+  },
+  "Usuario": {
+   "en": "Username",
+   "pt-BR": "Usuário",
+   "fr": "Identifiant"
+  },
+  "Contraseña": {
+   "en": "Password",
+   "pt-BR": "Senha",
+   "fr": "Mot de passe"
+  },
+  "Ver": {
+   "en": "Show",
+   "pt-BR": "Ver",
+   "fr": "Voir"
+  },
+  "Ocultar": {
+   "en": "Hide",
+   "pt-BR": "Ocultar",
+   "fr": "Masquer"
+  },
+  "Entrar": {
+   "en": "Sign in",
+   "pt-BR": "Entrar",
+   "fr": "Se connecter"
+  },
+  "Entrando...": {
+   "en": "Signing in...",
+   "pt-BR": "Entrando...",
+   "fr": "Connexion..."
+  },
+  "¿No tienes cuenta? Pídele tu usuario y contraseña a quien te compartió la app.": {
+   "en": "No account? Ask whoever shared the app with you for your username and password.",
+   "pt-BR": "Não tem conta? Peça seu usuário e senha a quem compartilhou o app com você.",
+   "fr": "Pas de compte ? Demandez votre identifiant et votre mot de passe à la personne qui vous a partagé l'app."
+  },
+  "Usuario o contraseña incorrectos.": {
+   "en": "Wrong username or password.",
+   "pt-BR": "Usuário ou senha incorretos.",
+   "fr": "Identifiant ou mot de passe incorrect."
+  },
+  "Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.": {
+   "en": "Too many attempts. Wait 15 minutes and try again.",
+   "pt-BR": "Muitas tentativas. Espere 15 minutos e tente de novo.",
+   "fr": "Trop de tentatives. Attendez 15 minutes et réessayez."
+  },
+  "Tu acceso está desactivado. Contacta a quien te dio la cuenta.": {
+   "en": "Your access is disabled. Contact whoever gave you the account.",
+   "pt-BR": "Seu acesso está desativado. Fale com quem te deu a conta.",
+   "fr": "Votre accès est désactivé. Contactez la personne qui vous a donné le compte."
+  },
+  "No se pudo conectar. Revisa tu internet e inténtalo de nuevo.": {
+   "en": "Couldn't connect. Check your internet and try again.",
+   "pt-BR": "Não foi possível conectar. Verifique sua internet e tente de novo.",
+   "fr": "Connexion impossible. Vérifiez votre connexion internet et réessayez."
+  },
+  "La contraseña debe tener al menos 6 caracteres.": {
+   "en": "The password must be at least 6 characters long.",
+   "pt-BR": "A senha deve ter pelo menos 6 caracteres.",
+   "fr": "Le mot de passe doit contenir au moins 6 caractères."
+  },
+  "El usuario debe tener de 3 a 32 caracteres: letras, números, punto, guion o guion bajo.": {
+   "en": "The username must be 3 to 32 characters: letters, numbers, dot, hyphen or underscore.",
+   "pt-BR": "O usuário deve ter de 3 a 32 caracteres: letras, números, ponto, hífen ou sublinhado.",
+   "fr": "L'identifiant doit contenir de 3 à 32 caractères : lettres, chiffres, point, tiret ou tiret bas."
+  },
+  "No puedes quitarte tu propio acceso de administrador.": {
+   "en": "You can't remove your own admin access.",
+   "pt-BR": "Você não pode remover seu próprio acesso de administrador.",
+   "fr": "Vous ne pouvez pas retirer votre propre accès administrateur."
+  },
+  "Tu cuenta no tiene permiso para administrar usuarios.": {
+   "en": "Your account isn't allowed to manage users.",
+   "pt-BR": "Sua conta não tem permissão para gerenciar usuários.",
+   "fr": "Votre compte n'est pas autorisé à gérer les utilisateurs."
+  },
+  "Tu sesión ya no es válida. Vuelve a iniciar sesión.": {
+   "en": "Your session is no longer valid. Sign in again.",
+   "pt-BR": "Sua sessão não é mais válida. Entre de novo.",
+   "fr": "Votre session n'est plus valide. Reconnectez-vous."
+  },
+  "Tu acceso ya no está activo. Vuelve a iniciar sesión o contacta a quien te dio la cuenta.": {
+   "en": "Your access is no longer active. Sign in again or contact whoever gave you the account.",
+   "pt-BR": "Seu acesso não está mais ativo. Entre de novo ou fale com quem te deu a conta.",
+   "fr": "Votre accès n'est plus actif. Reconnectez-vous ou contactez la personne qui vous a donné le compte."
+  },
+  "Conéctate a internet para verificar tu acceso.": {
+   "en": "Connect to the internet to verify your access.",
+   "pt-BR": "Conecte-se à internet para verificar seu acesso.",
+   "fr": "Connectez-vous à internet pour vérifier votre accès."
+  },
+  "Cuenta": {
+   "en": "Account",
+   "pt-BR": "Conta",
+   "fr": "Compte"
+  },
+  "Sesión iniciada como": {
+   "en": "Signed in as",
+   "pt-BR": "Sessão iniciada como",
+   "fr": "Connecté en tant que"
+  },
+  "Administrar usuarios": {
+   "en": "Manage users",
+   "pt-BR": "Gerenciar usuários",
+   "fr": "Gérer les utilisateurs"
+  },
+  "Cambiar contraseña": {
+   "en": "Change password",
+   "pt-BR": "Alterar senha",
+   "fr": "Changer le mot de passe"
+  },
+  "Cerrar sesión": {
+   "en": "Sign out",
+   "pt-BR": "Sair",
+   "fr": "Se déconnecter"
+  },
+  "¿Cerrar sesión? Tus datos se quedan guardados en este dispositivo.": {
+   "en": "Sign out? Your data stays saved on this device.",
+   "pt-BR": "Sair? Seus dados continuam salvos neste dispositivo.",
+   "fr": "Se déconnecter ? Vos données restent enregistrées sur cet appareil."
+  },
+  "Contraseña actual": {
+   "en": "Current password",
+   "pt-BR": "Senha atual",
+   "fr": "Mot de passe actuel"
+  },
+  "Contraseña nueva": {
+   "en": "New password",
+   "pt-BR": "Nova senha",
+   "fr": "Nouveau mot de passe"
+  },
+  "Repite la contraseña nueva": {
+   "en": "Repeat the new password",
+   "pt-BR": "Repita a nova senha",
+   "fr": "Répétez le nouveau mot de passe"
+  },
+  "Las contraseñas nuevas no coinciden.": {
+   "en": "The new passwords don't match.",
+   "pt-BR": "As novas senhas não coincidem.",
+   "fr": "Les nouveaux mots de passe ne correspondent pas."
+  },
+  "La contraseña actual no es correcta.": {
+   "en": "The current password is wrong.",
+   "pt-BR": "A senha atual está incorreta.",
+   "fr": "Le mot de passe actuel est incorrect."
+  },
+  "Contraseña actualizada.": {
+   "en": "Password updated.",
+   "pt-BR": "Senha atualizada.",
+   "fr": "Mot de passe mis à jour."
+  },
+  "Contraseña actualizada": {
+   "en": "Password updated",
+   "pt-BR": "Senha atualizada",
+   "fr": "Mot de passe mis à jour"
+  },
+  "Usuarios": {
+   "en": "Users",
+   "pt-BR": "Usuários",
+   "fr": "Utilisateurs"
+  },
+  "Cargando...": {
+   "en": "Loading...",
+   "pt-BR": "Carregando...",
+   "fr": "Chargement..."
+  },
+  "Nuevo usuario": {
+   "en": "New user",
+   "pt-BR": "Novo usuário",
+   "fr": "Nouvel utilisateur"
+  },
+  "Editar usuario": {
+   "en": "Edit user",
+   "pt-BR": "Editar usuário",
+   "fr": "Modifier l'utilisateur"
+  },
+  "Aún no ha entrado": {
+   "en": "Hasn't signed in yet",
+   "pt-BR": "Ainda não entrou",
+   "fr": "Ne s'est pas encore connecté"
+  },
+  "tú": {
+   "en": "you",
+   "pt-BR": "você",
+   "fr": "vous"
+  },
+  "Admin": {
+   "en": "Admin",
+   "pt-BR": "Admin",
+   "fr": "Admin"
+  },
+  "Activo": {
+   "en": "Active",
+   "pt-BR": "Ativo",
+   "fr": "Actif"
+  },
+  "Al desactivar o eliminar un usuario, pierde el acceso la próxima vez que su app tenga internet.": {
+   "en": "When you disable or delete a user, they lose access the next time their app is online.",
+   "pt-BR": "Ao desativar ou excluir um usuário, ele perde o acesso na próxima vez que o app dele tiver internet.",
+   "fr": "Lorsque vous désactivez ou supprimez un utilisateur, il perd l'accès dès que son app est de nouveau en ligne."
+  },
+  "Contraseña nueva (opcional)": {
+   "en": "New password (optional)",
+   "pt-BR": "Nova senha (opcional)",
+   "fr": "Nouveau mot de passe (facultatif)"
+  },
+  "Generar": {
+   "en": "Generate",
+   "pt-BR": "Gerar",
+   "fr": "Générer"
+  },
+  "Nota (opcional)": {
+   "en": "Note (optional)",
+   "pt-BR": "Nota (opcional)",
+   "fr": "Note (facultatif)"
+  },
+  "Nombre, teléfono, etc.": {
+   "en": "Name, phone, etc.",
+   "pt-BR": "Nome, telefone, etc.",
+   "fr": "Nom, téléphone, etc."
+  },
+  "Acceso activo": {
+   "en": "Access enabled",
+   "pt-BR": "Acesso ativo",
+   "fr": "Accès actif"
+  },
+  "Administrador (puede dar de alta usuarios)": {
+   "en": "Admin (can create users)",
+   "pt-BR": "Administrador (pode criar usuários)",
+   "fr": "Administrateur (peut créer des utilisateurs)"
+  },
+  "Eliminar usuario": {
+   "en": "Delete user",
+   "pt-BR": "Excluir usuário",
+   "fr": "Supprimer l'utilisateur"
+  },
+  "Ese usuario ya existe.": {
+   "en": "That username already exists.",
+   "pt-BR": "Esse usuário já existe.",
+   "fr": "Cet identifiant existe déjà."
+  },
+  "Usuario creado": {
+   "en": "User created",
+   "pt-BR": "Usuário criado",
+   "fr": "Utilisateur créé"
+  },
+  "Comparte estos datos con la persona. La contraseña no se podrá volver a ver.": {
+   "en": "Share these details with the person. The password can't be shown again.",
+   "pt-BR": "Compartilhe estes dados com a pessoa. A senha não poderá ser vista de novo.",
+   "fr": "Partagez ces informations avec la personne. Le mot de passe ne pourra plus être affiché."
+  },
+  "Usuario:": {
+   "en": "Username:",
+   "pt-BR": "Usuário:",
+   "fr": "Identifiant :"
+  },
+  "Contraseña:": {
+   "en": "Password:",
+   "pt-BR": "Senha:",
+   "fr": "Mot de passe :"
+  },
+  "Copiar": {
+   "en": "Copy",
+   "pt-BR": "Copiar",
+   "fr": "Copier"
+  },
+  "Copiado": {
+   "en": "Copied",
+   "pt-BR": "Copiado",
+   "fr": "Copié"
+  },
+  "No se pudo copiar": {
+   "en": "Couldn't copy",
+   "pt-BR": "Não foi possível copiar",
+   "fr": "Copie impossible"
+  },
+  "Volver a usuarios": {
+   "en": "Back to users",
+   "pt-BR": "Voltar para usuários",
+   "fr": "Retour aux utilisateurs"
+  },
+  "¿Eliminar este usuario? Perderá el acceso a la app.": {
+   "en": "Delete this user? They will lose access to the app.",
+   "pt-BR": "Excluir este usuário? Ele perderá o acesso ao app.",
+   "fr": "Supprimer cet utilisateur ? Il perdra l'accès à l'app."
   }
  },
  "tpl": {
+  "Último acceso: {{x}}": {
+   "en": "Last sign-in: {{x}}",
+   "pt-BR": "Último acesso: {{x}}",
+   "fr": "Dernière connexion : {{x}}"
+  },
   "{{n}} de {{n2}} hábitos hoy": {
    "en": "{{n}} of {{n2}} habits today",
    "pt-BR": "{{n}} de {{n2}} hábitos hoje",

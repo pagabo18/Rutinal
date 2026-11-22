@@ -110,6 +110,16 @@ Los artefactos salen en:
 - `android-gradle/app/build/outputs/apk/release/app-release.apk`
 - `android-gradle/app/build/outputs/bundle/release/app-release.aab`
 
+## Acceso (usuario y contraseña)
+
+La app pide iniciar sesión al abrir. Las cuentas las crea el administrador desde **Editar → Ajustes → Cuenta → Administrar usuarios** (alta, contraseña nueva, desactivar, eliminar). No hay registro público.
+
+- Backend: proyecto de Supabase `rutinal`. Las tablas (`private.app_users`, `private.app_sessions`, `private.login_attempts`) no están expuestas; la app solo llama a las funciones `rutinal_*` (ver `supabase/rutinal_access.sql`) con la llave pública.
+- Contraseñas con bcrypt, sesiones por token (se guarda solo su hash), bloqueo de 15 min tras 8 intentos fallidos.
+- La sesión se guarda en el dispositivo y se verifica en línea al abrir la app; sin conexión sigue funcionando hasta 14 días. Al desactivar o eliminar un usuario, pierde el acceso en la siguiente verificación.
+- Los datos de la app siguen siendo locales: el servidor solo conoce usuario, contraseña cifrada y fechas de acceso.
+- Límite conocido: el código es público, así que el login frena el uso normal de la app publicada, no a quien copie y modifique el código.
+
 ## APIs de nutrición
 
 - **USDA FoodData Central**: `api.nal.usda.gov/fdc/v1/foods/search`. Con `DEMO_KEY` funciona con rate limit compartido; para uso intensivo registra una key gratis en [api.data.gov/signup](https://api.data.gov/signup/) y pégala en **Editar → Ajustes → USDA API key**.

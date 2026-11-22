@@ -22,6 +22,8 @@
     const t = localStorage.getItem('theme') || 'auto';
     document.documentElement.setAttribute('data-theme', t);
   } catch(e) {}
+  // Acceso: si ya hay sesión guardada se muestra la app de inmediato (se verifica en línea después)
+  try { if ((JSON.parse(localStorage.getItem('__auth') || 'null') || {}).token) document.documentElement.classList.add('auth-ok'); } catch(e) {}
 </script>
 <style>
   :root {
@@ -2034,6 +2036,39 @@
   }
   .btn-primary:active { opacity: 0.85; }
 
+  /* Inicio de sesión */
+  #auth-gate { position: fixed; inset: 0; z-index: 100000; background: var(--bg); display: flex; align-items: center; justify-content: center;
+    padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom)); overflow-y: auto; }
+  html.auth-ok #auth-gate { display: none; }
+  html:not(.auth-ok) body > *:not(#auth-gate) { visibility: hidden !important; }
+  .auth-box { width: 100%; max-width: 340px; }
+  .auth-logo { width: 72px; height: 72px; border-radius: 18px; display: block; margin: 0 auto 14px; }
+  .auth-title { font-size: 26px; font-weight: 700; text-align: center; letter-spacing: -0.02em; }
+  .auth-sub { font-size: 14px; color: var(--text-3); text-align: center; margin: 6px 0 22px; line-height: 1.4; }
+  .auth-field { display: block; margin-bottom: 12px; }
+  .auth-field span { display: block; font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .auth-field input, .auth-in { width: 100%; padding: 13px 14px; font-size: 16px; border: 1px solid var(--border-strong); border-radius: 12px;
+    background: var(--surface); color: var(--text); outline: none; box-sizing: border-box; }
+  .auth-field input:focus, .auth-in:focus { border-color: var(--text); }
+  .auth-pass { position: relative; }
+  .auth-pass input { padding-right: 72px; }
+  .auth-pass button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-2);
+    font-size: 13px; font-weight: 600; padding: 8px; cursor: pointer; }
+  .auth-msg { min-height: 20px; font-size: 13px; color: var(--danger, #DC2626); margin: 4px 0 12px; line-height: 1.4; }
+  .auth-msg.info { color: var(--text-3); }
+  .auth-foot { font-size: 12px; color: var(--text-3); text-align: center; margin-top: 16px; line-height: 1.5; }
+  .acct-user { font-size: 15px; margin-bottom: 10px; }
+  .usr-row { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; cursor: pointer; background: var(--surface); }
+  .usr-row .usr-body { flex: 1; min-width: 0; }
+  .usr-row .usr-n { font-weight: 600; font-size: 15px; }
+  .usr-row .usr-d { font-size: 12px; color: var(--text-3); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .usr-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); white-space: nowrap; }
+  .usr-badge.on { background: rgba(22,163,74,.12); color: #15803D; }
+  .usr-badge.off { background: rgba(220,38,38,.12); color: #B91C1C; }
+  .usr-check { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-2); margin: 10px 0; cursor: pointer; }
+  .usr-check input { width: 18px; height: 18px; }
+  .usr-cred { background: var(--surface-2); border-radius: 12px; padding: 14px; font-size: 15px; line-height: 1.7; margin: 10px 0; user-select: all; -webkit-user-select: all; }
+
   /* Ajustes */
   .setting { margin-bottom: 22px; }
   .setting-label {
@@ -2083,6 +2118,23 @@
 </style>
 </head>
 <body>
+
+<div id="auth-gate">
+  <form class="auth-box" id="auth-form" autocomplete="on">
+    <img class="auth-logo" src="icon-192.png" alt="">
+    <div class="auth-title" translate="no">Rutinal</div>
+    <div class="auth-sub">Inicia sesión para continuar</div>
+    <label class="auth-field"><span>Usuario</span>
+      <input id="auth-user" type="text" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" required>
+    </label>
+    <label class="auth-field"><span>Contraseña</span>
+      <div class="auth-pass"><input id="auth-pass" type="password" name="password" autocomplete="current-password" maxlength="72" required><button type="button" id="auth-show">Ver</button></div>
+    </label>
+    <div class="auth-msg" id="auth-msg"></div>
+    <button class="btn-primary" id="auth-submit" type="submit" style="width:100%;">Entrar</button>
+    <div class="auth-foot">¿No tienes cuenta? Pídele tu usuario y contraseña a quien te compartió la app.</div>
+  </form>
+</div>
 
 <div id="preview-banner" style="background:var(--surface-2);padding:6px 12px;text-align:center;font-size:10px;color:var(--text-3);border-bottom:1px solid var(--border);letter-spacing:0.02em;">Vista previa v1.9.7 · los datos no se guardan al recargar</div>
 <script>
@@ -2712,6 +2764,15 @@ try {
         </label>
         <button class="btn-secondary" id="dnd-permission" style="margin-top:8px; display:none;">Conceder permiso</button>
         <div id="dnd-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
+      </div>
+      <div class="setting" id="acct-setting">
+        <div class="setting-label">Cuenta</div>
+        <div class="acct-user" id="acct-user"></div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn-secondary" id="btn-acct-users" style="display:none;">Administrar usuarios</button>
+          <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
+          <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
+        </div>
       </div>
       <div class="setting">
         <div class="setting-label">Datos</div>
@@ -5131,6 +5192,7 @@ function applyTheme(mode) {
   try { localStorage.setItem('theme', mode); } catch(e) {}
 }
 function renderAjustes() {
+  if (typeof authRenderAccount === 'function') authRenderAccount();
   const cur = (function(){ try { return localStorage.getItem('theme') || 'auto'; } catch(e) { return 'auto'; }})();
   document.querySelectorAll('#theme-picker .chip').forEach(el => {
     el.classList.toggle('selected', el.dataset.v === cur);
@@ -5499,7 +5561,7 @@ function bindAjustesOnce() {
   document.getElementById('btn-reset').addEventListener('click', () => {
     if (!confirm('¿Borrar TODOS los datos y volver a los valores por defecto? Esto no se puede deshacer.')) return;
     if (!confirm('Confirmar de nuevo: se perderán bloques, hábitos, historial, imprevistos y ajustes.')) return;
-    S.allKeys().forEach(k => { if (k !== 'theme') S.del(k); });
+    S.allKeys().forEach(k => { if (k !== 'theme' && k !== '__auth') S.del(k); });
     location.reload();
   });
   // USDA API key config
@@ -7930,6 +7992,228 @@ function openImprSheet(existing) {
     renderHoy();
   });
 }
+
+// ============================================================
+// ACCESO: inicio de sesión con usuario y contraseña
+// Las cuentas las da de alta el administrador (Ajustes → Cuenta → Administrar usuarios).
+// El servidor (Supabase, funciones rutinal_*) solo guarda usuario, contraseña cifrada y
+// sesiones; los datos de la app siguen viviendo en el dispositivo.
+// ============================================================
+const AUTH_URL = 'https://lgtbgyuaqbrvpyvvqkar.supabase.co/rest/v1/rpc/';
+const AUTH_KEY = 'sb_publishable_uZboEDVx3g86NmXZIafqYA_3Bv2uQuw'; // llave pública (no es secreta)
+const AUTH_GRACE_MS = 14 * 864e5;   // días que la app funciona sin poder verificar la sesión
+const AUTH_RECHECK_MS = 6 * 36e5;   // cada cuánto se vuelve a verificar con la app abierta
+function authGet() { try { return JSON.parse(localStorage.getItem('__auth') || 'null'); } catch (e) { return null; } }
+function authSet(v) { try { if (v) localStorage.setItem('__auth', JSON.stringify(v)); else localStorage.removeItem('__auth'); } catch (e) {} }
+async function authRpc(fn, args) {
+  const r = await fetch(AUTH_URL + fn, { method: 'POST', cache: 'no-store',
+    headers: { 'Content-Type': 'application/json', 'apikey': AUTH_KEY }, body: JSON.stringify(args || {}) });
+  if (!r.ok) throw new Error('auth ' + r.status);
+  return r.json();
+}
+function authShowGate(msg, info) {
+  document.documentElement.classList.remove('auth-ok');
+  try { closeSheet(); } catch (e) {}
+  const m = document.getElementById('auth-msg');
+  m.textContent = msg || ''; m.classList.toggle('info', !!info);
+  const s = authGet();
+  const u = document.getElementById('auth-user');
+  if (s && s.user && !u.value) u.value = s.user;
+  document.getElementById('auth-pass').value = '';
+}
+function authHideGate() {
+  document.documentElement.classList.add('auth-ok');
+  document.getElementById('auth-pass').value = '';
+  document.getElementById('auth-msg').textContent = '';
+}
+const AUTH_ERRORS = {
+  invalid: 'Usuario o contraseña incorrectos.',
+  locked: 'Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.',
+  disabled: 'Tu acceso está desactivado. Contacta a quien te dio la cuenta.',
+  network: 'No se pudo conectar. Revisa tu internet e inténtalo de nuevo.',
+  weak: 'La contraseña debe tener al menos 6 caracteres.',
+  bad_user: 'El usuario debe tener de 3 a 32 caracteres: letras, números, punto, guion o guion bajo.',
+  self: 'No puedes quitarte tu propio acceso de administrador.',
+  forbidden: 'Tu cuenta no tiene permiso para administrar usuarios.',
+  session: 'Tu sesión ya no es válida. Vuelve a iniciar sesión.',
+};
+function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
+// Verifica la sesión guardada con el servidor. Sin conexión deja pasar hasta AUTH_GRACE_MS.
+let _authChecking = false;
+async function authVerify(force) {
+  const s = authGet();
+  if (!s || !s.token) { authShowGate(''); return; }
+  if (_authChecking || (!force && Date.now() - (s.checkedAt || 0) < AUTH_RECHECK_MS)) return;
+  _authChecking = true;
+  try {
+    const r = await authRpc('rutinal_check', { p_token: s.token });
+    if (r && r.ok) {
+      authSet(Object.assign({}, s, { user: r.user, role: r.role, checkedAt: Date.now() }));
+      if (!document.documentElement.classList.contains('auth-ok')) authHideGate(); // estaba esperando conexión
+      authRenderAccount();
+    }
+    else if (r && r.ok === false) { authSet({ user: s.user }); authShowGate('Tu acceso ya no está activo. Vuelve a iniciar sesión o contacta a quien te dio la cuenta.'); }
+  } catch (e) {
+    if (Date.now() - (s.checkedAt || 0) > AUTH_GRACE_MS) authShowGate('Conéctate a internet para verificar tu acceso.', true);
+  }
+  _authChecking = false;
+}
+function authRenderAccount() {
+  const s = authGet() || {};
+  const el = document.getElementById('acct-user');
+  if (!el) return;
+  el.innerHTML = `<span>Sesión iniciada como</span> <b translate="no">${escapeHtml(s.user || '')}</b>`;
+  document.getElementById('btn-acct-users').style.display = s.role === 'admin' ? '' : 'none';
+}
+async function authLogout() {
+  const s = authGet();
+  if (!confirm('¿Cerrar sesión? Tus datos se quedan guardados en este dispositivo.')) return;
+  if (s && s.token) { try { await authRpc('rutinal_logout', { p_token: s.token }); } catch (e) {} }
+  authSet(s && s.user ? { user: s.user } : null);
+  authShowGate('');
+}
+function authGenPass() {
+  const a = 'abcdefghjkmnpqrstuvwxyz23456789', b = new Uint32Array(10);
+  crypto.getRandomValues(b);
+  const c = Array.from(b, x => a[x % a.length]).join('');
+  return c.slice(0, 5) + '-' + c.slice(5);
+}
+function authFmtDate(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleDateString(_loc(), { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return ''; }
+}
+function openAuthChangePass() {
+  openSheet('Cambiar contraseña', `
+    <label class="auth-field"><span>Contraseña actual</span><input class="auth-in" id="cp-old" type="password" autocomplete="current-password" maxlength="72"></label>
+    <label class="auth-field"><span>Contraseña nueva</span><input class="auth-in" id="cp-new" type="password" autocomplete="new-password" maxlength="72"></label>
+    <label class="auth-field"><span>Repite la contraseña nueva</span><input class="auth-in" id="cp-new2" type="password" autocomplete="new-password" maxlength="72"></label>
+    <div class="auth-msg" id="cp-msg"></div>`, async () => {
+    const msg = document.getElementById('cp-msg');
+    const o = document.getElementById('cp-old').value, n = document.getElementById('cp-new').value, n2 = document.getElementById('cp-new2').value;
+    if (n.length < 6) { msg.textContent = authErr('weak'); return; }
+    if (n !== n2) { msg.textContent = 'Las contraseñas nuevas no coinciden.'; return; }
+    msg.textContent = '';
+    let r;
+    try { r = await authRpc('rutinal_change_password', { p_token: (authGet() || {}).token, p_old: o, p_new: n }); } catch (e) { r = { ok: false, error: 'network' }; }
+    if (!r.ok) { msg.textContent = r.error === 'invalid' ? 'La contraseña actual no es correcta.' : authErr(r.error); return; }
+    closeSheet();
+    alert('Contraseña actualizada.');
+  });
+}
+// ---- Administración de usuarios (solo rol admin) ----
+let _authUsers = [];
+async function openAuthUsers() {
+  openSheet('Usuarios', '<div class="food-loader">Cargando...</div>');
+  let r;
+  try { r = await authRpc('rutinal_admin_list', { p_token: (authGet() || {}).token }); } catch (e) { r = { ok: false, error: 'network' }; }
+  if (!r.ok) { openSheet('Usuarios', `<p class="auth-msg">${escapeHtml(authErr(r.error))}</p>`); return; }
+  _authUsers = r.users || [];
+  const me = (authGet() || {}).user;
+  const rows = _authUsers.map((u, i) => {
+    const d = [u.note, u.last_login ? `Último acceso: ${authFmtDate(u.last_login)}` : 'Aún no ha entrado'].filter(Boolean);
+    return `<div class="usr-row" data-usr="${i}">
+      <div class="usr-body"><div class="usr-n" translate="no">${escapeHtml(u.username)}${u.username === me ? ' ·' : ''}${u.username === me ? ' <span style="font-weight:500;color:var(--text-3);">tú</span>' : ''}</div>
+      <div class="usr-d">${d.map(x => `<span>${escapeHtml(x)}</span>`).join(' · ')}</div></div>
+      ${u.role === 'admin' ? '<span class="usr-badge">Admin</span>' : ''}
+      <span class="usr-badge ${u.active ? 'on' : 'off'}">${u.active ? 'Activo' : 'Desactivado'}</span>
+    </div>`;
+  }).join('');
+  openSheet('Usuarios', `
+    <button class="btn-primary" id="usr-new" style="width:100%;margin-bottom:14px;">Nuevo usuario</button>
+    ${rows}
+    <div class="fit-note" style="margin-top:10px;">Al desactivar o eliminar un usuario, pierde el acceso la próxima vez que su app tenga internet.</div>`);
+  document.getElementById('usr-new').addEventListener('click', () => openAuthUserEditor(null));
+  document.querySelectorAll('[data-usr]').forEach(el => el.addEventListener('click', () => openAuthUserEditor(_authUsers[+el.dataset.usr])));
+}
+function openAuthUserEditor(u) {
+  const isNew = !u;
+  const me = (authGet() || {}).user;
+  const self = !isNew && u.username === me;
+  openSheet(isNew ? 'Nuevo usuario' : 'Editar usuario', `
+    <label class="auth-field"><span>Usuario</span><input class="auth-in" id="ue-user" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" value="${isNew ? '' : escapeHtml(u.username)}" ${isNew ? '' : 'disabled'}></label>
+    <label class="auth-field"><span>${isNew ? 'Contraseña' : 'Contraseña nueva (opcional)'}</span>
+      <div style="display:flex;gap:8px;"><input class="auth-in" id="ue-pass" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="72" value="${isNew ? authGenPass() : ''}" style="flex:1 1 auto;min-width:0;width:auto;"><button class="btn-secondary" type="button" id="ue-gen" style="white-space:nowrap;width:auto;flex:0 0 auto;padding:0 16px;">Generar</button></div>
+    </label>
+    <label class="auth-field"><span>Nota (opcional)</span><input class="auth-in" id="ue-note" type="text" maxlength="80" value="${isNew ? '' : escapeHtml(u.note || '')}" placeholder="Nombre, teléfono, etc."></label>
+    ${self ? '' : `<label class="usr-check"><input type="checkbox" id="ue-active" ${isNew || u.active ? 'checked' : ''}><span>Acceso activo</span></label>
+    <label class="usr-check"><input type="checkbox" id="ue-admin" ${!isNew && u.role === 'admin' ? 'checked' : ''}><span>Administrador (puede dar de alta usuarios)</span></label>`}
+    <div class="auth-msg" id="ue-msg"></div>
+    ${isNew || self ? '' : '<button class="btn-danger" id="ue-del" style="width:100%;">Eliminar usuario</button>'}`, async () => {
+    const msg = document.getElementById('ue-msg');
+    const user = document.getElementById('ue-user').value.trim().toLowerCase();
+    const pass = document.getElementById('ue-pass').value;
+    if (!/^[a-z0-9._-]{3,32}$/.test(user)) { msg.textContent = authErr('bad_user'); return; }
+    if ((isNew || pass) && pass.length < 6) { msg.textContent = authErr('weak'); return; }
+    if (isNew && _authUsers.some(x => x.username === user)) { msg.textContent = 'Ese usuario ya existe.'; return; }
+    msg.textContent = '';
+    const args = { p_token: (authGet() || {}).token, p_user: user, p_pass: pass || null,
+      p_role: self ? 'admin' : (document.getElementById('ue-admin').checked ? 'admin' : 'user'),
+      p_active: self ? true : document.getElementById('ue-active').checked,
+      p_note: document.getElementById('ue-note').value };
+    let r;
+    try { r = await authRpc('rutinal_admin_save', args); } catch (e) { r = { ok: false, error: 'network' }; }
+    if (!r.ok) { msg.textContent = authErr(r.error); return; }
+    if (pass) {
+      const text = `Rutinal\nUsuario: ${user}\nContraseña: ${pass}`;
+      openSheet(isNew ? 'Usuario creado' : 'Contraseña actualizada', `
+        <p style="color:var(--text-2);font-size:14px;">Comparte estos datos con la persona. La contraseña no se podrá volver a ver.</p>
+        <div class="usr-cred" translate="no"><span>Usuario:</span> <b>${escapeHtml(user)}</b><br><span>Contraseña:</span> <b>${escapeHtml(pass)}</b></div>
+        <button class="btn-primary" id="ue-copy" style="width:100%;margin-bottom:8px;">Copiar</button>
+        <button class="btn-secondary" id="ue-back" style="width:100%;">Volver a usuarios</button>`);
+      document.getElementById('ue-copy').addEventListener('click', async (ev) => {
+        let ok = false;
+        try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
+          try { const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (e2) {}
+        }
+        ev.target.textContent = ok ? 'Copiado' : 'No se pudo copiar';
+      });
+      document.getElementById('ue-back').addEventListener('click', openAuthUsers);
+    } else openAuthUsers();
+  });
+  document.getElementById('ue-gen').addEventListener('click', () => { document.getElementById('ue-pass').value = authGenPass(); });
+  const del = document.getElementById('ue-del');
+  if (del) del.addEventListener('click', async () => {
+    if (!confirm('¿Eliminar este usuario? Perderá el acceso a la app.')) return;
+    let r;
+    try { r = await authRpc('rutinal_admin_delete', { p_token: (authGet() || {}).token, p_user: u.username }); } catch (e) { r = { ok: false, error: 'network' }; }
+    if (!r.ok) { document.getElementById('ue-msg').textContent = authErr(r.error); return; }
+    openAuthUsers();
+  });
+}
+(function authInit() {
+  const form = document.getElementById('auth-form');
+  const btn = document.getElementById('auth-submit');
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const user = document.getElementById('auth-user').value.trim().toLowerCase();
+    const pass = document.getElementById('auth-pass').value;
+    const msg = document.getElementById('auth-msg');
+    if (!user || !pass) return;
+    msg.classList.remove('info'); msg.textContent = '';
+    btn.disabled = true; btn.textContent = 'Entrando...';
+    let r;
+    try { r = await authRpc('rutinal_login', { p_user: user, p_pass: pass }); } catch (e) { r = { ok: false, error: 'network' }; }
+    btn.disabled = false; btn.textContent = 'Entrar';
+    if (!r || !r.ok) { msg.textContent = authErr(r && r.error); return; }
+    authSet({ user: r.user, role: r.role, token: r.token, checkedAt: Date.now() });
+    authHideGate();
+    authRenderAccount();
+  });
+  document.getElementById('auth-show').addEventListener('click', (ev) => {
+    const i = document.getElementById('auth-pass');
+    const show = i.type === 'password';
+    i.type = show ? 'text' : 'password';
+    ev.target.textContent = show ? 'Ocultar' : 'Ver';
+  });
+  document.getElementById('btn-acct-logout').addEventListener('click', authLogout);
+  document.getElementById('btn-acct-pass').addEventListener('click', openAuthChangePass);
+  document.getElementById('btn-acct-users').addEventListener('click', openAuthUsers);
+  const s = authGet();
+  if (!s || !s.token) authShowGate('');
+  else { document.documentElement.classList.add('auth-ok'); authVerify(true); }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && authGet() && authGet().token) authVerify(false); });
+  window.addEventListener('online', () => { if (authGet() && authGet().token) authVerify(false); });
+})();
 
 // ============================================================
 // INIT
