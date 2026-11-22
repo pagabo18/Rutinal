@@ -3731,6 +3731,81 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.": {
+   "en": "Too many attempts. Wait a few minutes and try again.",
+   "pt-BR": "Muitas tentativas. Espere alguns minutos e tente de novo.",
+   "fr": "Trop de tentatives. Attendez quelques minutes et réessayez."
+  },
+  "La contraseña nueva debe ser distinta a la actual.": {
+   "en": "The new password must be different from the current one.",
+   "pt-BR": "A nova senha deve ser diferente da atual.",
+   "fr": "Le nouveau mot de passe doit être différent de l'actuel."
+  },
+  "No se pudo crear el usuario.": {
+   "en": "Couldn't create the user.",
+   "pt-BR": "Não foi possível criar o usuário.",
+   "fr": "Impossible de créer l'utilisateur."
+  },
+  "Actualizamos el inicio de sesión. Entra de nuevo con tu misma contraseña.": {
+   "en": "We updated sign-in. Sign in again with your same password.",
+   "pt-BR": "Atualizamos o login. Entre de novo com a mesma senha.",
+   "fr": "Nous avons mis à jour la connexion. Reconnectez-vous avec le même mot de passe."
+  },
+  "Especialista": {
+   "en": "Specialist",
+   "pt-BR": "Especialista",
+   "fr": "Spécialiste"
+  },
+  "Entrenado": {
+   "en": "Trainee",
+   "pt-BR": "Aluno",
+   "fr": "Élève"
+  },
+  "Administrador": {
+   "en": "Admin",
+   "pt-BR": "Administrador",
+   "fr": "Administrateur"
+  },
+  "Coach": {
+   "en": "Coach",
+   "pt-BR": "Coach",
+   "fr": "Coach"
+  },
+  "Nutriólogo": {
+   "en": "Nutritionist",
+   "pt-BR": "Nutricionista",
+   "fr": "Nutritionniste"
+  },
+  "Fisioterapeuta": {
+   "en": "Physiotherapist",
+   "pt-BR": "Fisioterapeuta",
+   "fr": "Kinésithérapeute"
+  },
+  "Nombre (opcional)": {
+   "en": "Name (optional)",
+   "pt-BR": "Nome (opcional)",
+   "fr": "Nom (facultatif)"
+  },
+  "Teléfono, plan, etc.": {
+   "en": "Phone, plan, etc.",
+   "pt-BR": "Telefone, plano, etc.",
+   "fr": "Téléphone, formule, etc."
+  },
+  "Especialista en": {
+   "en": "Specialist in",
+   "pt-BR": "Especialista em",
+   "fr": "Spécialiste en"
+  },
+  "Sin marcar ninguna, la cuenta es solo de entrenado.": {
+   "en": "With none checked, the account is trainee only.",
+   "pt-BR": "Sem marcar nenhuma, a conta é só de aluno.",
+   "fr": "Sans aucune case cochée, le compte est seulement élève."
+  },
+  "Acceso": {
+   "en": "Access",
+   "pt-BR": "Acesso",
+   "fr": "Accès"
+  },
   "Inicia sesión para continuar": {
    "en": "Sign in to continue",
    "pt-BR": "Entre para continuar",

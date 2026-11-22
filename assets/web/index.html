@@ -23,7 +23,7 @@
     document.documentElement.setAttribute('data-theme', t);
   } catch(e) {}
   // Acceso: si ya hay sesión guardada se muestra la app de inmediato (se verifica en línea después)
-  try { if ((JSON.parse(localStorage.getItem('__auth') || 'null') || {}).token) document.documentElement.classList.add('auth-ok'); } catch(e) {}
+  try { if ((JSON.parse(localStorage.getItem('__auth') || 'null') || {}).refresh) document.documentElement.classList.add('auth-ok'); } catch(e) {}
 </script>
 <style>
   :root {
@@ -2065,6 +2065,8 @@
   .usr-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); white-space: nowrap; }
   .usr-badge.on { background: rgba(22,163,74,.12); color: #15803D; }
   .usr-badge.off { background: rgba(220,38,38,.12); color: #B91C1C; }
+  .usr-badge.spec { background: rgba(37,99,235,.12); color: #1D4ED8; }
+  .usr-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .usr-check { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-2); margin: 10px 0; cursor: pointer; }
   .usr-check input { width: 18px; height: 18px; }
   .usr-cred { background: var(--surface-2); border-radius: 12px; padding: 14px; font-size: 15px; line-height: 1.7; margin: 10px 0; user-select: all; -webkit-user-select: all; }
@@ -7994,22 +7996,92 @@ function openImprSheet(existing) {
 }
 
 // ============================================================
-// ACCESO: inicio de sesión con usuario y contraseña
+// ACCESO: inicio de sesión con usuario y contraseña (Supabase Auth)
 // Las cuentas las da de alta el administrador (Ajustes → Cuenta → Administrar usuarios).
-// El servidor (Supabase, funciones rutinal_*) solo guarda usuario, contraseña cifrada y
-// sesiones; los datos de la app siguen viviendo en el dispositivo.
+// Cada cuenta tiene un perfil (public.profiles) con sus especialidades: todos son entrenados y,
+// si tienen alguna especialidad (coach, nutriólogo, fisioterapeuta), además son especialistas.
+// El usuario entra con su nombre de usuario; por dentro es el correo <usuario>@rutinal.invalid.
 // ============================================================
-const AUTH_URL = 'https://lgtbgyuaqbrvpyvvqkar.supabase.co/rest/v1/rpc/';
-const AUTH_KEY = 'sb_publishable_uZboEDVx3g86NmXZIafqYA_3Bv2uQuw'; // llave pública (no es secreta)
+const SB_URL = 'https://lgtbgyuaqbrvpyvvqkar.supabase.co';
+const SB_KEY = 'sb_publishable_uZboEDVx3g86NmXZIafqYA_3Bv2uQuw'; // llave pública (no es secreta)
+const AUTH_DOMAIN = 'rutinal.invalid';
 const AUTH_GRACE_MS = 14 * 864e5;   // días que la app funciona sin poder verificar la sesión
 const AUTH_RECHECK_MS = 6 * 36e5;   // cada cuánto se vuelve a verificar con la app abierta
+const AUTH_SPECS = { coach: 'Coach', nutriologo: 'Nutriólogo', fisioterapeuta: 'Fisioterapeuta' };
 function authGet() { try { return JSON.parse(localStorage.getItem('__auth') || 'null'); } catch (e) { return null; } }
 function authSet(v) { try { if (v) localStorage.setItem('__auth', JSON.stringify(v)); else localStorage.removeItem('__auth'); } catch (e) {} }
-async function authRpc(fn, args) {
-  const r = await fetch(AUTH_URL + fn, { method: 'POST', cache: 'no-store',
-    headers: { 'Content-Type': 'application/json', 'apikey': AUTH_KEY }, body: JSON.stringify(args || {}) });
-  if (!r.ok) throw new Error('auth ' + r.status);
-  return r.json();
+function authLogged() { const s = authGet(); return !!(s && s.refresh); }
+function authIsSpecialist() { const s = authGet(); return !!(s && s.refresh && (s.specs || []).length); }
+function authErrObj(code) { const e = new Error(code); e.code = code; return e; }
+function sbHeaders(token) {
+  const h = { 'Content-Type': 'application/json', 'apikey': SB_KEY };
+  if (token) h.Authorization = 'Bearer ' + token;
+  return h;
+}
+// Pide tokens con usuario y contraseña. Devuelve { ok, tok } o { ok:false, error }.
+async function authPasswordGrant(user, pass) {
+  let r;
+  try {
+    r = await fetch(SB_URL + '/auth/v1/token?grant_type=password', { method: 'POST', cache: 'no-store', headers: sbHeaders(),
+      body: JSON.stringify({ email: user + '@' + AUTH_DOMAIN, password: pass }) });
+  } catch (e) { return { ok: false, error: 'network' }; }
+  const j = await r.json().catch(() => ({}));
+  if (r.ok && j.access_token) return { ok: true, tok: j };
+  const code = j.error_code || '';
+  if (code === 'user_banned') return { ok: false, error: 'disabled' };
+  if (r.status === 429) return { ok: false, error: 'locked' };
+  if (r.status === 400 || code === 'invalid_credentials') return { ok: false, error: 'invalid' };
+  return { ok: false, error: 'network' };
+}
+function authStoreTokens(tok, extra) {
+  const cur = authGet() || {};
+  authSet(Object.assign({}, cur, { v: 2, uid: (tok.user && tok.user.id) || cur.uid, access: tok.access_token, refresh: tok.refresh_token,
+    exp: Date.now() + (tok.expires_in || 3600) * 1000 }, extra || {}));
+}
+// Token de acceso vigente (lo renueva si está por vencer). Lanza 'session' si la sesión ya no vale
+// (cuenta desactivada, eliminada o sesión cerrada) y 'network' si no hay conexión.
+let _authRefreshing = null;
+async function authToken(forceRefresh) {
+  const s = authGet();
+  if (!s || !s.refresh) throw authErrObj('session');
+  if (!forceRefresh && s.access && s.exp - Date.now() > 60000) return s.access;
+  if (!_authRefreshing) {
+    _authRefreshing = (async () => {
+      let r;
+      try {
+        r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', cache: 'no-store', headers: sbHeaders(),
+          body: JSON.stringify({ refresh_token: s.refresh }) });
+      } catch (e) { throw authErrObj('network'); }
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.access_token) { authStoreTokens(j); return j.access_token; }
+      if (r.status === 400 || r.status === 401 || r.status === 403) throw authErrObj('session');
+      throw authErrObj('network');
+    })().finally(() => { _authRefreshing = null; });
+  }
+  return _authRefreshing;
+}
+// Llamada autenticada al servidor; si el token fue rechazado lo renueva una vez.
+async function sbFetch(path, opt) {
+  opt = opt || {};
+  let r;
+  for (let i = 0; i < 2; i++) {
+    const t = await authToken(i === 1);
+    try { r = await fetch(SB_URL + path, { method: opt.method || 'GET', cache: 'no-store', headers: sbHeaders(t), body: opt.body ? JSON.stringify(opt.body) : undefined }); }
+    catch (e) { throw authErrObj('network'); }
+    if (r.status !== 401) break;
+  }
+  if (r.status === 401) throw authErrObj('session');
+  return r;
+}
+async function authLoadProfile() {
+  const r = await sbFetch('/rest/v1/profiles?select=username,display_name,specialties,is_admin,active');
+  if (!r.ok) throw authErrObj('network');
+  const rows = await r.json();
+  return rows && rows.length ? rows[0] : null;
+}
+function authApplyProfile(p) {
+  const s = authGet() || {};
+  authSet(Object.assign({}, s, { user: p.username, name: p.display_name || '', admin: !!p.is_admin, specs: p.specialties || [], checkedAt: Date.now() }));
 }
 function authShowGate(msg, info) {
   document.documentElement.classList.remove('auth-ok');
@@ -8028,49 +8100,63 @@ function authHideGate() {
 }
 const AUTH_ERRORS = {
   invalid: 'Usuario o contraseña incorrectos.',
-  locked: 'Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.',
+  locked: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
   disabled: 'Tu acceso está desactivado. Contacta a quien te dio la cuenta.',
   network: 'No se pudo conectar. Revisa tu internet e inténtalo de nuevo.',
   weak: 'La contraseña debe tener al menos 6 caracteres.',
+  same: 'La contraseña nueva debe ser distinta a la actual.',
   bad_user: 'El usuario debe tener de 3 a 32 caracteres: letras, números, punto, guion o guion bajo.',
   self: 'No puedes quitarte tu propio acceso de administrador.',
   forbidden: 'Tu cuenta no tiene permiso para administrar usuarios.',
   session: 'Tu sesión ya no es válida. Vuelve a iniciar sesión.',
+  create: 'No se pudo crear el usuario.',
 };
 function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
+function authEndSession(msg, info) {
+  const s = authGet();
+  authSet(s && s.user ? { user: s.user } : null);
+  authShowGate(msg, info);
+}
 // Verifica la sesión guardada con el servidor. Sin conexión deja pasar hasta AUTH_GRACE_MS.
 let _authChecking = false;
 async function authVerify(force) {
   const s = authGet();
-  if (!s || !s.token) { authShowGate(''); return; }
+  if (!s || !s.refresh) { authShowGate(''); return; }
   if (_authChecking || (!force && Date.now() - (s.checkedAt || 0) < AUTH_RECHECK_MS)) return;
   _authChecking = true;
   try {
-    const r = await authRpc('rutinal_check', { p_token: s.token });
-    if (r && r.ok) {
-      authSet(Object.assign({}, s, { user: r.user, role: r.role, checkedAt: Date.now() }));
+    const p = await authLoadProfile();
+    if (!p || !p.active) authEndSession('Tu acceso ya no está activo. Vuelve a iniciar sesión o contacta a quien te dio la cuenta.');
+    else {
+      authApplyProfile(p);
       if (!document.documentElement.classList.contains('auth-ok')) authHideGate(); // estaba esperando conexión
       authRenderAccount();
     }
-    else if (r && r.ok === false) { authSet({ user: s.user }); authShowGate('Tu acceso ya no está activo. Vuelve a iniciar sesión o contacta a quien te dio la cuenta.'); }
   } catch (e) {
-    if (Date.now() - (s.checkedAt || 0) > AUTH_GRACE_MS) authShowGate('Conéctate a internet para verificar tu acceso.', true);
+    if (e && e.code === 'session') authEndSession('Tu acceso ya no está activo. Vuelve a iniciar sesión o contacta a quien te dio la cuenta.');
+    else if (Date.now() - (s.checkedAt || 0) > AUTH_GRACE_MS) authShowGate('Conéctate a internet para verificar tu acceso.', true);
   }
   _authChecking = false;
+}
+function authRolesHtml(specs, admin) {
+  const parts = [];
+  if (specs && specs.length) parts.push(`<span>Especialista</span>: ${specs.map(x => `<span>${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join(', ')}`);
+  else parts.push('<span>Entrenado</span>');
+  if (admin) parts.push('<span>Administrador</span>');
+  return parts.join(' · ');
 }
 function authRenderAccount() {
   const s = authGet() || {};
   const el = document.getElementById('acct-user');
   if (!el) return;
-  el.innerHTML = `<span>Sesión iniciada como</span> <b translate="no">${escapeHtml(s.user || '')}</b>`;
-  document.getElementById('btn-acct-users').style.display = s.role === 'admin' ? '' : 'none';
+  el.innerHTML = `<span>Sesión iniciada como</span> <b translate="no">${escapeHtml(s.user || '')}</b>
+    <div style="font-size:13px;color:var(--text-3);margin-top:4px;">${authRolesHtml(s.specs, s.admin)}</div>`;
+  document.getElementById('btn-acct-users').style.display = s.admin ? '' : 'none';
 }
 async function authLogout() {
-  const s = authGet();
   if (!confirm('¿Cerrar sesión? Tus datos se quedan guardados en este dispositivo.')) return;
-  if (s && s.token) { try { await authRpc('rutinal_logout', { p_token: s.token }); } catch (e) {} }
-  authSet(s && s.user ? { user: s.user } : null);
-  authShowGate('');
+  try { await sbFetch('/auth/v1/logout?scope=local', { method: 'POST', body: {} }); } catch (e) {}
+  authEndSession('');
 }
 function authGenPass() {
   const a = 'abcdefghjkmnpqrstuvwxyz23456789', b = new Uint32Array(10);
@@ -8092,30 +8178,43 @@ function openAuthChangePass() {
     const o = document.getElementById('cp-old').value, n = document.getElementById('cp-new').value, n2 = document.getElementById('cp-new2').value;
     if (n.length < 6) { msg.textContent = authErr('weak'); return; }
     if (n !== n2) { msg.textContent = 'Las contraseñas nuevas no coinciden.'; return; }
+    if (n === o) { msg.textContent = authErr('same'); return; }
     msg.textContent = '';
-    let r;
-    try { r = await authRpc('rutinal_change_password', { p_token: (authGet() || {}).token, p_old: o, p_new: n }); } catch (e) { r = { ok: false, error: 'network' }; }
-    if (!r.ok) { msg.textContent = r.error === 'invalid' ? 'La contraseña actual no es correcta.' : authErr(r.error); return; }
+    // 1) comprobar la contraseña actual (y de paso renovar la sesión)
+    const g = await authPasswordGrant((authGet() || {}).user, o);
+    if (!g.ok) { msg.textContent = g.error === 'invalid' ? 'La contraseña actual no es correcta.' : authErr(g.error); return; }
+    authStoreTokens(g.tok);
+    // 2) cambiarla
+    let r, j = {};
+    try { r = await sbFetch('/auth/v1/user', { method: 'PUT', body: { password: n, current_password: o } }); j = await r.json().catch(() => ({})); }
+    catch (e) { msg.textContent = authErr(e.code); return; }
+    if (!r.ok) { msg.textContent = authErr(j.error_code === 'weak_password' ? 'weak' : j.error_code === 'same_password' ? 'same' : 'network'); return; }
     closeSheet();
     alert('Contraseña actualizada.');
   });
 }
-// ---- Administración de usuarios (solo rol admin) ----
+// ---- Administración de usuarios (solo administradores) ----
+async function authAdmin(action, args) {
+  try {
+    const r = await sbFetch('/functions/v1/admin-users', { method: 'POST', body: Object.assign({ action }, args || {}) });
+    const j = await r.json().catch(() => null);
+    return j || { ok: false, error: 'network' };
+  } catch (e) { return { ok: false, error: e && e.code === 'session' ? 'session' : 'network' }; }
+}
 let _authUsers = [];
 async function openAuthUsers() {
   openSheet('Usuarios', '<div class="food-loader">Cargando...</div>');
-  let r;
-  try { r = await authRpc('rutinal_admin_list', { p_token: (authGet() || {}).token }); } catch (e) { r = { ok: false, error: 'network' }; }
+  const r = await authAdmin('list');
   if (!r.ok) { openSheet('Usuarios', `<p class="auth-msg">${escapeHtml(authErr(r.error))}</p>`); return; }
   _authUsers = r.users || [];
   const me = (authGet() || {}).user;
   const rows = _authUsers.map((u, i) => {
-    const d = [u.note, u.last_login ? `Último acceso: ${authFmtDate(u.last_login)}` : 'Aún no ha entrado'].filter(Boolean);
+    const d = [u.display_name, u.note, u.last_login ? `Último acceso: ${authFmtDate(u.last_login)}` : 'Aún no ha entrado'].filter(Boolean);
+    const specs = (u.specialties || []).map(x => `<span class="usr-badge spec">${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join('');
     return `<div class="usr-row" data-usr="${i}">
-      <div class="usr-body"><div class="usr-n" translate="no">${escapeHtml(u.username)}${u.username === me ? ' ·' : ''}${u.username === me ? ' <span style="font-weight:500;color:var(--text-3);">tú</span>' : ''}</div>
-      <div class="usr-d">${d.map(x => `<span>${escapeHtml(x)}</span>`).join(' · ')}</div></div>
-      ${u.role === 'admin' ? '<span class="usr-badge">Admin</span>' : ''}
-      <span class="usr-badge ${u.active ? 'on' : 'off'}">${u.active ? 'Activo' : 'Desactivado'}</span>
+      <div class="usr-body"><div class="usr-n" translate="no">${escapeHtml(u.username)}${u.username === me ? ' · <span style="font-weight:500;color:var(--text-3);">tú</span>' : ''}</div>
+      <div class="usr-d">${d.map(x => `<span>${escapeHtml(x)}</span>`).join(' · ')}</div>
+      <div class="usr-badges">${specs}${u.is_admin ? '<span class="usr-badge">Admin</span>' : ''}<span class="usr-badge ${u.active ? 'on' : 'off'}">${u.active ? 'Activo' : 'Desactivado'}</span></div></div>
     </div>`;
   }).join('');
   openSheet('Usuarios', `
@@ -8129,14 +8228,20 @@ function openAuthUserEditor(u) {
   const isNew = !u;
   const me = (authGet() || {}).user;
   const self = !isNew && u.username === me;
+  const has = k => !isNew && (u.specialties || []).includes(k);
   openSheet(isNew ? 'Nuevo usuario' : 'Editar usuario', `
     <label class="auth-field"><span>Usuario</span><input class="auth-in" id="ue-user" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" value="${isNew ? '' : escapeHtml(u.username)}" ${isNew ? '' : 'disabled'}></label>
     <label class="auth-field"><span>${isNew ? 'Contraseña' : 'Contraseña nueva (opcional)'}</span>
       <div style="display:flex;gap:8px;"><input class="auth-in" id="ue-pass" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="72" value="${isNew ? authGenPass() : ''}" style="flex:1 1 auto;min-width:0;width:auto;"><button class="btn-secondary" type="button" id="ue-gen" style="white-space:nowrap;width:auto;flex:0 0 auto;padding:0 16px;">Generar</button></div>
     </label>
-    <label class="auth-field"><span>Nota (opcional)</span><input class="auth-in" id="ue-note" type="text" maxlength="80" value="${isNew ? '' : escapeHtml(u.note || '')}" placeholder="Nombre, teléfono, etc."></label>
-    ${self ? '' : `<label class="usr-check"><input type="checkbox" id="ue-active" ${isNew || u.active ? 'checked' : ''}><span>Acceso activo</span></label>
-    <label class="usr-check"><input type="checkbox" id="ue-admin" ${!isNew && u.role === 'admin' ? 'checked' : ''}><span>Administrador (puede dar de alta usuarios)</span></label>`}
+    <label class="auth-field"><span>Nombre (opcional)</span><input class="auth-in" id="ue-name" type="text" maxlength="80" value="${isNew ? '' : escapeHtml(u.display_name || '')}"></label>
+    <label class="auth-field"><span>Nota (opcional)</span><input class="auth-in" id="ue-note" type="text" maxlength="80" value="${isNew ? '' : escapeHtml(u.note || '')}" placeholder="Teléfono, plan, etc."></label>
+    <div class="setting-label" style="margin-top:14px;">Especialista en</div>
+    <div class="fit-note" style="margin:-4px 0 4px;">Sin marcar ninguna, la cuenta es solo de entrenado.</div>
+    ${Object.keys(AUTH_SPECS).map(k => `<label class="usr-check"><input type="checkbox" data-spec="${k}" ${has(k) ? 'checked' : ''}><span>${AUTH_SPECS[k]}</span></label>`).join('')}
+    ${self ? '' : `<div class="setting-label" style="margin-top:14px;">Acceso</div>
+    <label class="usr-check"><input type="checkbox" id="ue-active" ${isNew || u.active ? 'checked' : ''}><span>Acceso activo</span></label>
+    <label class="usr-check"><input type="checkbox" id="ue-admin" ${!isNew && u.is_admin ? 'checked' : ''}><span>Administrador (puede dar de alta usuarios)</span></label>`}
     <div class="auth-msg" id="ue-msg"></div>
     ${isNew || self ? '' : '<button class="btn-danger" id="ue-del" style="width:100%;">Eliminar usuario</button>'}`, async () => {
     const msg = document.getElementById('ue-msg');
@@ -8146,13 +8251,13 @@ function openAuthUserEditor(u) {
     if ((isNew || pass) && pass.length < 6) { msg.textContent = authErr('weak'); return; }
     if (isNew && _authUsers.some(x => x.username === user)) { msg.textContent = 'Ese usuario ya existe.'; return; }
     msg.textContent = '';
-    const args = { p_token: (authGet() || {}).token, p_user: user, p_pass: pass || null,
-      p_role: self ? 'admin' : (document.getElementById('ue-admin').checked ? 'admin' : 'user'),
-      p_active: self ? true : document.getElementById('ue-active').checked,
-      p_note: document.getElementById('ue-note').value };
-    let r;
-    try { r = await authRpc('rutinal_admin_save', args); } catch (e) { r = { ok: false, error: 'network' }; }
+    const r = await authAdmin('save', { username: user, password: pass || null,
+      display_name: document.getElementById('ue-name').value, note: document.getElementById('ue-note').value,
+      specialties: Array.from(document.querySelectorAll('[data-spec]')).filter(c => c.checked).map(c => c.dataset.spec),
+      is_admin: self ? true : document.getElementById('ue-admin').checked,
+      active: self ? true : document.getElementById('ue-active').checked });
     if (!r.ok) { msg.textContent = authErr(r.error); return; }
+    if (self) authVerify(true);
     if (pass) {
       const text = `Rutinal\nUsuario: ${user}\nContraseña: ${pass}`;
       openSheet(isNew ? 'Usuario creado' : 'Contraseña actualizada', `
@@ -8174,8 +8279,7 @@ function openAuthUserEditor(u) {
   const del = document.getElementById('ue-del');
   if (del) del.addEventListener('click', async () => {
     if (!confirm('¿Eliminar este usuario? Perderá el acceso a la app.')) return;
-    let r;
-    try { r = await authRpc('rutinal_admin_delete', { p_token: (authGet() || {}).token, p_user: u.username }); } catch (e) { r = { ok: false, error: 'network' }; }
+    const r = await authAdmin('delete', { username: u.username });
     if (!r.ok) { document.getElementById('ue-msg').textContent = authErr(r.error); return; }
     openAuthUsers();
   });
@@ -8190,14 +8294,24 @@ function openAuthUserEditor(u) {
     const msg = document.getElementById('auth-msg');
     if (!user || !pass) return;
     msg.classList.remove('info'); msg.textContent = '';
+    if (!/^[a-z0-9._-]{3,32}$/.test(user)) { msg.textContent = authErr('invalid'); return; }
     btn.disabled = true; btn.textContent = 'Entrando...';
-    let r;
-    try { r = await authRpc('rutinal_login', { p_user: user, p_pass: pass }); } catch (e) { r = { ok: false, error: 'network' }; }
+    let err = '';
+    const g = await authPasswordGrant(user, pass);
+    if (!g.ok) err = g.error;
+    else {
+      authStoreTokens(g.tok, { user });
+      try {
+        const p = await authLoadProfile();
+        if (!p || !p.active) { err = 'disabled'; authSet({ user }); }
+        else authApplyProfile(p);
+      } catch (e) { err = e.code === 'session' ? 'disabled' : 'network'; authSet({ user }); }
+    }
     btn.disabled = false; btn.textContent = 'Entrar';
-    if (!r || !r.ok) { msg.textContent = authErr(r && r.error); return; }
-    authSet({ user: r.user, role: r.role, token: r.token, checkedAt: Date.now() });
+    if (err) { msg.textContent = authErr(err); return; }
     authHideGate();
     authRenderAccount();
+    if (typeof onAuthReady === 'function') onAuthReady();
   });
   document.getElementById('auth-show').addEventListener('click', (ev) => {
     const i = document.getElementById('auth-pass');
@@ -8209,10 +8323,14 @@ function openAuthUserEditor(u) {
   document.getElementById('btn-acct-pass').addEventListener('click', openAuthChangePass);
   document.getElementById('btn-acct-users').addEventListener('click', openAuthUsers);
   const s = authGet();
-  if (!s || !s.token) authShowGate('');
-  else { document.documentElement.classList.add('auth-ok'); authVerify(true); }
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && authGet() && authGet().token) authVerify(false); });
-  window.addEventListener('online', () => { if (authGet() && authGet().token) authVerify(false); });
+  if (s && s.token && !s.refresh) {
+    // sesión del sistema anterior: hay que entrar una vez más (misma contraseña)
+    authSet({ user: s.user });
+    authShowGate('Actualizamos el inicio de sesión. Entra de nuevo con tu misma contraseña.', true);
+  } else if (!s || !s.refresh) authShowGate('');
+  else { document.documentElement.classList.add('auth-ok'); authVerify(true).then(() => { if (authLogged() && typeof onAuthReady === 'function') onAuthReady(); }); }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && authLogged()) authVerify(false); });
+  window.addEventListener('online', () => { if (authLogged()) authVerify(false); });
 })();
 
 // ============================================================
