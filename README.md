@@ -268,3 +268,7 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 **Sistema de equivalentes.** Un plan de alimentación puede ser un menú con gramos o un plan por equivalentes (grupos y aportes del Sistema Mexicano de Alimentos Equivalentes). El especialista llena el cuadro por grupo y comida y ve la adecuación contra la meta; el atleta ve cuántos equivalentes le tocan en cada comida, abre la lista de intercambios y registra lo que eligió.
 
 **Dietas prehechas.** Se elige el tipo (equilibrada, alta en proteína, volumen, baja en carbohidratos) y las calorías; la app arma el plan por equivalentes y se puede ajustar antes de guardarlo o asignarlo.
+
+**Peso con tendencia.** La tarjeta de peso de Hoy muestra el promedio de los últimos 7 días y el ritmo de cambio por semana (% del peso) contra los 7 días anteriores.
+
+**Check-in semanal.** El atleta con especialista ve en Hoy su check-in de la semana: datos automáticos de sus registros más escalas de 1 a 5 (energía, hambre, sueño, estrés, digestión, recuperación, ánimo), cumplimiento de dieta y entreno, sueño, pasos, cardio, cintura y texto libre. El especialista lo ve en la pestaña *Check-ins* de la ficha, comparado con la semana anterior y con una tabla de las últimas 8 semanas, y responde; en su Inicio aparece la lista de check-ins por revisar. Tablas `checkins` y `checkin_reviews` (`supabase/rutinal_checkins.sql`).

@@ -2661,6 +2661,22 @@
   .dp-kh { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--text-3); } .dp-kh b { font-size: 20px; color: var(--text); }
   .dp-k input[type=range] { width: 100%; margin: 10px 0; accent-color: var(--text); }
   .dp-quick { display: flex; flex-wrap: wrap; gap: 6px; } .dp-quick button { background: var(--surface-2); border: 0; border-radius: 999px; padding: 6px 10px; font: inherit; font-size: 12px; font-weight: 600; color: var(--text); cursor: pointer; }
+
+  /* ===== Check-in semanal ===== */
+  .sp-tabs { overflow-x: auto; scrollbar-width: none; } .sp-tabs::-webkit-scrollbar { display: none; }
+  .sp-tabs button { flex: 1 0 auto; padding-left: 10px; padding-right: 10px; white-space: nowrap; }
+  .ck-bar { display: inline-flex; gap: 3px; } .ck-bar i { width: 18px; height: 6px; border-radius: 3px; background: var(--surface-3, var(--surface-2)); } .ck-bar i.on { background: var(--text); }
+  .ck-sc { display: grid; grid-template-columns: 1fr auto 34px auto; gap: 8px; align-items: center; font-size: 13px; padding: 7px 0; border-top: 1px solid var(--border); }
+  .ck-sc:first-of-type { border-top: 0; margin-top: 4px; } .ck-sc b { text-align: right; font-variant-numeric: tabular-nums; } .ck-sc .ant-d { margin: 0; }
+  .ck-tx { padding: 6px 0; } .ck-tx span { font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .04em; } .ck-tx p { margin: 4px 0 0; font-size: 14px; line-height: 1.45; white-space: pre-wrap; }
+  .ck-rv { padding: 8px 0; border-top: 1px solid var(--border); } .ck-rv:first-of-type { border-top: 0; } .ck-rv > span { font-size: 12px; color: var(--text-3); } .ck-rv p { margin: 4px 0 0; font-size: 14px; line-height: 1.45; white-space: pre-wrap; }
+  .ck-reply { width: 100%; box-sizing: border-box; border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); color: var(--text); font: inherit; font-size: 14px; padding: 10px; margin: 8px 0; }
+  .ck-chips { justify-content: flex-start !important; } .ck-chips .chip { min-width: 40px; text-align: center; }
+  .ck-tr { overflow-x: auto; margin-top: 8px; } .ck-trh, .ck-trr { display: grid; grid-template-columns: 96px repeat(8, minmax(34px, 1fr)); gap: 4px; align-items: center; font-size: 11px; padding: 4px 0; min-width: 380px; }
+  .ck-trh span { color: var(--text-3); text-align: center; } .ck-trr span { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ck-trr b { text-align: center; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 3px 0; font-variant-numeric: tabular-nums; }
+  .ck-trr b.v1 { background: rgba(220,38,38,.16); } .ck-trr b.v2 { background: rgba(217,119,6,.16); } .ck-trr b.v3 { background: var(--surface-2); } .ck-trr b.v4 { background: rgba(22,163,74,.12); } .ck-trr b.v5 { background: rgba(22,163,74,.22); }
+  .hd-card.hd-ck .hd-row { margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -3862,7 +3878,7 @@ function renderMas() {
     <h2>Tu contenido</h2>
     <div class="mas-card">${row('blocks', I.blocks, 'Bloques', 'Tu horario del día')}${row('habits', I.check, 'Hábitos', 'Crea y ordena tus hábitos')}${row('imprs', I.alert, 'Imprevistos')}${row('cats', I.tag, 'Categorías')}${row('nutri', I.food, 'Nutrición', 'Perfil y metas de comida')}${row('plan', I.goal, 'Metas semanales')}</div>
     <h2>Cuenta y app</h2>
-    <div class="mas-card">${row('ajustes', I.gear, 'Ajustes', 'Tema, idioma y recordatorios')}${logged ? row('agenda', I.cal, 'Agenda', 'Citas con tus especialistas o atletas') + row('photos', I.photo, 'Fotos de progreso') + row('assess', I.goal, 'Composición corporal', 'Mediciones, % de grasa e índices') + row('links', I.people, 'Especialistas y atletas') + row('sync', I.cloud, 'Respaldo en la nube') + row('logout', I.out, 'Cerrar sesión') : ''}</div>`;
+    <div class="mas-card">${row('ajustes', I.gear, 'Ajustes', 'Tema, idioma y recordatorios')}${logged ? row('agenda', I.cal, 'Agenda', 'Citas con tus especialistas o atletas') + row('photos', I.photo, 'Fotos de progreso') + row('assess', I.goal, 'Composición corporal', 'Mediciones, % de grasa e índices') + row('checkins', I.check, 'Check-ins', 'Tu reporte semanal y la respuesta') + row('links', I.people, 'Especialistas y atletas') + row('sync', I.cloud, 'Respaldo en la nube') + row('logout', I.out, 'Cerrar sesión') : ''}</div>`;
   el.querySelectorAll('[data-mas]').forEach(b => b.addEventListener('click', () => {
     const k = b.dataset.mas;
     if (k === 'pomo' || k === 'cal') masGo(k);
@@ -3870,6 +3886,7 @@ function renderMas() {
     else if (k === 'agenda') openAgenda();
     else if (k === 'photos') openPhotos();
     else if (k === 'assess') openMyAssessments();
+    else if (k === 'checkins') openMyCheckins();
     else if (k === 'sync') openSyncSheet(false);
     else if (k === 'logout') authLogout();
     else masGo('editar', k);
@@ -8802,7 +8819,7 @@ function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
 function authEndSession(msg, info) {
   try { if (typeof chatBgOff === 'function') chatBgOff(false); } catch (e) {}
   try { if (window.Android && window.Android.setAppointments) window.Android.setAppointments('[]'); } catch (e) {}
-  try { localStorage.removeItem('__asg'); localStorage.removeItem('__msgs'); localStorage.removeItem('__appts'); localStorage.removeItem('__ant'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
+  try { localStorage.removeItem('__asg'); localStorage.removeItem('__msgs'); localStorage.removeItem('__appts'); localStorage.removeItem('__ant'); localStorage.removeItem('__ck'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
   try { document.documentElement.dataset.mode = ''; document.documentElement.classList.remove('is-spec'); localStorage.removeItem('__mode'); document.querySelector('nav button[data-tab="hoy"]').click(); } catch (e) {}
   const s = authGet();
   authSet(s && s.user ? { user: s.user } : null);
@@ -9723,6 +9740,7 @@ async function msgRefresh(force) {
   try { chatBgMeta(); } catch (e) {}
   try { apptRefresh(force); } catch (e) {}
   try { antHoyRefresh(force); } catch (e) {}
+  try { ckRefresh(force); } catch (e) {}
 }
 function ntRefLabel(ref) { return ref && ref.t === 'asg' ? `${t(ASG_KINDS[ref.kind] || 'Plan')} · ${ref.name || ''}` : ''; }
 // Enviar un mensaje (con referencia opcional). Si el servidor aún no acepta `ref`, se manda como texto.
@@ -10076,10 +10094,13 @@ tabRenderers['sp-home'] = async function () {
   const r = await spLoad(false), cs = spClients(r), pend = (r.as_specialist || []).filter(l => l.status === 'pending');
   const quiet = cs.filter(l => { const a = linkAgo(l.last_activity); return a == null || a >= 3; });
   const pain = cs.filter(l => l.pain7 != null && l.pain7 >= 6);
+  if (!_sp.ckPend || Date.now() - (_sp.ckPendAt || 0) > 15000) { _sp.ckPend = await ckPendingForSpecialist(); _sp.ckPendAt = Date.now(); }
+  const ckp = (_sp.ckPend || []).map(c => ({ c, l: cs.find(x => x.client_id === c.client_id) })).filter(x => x.l);
   const recent = cs.filter(l => l.last_activity).sort((a, b) => Date.parse(b.last_activity) - Date.parse(a.last_activity)).slice(0, 5);
   el.innerHTML = `<div class="sp-hello"><span>Hola</span>, <span translate="no">${escapeHtml(s.name || s.user || '')}</span></div><div class="sp-sub">Tu resumen de hoy</div>
     <div class="sp-stats"><div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Atletas activos</div><div class="sp-stat-v">${cs.length}</div></div>
       <div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Invitaciones pendientes</div><div class="sp-stat-v">${pend.length}</div></div></div>
+    ${ckp.length ? `<div class="sp-h">Check-ins por revisar <small>${ckp.length}</small></div>${ckp.slice(0, 6).map(x => `<div class="sp-row" data-sp-ck="${cs.indexOf(x.l)}"><span class="sp-av">${escapeHtml((x.l.name || '?').slice(0, 1))}</span><div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(x.l.name || '')}</div><div class="sp-row-d"><span>Semana del</span> <span translate="no">${escapeHtml(ckWeekLabel(x.c.week_of))}</span></div></div><span class="mas-chev">›</span></div>`).join('')}` : ''}
     <div class="sp-h">Avisos</div>
     ${quiet.length ? `<div class="sp-alert"><div class="sp-alert-t"><span>Sin registrar:</span> ${quiet.length}</div><div class="sp-alert-d" translate="no">${quiet.map(l => escapeHtml(l.name || '')).join(', ')}</div></div>` : ''}
     ${pain.length ? `<div class="sp-alert"><div class="sp-alert-t"><span>Dolor alto esta semana:</span> ${pain.length}</div><div class="sp-alert-d" translate="no">${pain.map(l => escapeHtml(l.name || '') + ' (' + l.pain7 + '/10)').join(', ')}</div></div>` : ''}
@@ -10091,6 +10112,7 @@ tabRenderers['sp-home'] = async function () {
     <div class="sp-actions"><button class="sp-act primary" id="sp-invite">Invitar atleta</button><button class="sp-act" data-sp-tab="sp-templates">Mis plantillas</button></div>`;
   el.querySelectorAll('[data-sp-tab]').forEach(x => x.addEventListener('click', () => spGo(x.dataset.spTab)));
   el.querySelectorAll('[data-sp-open]').forEach(x => x.addEventListener('click', () => { spGo('sp-clients'); spOpenClient(cs[+x.dataset.spOpen]); }));
+  el.querySelectorAll('[data-sp-ck]').forEach(x => x.addEventListener('click', () => { _sp.tab = 'checkins'; spGo('sp-clients'); spOpenClient(cs[+x.dataset.spCk]); }));
   document.getElementById('sp-invite').addEventListener('click', spInvite);
   el.querySelectorAll('[data-sp-agenda]').forEach(x => x.addEventListener('click', () => openAgenda()));
 };
@@ -10323,6 +10345,7 @@ async function spOpenClient(l) {
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button>',
     progress: `<div class="sp-rep-btns"><button class="sp-act" id="sp-rep-copy">Copiar resumen</button><button class="sp-act" id="sp-rep-pdf">Guardar PDF</button></div>
       <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${rep}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}</div><div id="sp-photos"></div>`,
+    checkins: '<div id="sp-ck"></div>',
     assess: '<div id="sp-assess"></div>',
     logs: logs.join('') };
   if (!tabs[_sp.tab]) _sp.tab = 'plans';
@@ -10330,12 +10353,13 @@ async function spOpenClient(l) {
     <div class="sp-center"><div class="sp-av big">${escapeHtml((l.name || '?').slice(0, 1))}</div><div class="sp-name" translate="no">${escapeHtml(l.name || '')}</div>
       <div class="sp-sub" style="margin-bottom:0;">${rolesBadges(l)} · ${spStatusLine(l)}</div></div>
     <div class="sp-actions"><button class="sp-act" id="sp-c-notes">Mensajes</button><button class="sp-act" id="sp-c-appt">Cita</button><button class="sp-act" id="sp-c-assign">Asignar</button></div>
-    <div class="sp-tabs"><button data-sp-t="plans" class="${_sp.tab === 'plans' ? 'on' : ''}">Planes</button><button data-sp-t="progress" class="${_sp.tab === 'progress' ? 'on' : ''}">Progreso</button><button data-sp-t="assess" class="${_sp.tab === 'assess' ? 'on' : ''}">Evaluación</button><button data-sp-t="logs" class="${_sp.tab === 'logs' ? 'on' : ''}">Registros</button></div>
+    <div class="sp-tabs"><button data-sp-t="plans" class="${_sp.tab === 'plans' ? 'on' : ''}">Planes</button><button data-sp-t="progress" class="${_sp.tab === 'progress' ? 'on' : ''}">Progreso</button><button data-sp-t="checkins" class="${_sp.tab === 'checkins' ? 'on' : ''}">Check-ins</button><button data-sp-t="assess" class="${_sp.tab === 'assess' ? 'on' : ''}">Evaluación</button><button data-sp-t="logs" class="${_sp.tab === 'logs' ? 'on' : ''}">Registros</button></div>
     <div id="sp-tabbody">${tabs[_sp.tab]}</div>
     <button class="btn-secondary" id="sp-c-end" style="width:100%;margin-top:22px;">Terminar vínculo</button>`;
   const wire = () => {
     const as = document.getElementById('sp-assign'); if (as) as.addEventListener('click', () => openTemplates(l));
     if (document.getElementById('sp-photos')) spClientPhotos(l);
+    if (document.getElementById('sp-ck')) ckRenderFor(l, document.getElementById('sp-ck'));
     if (document.getElementById('sp-assess')) antRender(l.client_id, l.name, document.getElementById('sp-assess'), { D, link: l, onSaved: () => { closeSheet(); _sp.tab = 'assess'; spOpenClient(l); } });
     const tt = x => (window.i18n && window.i18n.t) ? window.i18n.t(x) : x;
     const rc = document.getElementById('sp-rep-copy');
@@ -10727,7 +10751,7 @@ function renderHoyDash() {
       const diff = prev == null ? null : last - prev;
       const ago = Math.round((parseKey(today) - parseKey(ks[ks.length - 1])) / 864e5);
       weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span>${diff == null ? '' : `<span class="hd-badge" translate="no">${bwDiff(diff)} ${bwUnit()}</span>`}</div>
-        <div class="hd-big" translate="no">${bwDisp(last)} <small>${bwUnit()}</small></div><div class="hd-d">${ago === 0 ? '<span>Registrado hoy</span>' : ago === 1 ? '<span>Registrado ayer</span>' : `<span>Registrado hace ${ago} días</span>`}</div></div>`;
+        <div class="hd-big" translate="no">${bwDisp(last)} <small>${bwUnit()}</small></div><div class="hd-d">${ago === 0 ? '<span>Registrado hoy</span>' : ago === 1 ? '<span>Registrado ayer</span>' : `<span>Registrado hace ${ago} días</span>`}</div>${typeof wtHoyExtra === 'function' ? wtHoyExtra() : ''}</div>`;
     } else {
       weight = `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Peso actual</span></div><div class="hd-d" style="margin-top:8px;">Toca para registrar tu peso.</div></div>`;
     }
@@ -10766,7 +10790,8 @@ function renderHoyDash() {
       return `<button class="hd-chat-row${un ? ' unread' : ''}" data-hd-chat="${i}"><span class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</span><span class="hd-chat-b"><b translate="no">${escapeHtml(l.name || '')}</b>
         <small translate="no">${n ? (n.author_id === s.uid ? `<span translate="yes">Tú</span>: ` : '') + escapeHtml(n.body) : `${linkRoles(l).map(r => `<span translate="yes">${escapeHtml(AUTH_SPECS[r] || r)}</span>`).join(' · ')} · <span translate="yes">Escríbele</span>`}</small></span>${un ? '<i class="hd-dot"></i>' : '<span class="mas-chev">›</span>'}</button>`; }).join('')}</div>`;
   } catch (e) {}
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${appt}${chat}${food}${weight}${typeof antHoyCard === 'function' ? antHoyCard() : ''}${week}`;
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${appt}${chat}${food}${weight}${typeof antHoyCard === 'function' ? antHoyCard() : ''}${week}`;
+  if (typeof ckWireHoy === 'function') ckWireHoy(el);
   el.querySelectorAll('[data-hd-ant]').forEach(c => c.addEventListener('click', () => openMyAssessments()));
   el.querySelectorAll('[data-hd-agenda]').forEach(c => c.addEventListener('click', () => openAgenda()));
   el.querySelectorAll('[data-hd-chat]').forEach(b => b.addEventListener('click', () => { const l = msgCache().links[+b.dataset.hdChat]; if (l) openNotes(l.id, l.name, null, { spec: false, role: l.role, roles: linkRoles(l), ids: linkIds(l) }); }));

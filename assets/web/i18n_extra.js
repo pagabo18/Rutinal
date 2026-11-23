@@ -3756,6 +3756,381 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Check-in semanal": {
+   "en": "Weekly check-in",
+   "pt-BR": "Check-in semanal",
+   "fr": "Bilan hebdomadaire"
+  },
+  "Check-ins": {
+   "en": "Check-ins",
+   "pt-BR": "Check-ins",
+   "fr": "Bilans"
+  },
+  "Tu reporte semanal y la respuesta": {
+   "en": "Your weekly report and the reply",
+   "pt-BR": "Seu relatório semanal e a resposta",
+   "fr": "Votre bilan hebdomadaire et la réponse"
+  },
+  "Pendiente": {
+   "en": "Pending",
+   "pt-BR": "Pendente",
+   "fr": "En attente"
+  },
+  "Respondido": {
+   "en": "Answered",
+   "pt-BR": "Respondido",
+   "fr": "Répondu"
+  },
+  "Enviado": {
+   "en": "Sent",
+   "pt-BR": "Enviado",
+   "fr": "Envoyé"
+  },
+  "Semana del": {
+   "en": "Week of",
+   "pt-BR": "Semana de",
+   "fr": "Semaine du"
+  },
+  "Cuéntale a tu especialista cómo te fue.": {
+   "en": "Tell your specialist how it went.",
+   "pt-BR": "Conte ao seu especialista como foi.",
+   "fr": "Dites à votre spécialiste comment ça s'est passé."
+  },
+  "Hacer check-in": {
+   "en": "Do check-in",
+   "pt-BR": "Fazer check-in",
+   "fr": "Faire le bilan"
+  },
+  "Tu especialista aún no lo revisa. Puedes editarlo mientras tanto.": {
+   "en": "Your specialist hasn't reviewed it yet. You can edit it meanwhile.",
+   "pt-BR": "Seu especialista ainda não revisou. Você pode editar enquanto isso.",
+   "fr": "Votre spécialiste ne l'a pas encore revu. Vous pouvez le modifier en attendant."
+  },
+  "Promedio 7 días": {
+   "en": "7-day average",
+   "pt-BR": "Média de 7 dias",
+   "fr": "Moyenne 7 jours"
+  },
+  "Ritmo por semana": {
+   "en": "Weekly rate",
+   "pt-BR": "Ritmo por semana",
+   "fr": "Rythme hebdo"
+  },
+  "registros": {
+   "en": "entries",
+   "pt-BR": "registros",
+   "fr": "relevés"
+  },
+  "registro": {
+   "en": "entry",
+   "pt-BR": "registro",
+   "fr": "relevé"
+  },
+  "Falta la semana anterior": {
+   "en": "Previous week missing",
+   "pt-BR": "Falta a semana anterior",
+   "fr": "Semaine précédente manquante"
+  },
+  "Lo que ya registraste": {
+   "en": "What you already logged",
+   "pt-BR": "O que você já registrou",
+   "fr": "Ce que vous avez déjà saisi"
+  },
+  "Se toma de tus registros de los últimos 7 días y se envía junto con tus respuestas.": {
+   "en": "Taken from your logs of the last 7 days and sent with your answers.",
+   "pt-BR": "Vem dos seus registros dos últimos 7 dias e é enviado com suas respostas.",
+   "fr": "Tiré de vos saisies des 7 derniers jours et envoyé avec vos réponses."
+  },
+  "Peso promedio de 7 días": {
+   "en": "7-day average weight",
+   "pt-BR": "Peso médio de 7 dias",
+   "fr": "Poids moyen sur 7 jours"
+  },
+  "Con al menos 3 pesajes en la semana el promedio es más confiable.": {
+   "en": "With at least 3 weigh-ins a week the average is more reliable.",
+   "pt-BR": "Com pelo menos 3 pesagens na semana a média é mais confiável.",
+   "fr": "Avec au moins 3 pesées par semaine, la moyenne est plus fiable."
+  },
+  "1 = muy mal · 5 = muy bien": {
+   "en": "1 = very bad · 5 = very good",
+   "pt-BR": "1 = muito mal · 5 = muito bem",
+   "fr": "1 = très mal · 5 = très bien"
+  },
+  "En hambre y estrés, 5 significa mucho.": {
+   "en": "For hunger and stress, 5 means a lot.",
+   "pt-BR": "Em fome e estresse, 5 significa muito.",
+   "fr": "Pour la faim et le stress, 5 signifie beaucoup."
+  },
+  "Energía": {
+   "en": "Energy",
+   "pt-BR": "Energia",
+   "fr": "Énergie"
+  },
+  "Hambre": {
+   "en": "Hunger",
+   "pt-BR": "Fome",
+   "fr": "Faim"
+  },
+  "Calidad de sueño": {
+   "en": "Sleep quality",
+   "pt-BR": "Qualidade do sono",
+   "fr": "Qualité du sommeil"
+  },
+  "Estrés": {
+   "en": "Stress",
+   "pt-BR": "Estresse",
+   "fr": "Stress"
+  },
+  "Digestión": {
+   "en": "Digestion",
+   "pt-BR": "Digestão",
+   "fr": "Digestion"
+  },
+  "Recuperación muscular": {
+   "en": "Muscle recovery",
+   "pt-BR": "Recuperação muscular",
+   "fr": "Récupération musculaire"
+  },
+  "Ánimo y motivación": {
+   "en": "Mood and motivation",
+   "pt-BR": "Ânimo e motivação",
+   "fr": "Humeur et motivation"
+  },
+  "Cumplimiento": {
+   "en": "Adherence",
+   "pt-BR": "Adesão",
+   "fr": "Adhérence"
+  },
+  "Dieta": {
+   "en": "Diet",
+   "pt-BR": "Dieta",
+   "fr": "Régime"
+  },
+  "Horas de sueño por noche": {
+   "en": "Hours of sleep per night",
+   "pt-BR": "Horas de sono por noite",
+   "fr": "Heures de sommeil par nuit"
+  },
+  "Pasos por día (promedio)": {
+   "en": "Steps per day (average)",
+   "pt-BR": "Passos por dia (média)",
+   "fr": "Pas par jour (moyenne)"
+  },
+  "Cardio en la semana": {
+   "en": "Cardio this week",
+   "pt-BR": "Cardio na semana",
+   "fr": "Cardio de la semaine"
+  },
+  "En tus palabras": {
+   "en": "In your words",
+   "pt-BR": "Com suas palavras",
+   "fr": "Avec vos mots"
+  },
+  "¿Qué salió bien?": {
+   "en": "What went well?",
+   "pt-BR": "O que deu certo?",
+   "fr": "Qu'est-ce qui a bien marché ?"
+  },
+  "¿Qué te costó?": {
+   "en": "What was hard?",
+   "pt-BR": "O que foi difícil?",
+   "fr": "Qu'est-ce qui a été difficile ?"
+  },
+  "Dudas o comentarios para tu especialista": {
+   "en": "Questions or comments for your specialist",
+   "pt-BR": "Dúvidas ou comentários para seu especialista",
+   "fr": "Questions ou commentaires pour votre spécialiste"
+  },
+  "Si quieres que revise tu físico, sube y comparte las fotos de esta semana en Fotos de progreso.": {
+   "en": "If you want your physique reviewed, upload and share this week's photos in Progress photos.",
+   "pt-BR": "Se quiser que revise seu físico, envie e compartilhe as fotos desta semana em Fotos de progresso.",
+   "fr": "Pour faire évaluer votre physique, ajoutez et partagez les photos de la semaine dans Photos de progression."
+  },
+  "Responde al menos tres de las escalas de cómo te sentiste.": {
+   "en": "Answer at least three of the how-you-felt scales.",
+   "pt-BR": "Responda pelo menos três das escalas de como se sentiu.",
+   "fr": "Répondez à au moins trois des échelles de ressenti."
+  },
+  "Revisa los números: alguno está fuera de rango.": {
+   "en": "Check the numbers: one is out of range.",
+   "pt-BR": "Revise os números: algum está fora da faixa.",
+   "fr": "Vérifiez les chiffres : l'un est hors plage."
+  },
+  "Envié mi check-in de la semana.": {
+   "en": "I sent my weekly check-in.",
+   "pt-BR": "Enviei meu check-in da semana.",
+   "fr": "J'ai envoyé mon bilan de la semaine."
+  },
+  "Hacer el check-in de esta semana": {
+   "en": "Do this week's check-in",
+   "pt-BR": "Fazer o check-in desta semana",
+   "fr": "Faire le bilan de cette semaine"
+  },
+  "Enviado · sin respuesta todavía": {
+   "en": "Sent · no reply yet",
+   "pt-BR": "Enviado · ainda sem resposta",
+   "fr": "Envoyé · pas encore de réponse"
+  },
+  "Editar este check-in": {
+   "en": "Edit this check-in",
+   "pt-BR": "Editar este check-in",
+   "fr": "Modifier ce bilan"
+  },
+  "Aún no has enviado ningún check-in. Es el reporte semanal con el que tu especialista ajusta tu plan.": {
+   "en": "You haven't sent a check-in yet. It's the weekly report your specialist uses to adjust your plan.",
+   "pt-BR": "Você ainda não enviou nenhum check-in. É o relatório semanal com que seu especialista ajusta seu plano.",
+   "fr": "Vous n'avez pas encore envoyé de bilan. C'est le rapport hebdomadaire avec lequel votre spécialiste ajuste votre plan."
+  },
+  "Semanas anteriores": {
+   "en": "Previous weeks",
+   "pt-BR": "Semanas anteriores",
+   "fr": "Semaines précédentes"
+  },
+  "Sin respuesta": {
+   "en": "No reply",
+   "pt-BR": "Sem resposta",
+   "fr": "Sans réponse"
+  },
+  "Peso promedio": {
+   "en": "Average weight",
+   "pt-BR": "Peso médio",
+   "fr": "Poids moyen"
+  },
+  "por semana": {
+   "en": "per week",
+   "pt-BR": "por semana",
+   "fr": "par semaine"
+  },
+  "Cumplimiento de dieta": {
+   "en": "Diet adherence",
+   "pt-BR": "Adesão à dieta",
+   "fr": "Adhérence au régime"
+  },
+  "Cumplimiento de entreno": {
+   "en": "Training adherence",
+   "pt-BR": "Adesão ao treino",
+   "fr": "Adhérence à l'entraînement"
+  },
+  "Horas de sueño": {
+   "en": "Hours of sleep",
+   "pt-BR": "Horas de sono",
+   "fr": "Heures de sommeil"
+  },
+  "Pasos por día": {
+   "en": "Steps per day",
+   "pt-BR": "Passos por dia",
+   "fr": "Pas par jour"
+  },
+  "Cómo se sintió": {
+   "en": "How they felt",
+   "pt-BR": "Como se sentiu",
+   "fr": "Ressenti"
+  },
+  "Respuesta": {
+   "en": "Reply",
+   "pt-BR": "Resposta",
+   "fr": "Réponse"
+  },
+  "Tu especialista": {
+   "en": "Your specialist",
+   "pt-BR": "Seu especialista",
+   "fr": "Votre spécialiste"
+  },
+  "Check-ins por revisar": {
+   "en": "Check-ins to review",
+   "pt-BR": "Check-ins para revisar",
+   "fr": "Bilans à revoir"
+  },
+  "Ya respondiste": {
+   "en": "You already replied",
+   "pt-BR": "Você já respondeu",
+   "fr": "Vous avez déjà répondu"
+  },
+  "Sin responder": {
+   "en": "Not answered",
+   "pt-BR": "Sem responder",
+   "fr": "Sans réponse"
+  },
+  "enviado": {
+   "en": "sent",
+   "pt-BR": "enviado",
+   "fr": "envoyé"
+  },
+  "Tu respuesta": {
+   "en": "Your reply",
+   "pt-BR": "Sua resposta",
+   "fr": "Votre réponse"
+  },
+  "Agregar otra respuesta": {
+   "en": "Add another reply",
+   "pt-BR": "Adicionar outra resposta",
+   "fr": "Ajouter une autre réponse"
+  },
+  "Qué se queda igual, qué cambia y en qué enfocarse esta semana.": {
+   "en": "What stays, what changes and what to focus on this week.",
+   "pt-BR": "O que fica igual, o que muda e no que focar esta semana.",
+   "fr": "Ce qui reste, ce qui change et sur quoi se concentrer cette semaine."
+  },
+  "Todo bien, seguimos igual esta semana.": {
+   "en": "All good, we keep the same this week.",
+   "pt-BR": "Tudo certo, seguimos igual esta semana.",
+   "fr": "Tout va bien, on garde la même chose cette semaine."
+  },
+  "Bajamos un poco las calorías; te actualizo el plan.": {
+   "en": "We lower calories a bit; I'll update your plan.",
+   "pt-BR": "Baixamos um pouco as calorias; atualizo seu plano.",
+   "fr": "On baisse un peu les calories ; je mets à jour votre plan."
+  },
+  "Subimos el cardio; te digo cuánto.": {
+   "en": "We increase cardio; I'll tell you how much.",
+   "pt-BR": "Aumentamos o cardio; te digo quanto.",
+   "fr": "On augmente le cardio ; je vous dis de combien."
+  },
+  "Prioriza el sueño esta semana.": {
+   "en": "Prioritize sleep this week.",
+   "pt-BR": "Priorize o sono esta semana.",
+   "fr": "Priorisez le sommeil cette semaine."
+  },
+  "Enviar respuesta": {
+   "en": "Send reply",
+   "pt-BR": "Enviar resposta",
+   "fr": "Envoyer la réponse"
+  },
+  "Escribe tu respuesta.": {
+   "en": "Write your reply.",
+   "pt-BR": "Escreva sua resposta.",
+   "fr": "Écrivez votre réponse."
+  },
+  "Respondí tu check-in:": {
+   "en": "I replied to your check-in:",
+   "pt-BR": "Respondi seu check-in:",
+   "fr": "J'ai répondu à votre bilan :"
+  },
+  "Últimas semanas": {
+   "en": "Recent weeks",
+   "pt-BR": "Últimas semanas",
+   "fr": "Dernières semaines"
+  },
+  "Todas las semanas": {
+   "en": "All weeks",
+   "pt-BR": "Todas as semanas",
+   "fr": "Toutes les semaines"
+  },
+  "Dieta %": {
+   "en": "Diet %",
+   "pt-BR": "Dieta %",
+   "fr": "Régime %"
+  },
+  "Entreno %": {
+   "en": "Training %",
+   "pt-BR": "Treino %",
+   "fr": "Entraîn. %"
+  },
+  "Este atleta aún no envía check-ins. Le aparece en Hoy cada semana; al enviarlo te llega un mensaje.": {
+   "en": "This athlete hasn't sent check-ins yet. It shows in Today every week; you get a message when sent.",
+   "pt-BR": "Este atleta ainda não enviou check-ins. Aparece em Hoje toda semana; ao enviar você recebe uma mensagem.",
+   "fr": "Cet athlète n'a pas encore envoyé de bilan. Il apparaît dans Aujourd'hui chaque semaine ; vous recevez un message à l'envoi."
+  },
   "Cambio desde": {
    "en": "Change since",
    "pt-BR": "Mudança desde",

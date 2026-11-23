@@ -446,6 +446,219 @@ function antHoyCard() {
 }
 
 // ============================================================
+// PESO CON TENDENCIA Y CHECK-IN SEMANAL
+// El peso de un día engaña; lo que se decide es con el promedio de 7 días y su ritmo de cambio.
+// El check-in es el reporte semanal del atleta: datos automáticos + cómo se sintió; el especialista responde.
+// ============================================================
+function wtTrend(log, endKey) {
+  log = log || {};
+  const end = endKey ? parseKey(endKey) : new Date(), avg = (from, to) => {
+    const v = []; for (let i = from; i < to; i++) { const k = keyDate(new Date(end.getTime() - i * 864e5)); if (+log[k] > 0) v.push(+log[k]); }
+    return v.length ? { avg: v.reduce((a, b) => a + b, 0) / v.length, n: v.length } : { avg: null, n: 0 };
+  };
+  const a = avg(0, 7), b = avg(7, 14), o = { avg: a.avg, n: a.n, prevAvg: b.avg, prevN: b.n, diff: null, rate: null };
+  if (a.avg != null && b.avg != null) { o.diff = a.avg - b.avg; o.rate = o.diff / b.avg * 100; }
+  return o;
+}
+function wtRateText(tr) { return tr.rate == null ? '' : `${tr.rate > 0 ? '+' : ''}${(Math.round(tr.rate * 100) / 100).toLocaleString(_loc())} %`; }
+// Tarjeta de peso de Hoy: último peso, promedio de 7 días y ritmo semanal.
+function wtHoyExtra() {
+  const tr = wtTrend(S.get('weight_log', {}) || {});
+  if (tr.avg == null || tr.n < 2) return '';
+  return `<div class="hd-week" style="margin-top:10px;"><div class="hd-w"><b translate="no">${bwDisp(tr.avg)} ${bwUnit()}</b><span>Promedio 7 días</span><small><span translate="no">${tr.n}</span> <span>${tr.n === 1 ? 'registro' : 'registros'}</span></small></div>
+    ${tr.rate != null ? `<div class="hd-w"><b translate="no">${wtRateText(tr)}</b><span>Ritmo por semana</span><small translate="no">${bwDiff(tr.diff)} ${bwUnit()}</small></div>` : '<div class="hd-w"><b>—</b><span>Ritmo por semana</span><small>Falta la semana anterior</small></div>'}</div>`;
+}
+
+const CK_SCALES = [['energy', 'Energía'], ['hunger', 'Hambre'], ['sleep', 'Calidad de sueño'], ['stress', 'Estrés'], ['digestion', 'Digestión'], ['recovery', 'Recuperación muscular'], ['mood', 'Ánimo y motivación']];
+const CK_TEXTS = [['wins', '¿Qué salió bien?'], ['hard', '¿Qué te costó?'], ['questions', 'Dudas o comentarios para tu especialista']];
+function ckWeekOf(d) { const x = new Date(d || Date.now()); x.setHours(12, 0, 0, 0); const wd = (x.getDay() + 6) % 7; return keyDate(new Date(x.getTime() - wd * 864e5)); }
+function ckWeekLabel(k) { try { const a = parseKey(k), b = new Date(a.getTime() + 6 * 864e5), f = { day: 'numeric', month: 'short' }; return a.toLocaleDateString(_loc(), f) + ' – ' + b.toLocaleDateString(_loc(), f); } catch (e) { return k; } }
+// Lo que la app ya sabe de la semana del atleta (se guarda como foto del momento).
+function ckAuto() {
+  const o = {}, ks = []; for (let i = 0; i < 7; i++) ks.push(keyDate(new Date(Date.now() - i * 864e5)));
+  try { const tr = wtTrend(S.get('weight_log', {}) || {}); if (tr.avg != null) { o.wAvg = Math.round(tr.avg * 100) / 100; o.wN = tr.n; } if (tr.prevAvg != null) o.wPrev = Math.round(tr.prevAvg * 100) / 100; if (tr.rate != null) o.wRate = Math.round(tr.rate * 100) / 100; } catch (e) {}
+  try { const gl = gymLogs(); o.workouts = ks.filter(k => gl[k] && (gl[k].done || Object.values(gl[k].ex || {}).some(a => a.some(x => x && x.done)))).length; o.planned = Object.keys(gymSchedule()).length;
+    const ps = ks.map(k => gl[k] && gl[k].feel && gl[k].feel.pain).filter(v => v != null && isFinite(+v)); if (ps.length) o.painMax = Math.max(...ps.map(Number)); } catch (e) {}
+  try { const mt = ks.map(k => dayMealTotals(k)).filter(Boolean), g = fitGoalInfo().t || {}; o.mealDays = mt.length;
+    if (mt.length) { o.kcalAvg = Math.round(mt.reduce((a, b) => a + b.kcal, 0) / mt.length); o.protAvg = Math.round(mt.reduce((a, b) => a + (b.protein || 0), 0) / mt.length); }
+    if (g.kcal) o.kcalGoal = Math.round(g.kcal); if (g.protein) o.protGoal = Math.round(g.protein); } catch (e) {}
+  return o;
+}
+function ckCache() { try { const a = JSON.parse(localStorage.getItem('__ck') || '{}'); return { rows: a.rows || [], reviews: a.reviews || [] }; } catch (e) { return { rows: [], reviews: [] }; } }
+let _ckAt = 0;
+async function ckRefresh(force) {
+  const s = authGet();
+  if (!s || !s.refresh || !s.uid || navigator.onLine === false) return;
+  if (!force && Date.now() - _ckAt < 120000) return;
+  _ckAt = Date.now();
+  let rows, reviews;
+  try {
+    rows = await sbRest('checkins?select=id,week_of,data,created_at,updated_at&client_id=eq.' + encodeURIComponent(s.uid) + '&order=week_of.desc&limit=12') || [];
+    reviews = rows.length ? await sbRest('checkin_reviews?select=id,checkin_id,reviewer_id,body,created_at&client_id=eq.' + encodeURIComponent(s.uid) + '&order=created_at.asc&limit=60') || [] : [];
+  } catch (e) { return; }
+  const now = JSON.stringify({ rows, reviews });
+  if ((localStorage.getItem('__ck') || '') === now) return;
+  try { localStorage.setItem('__ck', now); } catch (e) {}
+  try { if (typeof renderHoyDash === 'function') renderHoyDash(); } catch (e) {}
+}
+function ckHasSpecialist() { try { return ((msgCache().links) || []).length > 0; } catch (e) { return false; } }
+function ckHoyCard() {
+  const c = ckCache(), wk = ckWeekOf(), cur = c.rows.find(r => r.week_of === wk);
+  if (!cur && !ckHasSpecialist()) return '';
+  if (!cur) return `<div class="hd-card hd-ck"><div class="hd-k"><span>Check-in semanal</span><span class="hd-badge plan">Pendiente</span></div>
+    <div class="hd-row"><div class="hd-d"><span>Semana del</span> <span translate="no">${escapeHtml(ckWeekLabel(wk))}</span>. <span>Cuéntale a tu especialista cómo te fue.</span></div><button class="hd-btn" data-hd-ck="new">Hacer check-in</button></div></div>`;
+  const rv = c.reviews.filter(r => r.checkin_id === cur.id), last = rv[rv.length - 1];
+  return `<div class="hd-card hd-ck" data-hd-ck="view" style="cursor:pointer;"><div class="hd-k"><span>Check-in semanal</span><span class="hd-badge ${last ? 'ok' : ''}">${last ? 'Respondido' : 'Enviado'}</span></div>
+    ${last ? `<div class="hd-d" style="margin-top:8px;color:var(--text);white-space:pre-wrap;" translate="no">${escapeHtml(last.body.length > 180 ? last.body.slice(0, 180) + '…' : last.body)}</div>` : '<div class="hd-d" style="margin-top:8px;">Tu especialista aún no lo revisa. Puedes editarlo mientras tanto.</div>'}</div>`;
+}
+function ckWireHoy(el) {
+  el.querySelectorAll('[data-hd-ck]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const c = ckCache(), cur = c.rows.find(r => r.week_of === ckWeekOf()); if (b.dataset.hdCk === 'new' || !cur) openCheckinForm(null); else openMyCheckins(); }));
+}
+
+function ckScaleBar(v) { return `<span class="ck-bar">${[1, 2, 3, 4, 5].map(i => `<i class="${v >= i ? 'on' : ''}"></i>`).join('')}</span>`; }
+// Vista de un check-in (compartida entre atleta y especialista). prev = el de la semana anterior, si existe.
+function ckViewHtml(row, prev, reviews, names) {
+  const d = row.data || {}, a = d.auto || {}, pd = prev ? (prev.data || {}) : {}, pa = pd.auto || {};
+  const lb = bwUnit() === 'lb', kg = v => v == null ? null : (lb ? v * GYM_LB : v);
+  const dl = (x, y) => (x == null || y == null) ? '' : ` <i class="ant-d">${x - y > 0 ? '▲' : x - y < 0 ? '▼' : '='} ${x - y ? Math.abs(Math.round((x - y) * 10) / 10) : ''}</i>`;
+  const cells = [];
+  if (a.wAvg != null) cells.push(antCard('Peso promedio', antN(kg(a.wAvg), 1, bwUnit()), `<span translate="no">${a.wN}</span> <span>${a.wN === 1 ? 'registro' : 'registros'}</span>${a.wRate != null ? ` · <span translate="no">${a.wRate > 0 ? '+' : ''}${a.wRate} %</span> <span>por semana</span>` : ''}`));
+  if (a.workouts != null) cells.push(antCard('Entrenamientos', a.planned ? `${a.workouts}/${a.planned}` : String(a.workouts), a.painMax != null ? `<span>Dolor máximo</span> <span translate="no">${a.painMax}/10</span>` : ''));
+  if (a.mealDays != null) cells.push(antCard('Días con comidas', `${a.mealDays}/7`, a.kcalAvg ? `<span translate="no">${a.kcalAvg} kcal</span>${a.kcalGoal ? ` · <span translate="no">${Math.round(a.kcalAvg / a.kcalGoal * 100)}%</span> <span>de la meta</span>` : ''}` : ''));
+  if (a.protAvg) cells.push(antCard('Proteína promedio', `${a.protAvg} g`, a.protGoal ? `<span translate="no">${Math.round(a.protAvg / a.protGoal * 100)}%</span> <span>de la meta</span>` : ''));
+  if (d.dietAdh != null) cells.push(antCard('Cumplimiento de dieta', d.dietAdh + ' %', '', dl(d.dietAdh, pd.dietAdh)));
+  if (d.trainAdh != null) cells.push(antCard('Cumplimiento de entreno', d.trainAdh + ' %', '', dl(d.trainAdh, pd.trainAdh)));
+  if (d.sleepH) cells.push(antCard('Horas de sueño', antN(d.sleepH, 1, 'h'), '', dl(d.sleepH, pd.sleepH)));
+  if (d.steps) cells.push(antCard('Pasos por día', (+d.steps).toLocaleString(_loc()), '', ''));
+  if (d.cardioMin) cells.push(antCard('Cardio en la semana', d.cardioMin + ' min', '', dl(d.cardioMin, pd.cardioMin)));
+  if (d.waist) cells.push(antCard('Cintura', antN(d.waist, 1, 'cm'), '', dl(d.waist, pd.waist)));
+  const scales = CK_SCALES.filter(([k]) => d[k]).map(([k, n]) => `<div class="ck-sc"><span>${n}</span>${ckScaleBar(+d[k])}<b translate="no">${d[k]}/5</b>${pd[k] ? dl(+d[k], +pd[k]) : ''}</div>`).join('');
+  const texts = CK_TEXTS.filter(([k]) => d[k]).map(([k, n]) => `<div class="ck-tx"><span>${n}</span><p translate="no">${escapeHtml(d[k])}</p></div>`).join('');
+  const rv = (reviews || []).map(r => `<div class="ck-rv"><span><b translate="no">${escapeHtml((names && (names[r.reviewer_id] || names._)) || '')}</b> <span translate="no">${escapeHtml(cdFmtDay(String(r.created_at).slice(0, 10)))}</span></span><p translate="no">${escapeHtml(r.body)}</p></div>`).join('');
+  return `${cells.length ? `<div class="ant-grid">${cells.join('')}</div>` : ''}${scales ? `<div class="sp-card"><div class="sp-card-n">Cómo se sintió</div>${scales}</div>` : ''}${texts ? `<div class="sp-card">${texts}</div>` : ''}${rv ? `<div class="sp-card"><div class="sp-card-n">Respuesta</div>${rv}</div>` : ''}`;
+}
+
+function openCheckinForm(row) {
+  const wk = row ? row.week_of : ckWeekOf(), d = row ? JSON.parse(JSON.stringify(row.data || {})) : {}, auto = ckAuto();
+  const lb = bwUnit() === 'lb', kg = v => v == null ? null : (lb ? v * GYM_LB : v);
+  const chips = (k, vals, cur, suf) => `<div class="chips ck-chips" data-ck="${k}">${vals.map(v => `<div class="chip${+cur === v ? ' selected' : ''}" data-v="${v}">${v}${suf || ''}</div>`).join('')}</div>`;
+  const num = (k, n, unit, ph) => `<label class="ant-f"><span>${n}</span><span class="ant-in"><input inputmode="decimal" data-ckn="${k}" value="${d[k] == null ? '' : escapeHtml(String(d[k]))}" placeholder="${ph || ''}"><i>${unit}</i></span></label>`;
+  const autoRows = [];
+  if (auto.wAvg != null) autoRows.push(['Peso promedio de 7 días', `${antN(kg(auto.wAvg), 1, bwUnit())} (${auto.wN})${auto.wRate != null ? ` · ${auto.wRate > 0 ? '+' : ''}${auto.wRate} %` : ''}`]);
+  else autoRows.push(['Peso promedio de 7 días', '—']);
+  autoRows.push(['Entrenamientos', auto.planned ? `${auto.workouts || 0}/${auto.planned}` : String(auto.workouts || 0)]);
+  autoRows.push(['Días con comidas', `${auto.mealDays || 0}/7${auto.kcalAvg ? ` · ${auto.kcalAvg} kcal` : ''}`]);
+  openSheet('Check-in semanal', `<div class="ant-ed ck-ed">
+    <div class="sp-sub" style="margin-bottom:10px;"><span>Semana del</span> <b translate="no">${escapeHtml(ckWeekLabel(wk))}</b></div>
+    <details open><summary>Lo que ya registraste</summary><div class="ant-hint">Se toma de tus registros de los últimos 7 días y se envía junto con tus respuestas.</div>
+      ${autoRows.map(([n, v]) => `<div class="ant-f"><span>${n}</span><b translate="no" style="text-align:right;">${v}</b></div>`).join('')}
+      ${auto.wN != null && auto.wN < 3 ? '<div class="ant-hint" style="padding-top:8px;">Con al menos 3 pesajes en la semana el promedio es más confiable.</div>' : ''}</details>
+    <details open><summary>¿Cómo te sentiste? <small>1 = muy mal · 5 = muy bien</small></summary><div class="ant-hint">En hambre y estrés, 5 significa mucho.</div>
+      ${CK_SCALES.map(([k, n]) => `<div class="ant-f col"><span>${n}</span>${chips(k, [1, 2, 3, 4, 5], d[k])}</div>`).join('')}</details>
+    <details open><summary>Cumplimiento</summary>
+      <div class="ant-f col"><span>Dieta</span>${chips('dietAdh', [50, 60, 70, 80, 90, 100], d.dietAdh, '%')}</div>
+      <div class="ant-f col"><span>Entrenamiento</span>${chips('trainAdh', [50, 60, 70, 80, 90, 100], d.trainAdh, '%')}</div>
+      ${num('sleepH', 'Horas de sueño por noche', 'h', '7.5')}${num('steps', 'Pasos por día (promedio)', '', '8000')}${num('cardioMin', 'Cardio en la semana', 'min', '90')}${num('waist', 'Cintura', 'cm')}</details>
+    <details open><summary>En tus palabras</summary>
+      ${CK_TEXTS.map(([k, n]) => `<label class="ant-f col"><span>${n}</span><textarea data-ckt="${k}" rows="2" maxlength="700">${escapeHtml(d[k] || '')}</textarea></label>`).join('')}
+      <div class="ant-hint">Si quieres que revise tu físico, sube y comparte las fotos de esta semana en Fotos de progreso.</div></details>
+    <p class="auth-msg" id="ck-msg"></p></div>`, async () => {
+    const out = { auto }, msg = document.getElementById('ck-msg');
+    document.querySelectorAll('.ck-ed [data-ck]').forEach(g => { const c = g.querySelector('.chip.selected'); if (c) out[g.dataset.ck] = +c.dataset.v; });
+    document.querySelectorAll('.ck-ed [data-ckn]').forEach(i => { const n = parseFloat(i.value.replace(',', '.')); if (isFinite(n) && n > 0) out[i.dataset.ckn] = n; });
+    document.querySelectorAll('.ck-ed [data-ckt]').forEach(i => { const v = i.value.trim(); if (v) out[i.dataset.ckt] = v; });
+    if (CK_SCALES.filter(([k]) => out[k]).length < 3) { msg.textContent = t('Responde al menos tres de las escalas de cómo te sentiste.'); return; }
+    if (out.sleepH > 16 || out.steps > 100000 || out.cardioMin > 3000 || out.waist > 250) { msg.textContent = t('Revisa los números: alguno está fuera de rango.'); return; }
+    try {
+      if (row) await sbRest('checkins?id=eq.' + encodeURIComponent(row.id), { method: 'PATCH', body: { data: out }, headers: { Prefer: 'return=minimal' } });
+      else await sbRest('checkins?on_conflict=client_id,week_of', { method: 'POST', body: { week_of: wk, data: out }, headers: { Prefer: 'resolution=merge-duplicates,return=minimal' } });
+    } catch (e) { msg.textContent = authErr(e.code); return; }
+    if (!row) { try { const mc = msgCache(); for (const l of (mc.links || [])) await ntPost(l.id, t('Envié mi check-in de la semana.')); } catch (e) {} }
+    await ckRefresh(true); try { renderHoyDash(); } catch (e) {}
+    openMyCheckins();
+  });
+  document.querySelectorAll('.ck-ed .ck-chips .chip').forEach(c => c.addEventListener('click', () => { const was = c.classList.contains('selected'); c.parentNode.querySelectorAll('.chip').forEach(x => x.classList.remove('selected')); if (!was) c.classList.add('selected'); }));
+}
+
+async function openMyCheckins() {
+  openSheet('Check-ins', '<div class="food-loader">Cargando...</div>');
+  await ckRefresh(true);
+  const c = ckCache(), wk = ckWeekOf(), cur = c.rows.find(r => r.week_of === wk), names = {};
+  try { const ls = msgCache().links || []; names._ = ls.length === 1 ? ls[0].name : t('Tu especialista'); } catch (e) {}
+  if (!_ckSel || !c.rows.find(r => r.id === _ckSel)) _ckSel = c.rows[0] ? c.rows[0].id : null;
+  const i = c.rows.findIndex(r => r.id === _ckSel), row = c.rows[i], prev = c.rows[i + 1];
+  const reviewed = id => c.reviews.some(r => r.checkin_id === id);
+  openSheet('Check-ins', `${!cur ? '<button class="btn-primary" id="ck-new" style="width:100%;margin-bottom:12px;">Hacer el check-in de esta semana</button>' : ''}
+    ${row ? `<div class="ant-h"><b translate="no">${escapeHtml(ckWeekLabel(row.week_of))}</b><span>${reviewed(row.id) ? 'Respondido' : 'Enviado · sin respuesta todavía'}</span></div>${ckViewHtml(row, prev, c.reviews.filter(r => r.checkin_id === row.id), names)}
+      ${!reviewed(row.id) ? '<button class="btn-secondary" id="ck-edit" style="width:100%;margin-top:4px;">Editar este check-in</button>' : ''}` : '<div class="sp-empty">Aún no has enviado ningún check-in. Es el reporte semanal con el que tu especialista ajusta tu plan.</div>'}
+    ${c.rows.length > 1 ? `<h3 class="ant-sub">Semanas anteriores</h3>${c.rows.map(r => `<div class="ant-row${r.id === _ckSel ? ' on' : ''}" data-ck-sel="${r.id}"><div><b translate="no">${escapeHtml(ckWeekLabel(r.week_of))}</b><small>${reviewed(r.id) ? 'Respondido' : 'Sin respuesta'}</small></div></div>`).join('')}` : ''}`);
+  const nb = document.getElementById('ck-new'); if (nb) nb.addEventListener('click', () => openCheckinForm(null));
+  const eb = document.getElementById('ck-edit'); if (eb) eb.addEventListener('click', () => openCheckinForm(row));
+  document.querySelectorAll('[data-ck-sel]').forEach(b => b.addEventListener('click', () => { _ckSel = b.dataset.ckSel; openMyCheckins(); }));
+}
+let _ckSel = null;
+
+// ---- Especialista ----
+// Check-ins de todos sus atletas que aún no ha respondido (para Inicio).
+async function ckPendingForSpecialist() {
+  const me = (authGet() || {}).uid; if (!me) return [];
+  try {
+    const rows = await sbRest('checkins?select=id,client_id,week_of,created_at&client_id=neq.' + encodeURIComponent(me) + '&order=created_at.desc&limit=120') || [];
+    if (!rows.length) return [];
+    const rv = await sbRest('checkin_reviews?select=checkin_id&reviewer_id=eq.' + encodeURIComponent(me) + '&limit=500') || [], done = {};
+    rv.forEach(r => { done[r.checkin_id] = 1; });
+    return rows.filter(r => !done[r.id]);
+  } catch (e) { return []; }
+}
+async function ckRenderFor(l, el) {
+  el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  const me = (authGet() || {}).uid; let rows = [], reviews = [];
+  try {
+    rows = await sbRest('checkins?select=id,week_of,data,created_at,updated_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&order=week_of.desc&limit=26') || [];
+    reviews = rows.length ? await sbRest('checkin_reviews?select=id,checkin_id,reviewer_id,body,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&order=created_at.asc&limit=200') || [] : [];
+  } catch (e) { el.innerHTML = `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; return; }
+  if (!document.body.contains(el)) return;
+  const names = {}; names[me] = t('Tú');
+  let sel = rows[0] ? rows[0].id : null;
+  const paint = () => {
+    const i = rows.findIndex(r => r.id === sel), row = rows[i], prev = rows[i + 1];
+    const mine = id => reviews.some(r => r.checkin_id === id && r.reviewer_id === me);
+    // Tendencia de las escalas en las últimas semanas
+    let trend = '';
+    if (rows.length > 1) {
+      const asc = rows.slice(0, 8).reverse();
+      trend = `<div class="sp-card"><div class="sp-card-n">Últimas semanas</div><div class="ck-tr"><div class="ck-trh"><span></span>${asc.map(r => `<span translate="no">${parseKey(r.week_of).toLocaleDateString(_loc(), { day: 'numeric', month: 'numeric' })}</span>`).join('')}</div>
+        ${[['wAvg', 'Peso', r => { const v = ((r.data || {}).auto || {}).wAvg; return v == null ? '·' : bwDisp(v); }], ['dietAdh', 'Dieta %', r => (r.data || {}).dietAdh || '·'], ['trainAdh', 'Entreno %', r => (r.data || {}).trainAdh || '·']].concat(CK_SCALES.map(([k, n]) => [k, n, r => (r.data || {})[k] || '·']))
+          .map(([k, n, f]) => `<div class="ck-trr"><span>${n}</span>${asc.map(r => `<b translate="no" class="${CK_SCALES.some(x => x[0] === k) && (r.data || {})[k] ? 'v' + (r.data || {})[k] : ''}">${f(r)}</b>`).join('')}</div>`).join('')}</div></div>`;
+    }
+    el.innerHTML = row ? `<div class="ant-h"><b translate="no">${escapeHtml(ckWeekLabel(row.week_of))}</b><span>${mine(row.id) ? 'Ya respondiste' : 'Sin responder'} · <span>enviado</span> <span translate="no">${escapeHtml(cdFmtDay(String(row.created_at).slice(0, 10)))}</span></span></div>
+      ${ckViewHtml(row, prev, reviews.filter(r => r.checkin_id === row.id), names)}
+      <div class="sp-card"><div class="sp-card-n">${mine(row.id) ? 'Agregar otra respuesta' : 'Tu respuesta'}</div>
+        <textarea id="ck-reply" rows="4" maxlength="2000" class="ck-reply" placeholder="Qué se queda igual, qué cambia y en qué enfocarse esta semana."></textarea>
+        <div class="dp-quick" style="margin-bottom:10px;">${['Todo bien, seguimos igual esta semana.', 'Bajamos un poco las calorías; te actualizo el plan.', 'Subimos el cardio; te digo cuánto.', 'Prioriza el sueño esta semana.'].map(x => `<button data-ck-q="1">${x}</button>`).join('')}</div>
+        <button class="sp-act primary" id="ck-send" style="width:100%;">Enviar respuesta</button><p class="auth-msg" id="ck-rmsg"></p></div>
+      ${trend}
+      ${rows.length > 1 ? `<h3 class="ant-sub">Todas las semanas</h3>${rows.map(r => `<div class="ant-row${r.id === sel ? ' on' : ''}" data-ck-sel="${r.id}"><div><b translate="no">${escapeHtml(ckWeekLabel(r.week_of))}</b><small>${mine(r.id) ? 'Respondido' : 'Sin responder'}</small></div></div>`).join('')}` : ''}`
+      : '<div class="sp-empty">Este atleta aún no envía check-ins. Le aparece en Hoy cada semana; al enviarlo te llega un mensaje.</div>';
+    el.querySelectorAll('[data-ck-sel]').forEach(b => b.addEventListener('click', () => { sel = b.dataset.ckSel; paint(); try { el.scrollIntoView({ block: 'start' }); } catch (e) {} }));
+    el.querySelectorAll('[data-ck-q]').forEach(b => b.addEventListener('click', () => { const ta = document.getElementById('ck-reply'); ta.value = (ta.value ? ta.value.trim() + ' ' : '') + b.textContent; ta.focus(); }));
+    const sb = document.getElementById('ck-send');
+    if (sb) sb.addEventListener('click', async () => {
+      const body = document.getElementById('ck-reply').value.trim(), msg = document.getElementById('ck-rmsg');
+      if (!body) { msg.textContent = t('Escribe tu respuesta.'); return; }
+      sb.disabled = true;
+      try {
+        await sbRest('checkin_reviews', { method: 'POST', body: { checkin_id: row.id, client_id: l.client_id, body }, headers: { Prefer: 'return=minimal' } });
+        reviews.push({ id: 'n' + Date.now(), checkin_id: row.id, reviewer_id: me, body, created_at: new Date().toISOString() });
+        try { await ntPost(l.id, t('Respondí tu check-in:') + ' ' + body); } catch (e) {}
+      } catch (e) { msg.textContent = authErr(e.code); sb.disabled = false; return; }
+      _sp.ckPend = null; paint();
+    });
+  };
+  paint();
+}
+
+// ============================================================
 // SISTEMA DE EQUIVALENTES Y DIETAS PREHECHAS
 // Aporte promedio por equivalente según el Sistema Mexicano de Alimentos Equivalentes (SMAE).
 // Un plan por equivalentes guarda cuántos equivalentes de cada grupo tocan en cada comida;
@@ -690,4 +903,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
