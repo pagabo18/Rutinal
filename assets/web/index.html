@@ -10,7 +10,7 @@
 <meta name="app-version" content="31.2">
 <!-- PWA (solo aplica servida por http/https; el APK la ignora) -->
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#FAFAFA">
+<meta name="theme-color" content="#F2F2F0">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2709,6 +2709,42 @@
   .gym-ex.simple .gym-ex-head { cursor: default; }
   .gym-quick { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border-strong); background: transparent; color: transparent; font-size: 20px; font-weight: 700; cursor: pointer; flex: 0 0 auto; }
   .gym-quick.on { background: #16A34A; border-color: #16A34A; color: #fff; }
+
+  /* ===== Contraste: fondo un poco más oscuro, tarjetas blancas con sombra suave ===== */
+  :root { --bg: #F2F2F0; --surface-2: #ECECEA; --surface-3: #E0E0DD; --border: #E4E4E1; --accent-soft: #EAEAE7; --card-sh: 0 1px 2px rgba(15,15,20,.04), 0 6px 18px rgba(15,15,20,.05); }
+  :root[data-theme="dark"] { --card-sh: none; }
+  @media (prefers-color-scheme: dark) { :root[data-theme="auto"] { --card-sh: none; } }
+  .hd-card, .mas-card, .mas-profile, .sp-row, .sp-stat, .sp-card, .sp-alert, .ant-c, .ant-row, .ft-card, .gym-today, .gym-routine, .gym-ex, .lk-row, .setting, .mc, .habit, .streak-card, .eq-grid, .eq-sum, .dp-k { box-shadow: var(--card-sh); }
+  /* ===== Movimiento ===== */
+  @keyframes rt-rise { from { opacity: 0; transform: translateY(12px) scale(.985); } to { opacity: 1; transform: none; } }
+  @keyframes rt-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes rt-pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes rt-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  section.tab-enter :is(.hd-card, .mas-card, .mas-profile, .sp-row, .sp-stat, .sp-card, .sp-alert, .ant-c, .ant-row, .ft-card, .gym-today, .gym-routine, .lk-row, .setting, .mc, .habit, .streak-card, .sp-hello, .sp-sub, .hd-hello),
+  #sheet-body.sheet-enter > *, #sheet-body.sheet-enter :is(.ant-c, .sp-card, .lk-row, .ant-row, .eq-food) { animation: rt-rise .42s cubic-bezier(.2, .8, .2, 1) backwards; }
+  section.tab-enter :is(.hd-card, .mas-card, .sp-row, .sp-stat, .sp-card, .ant-c, .gym-routine, .lk-row, .setting, .mc, .habit):nth-child(2) { animation-delay: 50ms; }
+  section.tab-enter :is(.hd-card, .mas-card, .sp-row, .sp-stat, .sp-card, .ant-c, .gym-routine, .lk-row, .setting, .mc, .habit):nth-child(3) { animation-delay: 100ms; }
+  section.tab-enter :is(.hd-card, .mas-card, .sp-row, .sp-stat, .sp-card, .ant-c, .gym-routine, .lk-row, .setting, .mc, .habit):nth-child(4) { animation-delay: 150ms; }
+  section.tab-enter :is(.hd-card, .mas-card, .sp-row, .sp-stat, .sp-card, .ant-c, .gym-routine, .lk-row, .setting, .mc, .habit):nth-child(5) { animation-delay: 200ms; }
+  section.tab-enter :is(.hd-card, .mas-card, .sp-row, .sp-stat, .sp-card, .ant-c, .gym-routine, .lk-row, .setting, .mc, .habit):nth-child(n+6) { animation-delay: 250ms; }
+  #sheet-body.sheet-enter > *:nth-child(2) { animation-delay: 40ms; } #sheet-body.sheet-enter > *:nth-child(3) { animation-delay: 80ms; } #sheet-body.sheet-enter > *:nth-child(n+4) { animation-delay: 120ms; }
+  section.tab-enter :is(.hd-bar i, .hd-m-bar i, .ft-bar i, .gym-prog div, .gym-mus-bar div, .ck-bar), #sheet-body.sheet-enter :is(.ant-som i, .ck-bar) { transform-origin: left center; animation: rt-grow .7s cubic-bezier(.2, .8, .2, 1) .15s backwards; }
+  /* Respuesta al toque */
+  .hd-card, .sp-row, .sp-stat, .mas-row, .gym-routine, .ant-row, .lk-row, .eq-chip, .dp-styles button, .mas-profile, .mc { transition: transform .14s ease, box-shadow .18s ease, border-color .18s ease; }
+  :is(.hd-card[style*="cursor"], .sp-row, .sp-stat, .mas-row, .gym-routine, .ant-row, .mas-profile, .dp-styles button, .hd-hero):active { transform: scale(.985); }
+  :is(.btn-primary, .btn-secondary, .hd-btn, .sp-act, .lk-mini, .gym-check, .gym-quick, .chip, .fab, .eq-chip) { transition: transform .12s ease, background-color .18s ease, color .18s ease, opacity .18s ease; }
+  :is(.btn-primary, .btn-secondary, .hd-btn, .sp-act, .lk-mini, .chip, .fab, button.eq-chip):active { transform: scale(.96); }
+  .gym-quick.on, .gym-set.done .gym-check, .habit.done .check { animation: rt-pop .32s cubic-bezier(.2, .9, .3, 1.2); }
+  nav button { transition: color .18s ease, transform .12s ease; } nav button:active { transform: scale(.92); }
+  nav button.active .icon { animation: rt-pop .3s cubic-bezier(.2, .9, .3, 1.2); }
+  .mod-sw, .ant-fm, .chip { transition: background-color .18s ease, border-color .18s ease, color .18s ease; }
+  /* Esqueleto de carga */
+  .skel { display: grid; gap: 10px; padding: 4px 0; }
+  .skel i { display: block; height: 76px; border-radius: 18px; background: linear-gradient(100deg, var(--surface-2) 30%, var(--surface) 50%, var(--surface-2) 70%) 0 0 / 200% 100%; animation: rt-shimmer 1.3s linear infinite; }
+  .skel i.a { height: 148px; } .skel i.s { height: 48px; width: 60%; }
+  .skel.list i { height: 56px; border-radius: 14px; }
+  .skel i:nth-child(2) { animation-delay: .1s; } .skel i:nth-child(3) { animation-delay: .2s; } .skel i:nth-child(4) { animation-delay: .3s; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; } .skel i { animation: none; } }
 </style>
 </head>
 <body>
@@ -3861,11 +3897,21 @@ function t(key) {
 }
 
 const tabRenderers = {};
+// Animación de entrada de las tarjetas: solo al cambiar de pestaña, no en cada repintado.
+let _tabEnterT = 0;
+function tabEnter(tab) {
+  const sec = document.getElementById('tab-' + tab); if (!sec) return;
+  document.querySelectorAll('main section.tab-enter').forEach(x => x.classList.remove('tab-enter'));
+  void sec.offsetWidth; sec.classList.add('tab-enter');
+  clearTimeout(_tabEnterT); _tabEnterT = setTimeout(() => sec.classList.remove('tab-enter'), 1600);
+}
+try { tabEnter('hoy'); } catch (e) {}
 document.querySelectorAll('nav button').forEach(btn => {
   btn.addEventListener('click', () => {
     const tab = btn.dataset.tab;
     document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b === btn));
     document.querySelectorAll('main section').forEach(s => s.classList.toggle('active', s.id === 'tab-' + tab));
+    tabEnter(tab);
     if (navigator.vibrate) navigator.vibrate(8);
     if (tabRenderers[tab]) tabRenderers[tab]();
     updateFab(tab);
@@ -8232,6 +8278,7 @@ function openSheet(title, body, onSave) {
   sheet.classList.add('show');
   backdrop.classList.add('show');
   sheetCtx = { onSave };
+  try { const sbd = document.getElementById('sheet-body'); sbd.classList.remove('sheet-enter'); void sbd.offsetWidth; sbd.classList.add('sheet-enter'); setTimeout(() => sbd.classList.remove('sheet-enter'), 700); } catch (e) {}
   // El botón "atrás" del teléfono cierra la página en vez de salir de la app
   if (!_sheetHist) { try { history.pushState({ sheet: 1 }, ''); _sheetHist = true; } catch (e) {} }
   // Visibilidad del botón Guardar según si hay callback
@@ -9011,7 +9058,7 @@ async function authAdmin(action, args) {
 }
 let _authUsers = [];
 async function openAuthUsers() {
-  openSheet('Usuarios', '<div class="food-loader">Cargando...</div>');
+  openSheet('Usuarios', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>');
   const r = await authAdmin('list');
   if (!r.ok) { openSheet('Usuarios', `<p class="auth-msg">${escapeHtml(authErr(r.error))}</p>`); return; }
   _authUsers = r.users || [];
@@ -9415,7 +9462,7 @@ function linkAgo(iso) {
 }
 let _links = { as_client: [], as_specialist: [] };
 async function openLinks() {
-  openSheet('Especialistas y atletas', '<div class="food-loader">Cargando...</div>');
+  openSheet('Especialistas y atletas', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>');
   const r = await linkRpc('rutinal_my_links');
   if (!r.ok) { openSheet('Especialistas y atletas', `<p class="auth-msg">${escapeHtml(linkErr(r.error))}</p>`); return; }
   _links = r;
@@ -9518,7 +9565,7 @@ function asgSummary(kind, p) {
 let _tpls = [];
 async function openTemplates(forClient) {
   const title = 'Mis plantillas';
-  openSheet(title, '<div class="food-loader">Cargando...</div>');
+  openSheet(title, '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>');
   try { _tpls = await sbRest('templates?select=id,kind,name,payload,updated_at&order=updated_at.desc') || []; }
   catch (e) { openSheet(title, `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
   const specs = (authGet() || {}).specs || [];
@@ -9801,7 +9848,7 @@ async function openNotes(linkId, name, back, opts) {
   let pending = null, rows = [], lastSig = '';
   openSheet(title, `<div class="chat" id="nt-chat" data-link="${escapeHtml(String(linkId))}">
       ${(opts.roles || (opts.role ? [opts.role] : [])).length ? `<div class="chat-sub">${rolesBadges({ roles: opts.roles || [opts.role] })}</div>` : ''}
-      <div class="nt-list" id="nt-list"><div class="food-loader">Cargando...</div></div>
+      <div class="nt-list" id="nt-list"><div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div></div>
       <div class="chat-bar">
         <div class="chat-pick" id="nt-pick" hidden></div>
         <div class="chat-refchip" id="nt-refchip" hidden></div>
@@ -10129,7 +10176,7 @@ async function spInvite() {
 // ---- Inicio ----
 tabRenderers['sp-home'] = async function () {
   const el = document.getElementById('tab-sp-home'), s = authGet() || {};
-  if (!el.innerHTML) el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  if (!el.innerHTML) el.innerHTML = '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>';
   const r = await spLoad(false), cs = spClients(r), pend = (r.as_specialist || []).filter(l => l.status === 'pending');
   const quiet = cs.filter(l => { const a = linkAgo(l.last_activity); return a == null || a >= 3; });
   const pain = cs.filter(l => l.pain7 != null && l.pain7 >= 6);
@@ -10159,7 +10206,7 @@ tabRenderers['sp-home'] = async function () {
 tabRenderers['sp-clients'] = async function () {
   const el = document.getElementById('tab-sp-clients');
   if (_sp.client) return spOpenClient(_sp.client);
-  if (!el.innerHTML) el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  if (!el.innerHTML) el.innerHTML = '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>';
   const r = await spLoad(false), cs = spClients(r), pend = linkGroup((r.as_specialist || []).filter(l => l.status === 'pending'), l => l.code || l.id);
   if (_sp.client) return;
   const q = normalizeFoodQuery(_sp.q || '');
@@ -10309,7 +10356,7 @@ async function spOpenClient(l) {
   if (!l) return;
   const el = document.getElementById('tab-sp-clients');
   _sp.client = l;
-  el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  el.innerHTML = '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>';
   window.scrollTo(0, 0);
   const from = keyDate(new Date(Date.now() - 55 * 864e5)), me = (authGet() || {}).uid;
   let rows = [], asg = [];
@@ -10460,7 +10507,7 @@ function tplDone(forClient) { closeSheet(); _sp.tpls = null; if (forClient && sp
 // ---- Plantillas ----
 tabRenderers['sp-templates'] = async function () {
   const el = document.getElementById('tab-sp-templates');
-  if (!el.innerHTML) el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  if (!el.innerHTML) el.innerHTML = '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>';
   let list = [];
   try { list = await sbRest('templates?select=id,kind,name,payload,updated_at&order=updated_at.desc') || []; }
   catch (e) { el.innerHTML = `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; return; }
@@ -10490,7 +10537,7 @@ tabRenderers['sp-templates'] = async function () {
 // ---- Notas ----
 tabRenderers['sp-notes'] = async function () {
   const el = document.getElementById('tab-sp-notes');
-  if (!el.innerHTML) el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  if (!el.innerHTML) el.innerHTML = '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>';
   const r = await spLoad(false), cs = spClients(r), me = (authGet() || {}).uid;
   let notes = [];
   try { notes = await sbRest('notes?select=link_id,author_id,body,created_at&order=created_at.desc&limit=300') || []; } catch (e) {}
@@ -10675,7 +10722,7 @@ function photoFill(root) {
 }
 function photoDay(k) { try { return parseKey(k).toLocaleDateString(_loc(), { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return k; } }
 async function openPhotos() {
-  openSheet('Fotos de progreso', '<div class="food-loader">Cargando...</div>');
+  openSheet('Fotos de progreso', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>');
   const s = authGet() || {};
   let rows = [];
   try { rows = await sbRest('progress_photos?select=id,path,taken_on,note,shared&user_id=eq.' + encodeURIComponent(s.uid) + '&order=taken_on.desc,created_at.desc&limit=200') || []; }
@@ -14219,7 +14266,7 @@ function openGymSwapPicker(ex, onPick, onBack) {
       <div class="chip" data-scope="routine">Cambiar en la rutina</div>
     </div>
     <input type="search" class="field-input" id="gym-q" placeholder="Busca en español o inglés (ej. press inclinado, remo)" style="margin-top:10px;">
-    <div id="gym-results" class="gym-results"><div class="food-loader">Cargando ejercicios…</div></div>
+    <div id="gym-results" class="gym-results"><div class="skel list" aria-busy="true"><i></i><i></i><i></i><i></i><i></i></div></div>
     <button class="btn-secondary" id="gym-q-back" style="margin-top:10px;">‹ Volver</button>
   </div>`);
   document.getElementById('sheet-body').scrollTop = 0;
@@ -14249,7 +14296,7 @@ function openGymSwapPicker(ex, onPick, onBack) {
 function openGymExercisePicker(initialQuery, onPick, onBack) {
   const body = `<div class="gym-search">
     <input type="search" class="field-input" id="gym-q" placeholder="Busca en español o inglés (ej. press inclinado, remo)" value="${escapeHtml(initialQuery || '')}">
-    <div id="gym-results" class="gym-results"><div class="food-loader">Cargando ejercicios…</div></div>
+    <div id="gym-results" class="gym-results"><div class="skel list" aria-busy="true"><i></i><i></i><i></i><i></i><i></i></div></div>
     ${onBack ? '<button class="btn-secondary" id="gym-q-back" style="margin-top:10px;">‹ Volver</button>' : ''}
   </div>`;
   openSheet('Buscar ejercicio', body);

@@ -232,7 +232,7 @@ function antWeightOut(kg) { return kg == null ? '—' : bwDisp(kg) + ' ' + bwUni
 
 async function antRender(clientId, name, el, ctx) {
   Object.assign(_ant, { clientId, name: name || '', el, ctx: ctx || {} });
-  el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  el.innerHTML = '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>';
   try {
     _ant.rows = await sbRest('assessments?select=id,client_id,author_id,taken_on,data,updated_at&client_id=eq.' + encodeURIComponent(clientId) + '&order=taken_on.desc,created_at.desc&limit=60') || [];
   } catch (e) { el.innerHTML = `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; return; }
@@ -697,7 +697,7 @@ function openCheckinForm(row) {
 }
 
 async function openMyCheckins() {
-  openSheet('Check-ins', '<div class="food-loader">Cargando...</div>');
+  openSheet('Check-ins', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>');
   await ckRefresh(true);
   const c = ckCache(), wk = ckWeekOf(), cur = c.rows.find(r => r.week_of === wk), names = {};
   try { const ls = msgCache().links || []; names._ = ls.length === 1 ? ls[0].name : t('Tu especialista'); } catch (e) {}
@@ -727,7 +727,7 @@ async function ckPendingForSpecialist() {
   } catch (e) { return []; }
 }
 async function ckRenderFor(l, el) {
-  el.innerHTML = '<div class="food-loader">Cargando...</div>';
+  el.innerHTML = '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>';
   const me = (authGet() || {}).uid; let rows = [], reviews = [];
   try {
     rows = await sbRest('checkins?select=id,week_of,data,created_at,updated_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&order=week_of.desc&limit=26') || [];
