@@ -8802,7 +8802,7 @@ function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
 function authEndSession(msg, info) {
   try { if (typeof chatBgOff === 'function') chatBgOff(false); } catch (e) {}
   try { if (window.Android && window.Android.setAppointments) window.Android.setAppointments('[]'); } catch (e) {}
-  try { localStorage.removeItem('__asg'); localStorage.removeItem('__msgs'); localStorage.removeItem('__appts'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
+  try { localStorage.removeItem('__asg'); localStorage.removeItem('__msgs'); localStorage.removeItem('__appts'); localStorage.removeItem('__ant'); if (typeof asgRenderCard === 'function') asgRenderCard(); } catch (e) {}
   try { document.documentElement.dataset.mode = ''; document.documentElement.classList.remove('is-spec'); localStorage.removeItem('__mode'); document.querySelector('nav button[data-tab="hoy"]').click(); } catch (e) {}
   const s = authGet();
   authSet(s && s.user ? { user: s.user } : null);
@@ -9722,6 +9722,7 @@ async function msgRefresh(force) {
   msgPaint();
   try { chatBgMeta(); } catch (e) {}
   try { apptRefresh(force); } catch (e) {}
+  try { antHoyRefresh(force); } catch (e) {}
 }
 function ntRefLabel(ref) { return ref && ref.t === 'asg' ? `${t(ASG_KINDS[ref.kind] || 'Plan')} · ${ref.name || ''}` : ''; }
 // Enviar un mensaje (con referencia opcional). Si el servidor aún no acepta `ref`, se manda como texto.
@@ -10765,7 +10766,8 @@ function renderHoyDash() {
       return `<button class="hd-chat-row${un ? ' unread' : ''}" data-hd-chat="${i}"><span class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</span><span class="hd-chat-b"><b translate="no">${escapeHtml(l.name || '')}</b>
         <small translate="no">${n ? (n.author_id === s.uid ? `<span translate="yes">Tú</span>: ` : '') + escapeHtml(n.body) : `${linkRoles(l).map(r => `<span translate="yes">${escapeHtml(AUTH_SPECS[r] || r)}</span>`).join(' · ')} · <span translate="yes">Escríbele</span>`}</small></span>${un ? '<i class="hd-dot"></i>' : '<span class="mas-chev">›</span>'}</button>`; }).join('')}</div>`;
   } catch (e) {}
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${appt}${chat}${food}${weight}${week}`;
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${appt}${chat}${food}${weight}${typeof antHoyCard === 'function' ? antHoyCard() : ''}${week}`;
+  el.querySelectorAll('[data-hd-ant]').forEach(c => c.addEventListener('click', () => openMyAssessments()));
   el.querySelectorAll('[data-hd-agenda]').forEach(c => c.addEventListener('click', () => openAgenda()));
   el.querySelectorAll('[data-hd-chat]').forEach(b => b.addEventListener('click', () => { const l = msgCache().links[+b.dataset.hdChat]; if (l) openNotes(l.id, l.name, null, { spec: false, role: l.role, roles: linkRoles(l), ids: linkIds(l) }); }));
   el.querySelectorAll('[data-hd]').forEach(b => b.addEventListener('click', (ev) => { ev.stopPropagation(); const n = document.querySelector(`nav button[data-tab="${b.dataset.hd}"]`); if (n) n.click(); }));

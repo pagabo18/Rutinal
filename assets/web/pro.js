@@ -398,7 +398,7 @@ function antOpenEditor(row) {
       else await sbRest('assessments', { method: 'POST', body: { client_id: _ant.clientId, taken_on: date, data }, headers: { Prefer: 'return=minimal' } });
     } catch (e) { msg.textContent = authErr(e.code); return; }
     if (!row && _ant.ctx.link) { try { await ntPost(_ant.ctx.link.id, t('Registré tu evaluación de composición corporal.')); } catch (e) {} }
-    _ant.sel = null;
+    _ant.sel = null; try { antHoyRefresh(true); } catch (e) {}
     if (_ant.ctx.onSaved) _ant.ctx.onSaved(); else closeSheet();
   });
   document.querySelectorAll('#ant-sex .chip').forEach(c => c.addEventListener('click', () => { document.querySelectorAll('#ant-sex .chip').forEach(x => x.classList.toggle('selected', x === c)); live(); }));
@@ -413,6 +413,36 @@ function openMyAssessments() {
   openSheet('Composición corporal', '<div id="ant-self"></div>');
   antRender(s.uid, s.name || s.user || '', document.getElementById('ant-self'),
     { D: { nutri_profile: S.get('nutri_profile', null) || {}, weight_log: S.get('weight_log', {}) || {} }, onSaved: openMyAssessments });
+}
+
+// Tarjeta de Hoy: última evaluación del atleta y cambio contra la anterior.
+let _antHoyAt = 0;
+function antHoyCache() { try { const a = JSON.parse(localStorage.getItem('__ant') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+async function antHoyRefresh(force) {
+  const s = authGet();
+  if (!s || !s.refresh || !s.uid || navigator.onLine === false) return;
+  if (!force && Date.now() - _antHoyAt < 120000) return;
+  _antHoyAt = Date.now();
+  let rows;
+  try { rows = await sbRest('assessments?select=taken_on,data&client_id=eq.' + encodeURIComponent(s.uid) + '&order=taken_on.desc,created_at.desc&limit=2'); } catch (e) { return; }
+  const before = localStorage.getItem('__ant') || '[]', now = JSON.stringify(rows || []);
+  if (before === now) return;
+  try { localStorage.setItem('__ant', now); } catch (e) {}
+  try { if (typeof renderHoyDash === 'function') renderHoyDash(); } catch (e) {}
+}
+function antHoyCard() {
+  const rows = antHoyCache();
+  if (!rows.length) return '';
+  const c = antCalc(rows[0].data || {}), pc = rows[1] ? antCalc(rows[1].data || {}) : null, lb = bwUnit() === 'lb', kg = v => v == null ? null : (lb ? v * GYM_LB : v);
+  if (c.pct == null && c.bmi == null) return '';
+  const dl = (a, b, dec) => { if (a == null || b == null) return ''; const d = Math.round((a - b) * Math.pow(10, dec)) / Math.pow(10, dec); return d ? `<small translate="no">${d > 0 ? '+' : ''}${d.toLocaleString(_loc())}</small>` : '<small>=</small>'; };
+  const cell = (v, l, sub) => `<div class="hd-w"><b translate="no">${v}</b><span>${l}</span>${sub || ''}</div>`;
+  return `<div class="hd-card" data-hd-ant="1" style="cursor:pointer;"><div class="hd-k"><span>Composición corporal</span><span class="hd-badge" translate="no">${escapeHtml(antDate(rows[0].taken_on))}</span></div><div class="hd-week">
+    ${c.pct != null ? cell(antN(c.pct, 1, '%'), '% de grasa', pc ? dl(c.pct, pc.pct, 1) : '') : ''}
+    ${c.ffm != null ? cell(antN(kg(c.ffm), 1, bwUnit()), 'Masa libre de grasa', pc ? dl(kg(c.ffm), kg(pc.ffm), 1) : '') : ''}
+    ${c.bmi != null ? cell(antN(c.bmi, 1), 'IMC', pc ? dl(c.bmi, pc.bmi, 1) : '') : ''}
+    ${c.gi.waist ? cell(antN(c.gi.waist, 1, 'cm'), 'Cintura', pc && pc.gi ? dl(c.gi.waist, pc.gi.waist, 1) : '') : ''}</div>
+    ${pc ? `<div class="hd-d" style="margin-top:8px;"><span>Cambio desde</span> <span translate="no">${escapeHtml(antDate(rows[1].taken_on))}</span></div>` : ''}</div>`;
 }
 
 // ============================================================

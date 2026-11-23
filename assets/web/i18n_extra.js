@@ -3756,6 +3756,11 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Cambio desde": {
+   "en": "Change since",
+   "pt-BR": "Mudança desde",
+   "fr": "Variation depuis"
+  },
   "Al inicio": {
    "en": "At start",
    "pt-BR": "No início",
