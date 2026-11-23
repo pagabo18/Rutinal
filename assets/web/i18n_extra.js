@@ -3756,6 +3756,1001 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Al inicio": {
+   "en": "At start",
+   "pt-BR": "No início",
+   "fr": "Au début"
+  },
+  "Evaluación": {
+   "en": "Assessment",
+   "pt-BR": "Avaliação",
+   "fr": "Évaluation"
+  },
+  "Composición corporal": {
+   "en": "Body composition",
+   "pt-BR": "Composição corporal",
+   "fr": "Composition corporelle"
+  },
+  "Mediciones, % de grasa e índices": {
+   "en": "Measurements, body fat % and indices",
+   "pt-BR": "Medidas, % de gordura e índices",
+   "fr": "Mesures, % de graisse et indices"
+  },
+  "Nueva evaluación": {
+   "en": "New assessment",
+   "pt-BR": "Nova avaliação",
+   "fr": "Nouvelle évaluation"
+  },
+  "Editar evaluación": {
+   "en": "Edit assessment",
+   "pt-BR": "Editar avaliação",
+   "fr": "Modifier l'évaluation"
+  },
+  "Evaluación de": {
+   "en": "Assessment for",
+   "pt-BR": "Avaliação de",
+   "fr": "Évaluation de"
+  },
+  "Aún no hay evaluaciones. Registra peso, talla, pliegues y perímetros; la app calcula IMC, % de grasa, masa libre de grasa, índices y gasto energético.": {
+   "en": "No assessments yet. Record weight, height, skinfolds and girths; the app calculates BMI, body fat %, fat-free mass, indices and energy expenditure.",
+   "pt-BR": "Ainda não há avaliações. Registre peso, altura, dobras e perímetros; o app calcula IMC, % de gordura, massa livre de gordura, índices e gasto energético.",
+   "fr": "Aucune évaluation. Saisissez poids, taille, plis et périmètres ; l'app calcule l'IMC, le % de graisse, la masse maigre, les indices et la dépense énergétique."
+  },
+  "Fecha": {
+   "en": "Date",
+   "pt-BR": "Data",
+   "fr": "Date"
+  },
+  "Talla": {
+   "en": "Height",
+   "pt-BR": "Altura",
+   "fr": "Taille"
+  },
+  "Pliegues cutáneos": {
+   "en": "Skinfolds",
+   "pt-BR": "Dobras cutâneas",
+   "fr": "Plis cutanés"
+  },
+  "Pliegues": {
+   "en": "Skinfolds",
+   "pt-BR": "Dobras",
+   "fr": "Plis"
+  },
+  "pliegues": {
+   "en": "skinfolds",
+   "pt-BR": "dobras",
+   "fr": "plis"
+  },
+  "Perímetros": {
+   "en": "Girths",
+   "pt-BR": "Perímetros",
+   "fr": "Périmètres"
+  },
+  "Diámetros óseos": {
+   "en": "Bone breadths",
+   "pt-BR": "Diâmetros ósseos",
+   "fr": "Diamètres osseux"
+  },
+  "Otros datos": {
+   "en": "Other data",
+   "pt-BR": "Outros dados",
+   "fr": "Autres données"
+  },
+  "Lado derecho, con plicómetro. Puedes escribir 2 o 3 tomas separadas por espacio (ej.": {
+   "en": "Right side, with a caliper. You can enter 2 or 3 takes separated by a space (e.g.",
+   "pt-BR": "Lado direito, com adipômetro. Você pode digitar 2 ou 3 medidas separadas por espaço (ex.",
+   "fr": "Côté droit, avec une pince. Vous pouvez saisir 2 ou 3 prises séparées par un espace (ex."
+  },
+  "): con dos se promedian y con tres se usa la mediana.": {
+   "en": "): two are averaged, three use the median.",
+   "pt-BR": "): com duas faz-se a média e com três usa-se a mediana.",
+   "fr": ") : deux sont moyennées, trois utilisent la médiane."
+  },
+  "Para el somatotipo.": {
+   "en": "For the somatotype.",
+   "pt-BR": "Para o somatotipo.",
+   "fr": "Pour le somatotype."
+  },
+  "% de grasa por bioimpedancia": {
+   "en": "Body fat % by bioimpedance",
+   "pt-BR": "% de gordura por bioimpedância",
+   "fr": "% de graisse par bio-impédance"
+  },
+  "FC en reposo": {
+   "en": "Resting HR",
+   "pt-BR": "FC em repouso",
+   "fr": "FC au repos"
+  },
+  "Presión arterial": {
+   "en": "Blood pressure",
+   "pt-BR": "Pressão arterial",
+   "fr": "Tension artérielle"
+  },
+  "% de grasa objetivo": {
+   "en": "Target body fat %",
+   "pt-BR": "% de gordura alvo",
+   "fr": "% de graisse cible"
+  },
+  "Método principal de % de grasa": {
+   "en": "Main body fat method",
+   "pt-BR": "Método principal de % de gordura",
+   "fr": "Méthode principale de % de graisse"
+  },
+  "Automático (el más completo)": {
+   "en": "Automatic (most complete)",
+   "pt-BR": "Automático (o mais completo)",
+   "fr": "Automatique (la plus complète)"
+  },
+  "Bioimpedancia": {
+   "en": "Bioimpedance",
+   "pt-BR": "Bioimpedância",
+   "fr": "Bio-impédance"
+  },
+  "Condiciones de la medición, observaciones...": {
+   "en": "Measurement conditions, remarks...",
+   "pt-BR": "Condições da medição, observações...",
+   "fr": "Conditions de mesure, remarques..."
+  },
+  "Captura al menos edad, peso y talla.": {
+   "en": "Enter at least age, weight and height.",
+   "pt-BR": "Informe ao menos idade, peso e altura.",
+   "fr": "Saisissez au moins l'âge, le poids et la taille."
+  },
+  "Revisa edad, peso y talla: algún valor está fuera de rango.": {
+   "en": "Check age, weight and height: a value is out of range.",
+   "pt-BR": "Revise idade, peso e altura: algum valor está fora da faixa.",
+   "fr": "Vérifiez âge, poids et taille : une valeur est hors plage."
+  },
+  "Revisa las mediciones: pliegues en mm, perímetros y diámetros en cm.": {
+   "en": "Check the measurements: skinfolds in mm, girths and breadths in cm.",
+   "pt-BR": "Revise as medidas: dobras em mm, perímetros e diâmetros em cm.",
+   "fr": "Vérifiez les mesures : plis en mm, périmètres et diamètres en cm."
+  },
+  "Completa los pliegues de algún método para calcular el % de grasa.": {
+   "en": "Fill in the skinfolds of one method to calculate body fat %.",
+   "pt-BR": "Preencha as dobras de algum método para calcular o % de gordura.",
+   "fr": "Renseignez les plis d'une méthode pour calculer le % de graisse."
+  },
+  "Método:": {
+   "en": "Method:",
+   "pt-BR": "Método:",
+   "fr": "Méthode :"
+  },
+  "Σ pliegues": {
+   "en": "Σ skinfolds",
+   "pt-BR": "Σ dobras",
+   "fr": "Σ plis"
+  },
+  "Σ 6 pliegues": {
+   "en": "Σ 6 skinfolds",
+   "pt-BR": "Σ 6 dobras",
+   "fr": "Σ 6 plis"
+  },
+  "% de grasa": {
+   "en": "Body fat %",
+   "pt-BR": "% de gordura",
+   "fr": "% de graisse"
+  },
+  "Masa grasa": {
+   "en": "Fat mass",
+   "pt-BR": "Massa gorda",
+   "fr": "Masse grasse"
+  },
+  "Masa libre de grasa": {
+   "en": "Fat-free mass",
+   "pt-BR": "Massa livre de gordura",
+   "fr": "Masse maigre"
+  },
+  "Masa muscular": {
+   "en": "Muscle mass",
+   "pt-BR": "Massa muscular",
+   "fr": "Masse musculaire"
+  },
+  "IMC": {
+   "en": "BMI",
+   "pt-BR": "IMC",
+   "fr": "IMC"
+  },
+  "IMG": {
+   "en": "FMI",
+   "pt-BR": "IMG",
+   "fr": "IMG"
+  },
+  "IMLG": {
+   "en": "FFMI",
+   "pt-BR": "IMLG",
+   "fr": "IMM"
+  },
+  "ICC": {
+   "en": "WHR",
+   "pt-BR": "RCQ",
+   "fr": "RTH"
+  },
+  "ICT": {
+   "en": "WHtR",
+   "pt-BR": "RCE",
+   "fr": "RTT"
+  },
+  "Índice de masa grasa": {
+   "en": "Fat mass index",
+   "pt-BR": "Índice de massa gorda",
+   "fr": "Indice de masse grasse"
+  },
+  "Índice de masa libre de grasa": {
+   "en": "Fat-free mass index",
+   "pt-BR": "Índice de massa livre de gordura",
+   "fr": "Indice de masse maigre"
+  },
+  "Normalizado": {
+   "en": "Normalized",
+   "pt-BR": "Normalizado",
+   "fr": "Normalisé"
+  },
+  "del peso": {
+   "en": "of body weight",
+   "pt-BR": "do peso",
+   "fr": "du poids"
+  },
+  "Cintura": {
+   "en": "Waist",
+   "pt-BR": "Cintura",
+   "fr": "Tour de taille"
+  },
+  "Área muscular del brazo": {
+   "en": "Arm muscle area",
+   "pt-BR": "Área muscular do braço",
+   "fr": "Surface musculaire du bras"
+  },
+  "% de grasa por método": {
+   "en": "Body fat % by method",
+   "pt-BR": "% de gordura por método",
+   "fr": "% de graisse par méthode"
+  },
+  "principal": {
+   "en": "main",
+   "pt-BR": "principal",
+   "fr": "principale"
+  },
+  "Promedio de los métodos": {
+   "en": "Average of methods",
+   "pt-BR": "Média dos métodos",
+   "fr": "Moyenne des méthodes"
+  },
+  "Estimado solo con IMC (Deurenberg)": {
+   "en": "Estimated from BMI only (Deurenberg)",
+   "pt-BR": "Estimado só com IMC (Deurenberg)",
+   "fr": "Estimé avec l'IMC seul (Deurenberg)"
+  },
+  "referencia; no distingue músculo de grasa": {
+   "en": "reference; does not tell muscle from fat",
+   "pt-BR": "referência; não distingue músculo de gordura",
+   "fr": "référence ; ne distingue pas muscle et graisse"
+  },
+  "Somatotipo (Heath-Carter)": {
+   "en": "Somatotype (Heath-Carter)",
+   "pt-BR": "Somatotipo (Heath-Carter)",
+   "fr": "Somatotype (Heath-Carter)"
+  },
+  "Endomorfia": {
+   "en": "Endomorphy",
+   "pt-BR": "Endomorfia",
+   "fr": "Endomorphie"
+  },
+  "Mesomorfia": {
+   "en": "Mesomorphy",
+   "pt-BR": "Mesomorfia",
+   "fr": "Mésomorphie"
+  },
+  "Ectomorfia": {
+   "en": "Ectomorphy",
+   "pt-BR": "Ectomorfia",
+   "fr": "Ectomorphie"
+  },
+  "Para el somatotipo completo faltan diámetros de húmero y fémur, brazo contraído y pantorrilla.": {
+   "en": "The full somatotype needs humerus and femur breadths, flexed arm and calf.",
+   "pt-BR": "Para o somatotipo completo faltam diâmetros de úmero e fêmur, braço contraído e panturrilha.",
+   "fr": "Le somatotype complet nécessite les diamètres de l'humérus et du fémur, le bras contracté et le mollet."
+  },
+  "Gasto energético en reposo": {
+   "en": "Resting energy expenditure",
+   "pt-BR": "Gasto energético em repouso",
+   "fr": "Dépense énergétique au repos"
+  },
+  "Promedio de las fórmulas": {
+   "en": "Average of formulas",
+   "pt-BR": "Média das fórmulas",
+   "fr": "Moyenne des formules"
+  },
+  "Gasto total del día": {
+   "en": "Total daily expenditure",
+   "pt-BR": "Gasto total do dia",
+   "fr": "Dépense totale du jour"
+  },
+  "factor de actividad": {
+   "en": "activity factor",
+   "pt-BR": "fator de atividade",
+   "fr": "facteur d'activité"
+  },
+  "Peso objetivo": {
+   "en": "Target weight",
+   "pt-BR": "Peso alvo",
+   "fr": "Poids cible"
+  },
+  "de grasa y la misma masa libre de grasa pesaría": {
+   "en": "body fat with the same fat-free mass, weight would be",
+   "pt-BR": "de gordura e a mesma massa livre de gordura pesaria",
+   "fr": "de graisse et la même masse maigre, le poids serait de"
+  },
+  "Peso con IMC entre 18.5 y 24.9:": {
+   "en": "Weight at BMI 18.5–24.9:",
+   "pt-BR": "Peso com IMC entre 18,5 e 24,9:",
+   "fr": "Poids pour un IMC de 18,5 à 24,9 :"
+  },
+  "Frecuencia cardiaca": {
+   "en": "Heart rate",
+   "pt-BR": "Frequência cardíaca",
+   "fr": "Fréquence cardiaque"
+  },
+  "FC máxima estimada": {
+   "en": "Estimated max HR",
+   "pt-BR": "FC máxima estimada",
+   "fr": "FC max estimée"
+  },
+  "Zonas por reserva de frecuencia cardiaca (Karvonen).": {
+   "en": "Zones by heart rate reserve (Karvonen).",
+   "pt-BR": "Zonas por reserva de frequência cardíaca (Karvonen).",
+   "fr": "Zones par réserve de fréquence cardiaque (Karvonen)."
+  },
+  "Zonas por porcentaje de la FC máxima. Con la FC en reposo se calculan por reserva.": {
+   "en": "Zones by percentage of max HR. With resting HR they are calculated by reserve.",
+   "pt-BR": "Zonas por porcentagem da FC máxima. Com a FC em repouso são calculadas por reserva.",
+   "fr": "Zones en pourcentage de la FC max. Avec la FC au repos, elles sont calculées par réserve."
+  },
+  "Evolución": {
+   "en": "Progress",
+   "pt-BR": "Evolução",
+   "fr": "Évolution"
+  },
+  "cambios vs.": {
+   "en": "changes vs.",
+   "pt-BR": "mudanças vs.",
+   "fr": "variations vs"
+  },
+  "sin cambio": {
+   "en": "no change",
+   "pt-BR": "sem mudança",
+   "fr": "inchangé"
+  },
+  "¿Eliminar esta evaluación?": {
+   "en": "Delete this assessment?",
+   "pt-BR": "Excluir esta avaliação?",
+   "fr": "Supprimer cette évaluation ?"
+  },
+  "Estimaciones de campo. Sirven para comparar a la misma persona con el mismo método y la misma técnica; no sustituyen una valoración clínica.": {
+   "en": "Field estimates. Useful to compare the same person with the same method and technique; they do not replace a clinical assessment.",
+   "pt-BR": "Estimativas de campo. Servem para comparar a mesma pessoa com o mesmo método e técnica; não substituem uma avaliação clínica.",
+   "fr": "Estimations de terrain. Utiles pour comparer la même personne avec la même méthode et la même technique ; elles ne remplacent pas une évaluation clinique."
+  },
+  "Registré tu evaluación de composición corporal.": {
+   "en": "I recorded your body composition assessment.",
+   "pt-BR": "Registrei sua avaliação de composição corporal.",
+   "fr": "J'ai enregistré votre évaluation de composition corporelle."
+  },
+  "Evaluación antropométrica · Rutinal": {
+   "en": "Anthropometric assessment · Rutinal",
+   "pt-BR": "Avaliação antropométrica · Rutinal",
+   "fr": "Évaluation anthropométrique · Rutinal"
+  },
+  "Subescapular": {
+   "en": "Subscapular",
+   "pt-BR": "Subescapular",
+   "fr": "Sous-scapulaire"
+  },
+  "Cresta ilíaca (suprailíaco)": {
+   "en": "Iliac crest (suprailiac)",
+   "pt-BR": "Crista ilíaca (suprailíaca)",
+   "fr": "Crête iliaque (supra-iliaque)"
+  },
+  "Supraespinal": {
+   "en": "Supraspinale",
+   "pt-BR": "Supraespinal",
+   "fr": "Supra-épineux"
+  },
+  "Abdominal": {
+   "en": "Abdominal",
+   "pt-BR": "Abdominal",
+   "fr": "Abdominal"
+  },
+  "Pectoral": {
+   "en": "Chest",
+   "pt-BR": "Peitoral",
+   "fr": "Pectoral"
+  },
+  "Axilar medio": {
+   "en": "Midaxillary",
+   "pt-BR": "Axilar média",
+   "fr": "Axillaire moyen"
+  },
+  "Muslo anterior": {
+   "en": "Front thigh",
+   "pt-BR": "Coxa anterior",
+   "fr": "Cuisse antérieure"
+  },
+  "Pantorrilla medial": {
+   "en": "Medial calf",
+   "pt-BR": "Panturrilha medial",
+   "fr": "Mollet médial"
+  },
+  "Tórax": {
+   "en": "Chest",
+   "pt-BR": "Tórax",
+   "fr": "Thorax"
+  },
+  "Brazo relajado": {
+   "en": "Arm relaxed",
+   "pt-BR": "Braço relaxado",
+   "fr": "Bras relâché"
+  },
+  "Brazo contraído": {
+   "en": "Arm flexed",
+   "pt-BR": "Braço contraído",
+   "fr": "Bras contracté"
+  },
+  "Antebrazo": {
+   "en": "Forearm",
+   "pt-BR": "Antebraço",
+   "fr": "Avant-bras"
+  },
+  "Abdomen (ombligo)": {
+   "en": "Abdomen (navel)",
+   "pt-BR": "Abdômen (umbigo)",
+   "fr": "Abdomen (nombril)"
+  },
+  "Cadera": {
+   "en": "Hip",
+   "pt-BR": "Quadril",
+   "fr": "Hanches"
+  },
+  "Muslo medio": {
+   "en": "Mid thigh",
+   "pt-BR": "Coxa média",
+   "fr": "Mi-cuisse"
+  },
+  "Pantorrilla": {
+   "en": "Calf",
+   "pt-BR": "Panturrilha",
+   "fr": "Mollet"
+  },
+  "Húmero (codo)": {
+   "en": "Humerus (elbow)",
+   "pt-BR": "Úmero (cotovelo)",
+   "fr": "Humérus (coude)"
+  },
+  "Fémur (rodilla)": {
+   "en": "Femur (knee)",
+   "pt-BR": "Fêmur (joelho)",
+   "fr": "Fémur (genou)"
+  },
+  "Muñeca": {
+   "en": "Wrist",
+   "pt-BR": "Punho",
+   "fr": "Poignet"
+  },
+  "Ligero (1–3 días/sem)": {
+   "en": "Light (1–3 days/wk)",
+   "pt-BR": "Leve (1–3 dias/sem)",
+   "fr": "Léger (1–3 j/sem)"
+  },
+  "Moderado (3–5 días/sem)": {
+   "en": "Moderate (3–5 days/wk)",
+   "pt-BR": "Moderado (3–5 dias/sem)",
+   "fr": "Modéré (3–5 j/sem)"
+  },
+  "Intenso (6–7 días/sem)": {
+   "en": "Hard (6–7 days/wk)",
+   "pt-BR": "Intenso (6–7 dias/sem)",
+   "fr": "Intense (6–7 j/sem)"
+  },
+  "Muy intenso (doble sesión)": {
+   "en": "Very hard (two-a-days)",
+   "pt-BR": "Muito intenso (dois treinos)",
+   "fr": "Très intense (biquotidien)"
+  },
+  "Bajo peso": {
+   "en": "Underweight",
+   "pt-BR": "Baixo peso",
+   "fr": "Insuffisance pondérale"
+  },
+  "Sobrepeso": {
+   "en": "Overweight",
+   "pt-BR": "Sobrepeso",
+   "fr": "Surpoids"
+  },
+  "Obesidad I": {
+   "en": "Obesity I",
+   "pt-BR": "Obesidade I",
+   "fr": "Obésité I"
+  },
+  "Obesidad II": {
+   "en": "Obesity II",
+   "pt-BR": "Obesidade II",
+   "fr": "Obésité II"
+  },
+  "Obesidad III": {
+   "en": "Obesity III",
+   "pt-BR": "Obesidade III",
+   "fr": "Obésité III"
+  },
+  "Grasa esencial": {
+   "en": "Essential fat",
+   "pt-BR": "Gordura essencial",
+   "fr": "Graisse essentielle"
+  },
+  "Atlético": {
+   "en": "Athletic",
+   "pt-BR": "Atlético",
+   "fr": "Athlétique"
+  },
+  "En forma": {
+   "en": "Fit",
+   "pt-BR": "Em forma",
+   "fr": "En forme"
+  },
+  "Sin riesgo": {
+   "en": "No risk",
+   "pt-BR": "Sem risco",
+   "fr": "Sans risque"
+  },
+  "Riesgo aumentado": {
+   "en": "Increased risk",
+   "pt-BR": "Risco aumentado",
+   "fr": "Risque accru"
+  },
+  "Riesgo alto": {
+   "en": "High risk",
+   "pt-BR": "Risco alto",
+   "fr": "Risque élevé"
+  },
+  "Durnin-Womersley (4 pliegues)": {
+   "en": "Durnin-Womersley (4 skinfolds)",
+   "pt-BR": "Durnin-Womersley (4 dobras)",
+   "fr": "Durnin-Womersley (4 plis)"
+  },
+  "Jackson-Pollock (7 pliegues)": {
+   "en": "Jackson-Pollock (7 skinfolds)",
+   "pt-BR": "Jackson-Pollock (7 dobras)",
+   "fr": "Jackson-Pollock (7 plis)"
+  },
+  "Jackson-Pollock (3 pliegues)": {
+   "en": "Jackson-Pollock (3 skinfolds)",
+   "pt-BR": "Jackson-Pollock (3 dobras)",
+   "fr": "Jackson-Pollock (3 plis)"
+  },
+  "Faulkner (4 pliegues)": {
+   "en": "Faulkner (4 skinfolds)",
+   "pt-BR": "Faulkner (4 dobras)",
+   "fr": "Faulkner (4 plis)"
+  },
+  "Yuhasz (6 pliegues)": {
+   "en": "Yuhasz (6 skinfolds)",
+   "pt-BR": "Yuhasz (6 dobras)",
+   "fr": "Yuhasz (6 plis)"
+  },
+  "Perímetros (Marina de EE. UU.)": {
+   "en": "Girths (US Navy)",
+   "pt-BR": "Perímetros (Marinha dos EUA)",
+   "fr": "Périmètres (US Navy)"
+  },
+  "Bioimpedancia / equipo": {
+   "en": "Bioimpedance / device",
+   "pt-BR": "Bioimpedância / aparelho",
+   "fr": "Bio-impédance / appareil"
+  },
+  "Katch-McArdle (masa libre de grasa)": {
+   "en": "Katch-McArdle (fat-free mass)",
+   "pt-BR": "Katch-McArdle (massa livre de gordura)",
+   "fr": "Katch-McArdle (masse maigre)"
+  },
+  "Cunningham (masa libre de grasa)": {
+   "en": "Cunningham (fat-free mass)",
+   "pt-BR": "Cunningham (massa livre de gordura)",
+   "fr": "Cunningham (masse maigre)"
+  },
+  "Harris-Benedict (rev. 1984)": {
+   "en": "Harris-Benedict (rev. 1984)",
+   "pt-BR": "Harris-Benedict (rev. 1984)",
+   "fr": "Harris-Benedict (rév. 1984)"
+  },
+  "Z1 · recuperación": {
+   "en": "Z1 · recovery",
+   "pt-BR": "Z1 · recuperação",
+   "fr": "Z1 · récupération"
+  },
+  "Z2 · base aeróbica": {
+   "en": "Z2 · aerobic base",
+   "pt-BR": "Z2 · base aeróbica",
+   "fr": "Z2 · base aérobie"
+  },
+  "Z3 · tempo": {
+   "en": "Z3 · tempo",
+   "pt-BR": "Z3 · tempo",
+   "fr": "Z3 · tempo"
+  },
+  "Z4 · umbral": {
+   "en": "Z4 · threshold",
+   "pt-BR": "Z4 · limiar",
+   "fr": "Z4 · seuil"
+  },
+  "Z5 · máximo": {
+   "en": "Z5 · max",
+   "pt-BR": "Z5 · máximo",
+   "fr": "Z5 · maximum"
+  },
+  "Dieta prehecha": {
+   "en": "Ready-made diet",
+   "pt-BR": "Dieta pronta",
+   "fr": "Régime prêt à l'emploi"
+  },
+  "Dietas prehechas": {
+   "en": "Ready-made diets",
+   "pt-BR": "Dietas prontas",
+   "fr": "Régimes prêts à l'emploi"
+  },
+  "Por equivalentes": {
+   "en": "By exchanges",
+   "pt-BR": "Por equivalentes",
+   "fr": "Par équivalents"
+  },
+  "por equivalentes": {
+   "en": "by exchanges",
+   "pt-BR": "por equivalentes",
+   "fr": "par équivalents"
+  },
+  "Plan por equivalentes": {
+   "en": "Exchange plan",
+   "pt-BR": "Plano por equivalentes",
+   "fr": "Plan par équivalents"
+  },
+  "Editar plan por equivalentes": {
+   "en": "Edit exchange plan",
+   "pt-BR": "Editar plano por equivalentes",
+   "fr": "Modifier le plan par équivalents"
+  },
+  "Menú con alimentos y gramos": {
+   "en": "Menu with foods and grams",
+   "pt-BR": "Cardápio com alimentos e gramas",
+   "fr": "Menu avec aliments et grammes"
+  },
+  "Elige tipo y calorías; se arma sola con equivalentes y la ajustas.": {
+   "en": "Pick type and calories; it builds itself with exchanges and you adjust it.",
+   "pt-BR": "Escolha tipo e calorias; monta-se sozinha com equivalentes e você ajusta.",
+   "fr": "Choisissez le type et les calories ; il se construit avec des équivalents et vous l'ajustez."
+  },
+  "Tú defines cuántos equivalentes de cada grupo van en cada comida.": {
+   "en": "You set how many exchanges of each group go in each meal.",
+   "pt-BR": "Você define quantos equivalentes de cada grupo vão em cada refeição.",
+   "fr": "Vous définissez combien d'équivalents de chaque groupe vont à chaque repas."
+  },
+  "Un menú fijo, alimento por alimento.": {
+   "en": "A fixed menu, food by food.",
+   "pt-BR": "Um cardápio fixo, alimento por alimento.",
+   "fr": "Un menu fixe, aliment par aliment."
+  },
+  "Elige el tipo de plan y las calorías. Se arma con el sistema de equivalentes y lo puedes ajustar antes de guardarlo.": {
+   "en": "Pick the plan type and calories. It is built with the exchange system and you can adjust it before saving.",
+   "pt-BR": "Escolha o tipo de plano e as calorias. É montado com o sistema de equivalentes e você pode ajustar antes de salvar.",
+   "fr": "Choisissez le type de plan et les calories. Il est construit avec le système d'équivalents et vous pouvez l'ajuster avant d'enregistrer."
+  },
+  "Equilibrada": {
+   "en": "Balanced",
+   "pt-BR": "Equilibrada",
+   "fr": "Équilibré"
+  },
+  "Baja en carbohidratos": {
+   "en": "Low carb",
+   "pt-BR": "Baixa em carboidratos",
+   "fr": "Pauvre en glucides"
+  },
+  "Reparto clásico para mantener o bajar de peso sin extremos.": {
+   "en": "Classic split to maintain or lose weight without extremes.",
+   "pt-BR": "Divisão clássica para manter ou perder peso sem extremos.",
+   "fr": "Répartition classique pour maintenir ou perdre du poids sans excès."
+  },
+  "Para definición o recomposición con entrenamiento de fuerza.": {
+   "en": "For cutting or recomposition with strength training.",
+   "pt-BR": "Para definição ou recomposição com treino de força.",
+   "fr": "Pour la sèche ou la recomposition avec musculation."
+  },
+  "Más carbohidrato para subir masa muscular y rendir en el entrenamiento.": {
+   "en": "More carbs to gain muscle and perform in training.",
+   "pt-BR": "Mais carboidrato para ganhar massa muscular e render no treino.",
+   "fr": "Plus de glucides pour prendre du muscle et performer à l'entraînement."
+  },
+  "Menos cereales y fruta, más grasa y proteína.": {
+   "en": "Fewer grains and fruit, more fat and protein.",
+   "pt-BR": "Menos cereais e fruta, mais gordura e proteína.",
+   "fr": "Moins de céréales et de fruits, plus de lipides et de protéines."
+  },
+  "Calorías del día": {
+   "en": "Daily calories",
+   "pt-BR": "Calorias do dia",
+   "fr": "Calories du jour"
+  },
+  "Usar y ajustar": {
+   "en": "Use and adjust",
+   "pt-BR": "Usar e ajustar",
+   "fr": "Utiliser et ajuster"
+  },
+  "Meta kcal": {
+   "en": "Goal kcal",
+   "pt-BR": "Meta kcal",
+   "fr": "Objectif kcal"
+  },
+  "% Proteína": {
+   "en": "% Protein",
+   "pt-BR": "% Proteína",
+   "fr": "% Protéines"
+  },
+  "% Carbos": {
+   "en": "% Carbs",
+   "pt-BR": "% Carbos",
+   "fr": "% Glucides"
+  },
+  "% Grasa": {
+   "en": "% Fat",
+   "pt-BR": "% Gordura",
+   "fr": "% Lipides"
+  },
+  "Calcular equivalentes para esta meta": {
+   "en": "Calculate exchanges for this goal",
+   "pt-BR": "Calcular equivalentes para esta meta",
+   "fr": "Calculer les équivalents pour cet objectif"
+  },
+  "Reparto real:": {
+   "en": "Actual split:",
+   "pt-BR": "Divisão real:",
+   "fr": "Répartition réelle :"
+  },
+  "adecuación ideal: 95–105%": {
+   "en": "ideal adequacy: 95–105%",
+   "pt-BR": "adequação ideal: 95–105%",
+   "fr": "adéquation idéale : 95–105 %"
+  },
+  "Grupo": {
+   "en": "Group",
+   "pt-BR": "Grupo",
+   "fr": "Groupe"
+  },
+  "Des": {
+   "en": "Bkf",
+   "pt-BR": "Café",
+   "fr": "P-déj"
+  },
+  "Com": {
+   "en": "Lun",
+   "pt-BR": "Alm",
+   "fr": "Déj"
+  },
+  "Col": {
+   "en": "Snk",
+   "pt-BR": "Lan",
+   "fr": "Coll"
+  },
+  "Colaciones": {
+   "en": "Snacks",
+   "pt-BR": "Lanches",
+   "fr": "Collations"
+  },
+  "Agregar otro grupo": {
+   "en": "Add another group",
+   "pt-BR": "Adicionar outro grupo",
+   "fr": "Ajouter un autre groupe"
+  },
+  "Elige…": {
+   "en": "Choose…",
+   "pt-BR": "Escolha…",
+   "fr": "Choisir…"
+  },
+  "Indicaciones para el atleta (opcional)": {
+   "en": "Notes for the athlete (optional)",
+   "pt-BR": "Orientações para o atleta (opcional)",
+   "fr": "Consignes pour l'athlète (facultatif)"
+  },
+  "Ponle nombre al plan.": {
+   "en": "Give the plan a name.",
+   "pt-BR": "Dê um nome ao plano.",
+   "fr": "Donnez un nom au plan."
+  },
+  "Agrega al menos un equivalente.": {
+   "en": "Add at least one exchange.",
+   "pt-BR": "Adicione ao menos um equivalente.",
+   "fr": "Ajoutez au moins un équivalent."
+  },
+  "Los porcentajes de macros deben sumar 100.": {
+   "en": "Macro percentages must add up to 100.",
+   "pt-BR": "As porcentagens de macros devem somar 100.",
+   "fr": "Les pourcentages de macros doivent totaliser 100."
+  },
+  "Toca un grupo para ver qué puedes comer y registrarlo.": {
+   "en": "Tap a group to see what you can eat and log it.",
+   "pt-BR": "Toque em um grupo para ver o que pode comer e registrar.",
+   "fr": "Touchez un groupe pour voir ce que vous pouvez manger et l'enregistrer."
+  },
+  "equivalente": {
+   "en": "exchange",
+   "pt-BR": "equivalente",
+   "fr": "équivalent"
+  },
+  "equivalentes": {
+   "en": "exchanges",
+   "pt-BR": "equivalentes",
+   "fr": "équivalents"
+  },
+  "1 equivalente =": {
+   "en": "1 exchange =",
+   "pt-BR": "1 equivalente =",
+   "fr": "1 équivalent ="
+  },
+  "Cada equivalente aporta cerca de": {
+   "en": "Each exchange provides about",
+   "pt-BR": "Cada equivalente fornece cerca de",
+   "fr": "Chaque équivalent apporte environ"
+  },
+  "Elige cualquiera de la lista; puedes combinar.": {
+   "en": "Pick any from the list; you can combine.",
+   "pt-BR": "Escolha qualquer um da lista; pode combinar.",
+   "fr": "Choisissez dans la liste ; vous pouvez combiner."
+  },
+  "Porciones de referencia del Sistema Mexicano de Alimentos Equivalentes. Tu nutriólogo puede indicarte otras.": {
+   "en": "Reference portions from the Mexican Food Exchange System. Your nutritionist may give you others.",
+   "pt-BR": "Porções de referência do Sistema Mexicano de Alimentos Equivalentes. Seu nutricionista pode indicar outras.",
+   "fr": "Portions de référence du Système mexicain d'équivalents alimentaires. Votre nutritionniste peut en indiquer d'autres."
+  },
+  "Verduras": {
+   "en": "Vegetables",
+   "pt-BR": "Verduras",
+   "fr": "Légumes"
+  },
+  "Frutas": {
+   "en": "Fruit",
+   "pt-BR": "Frutas",
+   "fr": "Fruits"
+  },
+  "Cereales": {
+   "en": "Grains",
+   "pt-BR": "Cereais",
+   "fr": "Céréales"
+  },
+  "Cereales sin grasa": {
+   "en": "Grains without fat",
+   "pt-BR": "Cereais sem gordura",
+   "fr": "Céréales sans graisse"
+  },
+  "Cereales con grasa": {
+   "en": "Grains with fat",
+   "pt-BR": "Cereais com gordura",
+   "fr": "Céréales avec graisse"
+  },
+  "Cereales c/grasa": {
+   "en": "Grains w/ fat",
+   "pt-BR": "Cereais c/ gordura",
+   "fr": "Céréales gras"
+  },
+  "Leguminosas": {
+   "en": "Legumes",
+   "pt-BR": "Leguminosas",
+   "fr": "Légumineuses"
+  },
+  "Origen animal · muy bajo en grasa": {
+   "en": "Animal protein · very low fat",
+   "pt-BR": "Origem animal · muito baixo em gordura",
+   "fr": "Origine animale · très maigre"
+  },
+  "Origen animal · bajo en grasa": {
+   "en": "Animal protein · low fat",
+   "pt-BR": "Origem animal · baixo em gordura",
+   "fr": "Origine animale · maigre"
+  },
+  "Origen animal · moderado en grasa": {
+   "en": "Animal protein · medium fat",
+   "pt-BR": "Origem animal · moderado em gordura",
+   "fr": "Origine animale · mi-gras"
+  },
+  "Origen animal · alto en grasa": {
+   "en": "Animal protein · high fat",
+   "pt-BR": "Origem animal · alto em gordura",
+   "fr": "Origine animale · gras"
+  },
+  "AOA muy magro": {
+   "en": "Very lean protein",
+   "pt-BR": "Proteína muito magra",
+   "fr": "Protéine très maigre"
+  },
+  "AOA magro": {
+   "en": "Lean protein",
+   "pt-BR": "Proteína magra",
+   "fr": "Protéine maigre"
+  },
+  "AOA moderado": {
+   "en": "Medium-fat protein",
+   "pt-BR": "Proteína moderada",
+   "fr": "Protéine mi-grasse"
+  },
+  "AOA alto": {
+   "en": "High-fat protein",
+   "pt-BR": "Proteína gorda",
+   "fr": "Protéine grasse"
+  },
+  "Leche descremada": {
+   "en": "Skim milk",
+   "pt-BR": "Leite desnatado",
+   "fr": "Lait écrémé"
+  },
+  "Leche semidescremada": {
+   "en": "Low-fat milk",
+   "pt-BR": "Leite semidesnatado",
+   "fr": "Lait demi-écrémé"
+  },
+  "Leche entera": {
+   "en": "Whole milk",
+   "pt-BR": "Leite integral",
+   "fr": "Lait entier"
+  },
+  "Leche con azúcar": {
+   "en": "Sweetened milk",
+   "pt-BR": "Leite com açúcar",
+   "fr": "Lait sucré"
+  },
+  "Leche descr.": {
+   "en": "Skim milk",
+   "pt-BR": "Leite desn.",
+   "fr": "Lait écr."
+  },
+  "Leche semi": {
+   "en": "Low-fat milk",
+   "pt-BR": "Leite semi",
+   "fr": "Lait demi"
+  },
+  "Leche c/azúcar": {
+   "en": "Sweet milk",
+   "pt-BR": "Leite c/ açúcar",
+   "fr": "Lait sucré"
+  },
+  "Grasas": {
+   "en": "Fats",
+   "pt-BR": "Gorduras",
+   "fr": "Lipides"
+  },
+  "Grasas sin proteína": {
+   "en": "Fats without protein",
+   "pt-BR": "Gorduras sem proteína",
+   "fr": "Lipides sans protéines"
+  },
+  "Grasas con proteína": {
+   "en": "Fats with protein",
+   "pt-BR": "Gorduras com proteína",
+   "fr": "Lipides avec protéines"
+  },
+  "Grasas c/prot.": {
+   "en": "Fats w/ protein",
+   "pt-BR": "Gorduras c/ prot.",
+   "fr": "Lipides + prot."
+  },
+  "Azúcares sin grasa": {
+   "en": "Sugars without fat",
+   "pt-BR": "Açúcares sem gordura",
+   "fr": "Sucres sans graisse"
+  },
+  "Azúcares con grasa": {
+   "en": "Sugars with fat",
+   "pt-BR": "Açúcares com gordura",
+   "fr": "Sucres avec graisse"
+  },
+  "Azúcares c/grasa": {
+   "en": "Sugars w/ fat",
+   "pt-BR": "Açúcares c/ gordura",
+   "fr": "Sucres gras"
+  },
   "elige qué servicio termina": {
    "en": "choose which service ends",
    "pt-BR": "escolha qual serviço termina",
