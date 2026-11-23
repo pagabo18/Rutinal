@@ -1130,6 +1130,136 @@ function proWireClient(l, asg, D) {
 }
 
 // ============================================================
+// FOTOS DE COMIDAS — bucket privado `meals` + public.meal_photos.
+// La foto queda pegada a una comida del día; la ve el nutriólogo del atleta.
+// ============================================================
+const _mp = { rows: {}, at: {}, urls: {} };
+function mpCache(day) { if (_mp.rows[day]) return _mp.rows[day]; try { const a = JSON.parse(localStorage.getItem('__mp') || '{}'); return Array.isArray(a[day]) ? a[day] : []; } catch (e) { return []; } }
+function mpStore(day, rows) {
+  _mp.rows[day] = rows;
+  try { const a = JSON.parse(localStorage.getItem('__mp') || '{}'); a[day] = rows; Object.keys(a).sort().slice(0, -10).forEach(k => delete a[k]); localStorage.setItem('__mp', JSON.stringify(a)); } catch (e) {}
+}
+async function mpUrl(path) {
+  if (_mp.urls[path]) return _mp.urls[path];
+  const r = await sbRaw('/storage/v1/object/authenticated/meals/' + path.split('/').map(encodeURIComponent).join('/'));
+  return (_mp.urls[path] = URL.createObjectURL(await r.blob()));
+}
+function mpFill(root) { root.querySelectorAll('img[data-mp-img]').forEach(async im => { try { im.src = await mpUrl(im.dataset.mpImg); } catch (e) { im.alt = '—'; } }); }
+function mpMealName(mid) { const m = (typeof MEALS !== 'undefined' ? MEALS : []).find(x => x.id === mid); return m ? m.name : mid; }
+// Pinta las miniaturas dentro de cada tarjeta de comida y refresca desde el servidor.
+function mpMount() {
+  const day = foodViewDate, paint = () => {
+    const rows = mpCache(day);
+    document.querySelectorAll('#food-meals .mc-photos').forEach(box => {
+      const mine = rows.filter(r => r.meal === box.dataset.mp);
+      box.innerHTML = mine.map(r => `<button class="mp-t" data-mp-open="${r.id}"><img data-mp-img="${escapeHtml(r.path)}" alt=""></button>`).join('');
+      box.style.display = mine.length ? '' : 'none';
+      box.querySelectorAll('[data-mp-open]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); mpOpen(rows.find(r => r.id === b.dataset.mpOpen), true); }));
+      mpFill(box);
+    });
+  };
+  paint();
+  document.querySelectorAll('#food-meals [data-mp-add]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); mpPick(b.dataset.mpAdd); }));
+  const s = authGet();
+  if (!s || !s.uid || navigator.onLine === false || Date.now() - (_mp.at[day] || 0) < 60000) return;
+  _mp.at[day] = Date.now();
+  sbRest('meal_photos?select=id,path,day,meal,note&user_id=eq.' + encodeURIComponent(s.uid) + '&day=eq.' + day + '&order=created_at.asc').then(rows => {
+    rows = rows || []; if (JSON.stringify(rows) === JSON.stringify(mpCache(day))) return; mpStore(day, rows); if (foodViewDate === day) paint();
+  }).catch(() => {});
+}
+function mpToast(msg) { const el = document.getElementById('mp-msg'); if (el) { el.textContent = msg; el.style.display = msg ? '' : 'none'; } }
+// Elegir o tomar la foto y subirla. Sin mid pregunta primero a qué comida va.
+function mpPick(mid) {
+  const s = authGet();
+  if (!s || !s.uid) { alert(t('Inicia sesión para guardar fotos.')); return; }
+  if (navigator.onLine === false) { alert(t('Necesitas conexión para subir la foto.')); return; }
+  if (!mid) {
+    openSheet('Foto del plato', `<p class="fit-note" style="margin:0 0 12px;">La foto queda guardada en esa comida del día. Tu nutriólogo la ve junto con lo que registras.</p>
+      <div class="goal-types">${MEALS.map(m => `<button data-mp-meal="${m.id}"><b>${m.name}</b></button>`).join('')}</div>`);
+    document.querySelectorAll('[data-mp-meal]').forEach(b => b.addEventListener('click', () => { closeSheet(); mpPick(b.dataset.mpMeal); }));
+    return;
+  }
+  let file = document.getElementById('mp-file');
+  if (!file) { file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.id = 'mp-file'; file.style.display = 'none'; document.body.appendChild(file); }
+  file.value = '';
+  file.onchange = async () => {
+    const f = file.files && file.files[0]; if (!f) return;
+    const day = foodViewDate; mpToast(t('Subiendo…'));
+    try {
+      const blob = await photoShrink(f), path = s.uid + '/' + day + '-' + uid() + '.jpg';
+      await sbRaw('/storage/v1/object/meals/' + path, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+      await sbRest('meal_photos', { method: 'POST', body: { path, day, meal: mid }, headers: { Prefer: 'return=minimal' } });
+      try { _mp.urls[path] = URL.createObjectURL(blob); } catch (e) {}
+      const rows = await sbRest('meal_photos?select=id,path,day,meal,note&user_id=eq.' + encodeURIComponent(s.uid) + '&day=eq.' + day + '&order=created_at.asc') || [];
+      mpStore(day, rows); _mp.at[day] = Date.now(); mpToast('');
+      try { renderComida(); } catch (e) {}
+    } catch (e) { mpToast(e && e.code ? authErr(e.code) : t('No se pudo leer la imagen.')); setTimeout(() => mpToast(''), 4000); }
+  };
+  file.click();
+}
+function mpOpen(r, own) {
+  if (!r) return;
+  openSheet(mpMealName(r.meal), `<div class="ph-view"><img data-mp-img="${escapeHtml(r.path)}" alt="">
+    <div class="goal-d" style="margin:10px 0;" translate="no">${escapeHtml(antDate(r.day))}</div>
+    ${own ? '<button class="btn-secondary" id="mp-del" style="width:100%;color:#DC2626;">Eliminar foto</button>' : ''}<div class="auth-msg" id="mp-vmsg"></div></div>`);
+  mpFill(document.getElementById('sheet-body'));
+  const del = document.getElementById('mp-del');
+  if (del) del.addEventListener('click', async () => {
+    if (!confirm(t('¿Eliminar esta foto?'))) return;
+    try {
+      await sbRaw('/storage/v1/object/meals/' + r.path.split('/').map(encodeURIComponent).join('/'), { method: 'DELETE' });
+      await sbRest('meal_photos?id=eq.' + encodeURIComponent(r.id), { method: 'DELETE', headers: { Prefer: 'return=minimal' } });
+    } catch (e) { document.getElementById('mp-vmsg').textContent = authErr(e.code); return; }
+    mpStore(r.day, mpCache(r.day).filter(x => x.id !== r.id)); closeSheet(); try { renderComida(); } catch (e) {}
+  });
+}
+// Vista del nutriólogo: fotos de comidas del atleta, por día.
+async function mpRenderFor(l, el) {
+  let rows = [];
+  try { rows = await sbRest('meal_photos?select=id,path,day,meal&user_id=eq.' + encodeURIComponent(l.client_id) + '&order=day.desc,created_at.asc&limit=60') || []; } catch (e) { return; }
+  if (!el.isConnected) return;
+  if (!rows.length) { el.innerHTML = '<div class="sp-card"><div class="sp-card-n">Fotos de comidas</div><div class="sp-card-d">Todavía no sube fotos de sus comidas.</div></div>'; return; }
+  const days = []; rows.forEach(r => { let d = days.find(x => x.k === r.day); if (!d) days.push(d = { k: r.day, rows: [] }); d.rows.push(r); });
+  el.innerHTML = `<div class="sp-card"><div class="sp-card-n">Fotos de comidas</div>${days.map(d => `<div class="lk-h" style="margin-top:12px;" translate="no">${escapeHtml(cdFmtDay(d.k))}</div>
+    <div class="ph-grid mp-grid">${d.rows.map(r => `<button class="ph-t" data-mp-open="${r.id}"><img data-mp-img="${escapeHtml(r.path)}" alt=""><span>${mpMealName(r.meal)}</span></button>`).join('')}</div>`).join('')}</div>`;
+  el.querySelectorAll('[data-mp-open]').forEach(b => b.addEventListener('click', () => mpOpen(rows.find(r => r.id === b.dataset.mpOpen), false)));
+  mpFill(el);
+}
+
+// ============================================================
+// PORCIONES CON LA MANO — estimar sin báscula.
+// Valores aproximados por porción (método de la mano; referencia: Precision Nutrition).
+// ============================================================
+const HAND_P = [
+  ['palm', 'Palma', 'Proteína: carne, pollo, pescado, huevo', { kcal: 145, protein: 24, carbs: 2, fat: 4.5 }, 'var(--c-prot)'],
+  ['cup', 'Puñado', 'Carbohidrato: arroz, pasta, frijol, fruta', { kcal: 120, protein: 3, carbs: 25, fat: 1 }, 'var(--c-carb)'],
+  ['thumb', 'Pulgar', 'Grasa: aceite, aguacate, nueces, queso', { kcal: 100, protein: 2, carbs: 2, fat: 9 }, 'var(--c-fat)'],
+  ['fist', 'Puño', 'Verdura', { kcal: 25, protein: 1.5, carbs: 5, fat: 0 }, 'var(--text-3)'],
+];
+function handTotals(q) { const o = { kcal: 0, protein: 0, carbs: 0, fat: 0 }; HAND_P.forEach(([k, , , m]) => { const n = +q[k] || 0; o.kcal += m.kcal * n; o.protein += m.protein * n; o.carbs += m.carbs * n; o.fat += m.fat * n; }); return o; }
+function openHandPortions(mid0) {
+  const h = new Date().getHours(); let mid = mid0 || (h < 11 ? 'breakfast' : h < 17 ? 'lunch' : h < 22 ? 'dinner' : 'snack');
+  const q = { palm: 0, cup: 0, thumb: 0, fist: 0 };
+  openSheet('Porciones con la mano', `<p class="fit-note" style="margin:0 0 12px;">Para cuando no hay báscula: usa tu mano como medida. Es una estimación, no un pesaje.</p>
+    <div class="chips small" id="hp-meal" style="margin-bottom:12px;flex-wrap:wrap;">${MEALS.map(m => `<button type="button" class="chip${m.id === mid ? ' selected' : ''}" data-v="${m.id}">${m.name}</button>`).join('')}</div>
+    ${HAND_P.map(([k, n, d, m, c]) => `<div class="hp-row"><i style="background:${c}"></i><div class="hp-t"><b>${n}</b><span>${d}</span></div>
+      <div class="hp-st"><button type="button" data-hp="${k}" data-d="-0.5" aria-label="−">−</button><b id="hp-${k}" translate="no">0</b><button type="button" data-hp="${k}" data-d="0.5" aria-label="+">+</button></div></div>`).join('')}
+    <div class="ant-live" style="grid-template-columns:repeat(4,1fr);position:static;margin-top:14px;"><div><span>kcal</span><b id="hp-k" translate="no">0</b></div><div><span>Proteína</span><b id="hp-p" translate="no">0 g</b></div><div><span>Carbos</span><b id="hp-c" translate="no">0 g</b></div><div><span>Grasa</span><b id="hp-f" translate="no">0 g</b></div></div>
+    <p class="auth-msg" id="hp-msg"></p>`, () => {
+    if (!HAND_P.some(([k]) => q[k] > 0)) { document.getElementById('hp-msg').textContent = t('Agrega al menos una porción.'); return; }
+    const log = mealLog(), d = log[foodViewDate] = log[foodViewDate] || {};
+    HAND_P.forEach(([k, n, , m]) => { if (!(q[k] > 0)) return;
+      d[mid] = (d[mid] || []).concat([{ id: uid(), name: `${t(n)} × ${q[k].toLocaleString(_loc())}`, grams: 100, hand: k, portion: t('Porción con la mano'),
+        per100g: { kcal: m.kcal * q[k], protein: m.protein * q[k], carbs: m.carbs * q[k], fat: m.fat * q[k] } }]); });
+    saveMealLog(log); closeSheet(); try { renderComida(); } catch (e) {} try { renderHoyDash(); } catch (e) {}
+  });
+  const paint = () => { HAND_P.forEach(([k]) => { document.getElementById('hp-' + k).textContent = q[k].toLocaleString(_loc()); }); const tt = handTotals(q);
+    document.getElementById('hp-k').textContent = Math.round(tt.kcal); document.getElementById('hp-p').textContent = Math.round(tt.protein) + ' g'; document.getElementById('hp-c').textContent = Math.round(tt.carbs) + ' g'; document.getElementById('hp-f').textContent = Math.round(tt.fat) + ' g'; };
+  document.querySelectorAll('[data-hp]').forEach(b => b.addEventListener('click', () => { q[b.dataset.hp] = Math.max(0, Math.min(10, q[b.dataset.hp] + (+b.dataset.d))); paint(); }));
+  document.querySelectorAll('#hp-meal .chip').forEach(c => c.addEventListener('click', () => { mid = c.dataset.v; document.querySelectorAll('#hp-meal .chip').forEach(x => x.classList.toggle('selected', x === c)); }));
+}
+
+// ============================================================
 // PESO CON TENDENCIA Y CHECK-IN SEMANAL
 // El peso de un día engaña; lo que se decide es con el promedio de 7 días y su ritmo de cambio.
 // El check-in es el reporte semanal del atleta: datos automáticos + cómo se sintió; el especialista responde.
@@ -1590,4 +1720,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

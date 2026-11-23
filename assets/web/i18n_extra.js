@@ -4286,6 +4286,111 @@ window.__I18N_EXTRA = {
    "pt-BR": "fases do plano",
    "fr": "phases du plan"
   },
+  "Con la mano": {
+   "en": "By hand",
+   "pt-BR": "Com a mão",
+   "fr": "À la main"
+  },
+  "Foto del plato": {
+   "en": "Plate photo",
+   "pt-BR": "Foto do prato",
+   "fr": "Photo de l'assiette"
+  },
+  "Porciones con la mano": {
+   "en": "Hand portions",
+   "pt-BR": "Porções com a mão",
+   "fr": "Portions à la main"
+  },
+  "Porción con la mano": {
+   "en": "Hand portion",
+   "pt-BR": "Porção com a mão",
+   "fr": "Portion à la main"
+  },
+  "Para cuando no hay báscula: usa tu mano como medida. Es una estimación, no un pesaje.": {
+   "en": "For when there's no scale: use your hand as the measure. It's an estimate, not a weigh-in.",
+   "pt-BR": "Para quando não há balança: use sua mão como medida. É uma estimativa, não uma pesagem.",
+   "fr": "Quand il n'y a pas de balance : utilisez votre main comme mesure. C'est une estimation, pas une pesée."
+  },
+  "Palma": {
+   "en": "Palm",
+   "pt-BR": "Palma",
+   "fr": "Paume"
+  },
+  "Puñado": {
+   "en": "Cupped hand",
+   "pt-BR": "Punhado",
+   "fr": "Poignée"
+  },
+  "Pulgar": {
+   "en": "Thumb",
+   "pt-BR": "Polegar",
+   "fr": "Pouce"
+  },
+  "Puño": {
+   "en": "Fist",
+   "pt-BR": "Punho",
+   "fr": "Poing"
+  },
+  "Proteína: carne, pollo, pescado, huevo": {
+   "en": "Protein: meat, chicken, fish, egg",
+   "pt-BR": "Proteína: carne, frango, peixe, ovo",
+   "fr": "Protéines : viande, poulet, poisson, œuf"
+  },
+  "Carbohidrato: arroz, pasta, frijol, fruta": {
+   "en": "Carbs: rice, pasta, beans, fruit",
+   "pt-BR": "Carboidrato: arroz, massa, feijão, fruta",
+   "fr": "Glucides : riz, pâtes, haricots, fruits"
+  },
+  "Grasa: aceite, aguacate, nueces, queso": {
+   "en": "Fat: oil, avocado, nuts, cheese",
+   "pt-BR": "Gordura: óleo, abacate, nozes, queijo",
+   "fr": "Lipides : huile, avocat, noix, fromage"
+  },
+  "Carbos": {
+   "en": "Carbs",
+   "pt-BR": "Carbos",
+   "fr": "Glucides"
+  },
+  "Agrega al menos una porción.": {
+   "en": "Add at least one portion.",
+   "pt-BR": "Adicione pelo menos uma porção.",
+   "fr": "Ajoutez au moins une portion."
+  },
+  "La foto queda guardada en esa comida del día. Tu nutriólogo la ve junto con lo que registras.": {
+   "en": "The photo is saved to that meal of the day. Your nutritionist sees it along with what you log.",
+   "pt-BR": "A foto fica salva nessa refeição do dia. Seu nutricionista a vê junto com o que você registra.",
+   "fr": "La photo est enregistrée dans ce repas du jour. Votre nutritionniste la voit avec ce que vous saisissez."
+  },
+  "Inicia sesión para guardar fotos.": {
+   "en": "Sign in to save photos.",
+   "pt-BR": "Entre para salvar fotos.",
+   "fr": "Connectez-vous pour enregistrer des photos."
+  },
+  "Necesitas conexión para subir la foto.": {
+   "en": "You need a connection to upload the photo.",
+   "pt-BR": "Você precisa de conexão para enviar a foto.",
+   "fr": "Il faut une connexion pour envoyer la photo."
+  },
+  "¿Eliminar esta foto?": {
+   "en": "Delete this photo?",
+   "pt-BR": "Excluir esta foto?",
+   "fr": "Supprimer cette photo ?"
+  },
+  "Fotos de comidas": {
+   "en": "Meal photos",
+   "pt-BR": "Fotos das refeições",
+   "fr": "Photos des repas"
+  },
+  "Todavía no sube fotos de sus comidas.": {
+   "en": "No meal photos uploaded yet.",
+   "pt-BR": "Ainda não enviou fotos das refeições.",
+   "fr": "Aucune photo de repas pour l'instant."
+  },
+  "fotos de comidas": {
+   "en": "meal photos",
+   "pt-BR": "fotos das refeições",
+   "fr": "photos des repas"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

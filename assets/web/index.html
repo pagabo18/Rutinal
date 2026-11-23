@@ -1376,6 +1376,7 @@
   .meal-head-actions { display:flex; align-items:center; gap: 8px; }
   .meal-save-dish { background: transparent; border: none; color: var(--accent); font-size: 12px; font-weight: 600; padding: 4px 6px; cursor: pointer; }
   .meal-save-dish svg { vertical-align: -2px; }
+  .mc-cam { background: transparent; border: none; color: var(--text-2); padding: 4px 6px; cursor: pointer; } .mc-cam svg { vertical-align: -2px; width: 17px; height: 17px; }
 
   .meal-group { margin-bottom: 20px; }
   .meal-head {
@@ -2791,6 +2792,18 @@
   .ph-tl-l { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-bottom: 12px; }
   .goal.phz-past { opacity: .6; } .goal.phz.flat { border: 0; box-shadow: none; padding: 0; margin: 0; background: transparent; cursor: default; }
   .gym-tag.good { background: rgba(22,163,74,.12); color: #15803D; }
+
+  /* ===== Fotos de comidas y porciones con la mano ===== */
+  .food-actions.two { grid-template-columns: 1fr 1fr; margin-top: -8px; }
+  .mc-photos { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 10px; }
+  .mp-t { flex: 0 0 auto; width: 72px; height: 72px; border: 0; padding: 0; border-radius: 12px; overflow: hidden; background: var(--surface-2); cursor: pointer; }
+  .mp-t img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mp-grid .ph-t { aspect-ratio: 1 / 1; }
+  .hp-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .hp-row > i { width: 8px; height: 36px; border-radius: 4px; flex: 0 0 auto; }
+  .hp-t { flex: 1; min-width: 0; } .hp-t b { display: block; font-size: 15px; } .hp-t span { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .hp-st { display: flex; align-items: center; gap: 4px; } .hp-st b { min-width: 34px; text-align: center; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .hp-st button { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 20px; line-height: 1; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -3260,6 +3273,17 @@ try {
         Mis platillos
       </button>
     </div>
+    <div class="food-actions two">
+      <button class="food-action-btn" id="food-hand-btn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.3L2.4 16a2 2 0 0 1 2.8-2.8L7 15"/></svg>
+        <span>Con la mano</span>
+      </button>
+      <button class="food-action-btn" id="food-photo-btn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>Foto del plato</span>
+      </button>
+    </div>
+    <div class="auth-msg info" id="mp-msg" style="display:none;margin:-8px 0 12px;"></div>
 
     <!-- Platillos guardados (carrusel) -->
     <div id="dishes-strip" class="dishes-strip" style="display:none;">
@@ -9505,7 +9529,7 @@ function onAuthReady() {
 // El especialista genera un código de invitación; el atleta lo acepta viendo qué comparte.
 // El servidor decide qué documentos puede leer cada rol (política de user_docs).
 // ============================================================
-const LINK_KEY_LABELS = { goals: 'objetivos', phases: 'fases del plan', act_log: 'cardio y otros deportes', athlete_profile: 'perfil de atleta', gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
+const LINK_KEY_LABELS = { meal_photos: 'fotos de comidas', goals: 'objetivos', phases: 'fases del plan', act_log: 'cardio y otros deportes', athlete_profile: 'perfil de atleta', gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
 const LINK_ERRORS = { bad_code: 'Ese código no existe o ya venció.', own_code: 'Ese código es tuyo; compártelo con tu atleta.', too_many: 'Tienes demasiadas invitaciones pendientes. Cancela alguna.', forbidden: 'Tu cuenta no tiene esa especialidad.' };
 function linkErr(code) { return LINK_ERRORS[code] || authErr(code); }
 async function linkRpc(fn, args) {
@@ -10194,7 +10218,7 @@ function openEndServices(l, mine, onDone) {
   }));
   document.getElementById('end-all').addEventListener('click', async () => { if (!confirm(msgAll)) return; closeSheet(); await endAll(); });
 }
-const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log', 'act_log', 'athlete_profile', 'goals', 'phases'], nutriologo: ['meal_log', 'nutri_profile', 'weight_log', 'hydration_log', 'goals', 'phases'], fisioterapeuta: ['gym_logs', 'gym_routines', 'act_log', 'athlete_profile', 'goals'] };
+const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log', 'act_log', 'athlete_profile', 'goals', 'phases'], nutriologo: ['meal_log', 'meal_photos', 'nutri_profile', 'weight_log', 'hydration_log', 'goals', 'phases'], fisioterapeuta: ['gym_logs', 'gym_routines', 'act_log', 'athlete_profile', 'goals'] };
 // El servicio (rol) con el que se puede dejar un tipo de plantilla a esta persona
 function asgRoleFor(l, kind) { return linkRoles(l).find(r => (ASG_ROLE_KINDS[r] || []).includes(kind)) || null; }
 function asgKindsFor(l) { const out = []; linkRoles(l).forEach(r => (ASG_ROLE_KINDS[r] || []).forEach(k => { if (!out.includes(k)) out.push(k); })); return out; }
@@ -10494,7 +10518,7 @@ async function spOpenClient(l) {
       <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${typeof phaseClientHtml === 'function' ? phaseClientHtml(D) : ''}${typeof goalsClientHtml === 'function' ? goalsClientHtml(D) : ''}${rep}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
     checkins: '<div id="sp-ck"></div>',
     assess: '<div id="sp-assess"></div>',
-    logs: logs.join('') };
+    logs: logs.join('') + (nutri ? '<div id="sp-mp"></div>' : '') };
   if (!tabs[_sp.tab]) _sp.tab = 'plans';
   el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Atletas</span></button>
     <div class="sp-center"><div class="sp-av big">${escapeHtml((l.name || '?').slice(0, 1))}</div><div class="sp-name" translate="no">${escapeHtml(l.name || '')}</div>
@@ -10507,6 +10531,7 @@ async function spOpenClient(l) {
     const as = document.getElementById('sp-assign'); if (as) as.addEventListener('click', () => openTemplates(l));
     if (typeof proWireClient === 'function') proWireClient(l, asg, D);
     if (document.getElementById('sp-photos')) spClientPhotos(l);
+    if (document.getElementById('sp-mp') && typeof mpRenderFor === 'function') mpRenderFor(l, document.getElementById('sp-mp'));
     if (document.getElementById('sp-ck')) ckRenderFor(l, document.getElementById('sp-ck'));
     if (document.getElementById('sp-assess')) antRender(l.client_id, l.name, document.getElementById('sp-assess'), { D, link: l, onSaved: () => { closeSheet(); _sp.tab = 'assess'; spOpenClient(l); } });
     const tt = x => (window.i18n && window.i18n.t) ? window.i18n.t(x) : x;
@@ -13073,6 +13098,7 @@ function renderComida() {
         ${items.length ? `<div class="mc-k"><b>${t.kcal}</b><small>kcal</small></div>` : `<button class="mc-log" data-mc-add="1">+ Registrar</button>`}
       </div>
       <div class="meal-list" data-meal="${m.id}"></div>
+      <div class="mc-photos" data-mp="${m.id}" style="display:none;"></div>
       ${planIts.length && !items.length ? `<div class="mc-plan"><div class="mc-plan-h"><span>Plan de tu especialista</span><span translate="no">${Math.round(planIts.reduce((x, it) => x + calcItemMacros(it).kcal, 0))} kcal</span></div>
         <div class="mc-plan-l" translate="no">${planIts.map(it => `${escapeHtml(it.name || '')} <i>(${Math.round(it.grams || 0)} g)</i>`).join('<br>')}</div>
         <button class="btn-secondary mc-plan-b" data-mc-plan="1">Registrar el plan</button></div>` : ''}
@@ -13080,6 +13106,7 @@ function renderComida() {
       <div class="mc-foot">
         ${items.length ? `<span class="mc-chip p"><span data-i18n-ctx="macro">P</span> ${Math.round(t.protein)} g</span><span class="mc-chip c"><span data-i18n-ctx="macro">C</span> ${Math.round(t.carbs)} g</span><span class="mc-chip g"><span data-i18n-ctx="macro">G</span> ${Math.round(t.fat)} g</span>` : ''}
         <span class="mc-sp"></span>
+        <button class="mc-cam" data-mp-add="${m.id}" title="Foto del plato" aria-label="Foto del plato"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
         ${!items.length && yesterdayHasMeal(m.id) ? `<button class="meal-save-dish meal-copy-yday" data-meal="${m.id}" title="Repetir lo de ayer"><svg class="mini-ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Ayer</button>` : ''}
         ${items.length ? `<button class="meal-save-dish" data-meal="${m.id}" title="Guardar como platillo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar</button>
           <button class="mc-add" data-mc-add="1" aria-label="Añadir alimento">+</button>` : ''}
@@ -13130,6 +13157,7 @@ function renderComida() {
     cont.appendChild(grp);
   });
   renderFoodWater();
+  if (typeof mpMount === 'function') { try { mpMount(); } catch (e) {} }
   const gl = document.getElementById('food-goals-link');
   if (gl && !gl.dataset.bound) {
     gl.dataset.bound = '1';
@@ -13140,6 +13168,8 @@ function renderComida() {
   }
 
   // Botones
+  const handBtn = document.getElementById('food-hand-btn'); if (handBtn && !handBtn._w) { handBtn._w = 1; handBtn.addEventListener('click', () => openHandPortions()); }
+  const mpBtn = document.getElementById('food-photo-btn'); if (mpBtn && !mpBtn._w) { mpBtn._w = 1; mpBtn.addEventListener('click', () => mpPick()); }
   const searchBtn = document.getElementById('food-search-btn');
   const scanBtn = document.getElementById('food-scan-btn');
   const dishesBtn = document.getElementById('food-dishes-btn');

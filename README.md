@@ -281,4 +281,6 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 
 **Objetivos y fases desde el especialista.** En la ficha del atleta → Planes: «Poner objetivo» y «Fases del plan» crean asignaciones `goal` y `phase` (coach y nutriólogo; fisioterapeuta solo objetivos). En el teléfono del atleta se copian a `goals`/`phases` marcadas como asignadas (no las puede borrar ni editar). En Progreso el especialista ve la fase en curso y los objetivos con el avance que calculó la app del atleta (`snap`).
 
+**Foto del plato y porciones con la mano.** En Comida: «Foto del plato» (o la cámara de cada comida) sube la foto al bucket privado `meals` y la registra en `meal_photos` para ese día y comida; la ve el nutriólogo en Registros. «Con la mano» estima macros por palmas, puñados, pulgares y puños (valores aproximados del método de la mano) y los registra como alimentos del día.
+
 **Personalizar.** En Ajustes se apagan las secciones que no se usan y se activa «Solo palomear ejercicios». Preferencias en `app_prefs`.
