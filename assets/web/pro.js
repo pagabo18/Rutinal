@@ -562,6 +562,202 @@ function modRenderSettings() {
 try { modApply(); } catch (e) {}
 
 // ============================================================
+// DEPORTES: perfil de atleta, registro de actividades (cardio y otros) y rutinas por deporte.
+// El perfil dice qué deportes practicas; de eso depende qué se te ofrece registrar y qué marcas llenas.
+// ============================================================
+const ACT_F = {
+  time: { n: 'Tiempo', kind: 'time', ph: '45:00' }, dist_km: { n: 'Distancia', u: 'km' }, dist_m: { n: 'Distancia', u: 'm' },
+  hr: { n: 'FC media', u: 'lpm' }, hrmax: { n: 'FC máxima', u: 'lpm' }, elev: { n: 'Desnivel', u: 'm' }, power: { n: 'Potencia media', u: 'W' },
+  cadence: { n: 'Cadencia', u: 'ppm' }, steps: { n: 'Pasos', u: '' }, rounds: { n: 'Rounds', u: '' }, roundMin: { n: 'Minutos por round', u: 'min' },
+  wod: { n: 'Nombre o descripción', kind: 'text', ph: 'Ej. Fran, circuito de 5 estaciones' }, result: { n: 'Resultado', kind: 'text', ph: 'Ej. 6 rondas + 12 reps' },
+  grade: { n: 'Grado máximo', kind: 'text', ph: 'Ej. V4, 6b+' }, sends: { n: 'Encadenes', u: '' }, attempts: { n: 'Intentos', u: '' },
+  painPre: { n: 'Dolor antes', u: '/10' }, painPost: { n: 'Dolor después', u: '/10' }, kcal: { n: 'Calorías', u: 'kcal' },
+  runTime: { n: 'Tiempo total de carrera', kind: 'time', ph: '40:00' },
+};
+const HYROX_ST = ['SkiErg', 'Sled push', 'Sled pull', 'Burpee broad jumps', 'Remo', 'Farmers carry', 'Sandbag lunges', 'Wall balls'];
+const SPORTS = [
+  { id: 'fuerza', name: 'Fuerza / Gym', gym: true, prof: [['sq', 'Sentadilla (1RM)', 'kg'], ['bp', 'Press de banca (1RM)', 'kg'], ['dl', 'Peso muerto (1RM)', 'kg'], ['years', 'Años entrenando', '']] },
+  { id: 'running', name: 'Running', f: ['dist_km', 'time', 'hr', 'elev', 'cadence'], types: ['Rodaje suave', 'Tempo', 'Series', 'Tirada larga', 'Competencia'], pace: 'km',
+    prof: [['k5', 'Marca en 5 km', 'mm:ss'], ['k10', 'Marca en 10 km', 'mm:ss'], ['k21', 'Medio maratón', 'h:mm:ss'], ['k42', 'Maratón', 'h:mm:ss'], ['wk', 'Kilómetros por semana', 'km']] },
+  { id: 'ciclismo', name: 'Ciclismo', f: ['dist_km', 'time', 'hr', 'elev', 'power'], types: ['Ruta', 'Montaña', 'Rodillo / spinning', 'Series', 'Competencia'], speed: true,
+    prof: [['ftp', 'FTP', 'W'], ['wk', 'Kilómetros por semana', 'km']] },
+  { id: 'natacion', name: 'Natación', f: ['dist_m', 'time', 'hr'], types: ['Técnica', 'Aeróbico', 'Series', 'Aguas abiertas', 'Competencia'], opts: [['pool', 'Alberca', ['25 m', '50 m', 'Aguas abiertas']], ['stroke', 'Estilo principal', ['Crol', 'Dorso', 'Pecho', 'Mariposa', 'Combinado']]], pace: '100m',
+    prof: [['m100', 'Marca en 100 m', 'mm:ss'], ['m400', 'Marca en 400 m', 'mm:ss'], ['m1500', 'Marca en 1500 m', 'mm:ss'], ['wk', 'Metros por semana', 'm']] },
+  { id: 'box', name: 'Box / combate', f: ['rounds', 'roundMin', 'time', 'hr'], types: ['Saco', 'Sombra', 'Manoplas', 'Sparring', 'Técnica', 'Acondicionamiento'], routines: true,
+    prof: [['years', 'Años practicando', ''], ['cat', 'Categoría de peso', ''], ['fights', 'Peleas o sparrings al mes', '']] },
+  { id: 'funcional', name: 'Funcional / CrossFit', f: ['wod', 'time', 'result', 'hr'], types: ['AMRAP', 'EMOM', 'Por tiempo', 'Chipper', 'Circuito', 'Técnica'], routines: true,
+    prof: [['fran', 'Fran', 'mm:ss'], ['murph', 'Murph', 'mm:ss'], ['years', 'Años practicando', '']] },
+  { id: 'hyrox', name: 'Hyrox', f: ['time', 'runTime', 'hr'], types: ['Simulación completa', 'Media simulación', 'Estaciones', 'Carrera comprometida', 'Competencia'], opts: [['cat', 'Categoría', ['Open', 'Pro', 'Dobles', 'Relevos']]], hyrox: true, routines: true,
+    prof: [['best', 'Mejor tiempo', 'h:mm:ss'], ['cat', 'Categoría', ''], ['next', 'Próxima competencia', 'fecha']] },
+  { id: 'calistenia', name: 'Calistenia', f: ['time', 'hr'], types: ['Fuerza', 'Resistencia', 'Skills', 'Movilidad'], routines: true,
+    prof: [['pull', 'Dominadas seguidas', 'reps'], ['push', 'Flexiones seguidas', 'reps'], ['dips', 'Fondos seguidos', 'reps'], ['skills', 'Skills que dominas', '']] },
+  { id: 'escalada', name: 'Escalada', f: ['time', 'grade', 'sends', 'attempts'], types: ['Boulder', 'Deportiva', 'Cuerda (top rope)', 'Tabla de entrenamiento', 'Roca'], routines: true,
+    prof: [['boulder', 'Grado máximo en boulder', ''], ['route', 'Grado máximo en vía', ''], ['years', 'Años escalando', '']] },
+  { id: 'fisio', name: 'Fisio / rehabilitación', f: ['time', 'painPre', 'painPost'], types: ['Ejercicios en casa', 'Sesión con fisioterapeuta', 'Movilidad', 'Readaptación'], routines: true,
+    prof: [['zone', 'Zona o lesión que trabajas', ''], ['since', 'Desde cuándo', ''], ['limits', 'Movimientos a evitar', '']] },
+  { id: 'caminata', name: 'Caminata / senderismo', f: ['dist_km', 'time', 'steps', 'elev', 'hr'], types: ['Paseo', 'Caminata rápida', 'Senderismo'], pace: 'km', prof: [['steps', 'Pasos diarios promedio', '']] },
+  { id: 'yoga', name: 'Yoga / movilidad', f: ['time', 'hr'], types: ['Yoga', 'Pilates', 'Movilidad', 'Estiramiento'], prof: [['years', 'Años practicando', '']] },
+  { id: 'equipo', name: 'Deporte de equipo', f: ['time', 'dist_km', 'hr'], types: ['Entrenamiento', 'Partido', 'Técnica'], prof: [['which', '¿Cuál deporte?', ''], ['pos', 'Posición', '']] },
+  { id: 'otro', name: 'Otro', f: ['wod', 'time', 'dist_km', 'hr'], types: [], prof: [['which', '¿Cuál?', '']] },
+];
+const SPORT_BY = {}; SPORTS.forEach(x => { SPORT_BY[x.id] = x; });
+const SPORT_LEVELS = ['Principiante', 'Intermedio', 'Avanzado', 'Competidor'];
+function athProfile() { const p = S.get('athlete_profile', null); return p && typeof p === 'object' ? p : { sports: [], marks: {} }; }
+function athSports() { const p = athProfile(); return (p.sports || []).filter(id => SPORT_BY[id]); }
+// Deportes que se ofrecen al registrar una actividad: los del perfil; sin perfil, todos.
+function actSports() { const mine = athSports().filter(id => !SPORT_BY[id].gym); return (mine.length ? mine : SPORTS.filter(x => !x.gym).map(x => x.id)).map(id => SPORT_BY[id]); }
+
+function actParseTime(v) { // "h:mm:ss", "mm:ss" o minutos → segundos
+  v = String(v == null ? '' : v).trim().replace(',', '.'); if (!v) return 0;
+  if (v.includes(':')) { const p = v.split(':').map(x => parseFloat(x) || 0); return p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p[0] * 60 + (p[1] || 0); }
+  const n = parseFloat(v); return isFinite(n) ? Math.round(n * 60) : 0;
+}
+function actFmtTime(sec) { sec = Math.round(+sec || 0); if (!sec) return ''; const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(s).padStart(2, '0'); }
+function actLog() { const l = S.get('act_log', null); return l && typeof l === 'object' ? l : {}; }
+function actSave(l) { S.set('act_log', l); }
+function actDerived(a) {
+  const sp = SPORT_BY[a.sport] || {}, o = [], t = +a.time || 0;
+  if (sp.pace === 'km' && t && +a.dist_km) o.push(['Ritmo', actFmtTime(t / a.dist_km) + ' /km']);
+  if (sp.pace === '100m' && t && +a.dist_m) o.push(['Ritmo', actFmtTime(t / (a.dist_m / 100)) + ' /100 m']);
+  if (sp.speed && t && +a.dist_km) o.push(['Velocidad', (Math.round(a.dist_km / (t / 3600) * 10) / 10).toLocaleString(_loc()) + ' km/h']);
+  return o;
+}
+function actLine(a) {
+  const p = [];
+  if (+a.dist_km) p.push((+a.dist_km).toLocaleString(_loc()) + ' km'); if (+a.dist_m) p.push((+a.dist_m).toLocaleString(_loc()) + ' m');
+  if (+a.rounds) p.push(a.rounds + ' rounds' + (+a.roundMin ? ' × ' + a.roundMin + ' min' : ''));
+  if (+a.time) p.push(actFmtTime(a.time)); actDerived(a).forEach(d => p.push(d[1]));
+  if (a.grade) p.push(a.grade); if (a.result) p.push(a.result); if (+a.hr) p.push(a.hr + ' lpm'); if (+a.rpe) p.push('RPE ' + a.rpe);
+  return p.join(' · ');
+}
+// Totales de un rango de días (para Gym, Hoy y el check-in).
+function actWeek(days) {
+  const l = actLog(), o = { n: 0, sec: 0, km: 0, by: {} };
+  for (let i = 0; i < (days || 7); i++) (l[keyDate(new Date(Date.now() - i * 864e5))] || []).forEach(a => {
+    o.n++; o.sec += +a.time || 0; const km = (+a.dist_km || 0) + (+a.dist_m || 0) / 1000; o.km += km;
+    const b = o.by[a.sport] || (o.by[a.sport] = { n: 0, sec: 0, km: 0 }); b.n++; b.sec += +a.time || 0; b.km += km;
+  });
+  return o;
+}
+
+function openActivityForm(act, date) {
+  const list = actSports(), d = act ? JSON.parse(JSON.stringify(act)) : { sport: list[0].id };
+  let day = date || keyDate();
+  const paint = () => {
+    const sp = SPORT_BY[d.sport] || list[0];
+    const fld = k => { const F = ACT_F[k]; if (!F) return ''; const v = d[k] == null ? '' : (F.kind === 'time' ? actFmtTime(d[k]) : d[k]);
+      return F.kind === 'text' ? `<label class="ant-f col"><span>${F.n}</span><input class="act-tx" data-act="${k}" value="${escapeHtml(String(v))}" placeholder="${F.ph || ''}" maxlength="120"></label>`
+        : `<label class="ant-f"><span>${F.n}</span><span class="ant-in"><input inputmode="${F.kind === 'time' ? 'text' : 'decimal'}" data-act="${k}" value="${escapeHtml(String(v))}" placeholder="${F.ph || ''}">${F.u ? `<i>${F.u}</i>` : F.kind === 'time' ? '<i>h:mm:ss</i>' : ''}</span></label>`; };
+    document.getElementById('act-body').innerHTML = `
+      <div class="ant-f col"><span>Deporte</span><div class="chips act-chips" id="act-sport">${list.map(x => `<div class="chip${x.id === sp.id ? ' selected' : ''}" data-v="${x.id}">${x.name}</div>`).join('')}</div></div>
+      ${(sp.types || []).length ? `<div class="ant-f col"><span>Tipo de sesión</span><div class="chips act-chips" id="act-type">${sp.types.map(x => `<div class="chip${d.type === x ? ' selected' : ''}" data-v="${escapeHtml(x)}">${x}</div>`).join('')}</div></div>` : ''}
+      ${(sp.opts || []).map(([k, n, vs]) => `<div class="ant-f col"><span>${n}</span><div class="chips act-chips" data-act-opt="${k}">${vs.map(x => `<div class="chip${d[k] === x ? ' selected' : ''}" data-v="${escapeHtml(x)}">${x}</div>`).join('')}</div></div>`).join('')}
+      ${(sp.f || []).map(fld).join('')}
+      ${sp.hyrox ? `<details${(d.st || []).some(Boolean) ? ' open' : ''}><summary>Tiempo por estación <small>opcional</small></summary>${HYROX_ST.map((n, i) => `<label class="ant-f"><span>${n}</span><span class="ant-in"><input data-act-st="${i}" value="${escapeHtml(actFmtTime((d.st || [])[i]))}" placeholder="4:30"><i>mm:ss</i></span></label>`).join('')}</details>` : ''}
+      <div class="ant-f col"><span>Esfuerzo percibido (RPE)</span><div class="chips act-chips" id="act-rpe">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(x => `<div class="chip${+d.rpe === x ? ' selected' : ''}" data-v="${x}">${x}</div>`).join('')}</div></div>
+      ${fld('kcal')}
+      <label class="ant-f col"><span>Notas</span><textarea data-act-notes rows="2" maxlength="500" placeholder="Cómo te sentiste, clima, ruta...">${escapeHtml(d.notes || '')}</textarea></label>
+      <div class="act-der" id="act-der"></div>`;
+    const der = () => { keep(); const x = actDerived(d); document.getElementById('act-der').innerHTML = x.length ? x.map(([n, v]) => `<div><span>${n}</span><b translate="no">${v}</b></div>`).join('') : ''; };
+    const one = (id, key, num) => document.querySelectorAll(`#${id} .chip`).forEach(c => c.addEventListener('click', () => { keep(); d[key] = (d[key] == (num ? +c.dataset.v : c.dataset.v)) ? null : (num ? +c.dataset.v : c.dataset.v); paint(); }));
+    document.querySelectorAll('#act-sport .chip').forEach(c => c.addEventListener('click', () => { keep(); if (d.sport !== c.dataset.v) { d.sport = c.dataset.v; d.type = null; } paint(); }));
+    one('act-type', 'type'); one('act-rpe', 'rpe', true);
+    document.querySelectorAll('[data-act-opt]').forEach(g => g.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { keep(); d[g.dataset.actOpt] = d[g.dataset.actOpt] === c.dataset.v ? null : c.dataset.v; paint(); })));
+    document.getElementById('act-body').querySelectorAll('input').forEach(i => i.addEventListener('input', der));
+    der();
+  };
+  const keep = () => {
+    document.querySelectorAll('#act-body [data-act]').forEach(i => { const k = i.dataset.act, F = ACT_F[k], v = i.value.trim();
+      if (!v) { delete d[k]; return; }
+      if (F.kind === 'time') d[k] = actParseTime(v); else if (F.kind === 'text') d[k] = v; else { const n = parseFloat(v.replace(',', '.')); if (isFinite(n) && n >= 0) d[k] = n; } });
+    const st = [...document.querySelectorAll('#act-body [data-act-st]')]; if (st.length) { d.st = st.map(i => actParseTime(i.value)); if (!d.st.some(Boolean)) delete d.st; }
+    const nt = document.querySelector('#act-body [data-act-notes]'); if (nt) { const v = nt.value.trim(); if (v) d.notes = v; else delete d.notes; }
+    const dt = document.getElementById('act-date'); if (dt && dt.value) day = dt.value;
+  };
+  openSheet(act ? 'Editar actividad' : 'Registrar actividad', `<div class="ant-ed act-ed"><label class="ant-f"><span>Fecha</span><span class="ant-in"><input type="date" id="act-date" value="${escapeHtml(day)}" max="${keyDate()}"></span></label><div id="act-body"></div>
+    ${act ? '<button class="btn-secondary" id="act-del" style="width:100%;margin-top:10px;color:#DC2626;">Eliminar actividad</button>' : ''}<p class="auth-msg" id="act-msg"></p></div>`, () => {
+    keep();
+    const sp = SPORT_BY[d.sport], msg = document.getElementById('act-msg');
+    if (!+d.time && +d.rounds && +d.roundMin) d.time = Math.round(d.rounds * d.roundMin * 60);
+    if (!+d.time && !+d.dist_km && !+d.dist_m && !+d.rounds && !d.wod) { msg.textContent = t('Anota al menos el tiempo o la distancia.'); return; }
+    if (d.time > 86400 || d.dist_km > 1000 || d.dist_m > 100000 || d.hr > 250 || d.painPre > 10 || d.painPost > 10) { msg.textContent = t('Revisa los números: alguno está fuera de rango.'); return; }
+    Object.keys(d).forEach(k => { if (d[k] == null || d[k] === '') delete d[k]; });
+    const l = actLog();
+    if (act && date && l[date]) { l[date] = l[date].filter(x => x.id !== act.id); if (!l[date].length) delete l[date]; }
+    d.id = d.id || (typeof uid === 'function' ? uid() : String(Date.now())); d.ts = Date.now();
+    (l[day] = l[day] || []).push(d); actSave(l);
+    closeSheet(); try { renderGym(); } catch (e) {} try { renderHoyDash(); } catch (e) {}
+  });
+  const del = document.getElementById('act-del');
+  if (del) del.addEventListener('click', () => { if (!confirm(t('¿Eliminar esta actividad?'))) return; const l = actLog(); if (l[date]) { l[date] = l[date].filter(x => x.id !== act.id); if (!l[date].length) delete l[date]; } actSave(l); closeSheet(); try { renderGym(); } catch (e) {} });
+  paint();
+}
+
+// Sección de actividades dentro de la pestaña Gym.
+function actGymHtml() {
+  const l = actLog(), w = actWeek(7), days = Object.keys(l).sort().reverse().slice(0, 10), rows = [];
+  days.forEach(k => (l[k] || []).slice().reverse().forEach(a => rows.push([k, a])));
+  const sum = Object.keys(w.by).map(id => { const b = w.by[id], sp = SPORT_BY[id] || { name: id }; return `<div class="act-sum"><span>${sp.name}</span><b translate="no">${b.km ? (Math.round(b.km * 10) / 10).toLocaleString(_loc()) + ' km' : actFmtTime(b.sec) || b.n}</b><small translate="no">${b.n} ${b.n === 1 ? 'sesión' : 'sesiones'}${b.km && b.sec ? ' · ' + actFmtTime(b.sec) : ''}</small></div>`; }).join('');
+  return `<h2>Cardio y otros deportes <span class="gym-h2-btns"><button class="h2-btn" id="act-new">+ Registrar</button></span></h2>
+    ${sum ? `<div class="act-sums">${sum}</div><div class="act-cap">Últimos 7 días</div>` : ''}
+    ${rows.length ? rows.slice(0, 8).map(([k, a]) => `<div class="act-row" data-act-edit="${k}:${a.id}"><div><b>${(SPORT_BY[a.sport] || { name: a.sport }).name}${a.type ? ` <small>${escapeHtml(a.type)}</small>` : ''}</b><span translate="no">${escapeHtml(actLine(a))}</span></div><em translate="no">${escapeHtml(cdFmtDay(k))}</em></div>`).join('')
+      : `<div class="sp-empty" style="margin-bottom:8px;">Registra tus carreras, natación, bici, box o cualquier otra sesión: tiempo, distancia, ritmo y esfuerzo.${athSports().length ? '' : ' Elige tus deportes en Más → Perfil de atleta para ver solo los tuyos.'}</div>`}`;
+}
+function actMountGym() {
+  const el = document.getElementById('gym-acts'); if (!el) return;
+  el.innerHTML = actGymHtml();
+  document.getElementById('act-new').addEventListener('click', () => openActivityForm(null));
+  el.querySelectorAll('[data-act-edit]').forEach(r => r.addEventListener('click', () => { const [k, id] = r.dataset.actEdit.split(':'), a = (actLog()[k] || []).find(x => x.id === id); if (a) openActivityForm(a, k); }));
+}
+
+// Perfil de atleta: deportes, nivel y marcas (los campos dependen de los deportes elegidos).
+function openAthleteProfile() {
+  const p = JSON.parse(JSON.stringify(athProfile())); p.sports = p.sports || []; p.marks = p.marks || {};
+  const keep = () => {
+    document.querySelectorAll('#ath-body [data-ath-m]').forEach(i => { const [sp, k] = i.dataset.athM.split(':'), v = i.value.trim(); p.marks[sp] = p.marks[sp] || {}; if (v) p.marks[sp][k] = v; else delete p.marks[sp][k]; });
+    const g = document.getElementById('ath-goal'); if (g) p.goal = g.value.trim(); const dd = document.getElementById('ath-days'); if (dd) p.days = parseInt(dd.value, 10) || null;
+  };
+  const paint = () => {
+    document.getElementById('ath-body').innerHTML = `
+      <div class="ant-hint">Marca todos los deportes que practicas. Según lo que elijas cambian las marcas que llenas aquí y lo que la app te ofrece registrar.</div>
+      <div class="chips act-chips" id="ath-sports">${SPORTS.map(x => `<div class="chip${p.sports.includes(x.id) ? ' selected' : ''}" data-v="${x.id}">${x.name}</div>`).join('')}</div>
+      <div class="ant-f col" style="margin-top:12px;"><span>Nivel</span><div class="chips act-chips" id="ath-level">${SPORT_LEVELS.map(x => `<div class="chip${p.level === x ? ' selected' : ''}" data-v="${x}">${x}</div>`).join('')}</div></div>
+      <label class="ant-f"><span>Días de entrenamiento por semana</span><span class="ant-in"><input inputmode="numeric" id="ath-days" value="${p.days || ''}" placeholder="4"></span></label>
+      <label class="ant-f col"><span>Objetivo principal</span><input class="act-tx" id="ath-goal" maxlength="140" value="${escapeHtml(p.goal || '')}" placeholder="Ej. Bajar de 50 min en 10 km, competir en Hyrox en marzo"></label>
+      ${p.sports.map(id => SPORT_BY[id]).filter(Boolean).map(sp => `<details open><summary>${sp.name}</summary>${(sp.prof || []).map(([k, n, u]) => `<label class="ant-f"><span>${n}</span><span class="ant-in"><input data-ath-m="${sp.id}:${k}" value="${escapeHtml(((p.marks[sp.id] || {})[k]) || '')}" placeholder="${u && u.includes(':') ? u : ''}">${u && !u.includes(':') && u !== 'fecha' ? `<i>${u}</i>` : ''}</span></label>`).join('')}</details>`).join('')}`;
+    document.querySelectorAll('#ath-sports .chip').forEach(c => c.addEventListener('click', () => { keep(); const i = p.sports.indexOf(c.dataset.v); if (i >= 0) p.sports.splice(i, 1); else p.sports.push(c.dataset.v); paint(); }));
+    document.querySelectorAll('#ath-level .chip').forEach(c => c.addEventListener('click', () => { keep(); p.level = p.level === c.dataset.v ? null : c.dataset.v; paint(); }));
+  };
+  openSheet('Perfil de atleta', '<div class="ant-ed act-ed"><div id="ath-body"></div></div>', () => { keep(); S.set('athlete_profile', p); closeSheet(); try { renderMas(); } catch (e) {} try { renderGym(); } catch (e) {} });
+  paint();
+}
+function athSummary() { const s = athSports(); return s.length ? s.map(id => SPORT_BY[id].name).join(' · ') : ''; }
+
+// Rutinas prehechas por deporte (se copian a "Mis rutinas" y se editan como cualquier otra).
+const SPORT_ROUTINES = [
+  { sport: 'box', name: 'Box · Técnica y saco', ex: [['Salto de cuerda', 3, '3 min'], ['Sombra', 3, '3 min'], ['Saco: jab y cross', 4, '3 min'], ['Saco: combinaciones', 4, '3 min'], ['Manoplas o saco libre', 2, '3 min'], ['Plancha', 3, '45 s']] },
+  { sport: 'funcional', name: 'Funcional · Circuito de cuerpo completo', ex: [['Sentadilla goblet', 4, '12'], ['Kettlebell swing', 4, '15'], ['Burpees', 4, '10'], ['Remo con mancuerna', 4, '12'], ['Wall ball', 4, '15'], ['Plancha', 4, '40 s']] },
+  { sport: 'hyrox', name: 'Hyrox · Media simulación', ex: [['Carrera', 8, '500 m'], ['SkiErg', 1, '500 m'], ['Sled push', 1, '25 m'], ['Sled pull', 1, '25 m'], ['Burpee broad jumps', 1, '40 m'], ['Remo', 1, '500 m'], ['Farmers carry', 1, '100 m'], ['Sandbag lunges', 1, '50 m'], ['Wall balls', 1, '50']] },
+  { sport: 'calistenia', name: 'Calistenia · Básicos', ex: [['Dominadas', 4, '6'], ['Fondos en paralelas', 4, '8'], ['Flexiones', 4, '12'], ['Remo invertido', 4, '10'], ['Sentadilla a una pierna asistida', 3, '6'], ['Elevación de piernas colgado', 3, '10'], ['Plancha hollow', 3, '30 s']] },
+  { sport: 'escalada', name: 'Escalada · Fuerza de dedos y tracción', ex: [['Calentamiento en vías fáciles', 1, '15 min'], ['Suspensiones en regleta', 6, '10 s'], ['Dominadas', 4, '5'], ['Bloqueos a 90°', 4, '8 s'], ['Boulder de proyecto', 6, '1 intento'], ['Flexiones (antagonistas)', 3, '12'], ['Elevación de piernas colgado', 3, '10']] },
+  { sport: 'fisio', name: 'Fisio · Movilidad y activación general', ex: [['Gato-camello', 2, '10'], ['Puente de glúteo', 3, '12'], ['Bird-dog', 3, '8'], ['Clamshell con banda', 3, '12'], ['Rotación torácica', 2, '8'], ['Estiramiento de flexor de cadera', 2, '30 s']], note: 'Ejemplo general. Tu fisioterapeuta indica los ejercicios y la dosis para tu caso.' },
+  { sport: 'running', name: 'Running · Técnica y fuerza', ex: [['Skipping', 3, '20 m'], ['Zancadas', 3, '10'], ['Elevación de talones', 3, '15'], ['Peso muerto a una pierna', 3, '8'], ['Plancha lateral', 3, '30 s']] },
+  { sport: 'natacion', name: 'Natación · Sesión técnica de 2000 m', ex: [['Calentamiento suave', 1, '400 m'], ['Patada con tabla', 4, '50 m'], ['Técnica: punto muerto', 4, '50 m'], ['Serie principal', 8, '100 m'], ['Vuelta a la calma', 1, '200 m']] },
+];
+function openSportRoutines() {
+  const mine = athSports(), list = SPORT_ROUTINES.slice().sort((a, b) => (mine.includes(b.sport) ? 1 : 0) - (mine.includes(a.sport) ? 1 : 0));
+  openSheet('Rutinas por deporte', `<div class="lk-d" style="margin:0 0 10px;">Rutinas base para empezar. Al agregarla queda en Mis rutinas y la puedes editar, programar en tu semana y registrar como cualquier otra.</div>
+    ${list.map((r, i) => `<div class="lk-row"><div class="lk-top"><div class="lk-n">${r.name}</div></div><div class="lk-d">${r.ex.map(e => `<span>${e[0]}</span> <span translate="no">${e[1]}×${e[2]}</span>`).join(' · ')}</div>${r.note ? `<div class="lk-d" style="margin-top:6px;">${r.note}</div>` : ''}
+      <button class="btn-secondary" data-sr-add="${SPORT_ROUTINES.indexOf(r)}" style="width:100%;margin-top:10px;">Agregar a mis rutinas</button></div>`).join('')}`);
+  document.querySelectorAll('[data-sr-add]').forEach(b => b.addEventListener('click', () => {
+    const r = SPORT_ROUTINES[+b.dataset.srAdd], all = gymRoutines();
+    all.push({ id: uid(), name: r.name, meta: { sport: r.sport }, tempo: '', source: 'manual', createdAt: Date.now(), notes: r.note || '',
+      exercises: r.ex.map(e => ({ id: uid(), name: e[0], sets: [{ count: e[1], reps: e[2] }] })) });
+    saveGymRoutines(all); closeSheet(); try { renderGym(); } catch (e) {}
+  }));
+}
+
+// ============================================================
 // PESO CON TENDENCIA Y CHECK-IN SEMANAL
 // El peso de un día engaña; lo que se decide es con el promedio de 7 días y su ritmo de cambio.
 // El check-in es el reporte semanal del atleta: datos automáticos + cómo se sintió; el especialista responde.
@@ -595,6 +791,7 @@ function ckAuto() {
   try { const tr = wtTrend(S.get('weight_log', {}) || {}); if (tr.avg != null) { o.wAvg = Math.round(tr.avg * 100) / 100; o.wN = tr.n; } if (tr.prevAvg != null) o.wPrev = Math.round(tr.prevAvg * 100) / 100; if (tr.rate != null) o.wRate = Math.round(tr.rate * 100) / 100; } catch (e) {}
   try { const gl = gymLogs(); o.workouts = ks.filter(k => gl[k] && (gl[k].done || Object.values(gl[k].ex || {}).some(a => a.some(x => x && x.done)))).length; o.planned = Object.keys(gymSchedule()).length;
     const ps = ks.map(k => gl[k] && gl[k].feel && gl[k].feel.pain).filter(v => v != null && isFinite(+v)); if (ps.length) o.painMax = Math.max(...ps.map(Number)); } catch (e) {}
+  try { const aw = actWeek(7); if (aw.n) { o.acts = aw.n; o.actMin = Math.round(aw.sec / 60); if (aw.km) o.actKm = Math.round(aw.km * 10) / 10; } } catch (e) {}
   try { const mt = ks.map(k => dayMealTotals(k)).filter(Boolean), g = fitGoalInfo().t || {}; o.mealDays = mt.length;
     if (mt.length) { o.kcalAvg = Math.round(mt.reduce((a, b) => a + b.kcal, 0) / mt.length); o.protAvg = Math.round(mt.reduce((a, b) => a + (b.protein || 0), 0) / mt.length); }
     if (g.kcal) o.kcalGoal = Math.round(g.kcal); if (g.protein) o.protGoal = Math.round(g.protein); } catch (e) {}
@@ -640,6 +837,7 @@ function ckViewHtml(row, prev, reviews, names) {
   const cells = [];
   if (a.wAvg != null) cells.push(antCard('Peso promedio', antN(kg(a.wAvg), 1, bwUnit()), `<span translate="no">${a.wN}</span> <span>${a.wN === 1 ? 'registro' : 'registros'}</span>${a.wRate != null ? ` · <span translate="no">${a.wRate > 0 ? '+' : ''}${a.wRate} %</span> <span>por semana</span>` : ''}`));
   if (a.workouts != null) cells.push(antCard('Entrenamientos', a.planned ? `${a.workouts}/${a.planned}` : String(a.workouts), a.painMax != null ? `<span>Dolor máximo</span> <span translate="no">${a.painMax}/10</span>` : ''));
+  if (a.acts) cells.push(antCard('Cardio y otros deportes', `${a.acts} ${a.acts === 1 ? 'sesión' : 'sesiones'}`, `${a.actKm ? `<span translate="no">${a.actKm} km</span> · ` : ''}<span translate="no">${a.actMin} min</span>`));
   if (a.mealDays != null) cells.push(antCard('Días con comidas', `${a.mealDays}/7`, a.kcalAvg ? `<span translate="no">${a.kcalAvg} kcal</span>${a.kcalGoal ? ` · <span translate="no">${Math.round(a.kcalAvg / a.kcalGoal * 100)}%</span> <span>de la meta</span>` : ''}` : ''));
   if (a.protAvg) cells.push(antCard('Proteína promedio', `${a.protAvg} g`, a.protGoal ? `<span translate="no">${Math.round(a.protAvg / a.protGoal * 100)}%</span> <span>de la meta</span>` : ''));
   if (d.dietAdh != null) cells.push(antCard('Cumplimiento de dieta', d.dietAdh + ' %', '', dl(d.dietAdh, pd.dietAdh)));
@@ -663,6 +861,7 @@ function openCheckinForm(row) {
   if (auto.wAvg != null) autoRows.push(['Peso promedio de 7 días', `${antN(kg(auto.wAvg), 1, bwUnit())} (${auto.wN})${auto.wRate != null ? ` · ${auto.wRate > 0 ? '+' : ''}${auto.wRate} %` : ''}`]);
   else autoRows.push(['Peso promedio de 7 días', '—']);
   autoRows.push(['Entrenamientos', auto.planned ? `${auto.workouts || 0}/${auto.planned}` : String(auto.workouts || 0)]);
+  if (auto.acts) autoRows.push(['Cardio y otros deportes', `${auto.acts} · ${auto.actKm ? auto.actKm + ' km · ' : ''}${auto.actMin} min`]);
   autoRows.push(['Días con comidas', `${auto.mealDays || 0}/7${auto.kcalAvg ? ` · ${auto.kcalAvg} kcal` : ''}`]);
   openSheet('Check-in semanal', `<div class="ant-ed ck-ed">
     <div class="sp-sub" style="margin-bottom:10px;"><span>Semana del</span> <b translate="no">${escapeHtml(ckWeekLabel(wk))}</b></div>

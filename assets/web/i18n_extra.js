@@ -3756,6 +3756,556 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Perfil de atleta": {
+   "en": "Athlete profile",
+   "pt-BR": "Perfil de atleta",
+   "fr": "Profil d'athlète"
+  },
+  "Tus deportes, nivel y marcas": {
+   "en": "Your sports, level and personal bests",
+   "pt-BR": "Seus esportes, nível e marcas",
+   "fr": "Vos sports, niveau et records"
+  },
+  "Marca todos los deportes que practicas. Según lo que elijas cambian las marcas que llenas aquí y lo que la app te ofrece registrar.": {
+   "en": "Tick every sport you practice. Your choices change the marks you fill in here and what the app offers you to log.",
+   "pt-BR": "Marque todos os esportes que pratica. Conforme a escolha mudam as marcas que preenche aqui e o que o app oferece para registrar.",
+   "fr": "Cochez tous les sports que vous pratiquez. Vos choix changent les records à renseigner ici et ce que l'app vous propose d'enregistrer."
+  },
+  "Nivel": {
+   "en": "Level",
+   "pt-BR": "Nível",
+   "fr": "Niveau"
+  },
+  "Principiante": {
+   "en": "Beginner",
+   "pt-BR": "Iniciante",
+   "fr": "Débutant"
+  },
+  "Intermedio": {
+   "en": "Intermediate",
+   "pt-BR": "Intermediário",
+   "fr": "Intermédiaire"
+  },
+  "Avanzado": {
+   "en": "Advanced",
+   "pt-BR": "Avançado",
+   "fr": "Avancé"
+  },
+  "Competidor": {
+   "en": "Competitor",
+   "pt-BR": "Competidor",
+   "fr": "Compétiteur"
+  },
+  "Días de entrenamiento por semana": {
+   "en": "Training days per week",
+   "pt-BR": "Dias de treino por semana",
+   "fr": "Jours d'entraînement par semaine"
+  },
+  "Objetivo principal": {
+   "en": "Main goal",
+   "pt-BR": "Objetivo principal",
+   "fr": "Objectif principal"
+  },
+  "Fuerza / Gym": {
+   "en": "Strength / Gym",
+   "pt-BR": "Força / Academia",
+   "fr": "Force / Salle"
+  },
+  "Running": {
+   "en": "Running",
+   "pt-BR": "Corrida",
+   "fr": "Course à pied"
+  },
+  "Ciclismo": {
+   "en": "Cycling",
+   "pt-BR": "Ciclismo",
+   "fr": "Cyclisme"
+  },
+  "Natación": {
+   "en": "Swimming",
+   "pt-BR": "Natação",
+   "fr": "Natation"
+  },
+  "Box / combate": {
+   "en": "Boxing / combat",
+   "pt-BR": "Boxe / combate",
+   "fr": "Boxe / combat"
+  },
+  "Funcional / CrossFit": {
+   "en": "Functional / CrossFit",
+   "pt-BR": "Funcional / CrossFit",
+   "fr": "Fonctionnel / CrossFit"
+  },
+  "Calistenia": {
+   "en": "Calisthenics",
+   "pt-BR": "Calistenia",
+   "fr": "Callisthénie"
+  },
+  "Escalada": {
+   "en": "Climbing",
+   "pt-BR": "Escalada",
+   "fr": "Escalade"
+  },
+  "Fisio / rehabilitación": {
+   "en": "Physio / rehab",
+   "pt-BR": "Fisio / reabilitação",
+   "fr": "Kiné / rééducation"
+  },
+  "Caminata / senderismo": {
+   "en": "Walking / hiking",
+   "pt-BR": "Caminhada / trilha",
+   "fr": "Marche / randonnée"
+  },
+  "Yoga / movilidad": {
+   "en": "Yoga / mobility",
+   "pt-BR": "Yoga / mobilidade",
+   "fr": "Yoga / mobilité"
+  },
+  "Deporte de equipo": {
+   "en": "Team sport",
+   "pt-BR": "Esporte coletivo",
+   "fr": "Sport collectif"
+  },
+  "Cardio y otros deportes": {
+   "en": "Cardio and other sports",
+   "pt-BR": "Cardio e outros esportes",
+   "fr": "Cardio et autres sports"
+  },
+  "Últimos 7 días": {
+   "en": "Last 7 days",
+   "pt-BR": "Últimos 7 dias",
+   "fr": "7 derniers jours"
+  },
+  "Registrar actividad": {
+   "en": "Log activity",
+   "pt-BR": "Registrar atividade",
+   "fr": "Enregistrer une activité"
+  },
+  "Editar actividad": {
+   "en": "Edit activity",
+   "pt-BR": "Editar atividade",
+   "fr": "Modifier l'activité"
+  },
+  "Eliminar actividad": {
+   "en": "Delete activity",
+   "pt-BR": "Excluir atividade",
+   "fr": "Supprimer l'activité"
+  },
+  "¿Eliminar esta actividad?": {
+   "en": "Delete this activity?",
+   "pt-BR": "Excluir esta atividade?",
+   "fr": "Supprimer cette activité ?"
+  },
+  "Deporte": {
+   "en": "Sport",
+   "pt-BR": "Esporte",
+   "fr": "Sport"
+  },
+  "Tipo de sesión": {
+   "en": "Session type",
+   "pt-BR": "Tipo de sessão",
+   "fr": "Type de séance"
+  },
+  "Distancia": {
+   "en": "Distance",
+   "pt-BR": "Distância",
+   "fr": "Distance"
+  },
+  "FC media": {
+   "en": "Avg HR",
+   "pt-BR": "FC média",
+   "fr": "FC moyenne"
+  },
+  "FC máxima": {
+   "en": "Max HR",
+   "pt-BR": "FC máxima",
+   "fr": "FC max"
+  },
+  "Desnivel": {
+   "en": "Elevation gain",
+   "pt-BR": "Desnível",
+   "fr": "Dénivelé"
+  },
+  "Potencia media": {
+   "en": "Avg power",
+   "pt-BR": "Potência média",
+   "fr": "Puissance moyenne"
+  },
+  "Cadencia": {
+   "en": "Cadence",
+   "pt-BR": "Cadência",
+   "fr": "Cadence"
+  },
+  "Pasos": {
+   "en": "Steps",
+   "pt-BR": "Passos",
+   "fr": "Pas"
+  },
+  "Rounds": {
+   "en": "Rounds",
+   "pt-BR": "Rounds",
+   "fr": "Rounds"
+  },
+  "Minutos por round": {
+   "en": "Minutes per round",
+   "pt-BR": "Minutos por round",
+   "fr": "Minutes par round"
+  },
+  "Nombre o descripción": {
+   "en": "Name or description",
+   "pt-BR": "Nome ou descrição",
+   "fr": "Nom ou description"
+  },
+  "Resultado": {
+   "en": "Result",
+   "pt-BR": "Resultado",
+   "fr": "Résultat"
+  },
+  "Grado máximo": {
+   "en": "Max grade",
+   "pt-BR": "Grau máximo",
+   "fr": "Cotation max"
+  },
+  "Encadenes": {
+   "en": "Sends",
+   "pt-BR": "Encadeamentos",
+   "fr": "Enchaînements"
+  },
+  "Intentos": {
+   "en": "Attempts",
+   "pt-BR": "Tentativas",
+   "fr": "Essais"
+  },
+  "Dolor antes": {
+   "en": "Pain before",
+   "pt-BR": "Dor antes",
+   "fr": "Douleur avant"
+  },
+  "Dolor después": {
+   "en": "Pain after",
+   "pt-BR": "Dor depois",
+   "fr": "Douleur après"
+  },
+  "Tiempo total de carrera": {
+   "en": "Total running time",
+   "pt-BR": "Tempo total de corrida",
+   "fr": "Temps total de course"
+  },
+  "Tiempo por estación": {
+   "en": "Time per station",
+   "pt-BR": "Tempo por estação",
+   "fr": "Temps par station"
+  },
+  "opcional": {
+   "en": "optional",
+   "pt-BR": "opcional",
+   "fr": "facultatif"
+  },
+  "Esfuerzo percibido (RPE)": {
+   "en": "Perceived effort (RPE)",
+   "pt-BR": "Esforço percebido (RPE)",
+   "fr": "Effort perçu (RPE)"
+  },
+  "Categoría": {
+   "en": "Category",
+   "pt-BR": "Categoria",
+   "fr": "Catégorie"
+  },
+  "Alberca": {
+   "en": "Pool",
+   "pt-BR": "Piscina",
+   "fr": "Bassin"
+  },
+  "Estilo principal": {
+   "en": "Main stroke",
+   "pt-BR": "Estilo principal",
+   "fr": "Nage principale"
+  },
+  "Cómo te sentiste, clima, ruta...": {
+   "en": "How you felt, weather, route...",
+   "pt-BR": "Como se sentiu, clima, rota...",
+   "fr": "Ressenti, météo, parcours..."
+  },
+  "Anota al menos el tiempo o la distancia.": {
+   "en": "Enter at least time or distance.",
+   "pt-BR": "Anote pelo menos o tempo ou a distância.",
+   "fr": "Saisissez au moins le temps ou la distance."
+  },
+  "Ritmo": {
+   "en": "Pace",
+   "pt-BR": "Ritmo",
+   "fr": "Allure"
+  },
+  "Velocidad": {
+   "en": "Speed",
+   "pt-BR": "Velocidade",
+   "fr": "Vitesse"
+  },
+  "sesión": {
+   "en": "session",
+   "pt-BR": "sessão",
+   "fr": "séance"
+  },
+  "sesiones": {
+   "en": "sessions",
+   "pt-BR": "sessões",
+   "fr": "séances"
+  },
+  "Rodaje suave": {
+   "en": "Easy run",
+   "pt-BR": "Rodagem leve",
+   "fr": "Footing"
+  },
+  "Series": {
+   "en": "Intervals",
+   "pt-BR": "Séries",
+   "fr": "Fractionné"
+  },
+  "Tirada larga": {
+   "en": "Long run",
+   "pt-BR": "Longão",
+   "fr": "Sortie longue"
+  },
+  "Competencia": {
+   "en": "Race",
+   "pt-BR": "Competição",
+   "fr": "Compétition"
+  },
+  "Ruta": {
+   "en": "Road",
+   "pt-BR": "Estrada",
+   "fr": "Route"
+  },
+  "Montaña": {
+   "en": "Mountain",
+   "pt-BR": "Montanha",
+   "fr": "VTT"
+  },
+  "Rodillo / spinning": {
+   "en": "Trainer / spinning",
+   "pt-BR": "Rolo / spinning",
+   "fr": "Home trainer / spinning"
+  },
+  "Técnica": {
+   "en": "Technique",
+   "pt-BR": "Técnica",
+   "fr": "Technique"
+  },
+  "Aeróbico": {
+   "en": "Aerobic",
+   "pt-BR": "Aeróbico",
+   "fr": "Aérobie"
+  },
+  "Aguas abiertas": {
+   "en": "Open water",
+   "pt-BR": "Águas abertas",
+   "fr": "Eau libre"
+  },
+  "Saco": {
+   "en": "Bag",
+   "pt-BR": "Saco",
+   "fr": "Sac"
+  },
+  "Sombra": {
+   "en": "Shadow",
+   "pt-BR": "Sombra",
+   "fr": "Shadow"
+  },
+  "Manoplas": {
+   "en": "Mitts",
+   "pt-BR": "Manoplas",
+   "fr": "Pattes d'ours"
+  },
+  "Sparring": {
+   "en": "Sparring",
+   "pt-BR": "Sparring",
+   "fr": "Sparring"
+  },
+  "Acondicionamiento": {
+   "en": "Conditioning",
+   "pt-BR": "Condicionamento",
+   "fr": "Condition physique"
+  },
+  "Por tiempo": {
+   "en": "For time",
+   "pt-BR": "Por tempo",
+   "fr": "For time"
+  },
+  "Simulación completa": {
+   "en": "Full simulation",
+   "pt-BR": "Simulação completa",
+   "fr": "Simulation complète"
+  },
+  "Media simulación": {
+   "en": "Half simulation",
+   "pt-BR": "Meia simulação",
+   "fr": "Demi-simulation"
+  },
+  "Estaciones": {
+   "en": "Stations",
+   "pt-BR": "Estações",
+   "fr": "Stations"
+  },
+  "Carrera comprometida": {
+   "en": "Compromised running",
+   "pt-BR": "Corrida comprometida",
+   "fr": "Course compromise"
+  },
+  "Fuerza": {
+   "en": "Strength",
+   "pt-BR": "Força",
+   "fr": "Force"
+  },
+  "Resistencia": {
+   "en": "Endurance",
+   "pt-BR": "Resistência",
+   "fr": "Endurance"
+  },
+  "Skills": {
+   "en": "Skills",
+   "pt-BR": "Skills",
+   "fr": "Skills"
+  },
+  "Movilidad": {
+   "en": "Mobility",
+   "pt-BR": "Mobilidade",
+   "fr": "Mobilité"
+  },
+  "Boulder": {
+   "en": "Bouldering",
+   "pt-BR": "Boulder",
+   "fr": "Bloc"
+  },
+  "Deportiva": {
+   "en": "Sport climbing",
+   "pt-BR": "Esportiva",
+   "fr": "Voie"
+  },
+  "Roca": {
+   "en": "Rock",
+   "pt-BR": "Rocha",
+   "fr": "Falaise"
+  },
+  "Ejercicios en casa": {
+   "en": "Home exercises",
+   "pt-BR": "Exercícios em casa",
+   "fr": "Exercices à domicile"
+  },
+  "Sesión con fisioterapeuta": {
+   "en": "Session with physio",
+   "pt-BR": "Sessão com fisioterapeuta",
+   "fr": "Séance avec kiné"
+  },
+  "Readaptación": {
+   "en": "Return to play",
+   "pt-BR": "Readaptação",
+   "fr": "Réathlétisation"
+  },
+  "Partido": {
+   "en": "Match",
+   "pt-BR": "Jogo",
+   "fr": "Match"
+  },
+  "Por deporte": {
+   "en": "By sport",
+   "pt-BR": "Por esporte",
+   "fr": "Par sport"
+  },
+  "Rutinas por deporte": {
+   "en": "Routines by sport",
+   "pt-BR": "Rotinas por esporte",
+   "fr": "Routines par sport"
+  },
+  "Agregar a mis rutinas": {
+   "en": "Add to my routines",
+   "pt-BR": "Adicionar às minhas rotinas",
+   "fr": "Ajouter à mes routines"
+  },
+  "Rutinas base para empezar. Al agregarla queda en Mis rutinas y la puedes editar, programar en tu semana y registrar como cualquier otra.": {
+   "en": "Starter routines. Once added it sits in My routines and you can edit, schedule and log it like any other.",
+   "pt-BR": "Rotinas base para começar. Ao adicionar fica em Minhas rotinas e você pode editar, programar e registrar como qualquer outra.",
+   "fr": "Routines de base. Une fois ajoutée, elle est dans Mes routines : modifiez-la, planifiez-la et enregistrez-la comme les autres."
+  },
+  "Ejemplo general. Tu fisioterapeuta indica los ejercicios y la dosis para tu caso.": {
+   "en": "General example. Your physiotherapist sets the exercises and dose for your case.",
+   "pt-BR": "Exemplo geral. Seu fisioterapeuta indica os exercícios e a dose para o seu caso.",
+   "fr": "Exemple général. Votre kiné indique les exercices et la dose pour votre cas."
+  },
+  "Marca en 5 km": {
+   "en": "5K best",
+   "pt-BR": "Marca em 5 km",
+   "fr": "Record 5 km"
+  },
+  "Marca en 10 km": {
+   "en": "10K best",
+   "pt-BR": "Marca em 10 km",
+   "fr": "Record 10 km"
+  },
+  "Medio maratón": {
+   "en": "Half marathon",
+   "pt-BR": "Meia maratona",
+   "fr": "Semi-marathon"
+  },
+  "Maratón": {
+   "en": "Marathon",
+   "pt-BR": "Maratona",
+   "fr": "Marathon"
+  },
+  "Kilómetros por semana": {
+   "en": "Kilometers per week",
+   "pt-BR": "Quilômetros por semana",
+   "fr": "Kilomètres par semaine"
+  },
+  "Sentadilla (1RM)": {
+   "en": "Squat (1RM)",
+   "pt-BR": "Agachamento (1RM)",
+   "fr": "Squat (1RM)"
+  },
+  "Press de banca (1RM)": {
+   "en": "Bench press (1RM)",
+   "pt-BR": "Supino (1RM)",
+   "fr": "Développé couché (1RM)"
+  },
+  "Peso muerto (1RM)": {
+   "en": "Deadlift (1RM)",
+   "pt-BR": "Levantamento terra (1RM)",
+   "fr": "Soulevé de terre (1RM)"
+  },
+  "Años entrenando": {
+   "en": "Years training",
+   "pt-BR": "Anos treinando",
+   "fr": "Années d'entraînement"
+  },
+  "Años practicando": {
+   "en": "Years practicing",
+   "pt-BR": "Anos praticando",
+   "fr": "Années de pratique"
+  },
+  "Mejor tiempo": {
+   "en": "Best time",
+   "pt-BR": "Melhor tempo",
+   "fr": "Meilleur temps"
+  },
+  "Próxima competencia": {
+   "en": "Next competition",
+   "pt-BR": "Próxima competição",
+   "fr": "Prochaine compétition"
+  },
+  "Dominadas seguidas": {
+   "en": "Pull-ups in a row",
+   "pt-BR": "Barras seguidas",
+   "fr": "Tractions d'affilée"
+  },
+  "Flexiones seguidas": {
+   "en": "Push-ups in a row",
+   "pt-BR": "Flexões seguidas",
+   "fr": "Pompes d'affilée"
+  },
+  "Fondos seguidos": {
+   "en": "Dips in a row",
+   "pt-BR": "Paralelas seguidas",
+   "fr": "Dips d'affilée"
+  },
   "Personalizar": {
    "en": "Customize",
    "pt-BR": "Personalizar",

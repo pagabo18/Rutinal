@@ -2745,6 +2745,20 @@
   .skel.list i { height: 56px; border-radius: 14px; }
   .skel i:nth-child(2) { animation-delay: .1s; } .skel i:nth-child(3) { animation-delay: .2s; } .skel i:nth-child(4) { animation-delay: .3s; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; } .skel i { animation: none; } }
+
+  /* ===== Deportes y actividades ===== */
+  .act-chips { justify-content: flex-start !important; flex-wrap: wrap; }
+  .act-tx { width: 100%; box-sizing: border-box; border: 0; background: var(--surface-2); border-radius: 10px; padding: 10px; font: inherit; font-size: 15px; color: var(--text); }
+  .act-ed details { margin-top: 10px; } .act-ed > .ant-f:first-child { border-top: 0; }
+  .act-der { display: flex; gap: 8px; margin-top: 10px; } .act-der:empty { display: none; }
+  .act-der div { flex: 1; background: var(--text); color: var(--bg); border-radius: 12px; padding: 10px 12px; } .act-der span { display: block; font-size: 11px; opacity: .7; } .act-der b { font-size: 17px; }
+  .act-sums { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; }
+  .act-sum { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; box-shadow: var(--card-sh); min-width: 0; }
+  .act-sum span { display: block; font-size: 11px; font-weight: 600; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .act-sum b { display: block; font-size: 18px; margin-top: 2px; } .act-sum small { font-size: 11px; color: var(--text-3); }
+  .act-cap { font-size: 11px; color: var(--text-3); margin: 6px 2px 10px; }
+  .act-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 8px; cursor: pointer; box-shadow: var(--card-sh); }
+  .act-row b { display: block; font-size: 14px; } .act-row b small { font-weight: 500; color: var(--text-3); margin-left: 4px; } .act-row span { font-size: 12px; color: var(--text-2); } .act-row em { font-style: normal; font-size: 11px; color: var(--text-3); flex: 0 0 auto; }
+  .gym-h2-btns { flex-wrap: wrap; justify-content: flex-end; }
 </style>
 </head>
 <body>
@@ -3956,6 +3970,7 @@ function renderMas() {
     ${logged ? `<button class="mas-profile" data-mas="ajustes"><span class="acct-av" translate="no">${escapeHtml(String(s.name || s.user || '?').trim().slice(0, 1).toUpperCase())}</span>
       <span class="acct-id"><span class="acct-name" translate="no">${escapeHtml(s.name || s.user || '')}</span><span class="acct-sub"><span translate="no">@${escapeHtml(s.user || '')}</span> · ${authRolesHtml(s.specs, s.admin)}</span></span><span class="mas-chev">›</span></button>` : ''}
     ${logged && (s.specs || []).length ? `<div class="mas-card">${typeof spMode === 'function' && spMode() ? row('mode', I.people, 'Cambiar a mi perfil de atleta', 'Tus propios registros, rutinas y comidas') : row('mode', I.people, 'Cambiar a especialista', 'Tus atletas, plantillas y mensajes')}</div>` : ''}
+    <div class="mas-card">${row('athlete', I.goal, 'Perfil de atleta', (typeof athSummary === 'function' && athSummary()) || 'Tus deportes, nivel y marcas')}</div>
     <h2>Herramientas</h2>
     <div class="mas-card">${row('pomo', I.clock, 'Reloj', 'Pomodoro y temporizador')}${row('cal', I.cal, 'Calendario', 'Tu día, semana y mes')}</div>
     <h2>Tu contenido</h2>
@@ -3968,6 +3983,7 @@ function renderMas() {
     else if (k === 'links') openLinks();
     else if (k === 'agenda') openAgenda();
     else if (k === 'mode') { if (typeof spSetMode === 'function') spSetMode(!spMode()); }
+    else if (k === 'athlete') openAthleteProfile();
     else if (k === 'photos') openPhotos();
     else if (k === 'assess') openMyAssessments();
     else if (k === 'checkins') openMyCheckins();
@@ -13404,7 +13420,7 @@ function renderGym() {
       <div class="gym-today-meta">${routines.length ? 'No tienes rutina asignada para hoy.' : 'Importa el PDF de tu coach o arma tu rutina.'}</div>
       ${routines.length
         ? '<button class="btn-secondary" id="gym-pick-today" style="margin-top:14px;">Entrenar otra rutina hoy</button>'
-        : '<div class="gym-actions" style="margin-top:14px;"><button class="btn-primary" id="gym-import-big" style="flex:1">Importar PDF</button><button class="btn-secondary" id="gym-new-big" style="flex:1">+ Nueva rutina</button></div>'}
+        : '<div class="gym-actions" style="margin-top:14px;"><button class="btn-primary" id="gym-import-big" style="flex:1">Importar PDF</button><button class="btn-secondary" id="gym-new-big" style="flex:1">+ Nueva rutina</button></div><button class="btn-secondary" id="gym-sport-big" style="width:100%;margin-top:8px;">Rutinas por deporte</button>'}
     </div>`;
   }
 
@@ -13437,15 +13453,19 @@ function renderGym() {
     <h2>Semana <span class="gym-h2-hint">toca un día para cambiarlo</span></h2>
     <div class="gym-week">${week}</div>
     <h2>Mis rutinas
-      <span class="gym-h2-btns"><button class="h2-btn" id="gym-import">Importar PDF</button><button class="h2-btn" id="gym-new">+ Nueva</button></span>
+      <span class="gym-h2-btns"><button class="h2-btn" id="gym-sport">Por deporte</button><button class="h2-btn" id="gym-import">Importar PDF</button><button class="h2-btn" id="gym-new">+ Nueva</button></span>
     </h2>
     ${list}
     <h2>Historial <span class="gym-h2-btns"><button class="h2-btn" id="gym-progress">Progreso</button></span></h2>
     ${gymHistoryHtml()}` : ''}
+    <div id="gym-acts"></div>
     <input type="file" id="gym-pdf-input" accept="application/pdf,.pdf" style="display:none">
     <div class="gym-credit">Ejercicios e imágenes: free-exercise-db (dominio público)</div>`;
 
   const on = (id, fn) => { const b = document.getElementById(id); if (b) b.addEventListener('click', fn); };
+  try { if (typeof actMountGym === 'function') actMountGym(); } catch (e) {}
+  on('gym-sport', () => openSportRoutines());
+  on('gym-sport-big', () => openSportRoutines());
   on('gym-start', () => openGymWorkout(today.id, todayKey));
   on('gym-pick-today', () => gymPickRoutine('Elige la rutina de hoy', id => openGymWorkout(id, todayKey)));
   const inp = document.getElementById('gym-pdf-input');
