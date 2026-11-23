@@ -275,4 +275,6 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 
 **Deportes.** *Más → Perfil de atleta*: se eligen los deportes que se practican, nivel, objetivo y marcas; los campos de marcas dependen de los deportes elegidos. En Gym, la sección *Cardio y otros deportes* registra sesiones de running, ciclismo, natación, box, funcional, Hyrox, calistenia, escalada, fisio, caminata, yoga, deporte de equipo u otro: cada deporte pide sus propios datos (distancia, tiempo, rounds, grado, estaciones de Hyrox, dolor antes y después…) y calcula ritmo o velocidad. *Rutinas por deporte* agrega rutinas base a Mis rutinas. Las actividades de la semana se incluyen en el check-in. Se guardan en `act_log` y `athlete_profile`.
 
+**Objetivos y logros.** En Más → Objetivos y logros (y tarjeta en Hoy): peso objetivo, % de grasa, récord en un ejercicio, kilómetros acumulados por deporte, marca de tiempo, sesiones por semana u objetivo libre. El avance se calcula solo con lo registrado (`weight_log`, `gym_logs`, `act_log`, última evaluación) y al llegar al 100 % pasa a Logros con su fecha. Se guarda en `goals` y se respalda en la nube.
+
 **Personalizar.** En Ajustes se apagan las secciones que no se usan y se activa «Solo palomear ejercicios». Preferencias en `app_prefs`.

@@ -778,6 +778,164 @@ function openSportRoutines() {
 }
 
 // ============================================================
+// OBJETIVOS Y LOGROS: metas con avance calculado solo a partir de los registros.
+// ============================================================
+const GOAL_TYPES = [
+  ['weight', 'Peso objetivo', 'Llegar a un peso; avanza con tu promedio de 7 días'],
+  ['bodyfat', '% de grasa objetivo', 'Avanza con cada evaluación de composición corporal'],
+  ['pr', 'Récord en un ejercicio', 'Levantar cierto peso en un ejercicio de tus rutinas'],
+  ['dist', 'Kilómetros acumulados', 'Sumar distancia en un deporte durante un periodo'],
+  ['mark', 'Marca de tiempo', 'Hacer una distancia en cierto tiempo'],
+  ['sessions', 'Sesiones por semana', 'Entrenamientos y actividades cada semana'],
+  ['custom', 'Objetivo libre', 'Cualquier número que tú actualizas'],
+];
+const GOAL_PERIODS = [['week', 'Esta semana'], ['month', 'Este mes'], ['year', 'Este año'], ['all', 'Desde que lo creé']];
+function goalsAll() { const g = S.get('goals', null); return Array.isArray(g) ? g : []; }
+function goalsSave(g) { S.set('goals', g); }
+function goalNorm(x) { return String(x || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim(); }
+// Mayor peso registrado (kg) en un ejercicio, buscándolo por nombre en todas las rutinas.
+function goalBestLift(name) {
+  const want = goalNorm(name), ids = {}; let best = null;
+  gymRoutines().forEach(r => (r.exercises || []).forEach(ex => { if (goalNorm(ex.name) === want) ids[ex.id] = 1; }));
+  const logs = gymLogs();
+  Object.keys(logs).forEach(k => { const lg = logs[k] || {}; Object.keys(lg.ex || {}).forEach(id => { const sw = lg.swap && lg.swap[id]; if (sw ? goalNorm(sw.name) !== want : !ids[id]) return; (lg.ex[id] || []).forEach(st => { const kg = +st.kg; if (st.done && kg > 0 && (best == null || kg > best)) best = kg; }); }); });
+  return best;
+}
+function goalPeriodStart(g) {
+  const now = new Date(); now.setHours(12, 0, 0, 0);
+  if (g.period === 'week') return ckWeekOf(now);
+  if (g.period === 'month') return keyDate(new Date(now.getFullYear(), now.getMonth(), 1, 12));
+  if (g.period === 'year') return keyDate(new Date(now.getFullYear(), 0, 1, 12));
+  return g.created || '2000-01-01';
+}
+// Valor actual, texto y fracción de avance de un objetivo.
+function goalState(g) {
+  const lb = bwUnit() === 'lb', bw = v => v == null ? '—' : bwDisp(v) + ' ' + bwUnit(), o = { cur: null, pct: 0, curText: '—', tgtText: '', hint: '' };
+  const linear = (cur, start, tgt) => { if (cur == null) return 0; if (start == null || start === tgt) return (tgt >= (start == null ? 0 : start) ? cur >= tgt : cur <= tgt) ? 1 : (start == null && tgt ? Math.min(1, cur / tgt) : 0); return Math.max(0, Math.min(1, (cur - start) / (tgt - start))); };
+  if (g.type === 'weight') {
+    const wl = S.get('weight_log', {}) || {}, tr = wtTrend(wl), ks = Object.keys(wl).sort(); o.cur = tr.avg != null && tr.n >= 2 ? tr.avg : (ks.length ? +wl[ks[ks.length - 1]] : null);
+    o.curText = bw(o.cur); o.tgtText = bw(g.target); o.pct = linear(o.cur, g.start, g.target);
+    if (o.cur != null) { const left = g.target - o.cur; o.hint = Math.abs(left) < 0.05 ? '' : `${left > 0 ? '+' : ''}${bwDiff(left)} ${bwUnit()}`; }
+    if (o.cur != null && g.start != null && ((g.target <= g.start && o.cur <= g.target) || (g.target > g.start && o.cur >= g.target))) o.pct = 1;
+  } else if (g.type === 'bodyfat') {
+    const r = antHoyCache()[0], c = r ? antCalc(r.data || {}) : null; o.cur = c ? c.pct : null;
+    o.curText = o.cur == null ? '—' : antN(o.cur, 1, '%'); o.tgtText = antN(g.target, 1, '%'); o.pct = linear(o.cur, g.start, g.target);
+    if (o.cur != null && g.start != null && ((g.target <= g.start && o.cur <= g.target) || (g.target > g.start && o.cur >= g.target))) o.pct = 1;
+    if (o.cur == null) o.hint = 'Falta una evaluación de composición corporal';
+  } else if (g.type === 'pr') {
+    o.cur = goalBestLift(g.exName); const f = v => v == null ? '—' : gymFmtKg(v) + ' ' + gymUnit();
+    o.curText = f(o.cur); o.tgtText = f(g.target); o.pct = o.cur == null ? 0 : (o.cur >= g.target ? 1 : linear(o.cur, g.start != null && g.start < g.target ? g.start * 0.9 : null, g.target));
+  } else if (g.type === 'dist') {
+    const from = goalPeriodStart(g), l = actLog(); let km = 0;
+    Object.keys(l).forEach(k => { if (k >= from) (l[k] || []).forEach(a => { if (!g.sport || a.sport === g.sport) km += (+a.dist_km || 0) + (+a.dist_m || 0) / 1000; }); });
+    o.cur = km; o.curText = (Math.round(km * 10) / 10).toLocaleString(_loc()) + ' km'; o.tgtText = (+g.target).toLocaleString(_loc()) + ' km'; o.pct = Math.min(1, km / g.target);
+  } else if (g.type === 'mark') {
+    const l = actLog(); let best = null;
+    Object.keys(l).forEach(k => (l[k] || []).forEach(a => { if (a.sport !== g.sport || !+a.time) return; const km = (+a.dist_km || 0) + (+a.dist_m || 0) / 1000; if (km >= g.dist * 0.98 && km <= g.dist * 1.05) { const t2 = a.time * g.dist / km; if (best == null || t2 < best) best = t2; } }));
+    o.cur = best; o.curText = best == null ? '—' : actFmtTime(best); o.tgtText = actFmtTime(g.target);
+    o.pct = best == null ? 0 : best <= g.target ? 1 : (g.start && g.start > g.target ? Math.max(0, Math.min(1, (g.start - best) / (g.start - g.target))) : Math.max(0, Math.min(.95, g.target / best)));
+    if (best == null) o.hint = 'Registra una sesión de esa distancia para medir el avance';
+  } else if (g.type === 'sessions') {
+    const from = ckWeekOf(), gl = gymLogs(), al = actLog(); let n = 0;
+    for (let i = 0; i < 7; i++) { const k = keyDate(new Date(parseKey(from).getTime() + i * 864e5)); if (gl[k] && (gl[k].done || Object.values(gl[k].ex || {}).some(a => a.some(x => x && x.done)))) n++; n += (al[k] || []).length; }
+    o.cur = n; o.curText = String(n); o.tgtText = String(g.target); o.pct = Math.min(1, n / g.target); o.hint = 'Se reinicia cada lunes';
+  } else {
+    o.cur = g.cur == null ? null : +g.cur; const u = g.unit ? ' ' + g.unit : '';
+    o.curText = o.cur == null ? '—' : (+o.cur).toLocaleString(_loc()) + u; o.tgtText = (+g.target).toLocaleString(_loc()) + u; o.pct = linear(o.cur, g.start, g.target);
+    if (o.cur != null && ((g.start != null && g.target < g.start) ? o.cur <= g.target : o.cur >= g.target)) o.pct = 1;
+  }
+  return o;
+}
+// Marca como logrado el objetivo la primera vez que llega al 100% (las sesiones por semana cuentan semanas cumplidas).
+function goalsCheck() {
+  const all = goalsAll(); let ch = false;
+  all.forEach(g => { const st = goalState(g);
+    if (g.type === 'sessions') { const wk = ckWeekOf(); if (st.pct >= 1 && !(g.weeks || []).includes(wk)) { g.weeks = (g.weeks || []).concat([wk]); ch = true; } }
+    else if (st.pct >= 1 && !g.done) { g.done = keyDate(); ch = true; } });
+  if (ch) goalsSave(all);
+  return all;
+}
+function goalTitle(g) {
+  if (g.title) return g.title;
+  if (g.type === 'weight') return 'Peso objetivo'; if (g.type === 'bodyfat') return '% de grasa objetivo'; if (g.type === 'pr') return g.exName;
+  if (g.type === 'dist') return (SPORT_BY[g.sport] || { name: 'Todos los deportes' }).name; if (g.type === 'mark') return `${(SPORT_BY[g.sport] || {}).name || ''} ${g.dist} km`;
+  if (g.type === 'sessions') return 'Sesiones por semana'; return 'Objetivo';
+}
+function goalKicker(g) {
+  const tn = (GOAL_TYPES.find(x => x[0] === g.type) || [])[1] || '';
+  if (g.type === 'dist') return `${tn} · ${(GOAL_PERIODS.find(x => x[0] === (g.period || 'all')) || [])[1]}`;
+  return tn;
+}
+function goalCardHtml(g, i) {
+  const st = goalState(g), done = g.type === 'sessions' ? st.pct >= 1 : !!g.done, pct = Math.round(st.pct * 100);
+  return `<div class="goal${done ? ' done' : ''}" data-goal="${i}"><div class="goal-top"><div><div class="goal-k">${goalKicker(g)}</div><div class="goal-t"${g.title || g.type === 'pr' ? ' translate="no"' : ''}>${escapeHtml(goalTitle(g))}</div></div>
+      ${done ? `<span class="hd-badge ok">${g.type === 'sessions' ? 'Semana cumplida' : 'Logrado'}</span>` : `<span class="goal-pct" translate="no">${pct}%</span>`}</div>
+    <div class="goal-v"><span><span>Ahora</span> <b translate="no">${st.curText}</b></span><span><span>Meta</span> <b translate="no">${st.tgtText}</b></span></div>
+    <div class="goal-bar"><i style="width:${pct}%"></i></div>
+    <div class="goal-d">${g.done && g.type !== 'sessions' ? `<span>Logrado el</span> <span translate="no">${escapeHtml(antDate(g.done))}</span>` : ''}${g.type === 'sessions' && (g.weeks || []).length ? `<span translate="no">${g.weeks.length}</span> <span>${g.weeks.length === 1 ? 'semana cumplida' : 'semanas cumplidas'}</span> · ` : ''}${!g.done && st.hint ? (/^[+\-−\d]/.test(st.hint) ? `<span>Faltan</span> <span translate="no">${st.hint.replace(/^[+\-−]/, '')}</span>` : `<span>${st.hint}</span>`) : ''}${g.due && !g.done ? ` · <span>Fecha límite</span> <span translate="no">${escapeHtml(antDate(g.due))}</span>` : ''}</div></div>`;
+}
+function goalsSummary() { const a = goalsAll(); if (!a.length) return ''; const d = a.filter(g => g.done).length; return `${a.length - d} ${a.length - d === 1 ? 'activo' : 'activos'} · ${d} ${d === 1 ? 'logrado' : 'logrados'}`; }
+function goalsHoyCard() {
+  const all = goalsCheck(), act = all.filter(g => !g.done).slice(0, 3);
+  if (!act.length) return '';
+  return `<div class="hd-card" data-hd-goals="1" style="cursor:pointer;"><div class="hd-k"><span>Objetivos</span><span class="hd-badge" translate="no">${all.filter(g => g.done).length} ${all.filter(g => g.done).length === 1 ? 'logrado' : 'logrados'}</span></div>
+    ${act.map(g => { const st = goalState(g), pct = Math.round(st.pct * 100); return `<div class="hd-goal"><div class="goal-v"><span><b${g.title || g.type === 'pr' ? ' translate="no"' : ''}>${escapeHtml(goalTitle(g))}</b></span><span translate="no">${st.curText} / ${st.tgtText}</span></div><div class="goal-bar"><i style="width:${pct}%"></i></div></div>`; }).join('')}</div>`;
+}
+function openGoals() {
+  const all = goalsCheck(), act = all.filter(g => !g.done), done = all.filter(g => g.done);
+  openSheet('Objetivos y logros', `<button class="btn-primary" id="goal-new" style="width:100%;margin-bottom:14px;">Nuevo objetivo</button>
+    ${act.length ? act.map(g => goalCardHtml(g, all.indexOf(g))).join('') : '<div class="sp-empty">Pon un objetivo y la app mide sola tu avance con lo que registras: peso, levantamientos, kilómetros o sesiones.</div>'}
+    ${done.length ? `<h3 class="ant-sub">Logros</h3>${done.map(g => goalCardHtml(g, all.indexOf(g))).join('')}` : ''}`);
+  document.getElementById('goal-new').addEventListener('click', openGoalTypePicker);
+  document.querySelectorAll('[data-goal]').forEach(c => c.addEventListener('click', () => openGoalForm(all[+c.dataset.goal], +c.dataset.goal)));
+}
+function openGoalTypePicker() {
+  openSheet('Nuevo objetivo', `<div class="goal-types">${GOAL_TYPES.map(([k, n, d]) => `<button data-gt="${k}"><b>${n}</b><span>${d}</span></button>`).join('')}</div>
+    <button class="btn-secondary" id="goal-back" style="width:100%;margin-top:12px;">Volver</button>`);
+  document.querySelectorAll('[data-gt]').forEach(b => b.addEventListener('click', () => openGoalForm({ type: b.dataset.gt }, -1)));
+  document.getElementById('goal-back').addEventListener('click', openGoals);
+}
+function openGoalForm(g0, idx) {
+  const g = JSON.parse(JSON.stringify(g0)), isNew = idx < 0, lb = bwUnit() === 'lb';
+  const exNames = []; gymRoutines().forEach(r => (r.exercises || []).forEach(ex => { if (ex.name && !exNames.includes(ex.name)) exNames.push(ex.name); }));
+  const sportOpts = (all0) => (all0 ? '<option value="">Todos los deportes</option>' : '') + SPORTS.filter(x => !x.gym).map(x => `<option value="${x.id}"${g.sport === x.id ? ' selected' : ''}>${x.name}</option>`).join('');
+  const inp = (id, label, unit, val, ph, mode) => `<label class="ant-f"><span>${label}</span><span class="ant-in"><input id="${id}" inputmode="${mode || 'decimal'}" value="${val == null ? '' : escapeHtml(String(val))}" placeholder="${ph || ''}">${unit ? `<i>${unit}</i>` : ''}</span></label>`;
+  let body = '';
+  if (g.type === 'weight') body = inp('gl-target', 'Peso al que quieres llegar', bwUnit(), g.target ? bwDisp(g.target) : '');
+  else if (g.type === 'bodyfat') body = inp('gl-target', '% de grasa al que quieres llegar', '%', g.target || '');
+  else if (g.type === 'pr') body = `<label class="ant-f col"><span>Ejercicio</span>${exNames.length ? `<span class="ant-in"><select id="gl-ex">${exNames.map(n => `<option${g.exName === n ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('')}</select></span>` : '<input class="act-tx" id="gl-ex" placeholder="Nombre del ejercicio" value="' + escapeHtml(g.exName || '') + '">'}</label>` + inp('gl-target', 'Peso que quieres levantar', gymUnit(), g.target ? gymFmtKg(g.target) : '');
+  else if (g.type === 'dist') body = `<label class="ant-f"><span>Deporte</span><span class="ant-in"><select id="gl-sport">${sportOpts(true)}</select></span></label>` + inp('gl-target', 'Kilómetros', 'km', g.target || '') + `<label class="ant-f"><span>Periodo</span><span class="ant-in"><select id="gl-period">${GOAL_PERIODS.map(([k, n]) => `<option value="${k}"${(g.period || 'month') === k ? ' selected' : ''}>${n}</option>`).join('')}</select></span></label>`;
+  else if (g.type === 'mark') body = `<label class="ant-f"><span>Deporte</span><span class="ant-in"><select id="gl-sport">${sportOpts(false)}</select></span></label>` + inp('gl-dist', 'Distancia', 'km', g.dist || '', '10') + inp('gl-target', 'Tiempo objetivo', 'h:mm:ss', g.target ? actFmtTime(g.target) : '', '50:00', 'text');
+  else if (g.type === 'sessions') body = inp('gl-target', 'Sesiones por semana', '', g.target || '', '4', 'numeric');
+  else body = `<label class="ant-f col"><span>Nombre del objetivo</span><input class="act-tx" id="gl-title" maxlength="60" value="${escapeHtml(g.title || '')}" placeholder="Ej. Dominadas seguidas"></label>` + inp('gl-start', 'Valor inicial', '', g.start == null ? '' : g.start) + inp('gl-cur', 'Valor actual', '', g.cur == null ? '' : g.cur) + inp('gl-target', 'Meta', '', g.target || '') + `<label class="ant-f"><span>Unidad</span><span class="ant-in"><input id="gl-unit" maxlength="12" value="${escapeHtml(g.unit || '')}" placeholder="reps, min, cm…"></span></label>`;
+  const st = isNew ? null : goalState(g);
+  openSheet(isNew ? (GOAL_TYPES.find(x => x[0] === g.type) || [])[1] : 'Editar objetivo', `<div class="ant-ed act-ed">
+    ${st ? `<div class="ant-live" style="grid-template-columns:1fr 1fr 1fr;position:static;"><div><span>Ahora</span><b translate="no">${st.curText}</b></div><div><span>Meta</span><b translate="no">${st.tgtText}</b></div><div><span>Avance</span><b translate="no">${Math.round(st.pct * 100)}%</b></div></div>` : ''}
+    ${body}
+    ${g.type !== 'sessions' ? `<label class="ant-f"><span>Fecha límite (opcional)</span><span class="ant-in"><input type="date" id="gl-due" value="${escapeHtml(g.due || '')}"></span></label>` : ''}
+    ${!isNew ? '<button class="btn-secondary" id="gl-del" style="width:100%;margin-top:12px;color:#DC2626;">Eliminar objetivo</button>' : ''}<p class="auth-msg" id="gl-msg"></p></div>`, () => {
+    const num = id => { const e = document.getElementById(id); if (!e) return null; const n = parseFloat(String(e.value).replace(',', '.')); return isFinite(n) ? n : null; }, msg = document.getElementById('gl-msg');
+    let tgt = g.type === 'mark' ? actParseTime(document.getElementById('gl-target').value) : num('gl-target');
+    if (!tgt || tgt <= 0) { msg.textContent = t('Escribe la meta.'); return; }
+    if (g.type === 'weight') { tgt = bwStore(tgt); if (tgt < 25 || tgt > 350) { msg.textContent = t('Revisa los números: alguno está fuera de rango.'); return; } }
+    if (g.type === 'bodyfat' && (tgt < 3 || tgt > 60)) { msg.textContent = t('Revisa los números: alguno está fuera de rango.'); return; }
+    if (g.type === 'pr') { tgt = +gymStoreW(tgt); const e = document.getElementById('gl-ex'); g.exName = (e.value || '').trim(); if (!g.exName) { msg.textContent = t('Elige el ejercicio.'); return; } }
+    if (g.type === 'dist') { g.sport = document.getElementById('gl-sport').value || null; g.period = document.getElementById('gl-period').value; }
+    if (g.type === 'mark') { g.sport = document.getElementById('gl-sport').value; g.dist = num('gl-dist'); if (!g.dist) { msg.textContent = t('Escribe la distancia.'); return; } }
+    if (g.type === 'custom') { g.title = document.getElementById('gl-title').value.trim(); if (!g.title) { msg.textContent = t('Ponle nombre al objetivo.'); return; } g.start = num('gl-start'); g.cur = num('gl-cur'); if (g.cur == null) g.cur = g.start; g.unit = document.getElementById('gl-unit').value.trim(); }
+    const due = document.getElementById('gl-due'); if (due) g.due = due.value || null;
+    const changed = g.target !== tgt; g.target = tgt;
+    if (isNew || changed) { g.done = null; if (g.type !== 'custom') { g.start = null; const s0 = goalState(g).cur; g.start = s0 == null ? null : s0; } }
+    if (isNew) { g.id = uid(); g.created = keyDate(); }
+    const all = goalsAll(); if (isNew) all.unshift(g); else all[idx] = g;
+    goalsSave(all); try { renderHoyDash(); } catch (e) {} try { renderMas(); } catch (e) {}
+    openGoals();
+  });
+  const del = document.getElementById('gl-del');
+  if (del) del.addEventListener('click', () => { if (!confirm(t('¿Eliminar este objetivo?'))) return; const all = goalsAll(); all.splice(idx, 1); goalsSave(all); try { renderHoyDash(); } catch (e) {} try { renderMas(); } catch (e) {} openGoals(); });
+}
+
+// ============================================================
 // PESO CON TENDENCIA Y CHECK-IN SEMANAL
 // El peso de un día engaña; lo que se decide es con el promedio de 7 días y su ritmo de cambio.
 // El check-in es el reporte semanal del atleta: datos automáticos + cómo se sintió; el especialista responde.

@@ -2760,8 +2760,28 @@
   .act-row b { display: block; font-size: 14px; } .act-row b small { font-weight: 500; color: var(--text-3); margin-left: 4px; } .act-row span { font-size: 12px; color: var(--text-2); } .act-row em { font-style: normal; font-size: 11px; color: var(--text-3); flex: 0 0 auto; }
   .gym-h2-btns { flex-wrap: wrap; justify-content: flex-end; }
 
-  .mood-ic { vertical-align: -3px; color: var(--text); }
-  .gym-mood .mood-ic { width: 30px; height: 24px; }
+  .mood-dots { display: inline-flex; gap: 3px; align-items: center; }
+  .mood-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--surface-3, #E0E0DD); } .mood-dots i.on { background: var(--text); }
+  .gym-mood span.mood-dots { font-size: 0; height: 22px; }
+  .gym-mood.on { background: var(--text); border-color: var(--text); } .gym-mood.on small { color: var(--bg); } .gym-mood.on .mood-dots i { background: color-mix(in srgb, var(--bg) 30%, transparent); } .gym-mood.on .mood-dots i.on { background: var(--bg); }
+  .gym-hist-tags { display: flex; gap: 5px; flex-wrap: wrap; grid-column: 2 / -1; margin-top: -2px; }
+  .gym-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); }
+  .gym-tag.warn { background: rgba(217,119,6,.14); color: #B45309; } .gym-tag.bad { background: rgba(220,38,38,.12); color: #B91C1C; }
+
+  /* ===== Objetivos y logros ===== */
+  .goal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 10px; box-shadow: var(--card-sh); cursor: pointer; }
+  .goal-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .goal-k { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+  .goal-t { font-size: 16px; font-weight: 700; margin-top: 2px; }
+  .goal-v { font-size: 13px; color: var(--text-2); margin-top: 8px; display: flex; justify-content: space-between; gap: 8px; font-variant-numeric: tabular-nums; } .goal-v b { color: var(--text); }
+  .goal-bar { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-top: 8px; } .goal-bar i { display: block; height: 100%; border-radius: 999px; background: var(--text); }
+  .goal.done .goal-bar i { background: #16A34A; }
+  .goal-d { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+  .goal-pct { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .goal-types { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .goal-types button { text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; font: inherit; color: var(--text); cursor: pointer; box-shadow: var(--card-sh); }
+  .goal-types b { display: block; font-size: 14px; } .goal-types span { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; line-height: 1.35; }
+  .hd-goal { margin-top: 10px; } .hd-goal:first-of-type { margin-top: 8px; } .hd-goal .goal-v { margin-top: 0; font-size: 13px; } .hd-goal .goal-bar { height: 6px; margin-top: 5px; }
 </style>
 </head>
 <body>
@@ -3974,6 +3994,7 @@ function renderMas() {
       <span class="acct-id"><span class="acct-name" translate="no">${escapeHtml(s.name || s.user || '')}</span><span class="acct-sub"><span translate="no">@${escapeHtml(s.user || '')}</span> · ${authRolesHtml(s.specs, s.admin)}</span></span><span class="mas-chev">›</span></button>` : ''}
     ${logged && (s.specs || []).length ? `<div class="mas-card">${typeof spMode === 'function' && spMode() ? row('mode', I.people, 'Cambiar a mi perfil de atleta', 'Tus propios registros, rutinas y comidas') : row('mode', I.people, 'Cambiar a especialista', 'Tus atletas, plantillas y mensajes')}</div>` : ''}
     <div class="mas-card">${row('athlete', I.goal, 'Perfil de atleta', (typeof athSummary === 'function' && athSummary()) || 'Tus deportes, nivel y marcas')}</div>
+    <div class="mas-card">${row('goals', I.goal, 'Objetivos y logros', (typeof goalsSummary === 'function' && goalsSummary()) || 'Peso, récords, kilómetros y más')}</div>
     <h2>Herramientas</h2>
     <div class="mas-card">${row('pomo', I.clock, 'Reloj', 'Pomodoro y temporizador')}${row('cal', I.cal, 'Calendario', 'Tu día, semana y mes')}</div>
     <h2>Tu contenido</h2>
@@ -3987,6 +4008,7 @@ function renderMas() {
     else if (k === 'agenda') openAgenda();
     else if (k === 'mode') { if (typeof spSetMode === 'function') spSetMode(!spMode()); }
     else if (k === 'athlete') openAthleteProfile();
+    else if (k === 'goals') openGoals();
     else if (k === 'photos') openPhotos();
     else if (k === 'assess') openMyAssessments();
     else if (k === 'checkins') openMyCheckins();
@@ -9217,7 +9239,7 @@ function openAuthUserEditor(u) {
 // dispositivos. En conflicto gana lo último que llega al servidor, por documento.
 // ============================================================
 const SYNC_DATED = ['meal_log', 'gym_logs', 'habitLog', 'weight_log', 'hydration_log', 'act_log'];
-const SYNC_WHOLE = ['athlete_profile', 'app_prefs', 'nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'habits', 'habitTimes', 'cats', 'catGoals',
+const SYNC_WHOLE = ['goals', 'athlete_profile', 'app_prefs', 'nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'habits', 'habitTimes', 'cats', 'catGoals',
   'sch_weekday', 'sch_saturday', 'sch_sunday', 'imprevistos', 'plan', 'planTasks', 'plan_start', 'hydration_settings',
   'custom_foods', 'dishes', 'diary', 'gym_unit', 'body_unit', 'achievements', 'bestStreak', 'streak_pauses', 'pomo_settings', 'pomo_sessions'];
 const SYNC_MAX_DOC = 300000; // caracteres; documentos más grandes (p. ej. con fotos) no se suben
@@ -10427,7 +10449,7 @@ async function spOpenClient(l) {
       if (!lines.length && !lg.done) return;
       const fl = lg.feel || {};
       if (d >= d7) { if (lg.done) n7++; if (fl.pain != null && (pmax == null || fl.pain > pmax)) pmax = fl.pain; }
-      const feel = [fl.mood ? GYM_MOODS[fl.mood - 1][0] : '', fl.pain != null ? `<span>Dolor</span> ${fl.pain}/10` : '', fl.rpe != null ? `RPE ${fl.rpe}` : ''].filter(Boolean).join(' · ');
+      const feel = [fl.mood ? `<span>${GYM_MOODS[fl.mood - 1][1]}</span>` : '', fl.pain != null ? `<span>Dolor</span> ${fl.pain}/10` : '', fl.rpe != null ? `RPE ${fl.rpe}` : ''].filter(Boolean).join(' · ');
       logs.push(`<details class="cd-day"><summary><span class="cd-date">${escapeHtml(cdFmtDay(d))}</span><span class="cd-num ${fl.pain >= 6 ? 'over' : ''}">${escapeHtml(rt.name || '')}</span></summary>
         ${feel ? `<div class="cd-sub">${feel}</div>` : ''}${fl.note ? `<div class="cd-sub">“${escapeHtml(fl.note)}”</div>` : ''}<div class="cd-items">${lines.join('<br>') || '<span>Sin series registradas</span>'}</div></details>`);
     });
@@ -10897,7 +10919,8 @@ function renderHoyDash() {
   } catch (e) {}
   try { if (typeof modApply === 'function') modApply(); } catch (e) {}
   const M = k => typeof modOn !== 'function' || modOn(k);
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${week}`;
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${typeof goalsHoyCard === 'function' ? goalsHoyCard() : ''}${week}`;
+  el.querySelectorAll('[data-hd-goals]').forEach(c => c.addEventListener('click', () => openGoals()));
   if (typeof ckWireHoy === 'function') ckWireHoy(el);
   el.querySelectorAll('[data-hd-ant]').forEach(c => c.addEventListener('click', e => { if (e.target.closest('button')) return; openMyAssessments(); }));
   el.querySelectorAll('[data-hd-agenda]').forEach(c => c.addEventListener('click', () => openAgenda()));
@@ -13526,7 +13549,7 @@ function gymHistoryHtml() {
     return `<div class="gym-hist" data-gym-hist="${k}">
       <div class="gym-hist-d">${escapeHtml(f.format(new Date(k + 'T00:00:00')))}</div>
       <div class="gym-hist-n">${escapeHtml(r ? r.name : '—')}</div>
-      <div class="gym-hist-v">${sets} series${vol ? ' · ' + Math.round(gymVolU(vol)).toLocaleString(_loc()) + ' ' + gymUnit() : ''}${lg.feel && lg.feel.mood ? ' ' + GYM_MOODS[lg.feel.mood - 1][0] : ''}${lg.feel && lg.feel.pain != null ? ` <span class="gym-hist-pain p${lg.feel.pain === 0 ? 0 : lg.feel.pain <= 3 ? 1 : lg.feel.pain <= 6 ? 2 : 3}">${lg.feel.pain}</span>` : ''}</div>
+      <div class="gym-hist-v">${sets} series${vol ? ' · ' + Math.round(gymVolU(vol)).toLocaleString(_loc()) + ' ' + gymUnit() : ''}</div>${lg.feel && (lg.feel.mood || lg.feel.pain != null) ? `<div class="gym-hist-tags">${lg.feel.mood ? `<span class="gym-tag">${GYM_MOODS[lg.feel.mood - 1][1]}</span>` : ''}${lg.feel.pain != null ? `<span class="gym-tag${lg.feel.pain >= 7 ? ' bad' : lg.feel.pain >= 4 ? ' warn' : ''}"><span>Dolor</span> <span translate="no">${lg.feel.pain}</span></span>` : ''}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -14052,10 +14075,9 @@ function gymScaleHtml(kind, exId, val) {
   return `<div class="gym-scale"><div class="gym-scale-l">${label}</div><div class="gym-scale-b">${btns}</div></div>`;
 }
 function gymPainLabel(v) { return v == null ? '' : v === 0 ? 'Sin dolor' : v <= 3 ? 'Leve' : v <= 6 ? 'Moderado' : 'Severo'; }
-// Ícono de nivel (5 barras) en lugar de caritas: se llena hasta el nivel y toma el color del estado.
+// Nivel del 1 al 5 como cinco puntos en tinta (mismo estilo que el resto de la app, sin caritas ni colores).
 function gymMoodIcon(n) {
-  const col = ['#DC2626', '#D97706', '#71717A', '#22C55E', '#16A34A'][n - 1] || '#71717A';
-  return `<svg class="mood-ic" viewBox="0 0 22 18" width="22" height="18" aria-hidden="true">${[0, 1, 2, 3, 4].map(i => `<rect x="${i * 4.5}" y="${14 - i * 3.2}" width="3" height="${4 + i * 3.2}" rx="1.2" fill="${i < n ? col : 'currentColor'}"${i < n ? '' : ' opacity=".18"'}/>`).join('')}</svg>`;
+  return `<span class="mood-dots" aria-hidden="true">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>`;
 }
 const GYM_MOODS = [[gymMoodIcon(1), 'Muy mal'], [gymMoodIcon(2), 'Mal'], [gymMoodIcon(3), 'Normal'], [gymMoodIcon(4), 'Bien'], [gymMoodIcon(5), 'Excelente']];
 

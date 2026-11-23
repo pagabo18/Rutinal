@@ -3756,6 +3756,286 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Objetivos y logros": {
+   "en": "Goals and achievements",
+   "pt-BR": "Objetivos e conquistas",
+   "fr": "Objectifs et réussites"
+  },
+  "Peso, récords, kilómetros y más": {
+   "en": "Weight, records, kilometers and more",
+   "pt-BR": "Peso, recordes, quilômetros e mais",
+   "fr": "Poids, records, kilomètres et plus"
+  },
+  "Objetivos": {
+   "en": "Goals",
+   "pt-BR": "Objetivos",
+   "fr": "Objectifs"
+  },
+  "Nuevo objetivo": {
+   "en": "New goal",
+   "pt-BR": "Novo objetivo",
+   "fr": "Nouvel objectif"
+  },
+  "Editar objetivo": {
+   "en": "Edit goal",
+   "pt-BR": "Editar objetivo",
+   "fr": "Modifier l'objectif"
+  },
+  "Eliminar objetivo": {
+   "en": "Delete goal",
+   "pt-BR": "Excluir objetivo",
+   "fr": "Supprimer l'objectif"
+  },
+  "¿Eliminar este objetivo?": {
+   "en": "Delete this goal?",
+   "pt-BR": "Excluir este objetivo?",
+   "fr": "Supprimer cet objectif ?"
+  },
+  "Logros": {
+   "en": "Achievements",
+   "pt-BR": "Conquistas",
+   "fr": "Réussites"
+  },
+  "Logrado": {
+   "en": "Achieved",
+   "pt-BR": "Conquistado",
+   "fr": "Atteint"
+  },
+  "Semana cumplida": {
+   "en": "Week completed",
+   "pt-BR": "Semana cumprida",
+   "fr": "Semaine réussie"
+  },
+  "Logrado el": {
+   "en": "Achieved on",
+   "pt-BR": "Conquistado em",
+   "fr": "Atteint le"
+  },
+  "logrado": {
+   "en": "achieved",
+   "pt-BR": "conquistado",
+   "fr": "atteint"
+  },
+  "logrados": {
+   "en": "achieved",
+   "pt-BR": "conquistados",
+   "fr": "atteints"
+  },
+  "semana cumplida": {
+   "en": "week completed",
+   "pt-BR": "semana cumprida",
+   "fr": "semaine réussie"
+  },
+  "semanas cumplidas": {
+   "en": "weeks completed",
+   "pt-BR": "semanas cumpridas",
+   "fr": "semaines réussies"
+  },
+  "Ahora": {
+   "en": "Now",
+   "pt-BR": "Agora",
+   "fr": "Actuel"
+  },
+  "Avance": {
+   "en": "Progress",
+   "pt-BR": "Progresso",
+   "fr": "Progression"
+  },
+  "Faltan": {
+   "en": "To go",
+   "pt-BR": "Faltam",
+   "fr": "Reste"
+  },
+  "Fecha límite": {
+   "en": "Deadline",
+   "pt-BR": "Prazo",
+   "fr": "Échéance"
+  },
+  "Fecha límite (opcional)": {
+   "en": "Deadline (optional)",
+   "pt-BR": "Prazo (opcional)",
+   "fr": "Échéance (facultatif)"
+  },
+  "Pon un objetivo y la app mide sola tu avance con lo que registras: peso, levantamientos, kilómetros o sesiones.": {
+   "en": "Set a goal and the app tracks your progress on its own from what you log: weight, lifts, kilometers or sessions.",
+   "pt-BR": "Defina um objetivo e o app mede sozinho seu progresso com o que você registra: peso, levantamentos, quilômetros ou sessões.",
+   "fr": "Fixez un objectif et l'app mesure seule votre progression avec ce que vous enregistrez : poids, charges, kilomètres ou séances."
+  },
+  "Llegar a un peso; avanza con tu promedio de 7 días": {
+   "en": "Reach a weight; moves with your 7-day average",
+   "pt-BR": "Chegar a um peso; avança com sua média de 7 dias",
+   "fr": "Atteindre un poids ; suit votre moyenne sur 7 jours"
+  },
+  "Avanza con cada evaluación de composición corporal": {
+   "en": "Moves with each body composition assessment",
+   "pt-BR": "Avança a cada avaliação de composição corporal",
+   "fr": "Évolue à chaque évaluation de composition corporelle"
+  },
+  "Récord en un ejercicio": {
+   "en": "Record on an exercise",
+   "pt-BR": "Recorde em um exercício",
+   "fr": "Record sur un exercice"
+  },
+  "Levantar cierto peso en un ejercicio de tus rutinas": {
+   "en": "Lift a given weight on an exercise from your routines",
+   "pt-BR": "Levantar certo peso em um exercício das suas rotinas",
+   "fr": "Soulever une charge donnée sur un exercice de vos routines"
+  },
+  "Kilómetros acumulados": {
+   "en": "Accumulated kilometers",
+   "pt-BR": "Quilômetros acumulados",
+   "fr": "Kilomètres cumulés"
+  },
+  "Sumar distancia en un deporte durante un periodo": {
+   "en": "Add up distance in a sport over a period",
+   "pt-BR": "Somar distância em um esporte durante um período",
+   "fr": "Cumuler de la distance dans un sport sur une période"
+  },
+  "Marca de tiempo": {
+   "en": "Time mark",
+   "pt-BR": "Marca de tempo",
+   "fr": "Chrono cible"
+  },
+  "Hacer una distancia en cierto tiempo": {
+   "en": "Cover a distance in a given time",
+   "pt-BR": "Fazer uma distância em certo tempo",
+   "fr": "Parcourir une distance en un temps donné"
+  },
+  "Sesiones por semana": {
+   "en": "Sessions per week",
+   "pt-BR": "Sessões por semana",
+   "fr": "Séances par semaine"
+  },
+  "Entrenamientos y actividades cada semana": {
+   "en": "Workouts and activities each week",
+   "pt-BR": "Treinos e atividades a cada semana",
+   "fr": "Entraînements et activités chaque semaine"
+  },
+  "Objetivo libre": {
+   "en": "Custom goal",
+   "pt-BR": "Objetivo livre",
+   "fr": "Objectif libre"
+  },
+  "Cualquier número que tú actualizas": {
+   "en": "Any number you update yourself",
+   "pt-BR": "Qualquer número que você atualiza",
+   "fr": "Tout chiffre que vous mettez à jour"
+  },
+  "Este mes": {
+   "en": "This month",
+   "pt-BR": "Este mês",
+   "fr": "Ce mois-ci"
+  },
+  "Este año": {
+   "en": "This year",
+   "pt-BR": "Este ano",
+   "fr": "Cette année"
+  },
+  "Desde que lo creé": {
+   "en": "Since I created it",
+   "pt-BR": "Desde que criei",
+   "fr": "Depuis sa création"
+  },
+  "Todos los deportes": {
+   "en": "All sports",
+   "pt-BR": "Todos os esportes",
+   "fr": "Tous les sports"
+  },
+  "Peso al que quieres llegar": {
+   "en": "Weight you want to reach",
+   "pt-BR": "Peso que você quer atingir",
+   "fr": "Poids que vous voulez atteindre"
+  },
+  "% de grasa al que quieres llegar": {
+   "en": "Body fat % you want to reach",
+   "pt-BR": "% de gordura que você quer atingir",
+   "fr": "% de graisse que vous voulez atteindre"
+  },
+  "Ejercicio": {
+   "en": "Exercise",
+   "pt-BR": "Exercício",
+   "fr": "Exercice"
+  },
+  "Peso que quieres levantar": {
+   "en": "Weight you want to lift",
+   "pt-BR": "Peso que você quer levantar",
+   "fr": "Charge que vous voulez soulever"
+  },
+  "Kilómetros": {
+   "en": "Kilometers",
+   "pt-BR": "Quilômetros",
+   "fr": "Kilomètres"
+  },
+  "Tiempo objetivo": {
+   "en": "Target time",
+   "pt-BR": "Tempo alvo",
+   "fr": "Temps cible"
+  },
+  "Nombre del objetivo": {
+   "en": "Goal name",
+   "pt-BR": "Nome do objetivo",
+   "fr": "Nom de l'objectif"
+  },
+  "Valor inicial": {
+   "en": "Starting value",
+   "pt-BR": "Valor inicial",
+   "fr": "Valeur de départ"
+  },
+  "Valor actual": {
+   "en": "Current value",
+   "pt-BR": "Valor atual",
+   "fr": "Valeur actuelle"
+  },
+  "Unidad": {
+   "en": "Unit",
+   "pt-BR": "Unidade",
+   "fr": "Unité"
+  },
+  "Ej. Dominadas seguidas": {
+   "en": "E.g. Pull-ups in a row",
+   "pt-BR": "Ex.: Barras seguidas",
+   "fr": "Ex. Tractions d'affilée"
+  },
+  "reps, min, cm…": {
+   "en": "reps, min, cm…",
+   "pt-BR": "reps, min, cm…",
+   "fr": "reps, min, cm…"
+  },
+  "Escribe la meta.": {
+   "en": "Enter the target.",
+   "pt-BR": "Escreva a meta.",
+   "fr": "Saisissez la cible."
+  },
+  "Elige el ejercicio.": {
+   "en": "Choose the exercise.",
+   "pt-BR": "Escolha o exercício.",
+   "fr": "Choisissez l'exercice."
+  },
+  "Escribe la distancia.": {
+   "en": "Enter the distance.",
+   "pt-BR": "Escreva a distância.",
+   "fr": "Saisissez la distance."
+  },
+  "Ponle nombre al objetivo.": {
+   "en": "Name the goal.",
+   "pt-BR": "Dê um nome ao objetivo.",
+   "fr": "Nommez l'objectif."
+  },
+  "Se reinicia cada lunes": {
+   "en": "Resets every Monday",
+   "pt-BR": "Reinicia toda segunda",
+   "fr": "Repart chaque lundi"
+  },
+  "Falta una evaluación de composición corporal": {
+   "en": "A body composition assessment is needed",
+   "pt-BR": "Falta uma avaliação de composição corporal",
+   "fr": "Il manque une évaluation de composition corporelle"
+  },
+  "Registra una sesión de esa distancia para medir el avance": {
+   "en": "Log a session of that distance to measure progress",
+   "pt-BR": "Registre uma sessão dessa distância para medir o progresso",
+   "fr": "Enregistrez une séance de cette distance pour mesurer la progression"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
