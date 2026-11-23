@@ -445,6 +445,40 @@ function antHoyCard() {
     ${pc ? `<div class="hd-d" style="margin-top:8px;"><span>Cambio desde</span> <span translate="no">${escapeHtml(antDate(rows[1].taken_on))}</span></div>` : ''}</div>`;
 }
 
+// Tarjeta "Tu cuerpo" de Hoy: peso, tendencia, IMC, composición y medidas en un solo lugar.
+function bodyHoyCard() {
+  const wl = S.get('weight_log', {}) || {}, ks = Object.keys(wl).sort(), rows = antHoyCache(), np = S.get('nutri_profile', null) || {};
+  const lb = bwUnit() === 'lb', kg = v => v == null ? null : (lb ? v * GYM_LB : v);
+  const a = rows[0] ? (rows[0].data || {}) : null, c = a ? antCalc(a) : null, pc = rows[1] ? antCalc(rows[1].data || {}) : null;
+  const last = ks.length ? +wl[ks[ks.length - 1]] : (a && +a.weight) || null;
+  const prevW = ks.length > 1 ? +wl[ks[ks.length - 2]] : null;
+  const hcm = (a && +a.height) || +np.heightCm || null;
+  if (last == null && !c) return `<div class="hd-card" data-hd-weight="1" style="cursor:pointer;"><div class="hd-k"><span>Tu cuerpo</span></div><div class="hd-d" style="margin-top:8px;">Toca para registrar tu peso.</div></div>`;
+  const dl = (x, y, dec) => { if (x == null || y == null) return ''; const d = Math.round((x - y) * Math.pow(10, dec)) / Math.pow(10, dec); return d ? `<small translate="no">${d > 0 ? '+' : ''}${d.toLocaleString(_loc())}</small>` : ''; };
+  const cell = (v, l, sub) => `<div class="hd-w"><b translate="no">${v}</b><span>${l}</span>${sub || ''}</div>`;
+  const cells = [];
+  const bmi = last && hcm ? last / Math.pow(hcm / 100, 2) : (c && c.bmi);
+  if (bmi) { const cls = bmi < 18.5 ? 'Bajo peso' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Sobrepeso' : 'Obesidad'; cells.push(cell(antN(bmi, 1), 'IMC', `<small>${cls}</small>`)); }
+  if (c) {
+    if (c.pct != null) cells.push(cell(antN(c.pct, 1, '%'), '% de grasa', pc ? dl(c.pct, pc.pct, 1) : ''));
+    if (c.ffm != null) cells.push(cell(antN(kg(c.ffm), 1, bwUnit()), 'Masa libre de grasa', pc ? dl(kg(c.ffm), kg(pc.ffm), 1) : ''));
+    if (c.fm != null) cells.push(cell(antN(kg(c.fm), 1, bwUnit()), 'Masa grasa', pc ? dl(kg(c.fm), kg(pc.fm), 1) : ''));
+    if (c.smm != null) cells.push(cell(antN(kg(c.smm), 1, bwUnit()), 'Masa muscular', pc ? dl(kg(c.smm), kg(pc.smm), 1) : ''));
+    [['waist', 'Cintura'], ['hip', 'Cadera'], ['chestg', 'Tórax'], ['arm', 'Brazo'], ['thighg', 'Muslo'], ['calfg', 'Pantorrilla']].forEach(([k, n]) => { if (c.gi[k]) cells.push(cell(antN(c.gi[k], 1, 'cm'), n, pc && pc.gi ? dl(c.gi[k], pc.gi[k], 1) : '')); });
+    if (c.whr != null) cells.push(cell(antN(c.whr, 2), 'Cintura-cadera', ''));
+    if (c.bmrMain) cells.push(cell(antN(c.tdee || c.bmrMain.kcal, 0), c.tdee ? 'Gasto diario (kcal)' : 'Gasto en reposo (kcal)', ''));
+  }
+  if (hcm) cells.push(cell(antN(hcm, 0, 'cm'), 'Talla', ''));
+  const tr = wtTrend(wl), ago = ks.length ? Math.round((parseKey(keyDate()) - parseKey(ks[ks.length - 1])) / 864e5) : null;
+  return `<div class="hd-card hd-body" data-hd-ant="1" style="cursor:pointer;"><div class="hd-k"><span>Tu cuerpo</span>${rows[0] ? `<span class="hd-badge"><span>Medidas del</span> <span translate="no">${escapeHtml(antDate(rows[0].taken_on))}</span></span>` : ''}</div>
+    <div class="hd-row" style="margin-top:6px;"><div>${last != null ? `<div class="hd-big" translate="no">${bwDisp(last)} <small>${bwUnit()}</small>${prevW != null && last !== prevW ? ` <small class="hd-dw">${bwDiff(last - prevW)}</small>` : ''}</div>` : ''}
+      <div class="hd-d">${ago == null ? '<span>Sin pesajes todavía</span>' : ago === 0 ? '<span>Peso registrado hoy</span>' : ago === 1 ? '<span>Peso registrado ayer</span>' : `<span>Peso registrado hace</span> <span translate="no">${ago}</span> <span>días</span>`}</div></div>
+      <button class="hd-btn ghost" data-hd-weight="1">Registrar peso</button></div>
+    ${tr.avg != null && tr.n >= 2 ? `<div class="hd-week" style="margin-top:10px;"><div class="hd-w"><b translate="no">${bwDisp(tr.avg)} ${bwUnit()}</b><span>Promedio 7 días</span></div><div class="hd-w"><b translate="no">${tr.rate != null ? wtRateText(tr) : '—'}</b><span>Ritmo por semana</span></div></div>` : ''}
+    ${cells.length ? `<div class="hd-body-g">${cells.join('')}</div>` : ''}
+    <div class="hd-d" style="margin-top:10px;">${c ? (pc ? `<span>Cambios desde</span> <span translate="no">${escapeHtml(antDate(rows[1].taken_on))}</span> · ` : '') + '<span>Toca para ver todo</span>' : '<span>Toca para registrar tus medidas y ver % de grasa, masa muscular y más.</span>'}</div></div>`;
+}
+
 // ============================================================
 // PESO CON TENDENCIA Y CHECK-IN SEMANAL
 // El peso de un día engaña; lo que se decide es con el promedio de 7 días y su ritmo de cambio.

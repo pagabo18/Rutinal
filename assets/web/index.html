@@ -2677,6 +2677,10 @@
   .ck-trr b { text-align: center; font-size: 12px; font-weight: 600; border-radius: 6px; padding: 3px 0; font-variant-numeric: tabular-nums; }
   .ck-trr b.v1 { background: rgba(220,38,38,.16); } .ck-trr b.v2 { background: rgba(217,119,6,.16); } .ck-trr b.v3 { background: var(--surface-2); } .ck-trr b.v4 { background: rgba(22,163,74,.12); } .ck-trr b.v5 { background: rgba(22,163,74,.22); }
   .hd-card.hd-ck .hd-row { margin-top: 8px; }
+
+  .hd-body-g { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .hd-body-g .hd-w b { font-size: 16px; } .hd-body-g .hd-w span { font-size: 11px; } .hd-body-g .hd-w small { display: block; font-size: 11px; color: var(--text-3); }
+  .hd-dw { font-size: 13px; font-weight: 600; color: var(--text-3); }
 </style>
 </head>
 <body>
@@ -10792,9 +10796,9 @@ function renderHoyDash() {
       return `<button class="hd-chat-row${un ? ' unread' : ''}" data-hd-chat="${i}"><span class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</span><span class="hd-chat-b"><b translate="no">${escapeHtml(l.name || '')}</b>
         <small translate="no">${n ? (n.author_id === s.uid ? `<span translate="yes">Tú</span>: ` : '') + escapeHtml(n.body) : `${linkRoles(l).map(r => `<span translate="yes">${escapeHtml(AUTH_SPECS[r] || r)}</span>`).join(' · ')} · <span translate="yes">Escríbele</span>`}</small></span>${un ? '<i class="hd-dot"></i>' : '<span class="mas-chev">›</span>'}</button>`; }).join('')}</div>`;
   } catch (e) {}
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${appt}${chat}${food}${weight}${typeof antHoyCard === 'function' ? antHoyCard() : ''}${week}`;
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${appt}${chat}${food}${typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight}${week}`;
   if (typeof ckWireHoy === 'function') ckWireHoy(el);
-  el.querySelectorAll('[data-hd-ant]').forEach(c => c.addEventListener('click', () => openMyAssessments()));
+  el.querySelectorAll('[data-hd-ant]').forEach(c => c.addEventListener('click', e => { if (e.target.closest('button')) return; openMyAssessments(); }));
   el.querySelectorAll('[data-hd-agenda]').forEach(c => c.addEventListener('click', () => openAgenda()));
   el.querySelectorAll('[data-hd-chat]').forEach(b => b.addEventListener('click', () => { const l = msgCache().links[+b.dataset.hdChat]; if (l) openNotes(l.id, l.name, null, { spec: false, role: l.role, roles: linkRoles(l), ids: linkIds(l) }); }));
   el.querySelectorAll('[data-hd]').forEach(b => b.addEventListener('click', (ev) => { ev.stopPropagation(); const n = document.querySelector(`nav button[data-tab="${b.dataset.hd}"]`); if (n) n.click(); }));

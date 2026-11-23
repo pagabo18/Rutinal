@@ -3756,6 +3756,81 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Tu cuerpo": {
+   "en": "Your body",
+   "pt-BR": "Seu corpo",
+   "fr": "Votre corps"
+  },
+  "Medidas del": {
+   "en": "Measured on",
+   "pt-BR": "Medidas de",
+   "fr": "Mesures du"
+  },
+  "Registrar peso": {
+   "en": "Log weight",
+   "pt-BR": "Registrar peso",
+   "fr": "Saisir le poids"
+  },
+  "Peso registrado hoy": {
+   "en": "Weight logged today",
+   "pt-BR": "Peso registrado hoje",
+   "fr": "Poids saisi aujourd'hui"
+  },
+  "Peso registrado ayer": {
+   "en": "Weight logged yesterday",
+   "pt-BR": "Peso registrado ontem",
+   "fr": "Poids saisi hier"
+  },
+  "Peso registrado hace": {
+   "en": "Weight logged",
+   "pt-BR": "Peso registrado há",
+   "fr": "Poids saisi il y a"
+  },
+  "Sin pesajes todavía": {
+   "en": "No weigh-ins yet",
+   "pt-BR": "Sem pesagens ainda",
+   "fr": "Pas encore de pesée"
+  },
+  "Cambios desde": {
+   "en": "Changes since",
+   "pt-BR": "Mudanças desde",
+   "fr": "Variations depuis"
+  },
+  "Toca para ver todo": {
+   "en": "Tap to see everything",
+   "pt-BR": "Toque para ver tudo",
+   "fr": "Touchez pour tout voir"
+  },
+  "Toca para registrar tus medidas y ver % de grasa, masa muscular y más.": {
+   "en": "Tap to log your measurements and see body fat %, muscle mass and more.",
+   "pt-BR": "Toque para registrar suas medidas e ver % de gordura, massa muscular e mais.",
+   "fr": "Touchez pour saisir vos mesures et voir % de graisse, masse musculaire et plus."
+  },
+  "Cintura-cadera": {
+   "en": "Waist-hip",
+   "pt-BR": "Cintura-quadril",
+   "fr": "Taille-hanches"
+  },
+  "Gasto diario (kcal)": {
+   "en": "Daily expenditure (kcal)",
+   "pt-BR": "Gasto diário (kcal)",
+   "fr": "Dépense quotidienne (kcal)"
+  },
+  "Gasto en reposo (kcal)": {
+   "en": "Resting expenditure (kcal)",
+   "pt-BR": "Gasto em repouso (kcal)",
+   "fr": "Dépense au repos (kcal)"
+  },
+  "Muslo": {
+   "en": "Thigh",
+   "pt-BR": "Coxa",
+   "fr": "Cuisse"
+  },
+  "Obesidad": {
+   "en": "Obesity",
+   "pt-BR": "Obesidade",
+   "fr": "Obésité"
+  },
   "Cambiar a mi perfil de atleta": {
    "en": "Switch to my athlete profile",
    "pt-BR": "Mudar para meu perfil de atleta",
