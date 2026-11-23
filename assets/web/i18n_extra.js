@@ -4511,6 +4511,51 @@ window.__I18N_EXTRA = {
    "pt-BR": "Este usuário avisou que esqueceu a senha. Gere uma nova abaixo, salve e envie por um meio seguro.",
    "fr": "Cet utilisateur a signalé un mot de passe oublié. Générez-en un nouveau ci-dessous, enregistrez et transmettez-le par un moyen sûr."
   },
+  "Frente": {
+   "en": "Front",
+   "pt-BR": "Frente",
+   "fr": "Face"
+  },
+  "Perfil": {
+   "en": "Side",
+   "pt-BR": "Perfil",
+   "fr": "Profil"
+  },
+  "Libre": {
+   "en": "Free",
+   "pt-BR": "Livre",
+   "fr": "Libre"
+  },
+  "Pose de la foto nueva": {
+   "en": "Pose of the new photo",
+   "pt-BR": "Pose da nova foto",
+   "fr": "Pose de la nouvelle photo"
+  },
+  "Comparar": {
+   "en": "Compare",
+   "pt-BR": "Comparar",
+   "fr": "Comparer"
+  },
+  "Para comparar, sube al menos dos fotos de la misma pose en fechas distintas.": {
+   "en": "To compare, upload at least two photos of the same pose on different dates.",
+   "pt-BR": "Para comparar, envie pelo menos duas fotos da mesma pose em datas diferentes.",
+   "fr": "Pour comparer, ajoutez au moins deux photos de la même pose à des dates différentes."
+  },
+  "Fotos de la semana": {
+   "en": "Photos of the week",
+   "pt-BR": "Fotos da semana",
+   "fr": "Photos de la semaine"
+  },
+  "sin compartir": {
+   "en": "not shared",
+   "pt-BR": "não compartilhada",
+   "fr": "non partagée"
+  },
+  "Las fotos que subas aquí se comparten con tus especialistas. Mismo lugar, misma luz y misma distancia cada semana.": {
+   "en": "Photos you upload here are shared with your specialists. Same place, same light and same distance every week.",
+   "pt-BR": "As fotos enviadas aqui são compartilhadas com seus especialistas. Mesmo lugar, mesma luz e mesma distância toda semana.",
+   "fr": "Les photos ajoutées ici sont partagées avec vos spécialistes. Même endroit, même lumière et même distance chaque semaine."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

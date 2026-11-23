@@ -2807,6 +2807,15 @@
   .hp-t { flex: 1; min-width: 0; } .hp-t b { display: block; font-size: 15px; } .hp-t span { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; }
   .hp-st { display: flex; align-items: center; gap: 4px; } .hp-st b { min-width: 34px; text-align: center; font-size: 17px; font-variant-numeric: tabular-nums; }
   .hp-st button { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 20px; line-height: 1; cursor: pointer; }
+
+  /* ===== Fotos por pose ===== */
+  .ph-sel { width: 100%; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 13px; }
+  .ck-ph { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 4px 0 8px; }
+  .ck-ph figure, .ck-ph button { margin: 0; aspect-ratio: 3 / 4; border-radius: 12px; overflow: hidden; position: relative; background: var(--surface-2); }
+  .ck-ph button { border: 1.5px dashed var(--border-strong, #C9C9C5); color: var(--text-2); font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  .ck-ph button b { font-size: 26px; font-weight: 400; line-height: 1; } .ck-ph button span { font-size: 12px; font-weight: 600; }
+  .ck-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ck-ph figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 6px 5px; font-size: 10px; font-weight: 600; color: #fff; background: linear-gradient(to top, rgba(0,0,0,.6), transparent); }
 </style>
 </head>
 <body>
@@ -10904,21 +10913,24 @@ async function openPhotos() {
   openSheet('Fotos de progreso', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>');
   const s = authGet() || {};
   let rows = [];
-  try { rows = await sbRest('progress_photos?select=id,path,taken_on,note,shared&user_id=eq.' + encodeURIComponent(s.uid) + '&order=taken_on.desc,created_at.desc&limit=200') || []; }
+  try { rows = await sbRest('progress_photos?select=id,path,taken_on,note,shared,pose&user_id=eq.' + encodeURIComponent(s.uid) + '&order=taken_on.desc,created_at.desc&limit=200') || []; }
   catch (e) { openSheet('Fotos de progreso', `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
   const share = localStorage.getItem('__ph_share') === '1';
   const first = rows[rows.length - 1], last = rows[0];
   openSheet('Fotos de progreso', `<div class="ph">
     <p class="fit-note" style="margin:0 0 12px;">Tus fotos se guardan en el servidor de Rutinal y solo tú las ves. Tus especialistas solo ven las que marques para compartir.</p>
     <label class="usr-check" style="margin-bottom:12px;"><input type="checkbox" id="ph-share" ${share ? 'checked' : ''}><span>Compartir las fotos nuevas con mis especialistas</span></label>
+    <div class="lk-h" style="margin-top:0;">Pose de la foto nueva</div>${typeof poseChipsHtml === 'function' ? poseChipsHtml(localStorage.getItem('__ph_pose') || 'front') : ''}
     <button class="btn-primary" id="ph-add" style="width:100%;">Agregar foto</button>
     <input type="file" id="ph-file" accept="image/*" style="display:none;">
     <div class="auth-msg" id="ph-msg"></div>
-    ${rows.length >= 2 ? `<div class="lk-h">Antes y ahora</div><div class="ph-cmp"><figure><img data-ph="${escapeHtml(first.path)}" alt=""><figcaption translate="no">${escapeHtml(photoDay(first.taken_on))}</figcaption></figure><figure><img data-ph="${escapeHtml(last.path)}" alt=""><figcaption translate="no">${escapeHtml(photoDay(last.taken_on))}</figcaption></figure></div>` : ''}
-    ${rows.length ? `<div class="lk-h">Todas</div><div class="ph-grid">${rows.map((p, i) => `<button class="ph-t" data-ph-open="${i}"><img data-ph="${escapeHtml(p.path)}" alt=""><span translate="no">${escapeHtml(photoDay(p.taken_on))}</span>${p.shared ? '<i title="Compartida"></i>' : ''}</button>`).join('')}</div>` : '<div class="sp-empty">Aún no tienes fotos. Toma la primera para ver tu cambio con el tiempo.</div>'}
+    <div id="ph-cmpbox"></div>
+    ${rows.length ? `<div class="lk-h">Todas</div><div class="ph-grid">${rows.map((p, i) => `<button class="ph-t" data-ph-open="${i}"><img data-ph="${escapeHtml(p.path)}" alt=""><span><bdi translate="no">${escapeHtml(photoDay(p.taken_on))}</bdi>${p.pose && typeof POSE_N !== 'undefined' ? ` · <bdi>${POSE_N[p.pose]}</bdi>` : ''}</span>${p.shared ? '<i title="Compartida"></i>' : ''}</button>`).join('')}</div>` : '<div class="sp-empty">Aún no tienes fotos. Toma la primera para ver tu cambio con el tiempo.</div>'}
   </div>`);
   const sb = document.getElementById('sheet-body'), msg = document.getElementById('ph-msg'), file = document.getElementById('ph-file');
+  if (typeof poseCompareMount === 'function') poseCompareMount(document.getElementById('ph-cmpbox'), rows);
   photoFill(sb);
+  sb.querySelectorAll('#ph-pose .chip').forEach(c => c.addEventListener('click', () => { sb.querySelectorAll('#ph-pose .chip').forEach(x => x.classList.toggle('selected', x === c)); try { localStorage.setItem('__ph_pose', c.dataset.v); } catch (e) {} }));
   document.getElementById('ph-share').addEventListener('change', e => { try { localStorage.setItem('__ph_share', e.target.checked ? '1' : '0'); } catch (x) {} });
   document.getElementById('ph-add').addEventListener('click', () => file.click());
   file.addEventListener('change', async () => {
@@ -10927,7 +10939,7 @@ async function openPhotos() {
     try {
       const blob = await photoShrink(f), path = s.uid + '/' + keyDate() + '-' + uid() + '.jpg';
       await sbRaw('/storage/v1/object/progress/' + path, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
-      await sbRest('progress_photos', { method: 'POST', body: { path, taken_on: keyDate(), shared: document.getElementById('ph-share').checked }, headers: { Prefer: 'return=minimal' } });
+      await sbRest('progress_photos', { method: 'POST', body: { path, taken_on: keyDate(), shared: document.getElementById('ph-share').checked, pose: (sb.querySelector('#ph-pose .chip.selected') || { dataset: { v: 'free' } }).dataset.v }, headers: { Prefer: 'return=minimal' } });
     } catch (e) { msg.classList.remove('info'); msg.textContent = e && e.code ? authErr(e.code) : t('No se pudo leer la imagen.'); return; }
     openPhotos();
   });
@@ -10958,10 +10970,11 @@ function openPhotoView(p) {
 async function spClientPhotos(l) {
   const box = document.getElementById('sp-photos'); if (!box) return;
   let rows = [];
-  try { rows = await sbRest('progress_photos?select=id,path,taken_on&user_id=eq.' + encodeURIComponent(l.client_id) + '&order=taken_on.desc&limit=60') || []; } catch (e) { return; }
+  try { rows = await sbRest('progress_photos?select=id,path,taken_on,pose&user_id=eq.' + encodeURIComponent(l.client_id) + '&order=taken_on.desc,created_at.desc&limit=120') || []; } catch (e) { return; }
   if (!document.getElementById('sp-photos')) return;
-  box.innerHTML = `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">Fotos de progreso</div><span class="cd-num" translate="no">${rows.length}</span></div>
-    ${rows.length ? `<div class="ph-grid" style="margin-top:10px;">${rows.map((p, i) => `<button class="ph-t" data-sp-ph="${i}"><img data-ph="${escapeHtml(p.path)}" alt=""><span translate="no">${escapeHtml(photoDay(p.taken_on))}</span></button>`).join('')}</div>` : '<div class="sp-card-d">No ha compartido fotos contigo.</div>'}</div>`;
+  box.innerHTML = `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">Fotos de progreso</div><span class="cd-num" translate="no">${rows.length}</span></div><div id="sp-ph-cmp"></div>
+    ${rows.length ? `<div class="ph-grid" style="margin-top:10px;">${rows.map((p, i) => `<button class="ph-t" data-sp-ph="${i}"><img data-ph="${escapeHtml(p.path)}" alt=""><span><bdi translate="no">${escapeHtml(photoDay(p.taken_on))}</bdi>${p.pose && typeof POSE_N !== 'undefined' ? ` · <bdi>${POSE_N[p.pose]}</bdi>` : ''}</span></button>`).join('')}</div>` : '<div class="sp-card-d">No ha compartido fotos contigo.</div>'}</div>`;
+  if (typeof poseCompareMount === 'function' && rows.length) { poseCompareMount(document.getElementById('sp-ph-cmp'), rows); const fn = document.querySelector('#sp-ph-cmp .fit-note'); if (fn) fn.remove(); }
   photoFill(box);
   box.querySelectorAll('[data-sp-ph]').forEach(b => b.addEventListener('click', () => { const p = rows[+b.dataset.spPh];
     openSheet(photoDay(p.taken_on), `<div class="ph-view"><img data-ph="${escapeHtml(p.path)}" alt=""></div>`); photoFill(document.getElementById('sheet-body')); }));

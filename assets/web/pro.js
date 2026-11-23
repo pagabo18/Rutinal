@@ -1260,6 +1260,67 @@ function openHandPortions(mid0) {
 }
 
 // ============================================================
+// FOTOS DE PROGRESO POR POSE — comparar lado a lado y adjuntarlas al check-in.
+// ============================================================
+const POSES = [['front', 'Frente'], ['side', 'Perfil'], ['back', 'Espalda'], ['free', 'Libre']];
+const POSE_N = {}; POSES.forEach(x => { POSE_N[x[0]] = x[1]; });
+function poseChipsHtml(cur) { return `<div class="chips small" id="ph-pose" style="margin:0 0 10px;flex-wrap:wrap;">${POSES.map(([k, n]) => `<button type="button" class="chip${k === cur ? ' selected' : ''}" data-v="${k}">${n}</button>`).join('')}</div>`; }
+// Comparador: elige pose y dos fechas. rows viene de más reciente a más antigua.
+function poseCompareMount(box, rows) {
+  if (!box) return;
+  const byPose = k => rows.filter(r => (r.pose || 'free') === k), avail = POSES.map(x => x[0]).filter(k => byPose(k).length >= 2);
+  if (!avail.length) { box.innerHTML = rows.length >= 2 ? '' : ''; if (rows.length) box.innerHTML = '<div class="fit-note" style="margin:12px 0 0;">Para comparar, sube al menos dos fotos de la misma pose en fechas distintas.</div>'; return; }
+  let pose = avail[0], a = null, b = null;
+  const paint = () => {
+    const list = byPose(pose); if (!a || !list.includes(a)) a = list[list.length - 1]; if (!b || !list.includes(b)) b = list[0];
+    const opt = sel => list.map((r, i) => `<option value="${i}"${r === sel ? ' selected' : ''}>${escapeHtml(photoDay(r.taken_on))}</option>`).join('');
+    box.innerHTML = `<div class="lk-h">Comparar</div>
+      <div class="chips small" style="margin:0 0 8px;flex-wrap:wrap;">${avail.map(k => `<button type="button" class="chip${k === pose ? ' selected' : ''}" data-cmp-pose="${k}">${POSE_N[k]}</button>`).join('')}</div>
+      <div class="ph-cmp"><figure><img data-ph="${escapeHtml(a.path)}" alt=""></figure><figure><img data-ph="${escapeHtml(b.path)}" alt=""></figure></div>
+      <div class="ph-cmp" style="margin-top:6px;"><select class="ph-sel" data-cmp="a" translate="no">${opt(a)}</select><select class="ph-sel" data-cmp="b" translate="no">${opt(b)}</select></div>`;
+    photoFill(box);
+    box.querySelectorAll('[data-cmp-pose]').forEach(c => c.addEventListener('click', () => { pose = c.dataset.cmpPose; a = b = null; paint(); }));
+    box.querySelectorAll('[data-cmp]').forEach(sl => sl.addEventListener('change', () => { if (sl.dataset.cmp === 'a') a = list[+sl.value]; else b = list[+sl.value]; paint(); }));
+  };
+  paint();
+}
+function ckWeekEnd(wk) { return keyDate(new Date(parseKey(wk).getTime() + 6 * 864e5)); }
+// Dentro del check-in: una casilla por pose con la foto de esa semana, o un "+" para tomarla.
+async function ckPhotosMount(el, wk) {
+  if (!el) return;
+  const s = authGet() || {}; let rows = [];
+  try { rows = await sbRest('progress_photos?select=id,path,taken_on,pose,shared&user_id=eq.' + encodeURIComponent(s.uid) + '&taken_on=gte.' + wk + '&taken_on=lte.' + ckWeekEnd(wk) + '&order=created_at.desc') || []; } catch (e) { el.innerHTML = ''; return; }
+  if (!el.isConnected) return;
+  el.innerHTML = `<div class="ck-ph">${POSES.slice(0, 3).map(([k, n]) => { const r = rows.find(x => x.pose === k);
+    return r ? `<figure><img data-ph="${escapeHtml(r.path)}" alt=""><figcaption>${n}${r.shared ? '' : ' · <span>sin compartir</span>'}</figcaption></figure>` : `<button type="button" data-ck-ph="${k}"><b>+</b><span>${n}</span></button>`; }).join('')}</div>
+    <div class="ant-hint" id="ck-ph-msg">Las fotos que subas aquí se comparten con tus especialistas. Mismo lugar, misma luz y misma distancia cada semana.</div>
+    <input type="file" id="ck-ph-file" accept="image/*" style="display:none;">`;
+  photoFill(el);
+  const file = el.querySelector('#ck-ph-file'), msg = el.querySelector('#ck-ph-msg'); let pose = null;
+  el.querySelectorAll('[data-ck-ph]').forEach(b => b.addEventListener('click', () => { pose = b.dataset.ckPh; file.value = ''; file.click(); }));
+  file.addEventListener('change', async () => {
+    const f = file.files && file.files[0]; if (!f || !pose) return;
+    msg.textContent = t('Subiendo…');
+    try {
+      const blob = await photoShrink(f), path = s.uid + '/' + keyDate() + '-' + uid() + '.jpg', day = keyDate() > ckWeekEnd(wk) ? ckWeekEnd(wk) : keyDate();
+      await sbRaw('/storage/v1/object/progress/' + path, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob });
+      await sbRest('progress_photos', { method: 'POST', body: { path, taken_on: day, shared: true, pose }, headers: { Prefer: 'return=minimal' } });
+    } catch (e) { msg.textContent = e && e.code ? authErr(e.code) : t('No se pudo leer la imagen.'); return; }
+    ckPhotosMount(el, wk);
+  });
+}
+// Revisión del especialista: fotos de esa semana por pose, junto a la anterior de la misma pose.
+function ckPhotosReviewHtml(photos, wk) {
+  const end = ckWeekEnd(wk), out = [];
+  POSES.slice(0, 3).forEach(([k, n]) => {
+    const cur = photos.find(p => p.pose === k && p.taken_on >= wk && p.taken_on <= end); if (!cur) return;
+    const prev = photos.find(p => p.pose === k && p.taken_on < wk);
+    out.push(`<div class="lk-h" style="margin-top:10px;">${n}</div><div class="ph-cmp">${prev ? `<figure><img data-ph="${escapeHtml(prev.path)}" alt=""><figcaption translate="no">${escapeHtml(photoDay(prev.taken_on))}</figcaption></figure>` : ''}<figure><img data-ph="${escapeHtml(cur.path)}" alt=""><figcaption translate="no">${escapeHtml(photoDay(cur.taken_on))}</figcaption></figure></div>`);
+  });
+  return out.length ? `<div class="sp-card"><div class="sp-card-n">Fotos de la semana</div>${out.join('')}</div>` : '';
+}
+
+// ============================================================
 // PESO CON TENDENCIA Y CHECK-IN SEMANAL
 // El peso de un día engaña; lo que se decide es con el promedio de 7 días y su ritmo de cambio.
 // El check-in es el reporte semanal del atleta: datos automáticos + cómo se sintió; el especialista responde.
@@ -1378,7 +1439,8 @@ function openCheckinForm(row) {
       ${num('sleepH', 'Horas de sueño por noche', 'h', '7.5')}${num('steps', 'Pasos por día (promedio)', '', '8000')}${num('cardioMin', 'Cardio en la semana', 'min', '90')}${num('waist', 'Cintura', 'cm')}</details>
     <details open><summary>En tus palabras</summary>
       ${CK_TEXTS.map(([k, n]) => `<label class="ant-f col"><span>${n}</span><textarea data-ckt="${k}" rows="2" maxlength="700">${escapeHtml(d[k] || '')}</textarea></label>`).join('')}
-      <div class="ant-hint">Si quieres que revise tu físico, sube y comparte las fotos de esta semana en Fotos de progreso.</div></details>
+</details>
+    <details open><summary>Fotos de la semana <small>opcional</small></summary><div id="ck-photos"><div class="skel" aria-busy="true"><i class="s"></i></div></div></details>
     <p class="auth-msg" id="ck-msg"></p></div>`, async () => {
     const out = { auto }, msg = document.getElementById('ck-msg');
     document.querySelectorAll('.ck-ed [data-ck]').forEach(g => { const c = g.querySelector('.chip.selected'); if (c) out[g.dataset.ck] = +c.dataset.v; });
@@ -1394,6 +1456,7 @@ function openCheckinForm(row) {
     await ckRefresh(true); try { renderHoyDash(); } catch (e) {}
     openMyCheckins();
   });
+  ckPhotosMount(document.getElementById('ck-photos'), wk);
   document.querySelectorAll('.ck-ed .ck-chips .chip').forEach(c => c.addEventListener('click', () => { const was = c.classList.contains('selected'); c.parentNode.querySelectorAll('.chip').forEach(x => x.classList.remove('selected')); if (!was) c.classList.add('selected'); }));
 }
 
@@ -1436,6 +1499,9 @@ async function ckRenderFor(l, el) {
   } catch (e) { el.innerHTML = `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; return; }
   if (!document.body.contains(el)) return;
   const names = {}; names[me] = t('Tú');
+  let photos = [];
+  if (rows.length) { try { photos = await sbRest('progress_photos?select=id,path,taken_on,pose&user_id=eq.' + encodeURIComponent(l.client_id) + '&pose=not.is.null&order=taken_on.desc,created_at.desc&limit=120') || []; } catch (e) {} }
+  if (!document.body.contains(el)) return;
   let sel = rows[0] ? rows[0].id : null;
   const paint = () => {
     const i = rows.findIndex(r => r.id === sel), row = rows[i], prev = rows[i + 1];
@@ -1450,6 +1516,7 @@ async function ckRenderFor(l, el) {
     }
     el.innerHTML = row ? `<div class="ant-h"><b translate="no">${escapeHtml(ckWeekLabel(row.week_of))}</b><span>${mine(row.id) ? 'Ya respondiste' : 'Sin responder'} · <span>enviado</span> <span translate="no">${escapeHtml(cdFmtDay(String(row.created_at).slice(0, 10)))}</span></span></div>
       ${ckViewHtml(row, prev, reviews.filter(r => r.checkin_id === row.id), names)}
+      ${ckPhotosReviewHtml(photos, row.week_of)}
       <div class="sp-card"><div class="sp-card-n">${mine(row.id) ? 'Agregar otra respuesta' : 'Tu respuesta'}</div>
         <textarea id="ck-reply" rows="4" maxlength="2000" class="ck-reply" placeholder="Qué se queda igual, qué cambia y en qué enfocarse esta semana."></textarea>
         <div class="dp-quick" style="margin-bottom:10px;">${['Todo bien, seguimos igual esta semana.', 'Bajamos un poco las calorías; te actualizo el plan.', 'Subimos el cardio; te digo cuánto.', 'Prioriza el sueño esta semana.'].map(x => `<button data-ck-q="1">${x}</button>`).join('')}</div>
@@ -1457,6 +1524,7 @@ async function ckRenderFor(l, el) {
       ${trend}
       ${rows.length > 1 ? `<h3 class="ant-sub">Todas las semanas</h3>${rows.map(r => `<div class="ant-row${r.id === sel ? ' on' : ''}" data-ck-sel="${r.id}"><div><b translate="no">${escapeHtml(ckWeekLabel(r.week_of))}</b><small>${mine(r.id) ? 'Respondido' : 'Sin responder'}</small></div></div>`).join('')}` : ''}`
       : '<div class="sp-empty">Este atleta aún no envía check-ins. Le aparece en Hoy cada semana; al enviarlo te llega un mensaje.</div>';
+    try { photoFill(el); } catch (e) {}
     el.querySelectorAll('[data-ck-sel]').forEach(b => b.addEventListener('click', () => { sel = b.dataset.ckSel; paint(); try { el.scrollIntoView({ block: 'start' }); } catch (e) {} }));
     el.querySelectorAll('[data-ck-q]').forEach(b => b.addEventListener('click', () => { const ta = document.getElementById('ck-reply'); ta.value = (ta.value ? ta.value.trim() + ' ' : '') + b.textContent; ta.focus(); }));
     const sb = document.getElementById('ck-send');

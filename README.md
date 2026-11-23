@@ -285,4 +285,6 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 
 **Recuperar contraseña (sin correo).** Ajustes → Cuenta → «Código de recuperación» genera un código de un solo uso (en la base solo queda su huella). En la pantalla de acceso, «¿Olvidaste tu contraseña?» pide usuario + código + contraseña nueva y llama a la función pública `recover` (`verify_jwt = false`); 5 fallos bloquean 30 minutos. Sin código, el usuario puede dejar un aviso que el administrador ve en Usuarios («Pidió contraseña nueva»). SQL en `supabase/rutinal_recovery.sql`.
 
+**Fotos de progreso por pose.** Cada foto lleva su pose (frente, perfil, espalda o libre; columna `pose`). En Fotos de progreso hay un comparador lado a lado por pose con dos fechas a elegir. El check-in semanal tiene tres casillas (frente, perfil, espalda) que suben la foto ya compartida; el especialista las ve en la revisión junto a la foto anterior de la misma pose.
+
 **Personalizar.** En Ajustes se apagan las secciones que no se usan y se activa «Solo palomear ejercicios». Preferencias en `app_prefs`.

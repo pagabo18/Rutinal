@@ -65,3 +65,6 @@ create policy progress_read on storage.objects for select to authenticated
     (storage.foldername(name))[1] = (select auth.uid())::text
     or exists (select 1 from public.progress_photos p where p.path = name and p.shared and private.has_client(p.user_id))
   ));
+
+-- 23 nov 2026 · migración `rutinal_photo_pose`: pose de cada foto de progreso, para compararlas lado a lado.
+alter table public.progress_photos add column pose text check (pose is null or pose in ('front','side','back','free'));
