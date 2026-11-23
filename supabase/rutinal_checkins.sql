@@ -55,3 +55,23 @@ create or replace function private.role_keys(p_role text) returns text[] languag
     when 'fisioterapeuta' then array['gym_logs','gym_routines','gym_schedule','act_log','athlete_profile']
     else array[]::text[] end
 $$;
+
+-- 23 nov 2026 · migración `rutinal_goals_phases`: objetivos y fases del plan.
+-- El especialista los asigna (kinds `goal` y `phase`) y lee los del atleta (`goals`, `phases`).
+alter table public.assignments drop constraint assignments_kind_check;
+alter table public.assignments add constraint assignments_kind_check check (kind in ('routine','diet','targets','note','goal','phase'));
+create or replace function private.kind_allowed(p_role text, p_kind text) returns boolean language sql immutable set search_path = '' as $$
+  select case p_kind when 'routine' then p_role in ('coach','fisioterapeuta')
+                     when 'diet' then p_role = 'nutriologo'
+                     when 'targets' then p_role = 'nutriologo'
+                     when 'goal' then p_role in ('coach','nutriologo','fisioterapeuta')
+                     when 'phase' then p_role in ('coach','nutriologo')
+                     when 'note' then true else false end
+$$;
+create or replace function private.role_keys(p_role text) returns text[] language sql immutable set search_path = '' as $$
+  select case p_role
+    when 'coach' then array['gym_logs','gym_routines','gym_schedule','weight_log','act_log','athlete_profile','goals','phases']
+    when 'nutriologo' then array['meal_log','nutri_profile','food_goal_kcal','weight_log','hydration_log','hydration_settings','goals','phases']
+    when 'fisioterapeuta' then array['gym_logs','gym_routines','gym_schedule','act_log','athlete_profile','goals']
+    else array[]::text[] end
+$$;

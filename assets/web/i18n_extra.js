@@ -4036,6 +4036,256 @@ window.__I18N_EXTRA = {
    "pt-BR": "Registre uma sessão dessa distância para medir o progresso",
    "fr": "Enregistrez une séance de cette distance pour mesurer la progression"
   },
+  "Fases del plan": {
+   "en": "Plan phases",
+   "pt-BR": "Fases do plano",
+   "fr": "Phases du plan"
+  },
+  "Fase del plan": {
+   "en": "Plan phase",
+   "pt-BR": "Fase do plano",
+   "fr": "Phase du plan"
+  },
+  "Volumen, definición, semana pico…": {
+   "en": "Bulk, cut, peak week…",
+   "pt-BR": "Volume, definição, semana de pico…",
+   "fr": "Prise de masse, sèche, semaine de pic…"
+  },
+  "Definición": {
+   "en": "Cut",
+   "pt-BR": "Definição",
+   "fr": "Sèche"
+  },
+  "Mantenimiento": {
+   "en": "Maintenance",
+   "pt-BR": "Manutenção",
+   "fr": "Maintien"
+  },
+  "Recomposición": {
+   "en": "Recomposition",
+   "pt-BR": "Recomposição",
+   "fr": "Recomposition"
+  },
+  "Dieta inversa": {
+   "en": "Reverse diet",
+   "pt-BR": "Dieta reversa",
+   "fr": "Diète inversée"
+  },
+  "Semana pico": {
+   "en": "Peak week",
+   "pt-BR": "Semana de pico",
+   "fr": "Semaine de pic"
+  },
+  "Descarga": {
+   "en": "Deload",
+   "pt-BR": "Deload",
+   "fr": "Décharge"
+  },
+  "Transición": {
+   "en": "Transition",
+   "pt-BR": "Transição",
+   "fr": "Transition"
+  },
+  "Nueva fase": {
+   "en": "New phase",
+   "pt-BR": "Nova fase",
+   "fr": "Nouvelle phase"
+  },
+  "Editar fase": {
+   "en": "Edit phase",
+   "pt-BR": "Editar fase",
+   "fr": "Modifier la phase"
+  },
+  "Eliminar fase": {
+   "en": "Delete phase",
+   "pt-BR": "Excluir fase",
+   "fr": "Supprimer la phase"
+  },
+  "¿Eliminar esta fase?": {
+   "en": "Delete this phase?",
+   "pt-BR": "Excluir esta fase?",
+   "fr": "Supprimer cette phase ?"
+  },
+  "Próxima": {
+   "en": "Next",
+   "pt-BR": "Próxima",
+   "fr": "À venir"
+  },
+  "Terminada": {
+   "en": "Finished",
+   "pt-BR": "Concluída",
+   "fr": "Terminée"
+  },
+  "de": {
+   "en": "of",
+   "pt-BR": "de",
+   "fr": "sur"
+  },
+  "semana": {
+   "en": "week",
+   "pt-BR": "semana",
+   "fr": "semaine"
+  },
+  "semanas": {
+   "en": "weeks",
+   "pt-BR": "semanas",
+   "fr": "semaines"
+  },
+  "día": {
+   "en": "day",
+   "pt-BR": "dia",
+   "fr": "jour"
+  },
+  "Empieza el": {
+   "en": "Starts on",
+   "pt-BR": "Começa em",
+   "fr": "Commence le"
+  },
+  "Sigue": {
+   "en": "Next up",
+   "pt-BR": "Em seguida",
+   "fr": "Ensuite"
+  },
+  "Empieza": {
+   "en": "Starts",
+   "pt-BR": "Começa",
+   "fr": "Début"
+  },
+  "Termina": {
+   "en": "Ends",
+   "pt-BR": "Termina",
+   "fr": "Fin"
+  },
+  "Ej. Definición rumbo a la competencia": {
+   "en": "E.g. Cut towards the competition",
+   "pt-BR": "Ex.: Definição rumo à competição",
+   "fr": "Ex. Sèche avant la compétition"
+  },
+  "Nutrición de la fase (opcional)": {
+   "en": "Phase nutrition (optional)",
+   "pt-BR": "Nutrição da fase (opcional)",
+   "fr": "Nutrition de la phase (facultatif)"
+  },
+  "Si pones calorías, mientras dure la fase reemplazan la meta diaria de la pestaña Comida.": {
+   "en": "If you set calories, they replace the daily target in the Food tab while the phase lasts.",
+   "pt-BR": "Se você definir calorias, elas substituem a meta diária da aba Comida enquanto a fase durar.",
+   "fr": "Si vous indiquez des calories, elles remplacent l'objectif quotidien de l'onglet Repas pendant la phase."
+  },
+  "Ritmo de peso (opcional)": {
+   "en": "Weight pace (optional)",
+   "pt-BR": "Ritmo de peso (opcional)",
+   "fr": "Rythme de poids (facultatif)"
+  },
+  "Cambio de peso por semana": {
+   "en": "Weight change per week",
+   "pt-BR": "Mudança de peso por semana",
+   "fr": "Variation de poids par semaine"
+  },
+  "En % de tu peso. Negativo para bajar, positivo para subir. Se compara con tu promedio de 7 días.": {
+   "en": "As % of your weight. Negative to lose, positive to gain. Compared with your 7-day average.",
+   "pt-BR": "Em % do seu peso. Negativo para baixar, positivo para subir. Comparado com sua média de 7 dias.",
+   "fr": "En % de votre poids. Négatif pour perdre, positif pour prendre. Comparé à votre moyenne sur 7 jours."
+  },
+  "Ritmo de peso": {
+   "en": "Weight pace",
+   "pt-BR": "Ritmo de peso",
+   "fr": "Rythme de poids"
+  },
+  "En ritmo": {
+   "en": "On pace",
+   "pt-BR": "No ritmo",
+   "fr": "Dans le rythme"
+  },
+  "Fuera de ritmo": {
+   "en": "Off pace",
+   "pt-BR": "Fora do ritmo",
+   "fr": "Hors rythme"
+  },
+  "Más lento que el plan": {
+   "en": "Slower than plan",
+   "pt-BR": "Mais lento que o plano",
+   "fr": "Plus lent que prévu"
+  },
+  "Más rápido que el plan": {
+   "en": "Faster than plan",
+   "pt-BR": "Mais rápido que o plano",
+   "fr": "Plus rapide que prévu"
+  },
+  "Revisa las fechas: la fase debe terminar después de empezar.": {
+   "en": "Check the dates: the phase must end after it starts.",
+   "pt-BR": "Revise as datas: a fase deve terminar depois de começar.",
+   "fr": "Vérifiez les dates : la phase doit se terminer après son début."
+  },
+  "Esas fechas se enciman con otra fase.": {
+   "en": "Those dates overlap another phase.",
+   "pt-BR": "Essas datas se sobrepõem a outra fase.",
+   "fr": "Ces dates chevauchent une autre phase."
+  },
+  "Divide tu plan en etapas con fechas: volumen, definición, mantenimiento, semana pico. Cada fase puede tener sus calorías y su ritmo de peso, y la app cambia sola tus metas cuando toca.": {
+   "en": "Split your plan into dated stages: bulk, cut, maintenance, peak week. Each phase can have its own calories and weight pace, and the app switches your targets on its own when the time comes.",
+   "pt-BR": "Divida seu plano em etapas com datas: volume, definição, manutenção, semana de pico. Cada fase pode ter suas calorias e seu ritmo de peso, e o app muda suas metas sozinho na hora certa.",
+   "fr": "Divisez votre plan en étapes datées : prise de masse, sèche, maintien, semaine de pic. Chaque phase peut avoir ses calories et son rythme de poids, et l'app change vos objectifs toute seule le moment venu."
+  },
+  "Arma las etapas del plan de tu atleta. Las ve en su app y sus metas de nutrición cambian solas con cada fase.": {
+   "en": "Build the stages of your athlete's plan. They see them in their app and their nutrition targets switch on their own with each phase.",
+   "pt-BR": "Monte as etapas do plano do seu atleta. Ele as vê no app e as metas de nutrição mudam sozinhas a cada fase.",
+   "fr": "Construisez les étapes du plan de votre athlète. Il les voit dans son app et ses objectifs nutritionnels changent tout seuls à chaque phase."
+  },
+  "Esta fase la definió tu especialista; solo él puede cambiarla.": {
+   "en": "Your specialist defined this phase; only they can change it.",
+   "pt-BR": "Seu especialista definiu esta fase; só ele pode alterá-la.",
+   "fr": "Votre spécialiste a défini cette phase ; lui seul peut la modifier."
+  },
+  "Este objetivo te lo puso tu especialista; solo él puede quitarlo.": {
+   "en": "Your specialist set this goal; only they can remove it.",
+   "pt-BR": "Seu especialista definiu este objetivo; só ele pode removê-lo.",
+   "fr": "Votre spécialiste a fixé cet objectif ; lui seul peut le retirer."
+  },
+  "Sin fase en curso hoy.": {
+   "en": "No phase in progress today.",
+   "pt-BR": "Nenhuma fase em andamento hoje.",
+   "fr": "Aucune phase en cours aujourd'hui."
+  },
+  "meta de la fase": {
+   "en": "phase target",
+   "pt-BR": "meta da fase",
+   "fr": "objectif de la phase"
+  },
+  "Poner objetivo": {
+   "en": "Set a goal",
+   "pt-BR": "Definir objetivo",
+   "fr": "Fixer un objectif"
+  },
+  "Tuyo": {
+   "en": "Yours",
+   "pt-BR": "Seu",
+   "fr": "Le vôtre"
+  },
+  "De": {
+   "en": "From",
+   "pt-BR": "De",
+   "fr": "De"
+  },
+  "Te puse un objetivo nuevo.": {
+   "en": "I set a new goal for you.",
+   "pt-BR": "Defini um novo objetivo para você.",
+   "fr": "Je vous ai fixé un nouvel objectif."
+  },
+  "Te armé las fases de tu plan.": {
+   "en": "I set up the phases of your plan.",
+   "pt-BR": "Montei as fases do seu plano.",
+   "fr": "J'ai préparé les phases de votre plan."
+  },
+  "objetivos": {
+   "en": "goals",
+   "pt-BR": "objetivos",
+   "fr": "objectifs"
+  },
+  "fases del plan": {
+   "en": "plan phases",
+   "pt-BR": "fases do plano",
+   "fr": "phases du plan"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

@@ -2782,6 +2782,15 @@
   .goal-types button { text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; font: inherit; color: var(--text); cursor: pointer; box-shadow: var(--card-sh); }
   .goal-types b { display: block; font-size: 14px; } .goal-types span { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; line-height: 1.35; }
   .hd-goal { margin-top: 10px; } .hd-goal:first-of-type { margin-top: 8px; } .hd-goal .goal-v { margin-top: 0; font-size: 13px; } .hd-goal .goal-bar { height: 6px; margin-top: 5px; }
+
+  /* ===== Fases del plan ===== */
+  .ph-tl { position: relative; height: 12px; overflow: hidden; border-radius: 999px; background: var(--surface-2); margin: 4px 0 4px; }
+  .ph-tl i { display: block; position: absolute; top: 0; height: 12px; border-radius: 999px; background: var(--border-strong, #C9C9C5); box-shadow: 0 0 0 1.5px var(--bg); }
+  .ph-tl i.tl-past { background: var(--text-3); } .ph-tl i.tl-now { background: var(--text); }
+  .ph-tl b { position: absolute; top: 0; bottom: 0; width: 3px; margin-left: -1px; background: #DC2626; }
+  .ph-tl-l { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-bottom: 12px; }
+  .goal.phz-past { opacity: .6; } .goal.phz.flat { border: 0; box-shadow: none; padding: 0; margin: 0; background: transparent; cursor: default; }
+  .gym-tag.good { background: rgba(22,163,74,.12); color: #15803D; }
 </style>
 </head>
 <body>
@@ -3994,6 +4003,7 @@ function renderMas() {
       <span class="acct-id"><span class="acct-name" translate="no">${escapeHtml(s.name || s.user || '')}</span><span class="acct-sub"><span translate="no">@${escapeHtml(s.user || '')}</span> · ${authRolesHtml(s.specs, s.admin)}</span></span><span class="mas-chev">›</span></button>` : ''}
     ${logged && (s.specs || []).length ? `<div class="mas-card">${typeof spMode === 'function' && spMode() ? row('mode', I.people, 'Cambiar a mi perfil de atleta', 'Tus propios registros, rutinas y comidas') : row('mode', I.people, 'Cambiar a especialista', 'Tus atletas, plantillas y mensajes')}</div>` : ''}
     <div class="mas-card">${row('athlete', I.goal, 'Perfil de atleta', (typeof athSummary === 'function' && athSummary()) || 'Tus deportes, nivel y marcas')}</div>
+    <div class="mas-card">${row('phases', I.cal || I.goal, 'Fases del plan', (typeof phasesSummary === 'function' && phasesSummary()) || 'Volumen, definición, semana pico…')}</div>
     <div class="mas-card">${row('goals', I.goal, 'Objetivos y logros', (typeof goalsSummary === 'function' && goalsSummary()) || 'Peso, récords, kilómetros y más')}</div>
     <h2>Herramientas</h2>
     <div class="mas-card">${row('pomo', I.clock, 'Reloj', 'Pomodoro y temporizador')}${row('cal', I.cal, 'Calendario', 'Tu día, semana y mes')}</div>
@@ -4009,6 +4019,7 @@ function renderMas() {
     else if (k === 'mode') { if (typeof spSetMode === 'function') spSetMode(!spMode()); }
     else if (k === 'athlete') openAthleteProfile();
     else if (k === 'goals') openGoals();
+    else if (k === 'phases') openPhases();
     else if (k === 'photos') openPhotos();
     else if (k === 'assess') openMyAssessments();
     else if (k === 'checkins') openMyCheckins();
@@ -7790,6 +7801,14 @@ function calcNutriTargets(pIn, foreign) {
       out.proteinKcal = out.protein * 4; out.carbKcal = out.carbs * 4; out.fatKcal = out.fat * 9; out.assigned = true;
     }
   }
+  // La fase en curso del plan manda sobre lo anterior si define calorías
+  if (!foreign && typeof phaseTargets === 'function') {
+    const ph = phaseTargets();
+    if (ph) {
+      out.kcal = ph.kcal; out.protein = ph.protein || out.protein; out.carbs = ph.carbs || out.carbs; out.fat = ph.fat || out.fat;
+      out.proteinKcal = out.protein * 4; out.carbKcal = out.carbs * 4; out.fatKcal = out.fat * 9; out.phase = ph.name;
+    }
+  }
   return out;
 }
 
@@ -9239,7 +9258,7 @@ function openAuthUserEditor(u) {
 // dispositivos. En conflicto gana lo último que llega al servidor, por documento.
 // ============================================================
 const SYNC_DATED = ['meal_log', 'gym_logs', 'habitLog', 'weight_log', 'hydration_log', 'act_log'];
-const SYNC_WHOLE = ['goals', 'athlete_profile', 'app_prefs', 'nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'habits', 'habitTimes', 'cats', 'catGoals',
+const SYNC_WHOLE = ['goals', 'phases', 'athlete_profile', 'app_prefs', 'nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'habits', 'habitTimes', 'cats', 'catGoals',
   'sch_weekday', 'sch_saturday', 'sch_sunday', 'imprevistos', 'plan', 'planTasks', 'plan_start', 'hydration_settings',
   'custom_foods', 'dishes', 'diary', 'gym_unit', 'body_unit', 'achievements', 'bestStreak', 'streak_pauses', 'pomo_settings', 'pomo_sessions'];
 const SYNC_MAX_DOC = 300000; // caracteres; documentos más grandes (p. ej. con fotos) no se suben
@@ -9486,7 +9505,7 @@ function onAuthReady() {
 // El especialista genera un código de invitación; el atleta lo acepta viendo qué comparte.
 // El servidor decide qué documentos puede leer cada rol (política de user_docs).
 // ============================================================
-const LINK_KEY_LABELS = { act_log: 'cardio y otros deportes', athlete_profile: 'perfil de atleta', gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
+const LINK_KEY_LABELS = { goals: 'objetivos', phases: 'fases del plan', act_log: 'cardio y otros deportes', athlete_profile: 'perfil de atleta', gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
 const LINK_ERRORS = { bad_code: 'Ese código no existe o ya venció.', own_code: 'Ese código es tuyo; compártelo con tu atleta.', too_many: 'Tienes demasiadas invitaciones pendientes. Cancela alguna.', forbidden: 'Tu cuenta no tiene esa especialidad.' };
 function linkErr(code) { return LINK_ERRORS[code] || authErr(code); }
 async function linkRpc(fn, args) {
@@ -9586,7 +9605,7 @@ document.getElementById('btn-acct-links').addEventListener('click', openLinks);
 // El especialista guarda plantillas (rutina, plan de alimentación, metas, indicaciones) y las
 // asigna a sus atletas; cada asignación es una copia. El atleta las recibe al sincronizar.
 // ============================================================
-const ASG_KINDS = { routine: 'Rutina', diet: 'Plan de alimentación', targets: 'Metas de nutrición', note: 'Indicaciones' };
+const ASG_KINDS = { routine: 'Rutina', diet: 'Plan de alimentación', targets: 'Metas de nutrición', note: 'Indicaciones', goal: 'Objetivo', phase: 'Fases del plan' };
 const ASG_ROLE_KINDS = { coach: ['routine', 'note'], fisioterapeuta: ['routine', 'note'], nutriologo: ['diet', 'targets', 'note'] };
 const ASG_MEALS = [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['dinner', 'Cena'], ['snack', 'Snacks']];
 async function sbRest(path, opt) {
@@ -10038,13 +10057,14 @@ async function asgRefresh(force) {
   if (before === after) return;
   try { localStorage.setItem('__asg', after); } catch (e) {}
   asgApplyRoutines();
+  if (typeof asgApplyPro === 'function' && asgApplyPro()) { try { renderHoyDash(); } catch (e) {} }
   asgRenderCard();
   syncRefreshUi();
 }
 function asgRenderCard() {
   const el = document.getElementById('asg-card');
   if (!el) return;
-  const list = authLogged() ? asgList() : [];
+  const list = authLogged() ? asgList().filter(a => a.kind !== 'goal' && a.kind !== 'phase') : []; // objetivos y fases viven en sus propias secciones
   if (!list.length) { el.innerHTML = ''; return; }
   el.innerHTML = `<div class="asg-card"><div class="lk-h">De tus especialistas</div>${list.map((a, i) => `<div class="asg-item" data-asg="${i}"><div style="flex:1;min-width:0;"><div class="lk-n">${escapeHtml(a.name)}</div>
       <div class="lk-d" style="margin-top:2px;"><span>${ASG_KINDS[a.kind] || a.kind}</span>${a.author_name ? ' · ' + escapeHtml(a.author_name) : ''}</div></div><span style="color:var(--text-3);font-size:18px;">›</span></div>`).join('')}</div>`;
@@ -10174,7 +10194,7 @@ function openEndServices(l, mine, onDone) {
   }));
   document.getElementById('end-all').addEventListener('click', async () => { if (!confirm(msgAll)) return; closeSheet(); await endAll(); });
 }
-const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log', 'act_log', 'athlete_profile'], nutriologo: ['meal_log', 'nutri_profile', 'weight_log', 'hydration_log'], fisioterapeuta: ['gym_logs', 'gym_routines', 'act_log', 'athlete_profile'] };
+const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log', 'act_log', 'athlete_profile', 'goals', 'phases'], nutriologo: ['meal_log', 'nutri_profile', 'weight_log', 'hydration_log', 'goals', 'phases'], fisioterapeuta: ['gym_logs', 'gym_routines', 'act_log', 'athlete_profile', 'goals'] };
 // El servicio (rol) con el que se puede dejar un tipo de plantilla a esta persona
 function asgRoleFor(l, kind) { return linkRoles(l).find(r => (ASG_ROLE_KINDS[r] || []).includes(kind)) || null; }
 function asgKindsFor(l) { const out = []; linkRoles(l).forEach(r => (ASG_ROLE_KINDS[r] || []).forEach(k => { if (!out.includes(k)) out.push(k); })); return out; }
@@ -10466,12 +10486,12 @@ async function spOpenClient(l) {
       <div class="sp-card-d">${escapeHtml(cdFmtDay(ws[0]))} → ${escapeHtml(cdFmtDay(ws[ws.length - 1]))}</div>${spWeightChart(D.weight_log)}</div>`;
   }
   const plans = asg.map(a => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(a.name)}</div><span class="usr-badge">${ASG_KINDS[a.kind] || a.kind}</span></div>
-      <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><div class="sp-card-btns">${a.kind === 'routine' ? `<button class="btn-secondary" data-asg-loads="${a.id}">Cargas por serie</button><button class="btn-secondary" data-asg-rt="${a.id}">Editar</button>` : ''}${a.kind === 'diet' ? `<button class="btn-secondary" data-asg-diet="${a.id}">Editar</button>` : ''}<button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
+      <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><div class="sp-card-btns">${a.kind === 'routine' ? `<button class="btn-secondary" data-asg-loads="${a.id}">Cargas por serie</button><button class="btn-secondary" data-asg-rt="${a.id}">Editar</button>` : ''}${a.kind === 'diet' ? `<button class="btn-secondary" data-asg-diet="${a.id}">Editar</button>` : ''}${a.kind === 'goal' ? `<button class="btn-secondary" data-asg-goal="${a.id}">Editar</button>` : ''}${a.kind === 'phase' ? `<button class="btn-secondary" data-asg-phase="${a.id}">Editar</button>` : ''}<button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
   // --- Resumen de la semana y gráficas (8 semanas) ---
   const rep = spClientReport(D, l, asg);
-  const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button>',
+  const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button><div class="sp-actions" style="margin-top:8px;"><button class="sp-act" id="sp-goal-new">Poner objetivo</button>' + (linkRoles(l).some(r => r !== 'fisioterapeuta') ? '<button class="sp-act" id="sp-phase-edit">Fases del plan</button>' : '') + '</div>',
     progress: `<div class="sp-rep-btns"><button class="sp-act" id="sp-rep-copy">Copiar resumen</button><button class="sp-act" id="sp-rep-pdf">Guardar PDF</button></div>
-      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${rep}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
+      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${typeof phaseClientHtml === 'function' ? phaseClientHtml(D) : ''}${typeof goalsClientHtml === 'function' ? goalsClientHtml(D) : ''}${rep}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
     checkins: '<div id="sp-ck"></div>',
     assess: '<div id="sp-assess"></div>',
     logs: logs.join('') };
@@ -10485,6 +10505,7 @@ async function spOpenClient(l) {
     <button class="btn-secondary" id="sp-c-end" style="width:100%;margin-top:22px;">Terminar vínculo</button>`;
   const wire = () => {
     const as = document.getElementById('sp-assign'); if (as) as.addEventListener('click', () => openTemplates(l));
+    if (typeof proWireClient === 'function') proWireClient(l, asg, D);
     if (document.getElementById('sp-photos')) spClientPhotos(l);
     if (document.getElementById('sp-ck')) ckRenderFor(l, document.getElementById('sp-ck'));
     if (document.getElementById('sp-assess')) antRender(l.client_id, l.name, document.getElementById('sp-assess'), { D, link: l, onSaved: () => { closeSheet(); _sp.tab = 'assess'; spOpenClient(l); } });
@@ -10919,7 +10940,8 @@ function renderHoyDash() {
   } catch (e) {}
   try { if (typeof modApply === 'function') modApply(); } catch (e) {}
   const M = k => typeof modOn !== 'function' || modOn(k);
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${typeof goalsHoyCard === 'function' ? goalsHoyCard() : ''}${week}`;
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${typeof phaseHoyCard === 'function' ? phaseHoyCard() : ''}${typeof goalsHoyCard === 'function' ? goalsHoyCard() : ''}${week}`;
+  el.querySelectorAll('[data-hd-phase]').forEach(c => c.addEventListener('click', () => openPhases()));
   el.querySelectorAll('[data-hd-goals]').forEach(c => c.addEventListener('click', () => openGoals()));
   if (typeof ckWireHoy === 'function') ckWireHoy(el);
   el.querySelectorAll('[data-hd-ant]').forEach(c => c.addEventListener('click', e => { if (e.target.closest('button')) return; openMyAssessments(); }));
@@ -13169,7 +13191,7 @@ function renderFoodTarget(cur, tg, suggested) {
     <div class="ft-big" translate="no">${fmt(tg.kcal)} <small>kcal</small></div>
     <div class="ft-rem ${left < 0 ? 'over' : 'ok'}">${left >= 0 ? `<span translate="no">${fmt(left)} kcal</span> <span>restantes</span>` : `<span>Te pasaste por</span> <span translate="no">${fmt(-left)} kcal</span>`}</div>
     <div class="ft-bar big"><i style="width:${Math.min(100, tg.kcal ? cur.kcal / tg.kcal * 100 : 0).toFixed(1)}%;background:${left < 0 ? '#EF4444' : 'var(--text)'}"></i></div>
-    <div class="ft-sub"><span translate="no">${fmt(cur.kcal)} kcal</span> <span>consumidas</span>${tg.assigned ? ' · <span>meta de tu especialista</span>' : ''}</div>
+    <div class="ft-sub"><span translate="no">${fmt(cur.kcal)} kcal</span> <span>consumidas</span>${tg.phase ? ` · <span>meta de la fase</span> <span translate="no">${escapeHtml(tg.phase)}</span>` : tg.assigned ? ' · <span>meta de tu especialista</span>' : ''}</div>
     ${suggested ? '<button class="ft-set" id="ft-set">Calcular mi meta</button>' : ''}
     ${bar('Proteína', 'var(--c-prot)', cur.protein, tg.protein)}${bar('Carbos', 'var(--c-carb)', cur.carbs, tg.carbs)}${bar('Grasa', 'var(--c-fat)', cur.fat, tg.fat)}
   </div>`;
@@ -15785,6 +15807,7 @@ function fitGoalInfo() {
     const k = parseInt(S.get('food_goal_kcal', 0)) || 2000;
     t = { kcal: k, protein: Math.round(k * 0.3 / 4), carbs: Math.round(k * 0.4 / 4), fat: Math.round(k * 0.3 / 9) };
     try { const a = typeof assignedTargets === 'function' ? assignedTargets() : null; if (a && a.kcal > 0) t = { kcal: a.kcal, protein: a.protein || t.protein, carbs: a.carbs || t.carbs, fat: a.fat || t.fat }; } catch (e) {}
+    try { const ph = typeof phaseTargets === 'function' ? phaseTargets() : null; if (ph) t = { kcal: ph.kcal, protein: ph.protein || t.protein, carbs: ph.carbs || t.carbs, fat: ph.fat || t.fat }; } catch (e) {}
   }
   const kind = goal === 'cut' ? 'cut' : (goal === 'gain_lean' || goal === 'gain_fast') ? 'bulk' : 'maintain';
   return { t, goal, kind };

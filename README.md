@@ -277,4 +277,8 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 
 **Objetivos y logros.** En Más → Objetivos y logros (y tarjeta en Hoy): peso objetivo, % de grasa, récord en un ejercicio, kilómetros acumulados por deporte, marca de tiempo, sesiones por semana u objetivo libre. El avance se calcula solo con lo registrado (`weight_log`, `gym_logs`, `act_log`, última evaluación) y al llegar al 100 % pasa a Logros con su fecha. Se guarda en `goals` y se respalda en la nube.
 
+**Fases del plan.** En Más → Fases del plan (y tarjeta en Hoy): etapas con fechas (volumen, definición, mantenimiento, recomposición, dieta inversa, semana pico, descarga, competencia, transición), con calorías/macros y ritmo de peso opcionales. Mientras dura una fase con calorías, esas son la meta diaria de Comida (mandan sobre las metas asignadas y el perfil). El ritmo se compara con el promedio de 7 días. Se guarda en `phases`.
+
+**Objetivos y fases desde el especialista.** En la ficha del atleta → Planes: «Poner objetivo» y «Fases del plan» crean asignaciones `goal` y `phase` (coach y nutriólogo; fisioterapeuta solo objetivos). En el teléfono del atleta se copian a `goals`/`phases` marcadas como asignadas (no las puede borrar ni editar). En Progreso el especialista ve la fase en curso y los objetivos con el avance que calculó la app del atleta (`snap`).
+
 **Personalizar.** En Ajustes se apagan las secciones que no se usan y se activa «Solo palomear ejercicios». Preferencias en `app_prefs`.

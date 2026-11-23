@@ -851,7 +851,10 @@ function goalsCheck() {
   const all = goalsAll(); let ch = false;
   all.forEach(g => { const st = goalState(g);
     if (g.type === 'sessions') { const wk = ckWeekOf(); if (st.pct >= 1 && !(g.weeks || []).includes(wk)) { g.weeks = (g.weeks || []).concat([wk]); ch = true; } }
-    else if (st.pct >= 1 && !g.done) { g.done = keyDate(); ch = true; } });
+    else if (st.pct >= 1 && !g.done) { g.done = keyDate(); ch = true; }
+    // Foto del avance: es lo que ve el especialista, sin recalcular con datos parciales
+    const sn = { p: Math.round(st.pct * 100), c: st.curText, t: st.tgtText };
+    if (!g.snap || g.snap.p !== sn.p || g.snap.c !== sn.c || g.snap.t !== sn.t) { g.snap = sn; ch = true; } });
   if (ch) goalsSave(all);
   return all;
 }
@@ -872,7 +875,7 @@ function goalCardHtml(g, i) {
       ${done ? `<span class="hd-badge ok">${g.type === 'sessions' ? 'Semana cumplida' : 'Logrado'}</span>` : `<span class="goal-pct" translate="no">${pct}%</span>`}</div>
     <div class="goal-v"><span><span>Ahora</span> <b translate="no">${st.curText}</b></span><span><span>Meta</span> <b translate="no">${st.tgtText}</b></span></div>
     <div class="goal-bar"><i style="width:${pct}%"></i></div>
-    <div class="goal-d">${g.done && g.type !== 'sessions' ? `<span>Logrado el</span> <span translate="no">${escapeHtml(antDate(g.done))}</span>` : ''}${g.type === 'sessions' && (g.weeks || []).length ? `<span translate="no">${g.weeks.length}</span> <span>${g.weeks.length === 1 ? 'semana cumplida' : 'semanas cumplidas'}</span> · ` : ''}${!g.done && st.hint ? (/^[+\-−\d]/.test(st.hint) ? `<span>Faltan</span> <span translate="no">${st.hint.replace(/^[+\-−]/, '')}</span>` : `<span>${st.hint}</span>`) : ''}${g.due && !g.done ? ` · <span>Fecha límite</span> <span translate="no">${escapeHtml(antDate(g.due))}</span>` : ''}</div></div>`;
+    <div class="goal-d">${g.done && g.type !== 'sessions' ? `<span>Logrado el</span> <span translate="no">${escapeHtml(antDate(g.done))}</span>` : ''}${g.type === 'sessions' && (g.weeks || []).length ? `<span translate="no">${g.weeks.length}</span> <span>${g.weeks.length === 1 ? 'semana cumplida' : 'semanas cumplidas'}</span> · ` : ''}${!g.done && st.hint ? (/^[+\-−\d]/.test(st.hint) ? `<span>Faltan</span> <span translate="no">${st.hint.replace(/^[+\-−]/, '')}</span>` : `<span>${st.hint}</span>`) : ''}${g.due && !g.done ? ` · <span>Fecha límite</span> <span translate="no">${escapeHtml(antDate(g.due))}</span>` : ''}</div>${g.assigned || g.by ? `<div class="goal-d"><span>De</span> <span translate="no">${escapeHtml((g.assigned && g.assigned.by) || g.by || '')}</span></div>` : ''}</div>`;
 }
 function goalsSummary() { const a = goalsAll(); if (!a.length) return ''; const d = a.filter(g => g.done).length; return `${a.length - d} ${a.length - d === 1 ? 'activo' : 'activos'} · ${d} ${d === 1 ? 'logrado' : 'logrados'}`; }
 function goalsHoyCard() {
@@ -886,34 +889,34 @@ function openGoals() {
   openSheet('Objetivos y logros', `<button class="btn-primary" id="goal-new" style="width:100%;margin-bottom:14px;">Nuevo objetivo</button>
     ${act.length ? act.map(g => goalCardHtml(g, all.indexOf(g))).join('') : '<div class="sp-empty">Pon un objetivo y la app mide sola tu avance con lo que registras: peso, levantamientos, kilómetros o sesiones.</div>'}
     ${done.length ? `<h3 class="ant-sub">Logros</h3>${done.map(g => goalCardHtml(g, all.indexOf(g))).join('')}` : ''}`);
-  document.getElementById('goal-new').addEventListener('click', openGoalTypePicker);
+  document.getElementById('goal-new').addEventListener('click', () => openGoalTypePicker());
   document.querySelectorAll('[data-goal]').forEach(c => c.addEventListener('click', () => openGoalForm(all[+c.dataset.goal], +c.dataset.goal)));
 }
-function openGoalTypePicker() {
+function openGoalTypePicker(ctx) {
   openSheet('Nuevo objetivo', `<div class="goal-types">${GOAL_TYPES.map(([k, n, d]) => `<button data-gt="${k}"><b>${n}</b><span>${d}</span></button>`).join('')}</div>
     <button class="btn-secondary" id="goal-back" style="width:100%;margin-top:12px;">Volver</button>`);
-  document.querySelectorAll('[data-gt]').forEach(b => b.addEventListener('click', () => openGoalForm({ type: b.dataset.gt }, -1)));
-  document.getElementById('goal-back').addEventListener('click', openGoals);
+  document.querySelectorAll('[data-gt]').forEach(b => b.addEventListener('click', () => openGoalForm({ type: b.dataset.gt }, -1, ctx)));
+  document.getElementById('goal-back').addEventListener('click', () => ctx ? closeSheet() : openGoals());
 }
-function openGoalForm(g0, idx) {
+function openGoalForm(g0, idx, ctx) {
   const g = JSON.parse(JSON.stringify(g0)), isNew = idx < 0, lb = bwUnit() === 'lb';
-  const exNames = []; gymRoutines().forEach(r => (r.exercises || []).forEach(ex => { if (ex.name && !exNames.includes(ex.name)) exNames.push(ex.name); }));
+  const exNames = []; (ctx ? ctx.routines || [] : gymRoutines()).forEach(r => (r.exercises || []).forEach(ex => { if (ex.name && !exNames.includes(ex.name)) exNames.push(ex.name); }));
   const sportOpts = (all0) => (all0 ? '<option value="">Todos los deportes</option>' : '') + SPORTS.filter(x => !x.gym).map(x => `<option value="${x.id}"${g.sport === x.id ? ' selected' : ''}>${x.name}</option>`).join('');
   const inp = (id, label, unit, val, ph, mode) => `<label class="ant-f"><span>${label}</span><span class="ant-in"><input id="${id}" inputmode="${mode || 'decimal'}" value="${val == null ? '' : escapeHtml(String(val))}" placeholder="${ph || ''}">${unit ? `<i>${unit}</i>` : ''}</span></label>`;
   let body = '';
   if (g.type === 'weight') body = inp('gl-target', 'Peso al que quieres llegar', bwUnit(), g.target ? bwDisp(g.target) : '');
   else if (g.type === 'bodyfat') body = inp('gl-target', '% de grasa al que quieres llegar', '%', g.target || '');
-  else if (g.type === 'pr') body = `<label class="ant-f col"><span>Ejercicio</span>${exNames.length ? `<span class="ant-in"><select id="gl-ex">${exNames.map(n => `<option${g.exName === n ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('')}</select></span>` : '<input class="act-tx" id="gl-ex" placeholder="Nombre del ejercicio" value="' + escapeHtml(g.exName || '') + '">'}</label>` + inp('gl-target', 'Peso que quieres levantar', gymUnit(), g.target ? gymFmtKg(g.target) : '');
+  else if (g.type === 'pr') body = `<label class="ant-f col"><span>Ejercicio</span>${exNames.length && (!g.exName || exNames.includes(g.exName)) ? `<span class="ant-in"><select id="gl-ex">${exNames.map(n => `<option${g.exName === n ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('')}</select></span>` : '<input class="act-tx" id="gl-ex" placeholder="Nombre del ejercicio" value="' + escapeHtml(g.exName || '') + '">'}</label>` + inp('gl-target', 'Peso que quieres levantar', gymUnit(), g.target ? gymFmtKg(g.target) : '');
   else if (g.type === 'dist') body = `<label class="ant-f"><span>Deporte</span><span class="ant-in"><select id="gl-sport">${sportOpts(true)}</select></span></label>` + inp('gl-target', 'Kilómetros', 'km', g.target || '') + `<label class="ant-f"><span>Periodo</span><span class="ant-in"><select id="gl-period">${GOAL_PERIODS.map(([k, n]) => `<option value="${k}"${(g.period || 'month') === k ? ' selected' : ''}>${n}</option>`).join('')}</select></span></label>`;
   else if (g.type === 'mark') body = `<label class="ant-f"><span>Deporte</span><span class="ant-in"><select id="gl-sport">${sportOpts(false)}</select></span></label>` + inp('gl-dist', 'Distancia', 'km', g.dist || '', '10') + inp('gl-target', 'Tiempo objetivo', 'h:mm:ss', g.target ? actFmtTime(g.target) : '', '50:00', 'text');
   else if (g.type === 'sessions') body = inp('gl-target', 'Sesiones por semana', '', g.target || '', '4', 'numeric');
   else body = `<label class="ant-f col"><span>Nombre del objetivo</span><input class="act-tx" id="gl-title" maxlength="60" value="${escapeHtml(g.title || '')}" placeholder="Ej. Dominadas seguidas"></label>` + inp('gl-start', 'Valor inicial', '', g.start == null ? '' : g.start) + inp('gl-cur', 'Valor actual', '', g.cur == null ? '' : g.cur) + inp('gl-target', 'Meta', '', g.target || '') + `<label class="ant-f"><span>Unidad</span><span class="ant-in"><input id="gl-unit" maxlength="12" value="${escapeHtml(g.unit || '')}" placeholder="reps, min, cm…"></span></label>`;
-  const st = isNew ? null : goalState(g);
+  const st = isNew || ctx ? null : goalState(g);
   openSheet(isNew ? (GOAL_TYPES.find(x => x[0] === g.type) || [])[1] : 'Editar objetivo', `<div class="ant-ed act-ed">
     ${st ? `<div class="ant-live" style="grid-template-columns:1fr 1fr 1fr;position:static;"><div><span>Ahora</span><b translate="no">${st.curText}</b></div><div><span>Meta</span><b translate="no">${st.tgtText}</b></div><div><span>Avance</span><b translate="no">${Math.round(st.pct * 100)}%</b></div></div>` : ''}
     ${body}
     ${g.type !== 'sessions' ? `<label class="ant-f"><span>Fecha límite (opcional)</span><span class="ant-in"><input type="date" id="gl-due" value="${escapeHtml(g.due || '')}"></span></label>` : ''}
-    ${!isNew ? '<button class="btn-secondary" id="gl-del" style="width:100%;margin-top:12px;color:#DC2626;">Eliminar objetivo</button>' : ''}<p class="auth-msg" id="gl-msg"></p></div>`, () => {
+    ${g.assigned ? '<div class="fit-note" style="margin-top:12px;">Este objetivo te lo puso tu especialista; solo él puede quitarlo.</div>' : ''}${!isNew && !g.assigned && !ctx ? '<button class="btn-secondary" id="gl-del" style="width:100%;margin-top:12px;color:#DC2626;">Eliminar objetivo</button>' : ''}<p class="auth-msg" id="gl-msg"></p></div>`, async () => {
     const num = id => { const e = document.getElementById(id); if (!e) return null; const n = parseFloat(String(e.value).replace(',', '.')); return isFinite(n) ? n : null; }, msg = document.getElementById('gl-msg');
     let tgt = g.type === 'mark' ? actParseTime(document.getElementById('gl-target').value) : num('gl-target');
     if (!tgt || tgt <= 0) { msg.textContent = t('Escribe la meta.'); return; }
@@ -925,6 +928,14 @@ function openGoalForm(g0, idx) {
     if (g.type === 'custom') { g.title = document.getElementById('gl-title').value.trim(); if (!g.title) { msg.textContent = t('Ponle nombre al objetivo.'); return; } g.start = num('gl-start'); g.cur = num('gl-cur'); if (g.cur == null) g.cur = g.start; g.unit = document.getElementById('gl-unit').value.trim(); }
     const due = document.getElementById('gl-due'); if (due) g.due = due.value || null;
     const changed = g.target !== tgt; g.target = tgt;
+    if (ctx) { // el especialista lo asigna: viaja solo la definición; el punto de partida se toma en el teléfono del atleta
+      const out = { type: g.type, target: g.target, due: g.due || null };
+      ['exName', 'sport', 'period', 'dist', 'title', 'unit'].forEach(k => { if (g[k] != null && g[k] !== '') out[k] = g[k]; });
+      if (g.type === 'custom') { out.start = g.start; out.cur = g.cur; }
+      const sv = document.getElementById('sheet-save'); if (sv) sv.disabled = true;
+      try { await ctx.save(out, goalTitle(out)); } catch (e) { msg.textContent = authErr(e.code); } if (sv) sv.disabled = false;
+      return;
+    }
     if (isNew || changed) { g.done = null; if (g.type !== 'custom') { g.start = null; const s0 = goalState(g).cur; g.start = s0 == null ? null : s0; } }
     if (isNew) { g.id = uid(); g.created = keyDate(); }
     const all = goalsAll(); if (isNew) all.unshift(g); else all[idx] = g;
@@ -933,6 +944,189 @@ function openGoalForm(g0, idx) {
   });
   const del = document.getElementById('gl-del');
   if (del) del.addEventListener('click', () => { if (!confirm(t('¿Eliminar este objetivo?'))) return; const all = goalsAll(); all.splice(idx, 1); goalsSave(all); try { renderHoyDash(); } catch (e) {} try { renderMas(); } catch (e) {} openGoals(); });
+}
+
+// Objetivos que puso un especialista: se copian a los del atleta y se actualizan si él los cambia.
+function asgApplyGoals() {
+  const list = asgList().filter(a => a.kind === 'goal'), want = new Map(list.map(a => ['asg_' + a.id, a]));
+  let all = goalsAll(), ch = false;
+  all = all.filter(g => { if (!g.assigned || want.has(g.id)) return true; ch = true; if (g.done) { g.by = g.assigned.by; delete g.assigned; return true; } return false; });
+  want.forEach((a, id) => {
+    const sig = asgSig(a), cur = all.find(g => g.id === id), def = JSON.parse(JSON.stringify(a.payload || {}));
+    if (cur && cur.assigned && cur.assigned.sig === sig) return;
+    const g = Object.assign({}, def, { id, created: cur ? cur.created : keyDate(), assigned: { by: a.author_name || '', role: a.role, sig } });
+    if (cur && cur.target === def.target) ['start', 'cur', 'done', 'weeks', 'snap'].forEach(k => { if (cur[k] != null) g[k] = cur[k]; });
+    else if (g.type !== 'custom') { g.start = null; const s0 = goalState(g).cur; g.start = s0 == null ? null : s0; }
+    if (cur) all[all.indexOf(cur)] = g; else all.unshift(g);
+    ch = true;
+  });
+  if (ch) goalsSave(all);
+  return ch;
+}
+// Vista del especialista: los objetivos del atleta con el avance que su app calculó.
+function goalsClientHtml(D) {
+  const all = Array.isArray(D.goals) ? D.goals : [];
+  if (!all.length) return '';
+  const row = g => { const sn = g.snap || { p: g.done ? 100 : 0, c: '—', t: '' }, done = !!g.done || (g.type === 'sessions' && sn.p >= 100);
+    return `<div class="hd-goal${done ? ' done' : ''}"><div class="goal-v"><span><b${g.title || g.type === 'pr' ? ' translate="no"' : ''}>${escapeHtml(goalTitle(g))}</b>${g.assigned ? ' <span class="gym-tag">Tuyo</span>' : ''}</span><span translate="no">${escapeHtml(sn.c)} / ${escapeHtml(sn.t)}</span></div><div class="goal-bar"><i style="width:${sn.p}%"></i></div>
+      <div class="goal-d"><span>${goalKicker(g)}</span>${g.done ? ` · <span>Logrado el</span> <span translate="no">${escapeHtml(antDate(g.done))}</span>` : ` · <span translate="no">${sn.p}%</span>`}${g.due && !g.done ? ` · <span>Fecha límite</span> <span translate="no">${escapeHtml(antDate(g.due))}</span>` : ''}</div></div>`; };
+  return `<div class="sp-card"><div class="sp-card-n">Objetivos</div>${all.filter(g => !g.done).map(row).join('')}${all.filter(g => g.done).map(row).join('')}</div>`;
+}
+
+// ============================================================
+// FASES DEL PLAN (periodización): volumen, definición, mantenimiento, semana pico…
+// Cada fase tiene fechas y, si se quiere, sus propias calorías, macros y ritmo de peso.
+// ============================================================
+const PHASE_TYPES = [
+  ['bulk', 'Volumen', 1], ['cut', 'Definición', -1], ['maintain', 'Mantenimiento', 0], ['recomp', 'Recomposición', 0], ['reverse', 'Dieta inversa', 0],
+  ['peak', 'Semana pico', 0], ['deload', 'Descarga', 0], ['comp', 'Competencia', 0], ['off', 'Transición', 0],
+];
+const PHASE_BY = {}; PHASE_TYPES.forEach(x => { PHASE_BY[x[0]] = x; });
+function phasesAll() { const p = S.get('phases', null); return (Array.isArray(p) ? p : []).slice().sort((a, b) => String(a.start).localeCompare(String(b.start))); }
+function phasesSave(p) { S.set('phases', p); }
+function phaseName(ph) { return ph.name || (PHASE_BY[ph.type] || [])[1] || ''; }
+function phaseAt(list, key) { key = key || keyDate(); const hit = list.filter(p => p.start <= key && key <= p.end); return hit.find(p => p.assigned) || hit[0] || null; }
+function phaseCurrent(key) { return phaseAt(phasesAll(), key); }
+function phaseDays(a, b) { return Math.round((parseKey(b).getTime() - parseKey(a).getTime()) / 864e5); }
+function phaseInfo(ph, key) {
+  key = key || keyDate(); const total = phaseDays(ph.start, ph.end) + 1, gone = Math.max(0, Math.min(total, phaseDays(ph.start, key) + 1));
+  return { total, gone, left: Math.max(0, total - gone), weeks: Math.max(1, Math.ceil(total / 7)), week: Math.max(1, Math.min(Math.ceil(total / 7), Math.ceil(gone / 7))), pct: Math.round(gone / total * 100), state: key < ph.start ? 'next' : key > ph.end ? 'past' : 'now' };
+}
+// ¿El peso va al ritmo que pide la fase? (ritmo en % del peso por semana)
+function phasePace(ph, wlog) {
+  if (ph.rate == null || ph.rate === '') return null;
+  const tr = wtTrend(wlog || {}); if (tr.rate == null) return null;
+  const want = +ph.rate, d = tr.rate - want;
+  if (Math.abs(d) <= 0.25) return { cls: 'ok', text: 'En ritmo', rate: tr.rate };
+  const slow = want < 0 ? d > 0 : want > 0 ? d < 0 : null;
+  return { cls: 'warn', text: slow == null ? 'Fuera de ritmo' : slow ? 'Más lento que el plan' : 'Más rápido que el plan', rate: tr.rate };
+}
+function phaseRateText(r) { r = +r; return `${r > 0 ? '+' : ''}${(Math.round(r * 100) / 100).toLocaleString(_loc())} %`; }
+function phaseDatesText(ph) { const f = { day: 'numeric', month: 'short' }; try { return parseKey(ph.start).toLocaleDateString(_loc(), f) + ' – ' + parseKey(ph.end).toLocaleDateString(_loc(), Object.assign({ year: 'numeric' }, f)); } catch (e) { return ph.start + ' – ' + ph.end; } }
+function phaseMacroLine(ph) {
+  if (!(+ph.kcal > 0)) return '';
+  return `<span translate="no">${(+ph.kcal).toLocaleString(_loc())} kcal</span>${+ph.protein ? ` · <span translate="no" style="color:var(--c-prot)">P ${+ph.protein} g</span>` : ''}${+ph.carbs ? ` · <span translate="no" style="color:var(--c-carb)">C ${+ph.carbs} g</span>` : ''}${+ph.fat ? ` · <span translate="no" style="color:var(--c-fat)">G ${+ph.fat} g</span>` : ''}`;
+}
+function phaseTimelineHtml(list, key) {
+  if (!list.length) return '';
+  key = key || keyDate(); const a = list[0].start, b = list.reduce((m, p) => p.end > m ? p.end : m, list[0].end), span = phaseDays(a, b) + 1;
+  const pos = k => Math.max(0, Math.min(100, phaseDays(a, k) / span * 100));
+  return `<div class="ph-tl">${list.map(p => `<i class="tl-${phaseInfo(p, key).state}" style="left:${pos(p.start)}%;width:${Math.max(1.5, (phaseDays(p.start, p.end) + 1) / span * 100)}%"></i>`).join('')}${key >= a && key <= b ? `<b style="left:${pos(key)}%"></b>` : ''}</div>
+    <div class="ph-tl-l"><span translate="no">${escapeHtml(antDate(a))}</span><span translate="no">${escapeHtml(antDate(b))}</span></div>`;
+}
+function phaseCardHtml(ph, i, key, wlog) {
+  const inf = phaseInfo(ph, key), pace = inf.state === 'now' ? phasePace(ph, wlog) : null, mac = phaseMacroLine(ph);
+  return `<div class="goal phz phz-${inf.state}" data-ph="${i}"><div class="goal-top"><div><div class="goal-k">${(PHASE_BY[ph.type] || [])[1] || ''}${ph.assigned ? ` · <span>De</span> <span translate="no">${escapeHtml(ph.assigned.by || '')}</span>` : ''}</div><div class="goal-t"${ph.name ? ' translate="no"' : ''}>${escapeHtml(phaseName(ph))}</div></div>
+      ${inf.state === 'now' ? '<span class="hd-badge ok">Ahora</span>' : inf.state === 'next' ? '<span class="hd-badge">Próxima</span>' : '<span class="hd-badge">Terminada</span>'}</div>
+    <div class="goal-d" translate="no">${escapeHtml(phaseDatesText(ph))} · ${inf.weeks} <span translate="yes">${inf.weeks === 1 ? 'semana' : 'semanas'}</span></div>
+    ${inf.state === 'now' ? `<div class="goal-v"><span><span>Semana</span> <b translate="no">${inf.week}</b> <span>de</span> <b translate="no">${inf.weeks}</b></span><span><span>Faltan</span> <b translate="no">${inf.left}</b> <span>${inf.left === 1 ? 'día' : 'días'}</span></span></div><div class="goal-bar"><i style="width:${inf.pct}%"></i></div>` : ''}
+    ${mac ? `<div class="goal-d">${mac}</div>` : ''}
+    ${ph.rate != null && ph.rate !== '' ? `<div class="goal-d"><span>Ritmo de peso</span>: <span translate="no">${phaseRateText(ph.rate)}</span> <span>por semana</span>${pace ? ` · <span class="gym-tag ${pace.cls === 'ok' ? 'good' : 'warn'}">${pace.text}</span> <span translate="no">(${phaseRateText(pace.rate)})</span>` : ''}</div>` : ''}
+    ${ph.note ? `<div class="goal-d" style="color:var(--text-2)" translate="no">${escapeHtml(ph.note)}</div>` : ''}</div>`;
+}
+function phasesSummary() { const c = phaseCurrent(); if (!c) return ''; const inf = phaseInfo(c); return `${phaseName(c)} · ${t('Semana')} ${inf.week} ${t('de')} ${inf.weeks}`; }
+function phaseHoyCard() {
+  const list = phasesAll(), c = phaseAt(list), key = keyDate();
+  if (!c) { const nx = list.find(p => p.start > key); if (!nx) return ''; return `<div class="hd-card" data-hd-phase="1" style="cursor:pointer;"><div class="hd-k"><span>Fase del plan</span><span class="hd-badge">Próxima</span></div><div class="hd-big" style="font-size:20px;"${nx.name ? ' translate="no"' : ''}>${escapeHtml(phaseName(nx))}</div><div class="goal-d"><span>Empieza el</span> <span translate="no">${escapeHtml(antDate(nx.start))}</span></div></div>`; }
+  const inf = phaseInfo(c), pace = phasePace(c, S.get('weight_log', {}) || {}), mac = phaseMacroLine(c), nx = list.find(p => p.start > c.end);
+  return `<div class="hd-card" data-hd-phase="1" style="cursor:pointer;"><div class="hd-k"><span>Fase del plan</span>${pace ? `<span class="hd-badge ${pace.cls}">${pace.text}</span>` : ''}</div>
+    <div class="hd-big" style="font-size:20px;"${c.name ? ' translate="no"' : ''}>${escapeHtml(phaseName(c))}</div>
+    <div class="goal-v" style="margin-top:6px;"><span><span>Semana</span> <b translate="no">${inf.week}</b> <span>de</span> <b translate="no">${inf.weeks}</b></span><span><span>Faltan</span> <b translate="no">${inf.left}</b> <span>${inf.left === 1 ? 'día' : 'días'}</span></span></div>
+    <div class="goal-bar"><i style="width:${inf.pct}%"></i></div>
+    ${mac ? `<div class="goal-d">${mac}</div>` : ''}${nx ? `<div class="goal-d"><span>Sigue</span>: <span${nx.name ? ' translate="no"' : ''}>${escapeHtml(phaseName(nx))}</span> · <span translate="no">${escapeHtml(antDate(nx.start))}</span></div>` : ''}</div>`;
+}
+// Lista y editor. Sin ctx trabaja sobre las fases propias; con ctx (especialista) sobre el plan que le asigna al atleta.
+function openPhases(ctx) {
+  const mine = !ctx, list = mine ? phasesAll() : ctx.list.slice().sort((a, b) => String(a.start).localeCompare(String(b.start)));
+  const wlog = mine ? (S.get('weight_log', {}) || {}) : (ctx.wlog || {});
+  openSheet(mine ? 'Fases del plan' : 'Fases del plan', `<button class="btn-primary" id="ph-new" style="width:100%;margin-bottom:14px;">Nueva fase</button>
+    ${list.length ? phaseTimelineHtml(list) + list.map((p, i) => phaseCardHtml(p, i, null, wlog)).join('') : `<div class="sp-empty">${mine ? 'Divide tu plan en etapas con fechas: volumen, definición, mantenimiento, semana pico. Cada fase puede tener sus calorías y su ritmo de peso, y la app cambia sola tus metas cuando toca.' : 'Arma las etapas del plan de tu atleta. Las ve en su app y sus metas de nutrición cambian solas con cada fase.'}</div>`}`);
+  document.getElementById('ph-new').addEventListener('click', () => { const last = list[list.length - 1], st = last ? keyDate(new Date(parseKey(last.end).getTime() + 864e5)) : keyDate(); openPhaseForm({ type: 'cut', start: st, end: keyDate(new Date(parseKey(st).getTime() + 83 * 864e5)) }, -1, list, ctx); });
+  document.querySelectorAll('[data-ph]').forEach(c => c.addEventListener('click', () => openPhaseForm(list[+c.dataset.ph], +c.dataset.ph, list, ctx)));
+}
+function openPhaseForm(p0, idx, list, ctx) {
+  const ph = JSON.parse(JSON.stringify(p0)), isNew = idx < 0, ro = !ctx && !!ph.assigned;
+  const inp = (id, label, unit, val, ph2, mode) => `<label class="ant-f"><span>${label}</span><span class="ant-in"><input id="${id}" inputmode="${mode || 'decimal'}" value="${val == null ? '' : escapeHtml(String(val))}" placeholder="${ph2 || ''}"${ro ? ' disabled' : ''}>${unit ? `<i>${unit}</i>` : ''}</span></label>`;
+  openSheet(isNew ? 'Nueva fase' : ro ? 'Fase del plan' : 'Editar fase', `<div class="ant-ed act-ed">
+    ${ro ? '<div class="fit-note" style="margin-bottom:12px;">Esta fase la definió tu especialista; solo él puede cambiarla.</div>' : ''}
+    <div class="chips small" id="ph-type" style="flex-wrap:wrap;margin-bottom:12px;">${PHASE_TYPES.map(([k, n]) => `<button type="button" class="chip${ph.type === k ? ' selected' : ''}" data-v="${k}"${ro ? ' disabled' : ''}>${n}</button>`).join('')}</div>
+    <label class="ant-f col"><span>Nombre (opcional)</span><input class="act-tx" id="ph-name" maxlength="50" value="${escapeHtml(ph.name || '')}" placeholder="Ej. Definición rumbo a la competencia"${ro ? ' disabled' : ''}></label>
+    <label class="ant-f"><span>Empieza</span><span class="ant-in"><input type="date" id="ph-start" value="${escapeHtml(ph.start || '')}"${ro ? ' disabled' : ''}></span></label>
+    <label class="ant-f"><span>Termina</span><span class="ant-in"><input type="date" id="ph-end" value="${escapeHtml(ph.end || '')}"${ro ? ' disabled' : ''}></span></label>
+    <div class="goal-d" id="ph-len" style="margin:0 0 6px;"></div>
+    <h3 class="ant-sub">Nutrición de la fase (opcional)</h3>
+    ${inp('ph-kcal', 'Calorías por día', 'kcal', ph.kcal || '', '', 'numeric')}${inp('ph-p', 'Proteína', 'g', ph.protein || '', '', 'numeric')}${inp('ph-c', 'Carbohidratos', 'g', ph.carbs || '', '', 'numeric')}${inp('ph-f', 'Grasa', 'g', ph.fat || '', '', 'numeric')}
+    <div class="goal-d" style="margin:0 0 6px;">Si pones calorías, mientras dure la fase reemplazan la meta diaria de la pestaña Comida.</div>
+    <h3 class="ant-sub">Ritmo de peso (opcional)</h3>
+    ${inp('ph-rate', 'Cambio de peso por semana', '%', ph.rate == null ? '' : ph.rate, '-0.7', 'text')}
+    <div class="goal-d" style="margin:0 0 6px;">En % de tu peso. Negativo para bajar, positivo para subir. Se compara con tu promedio de 7 días.</div>
+    <label class="ant-f col"><span>Notas</span><textarea class="act-tx" id="ph-note" rows="3" maxlength="400"${ro ? ' disabled' : ''}>${escapeHtml(ph.note || '')}</textarea></label>
+    ${!isNew && !ro ? '<button class="btn-secondary" id="ph-del" style="width:100%;margin-top:12px;color:#DC2626;">Eliminar fase</button>' : ''}<p class="auth-msg" id="ph-msg"></p></div>`, ro ? null : async () => {
+    const msg = document.getElementById('ph-msg'), v = id => document.getElementById(id).value.trim(), n = id => { const x = parseFloat(v(id).replace(',', '.').replace('−', '-')); return isFinite(x) ? x : null; };
+    ph.type = (document.querySelector('#ph-type .chip.selected') || {}).dataset ? document.querySelector('#ph-type .chip.selected').dataset.v : ph.type;
+    ph.name = v('ph-name'); ph.start = v('ph-start'); ph.end = v('ph-end'); ph.note = v('ph-note');
+    if (!ph.start || !ph.end || ph.end < ph.start) { msg.textContent = t('Revisa las fechas: la fase debe terminar después de empezar.'); return; }
+    if (list.some((o, i) => i !== idx && !(mineOnly(o)) && o.start <= ph.end && ph.start <= o.end)) { msg.textContent = t('Esas fechas se enciman con otra fase.'); return; }
+    ph.kcal = n('ph-kcal'); ph.protein = n('ph-p'); ph.carbs = n('ph-c'); ph.fat = n('ph-f'); ph.rate = n('ph-rate');
+    if (ph.kcal != null && (ph.kcal < 800 || ph.kcal > 8000)) { msg.textContent = t('Revisa los números: alguno está fuera de rango.'); return; }
+    if (ph.rate != null && Math.abs(ph.rate) > 3) { msg.textContent = t('Revisa los números: alguno está fuera de rango.'); return; }
+    ['kcal', 'protein', 'carbs', 'fat', 'rate', 'name', 'note'].forEach(k => { if (ph[k] == null || ph[k] === '') delete ph[k]; });
+    if (isNew) ph.id = uid();
+    const out = list.slice(); if (isNew) out.push(ph); else out[idx] = ph;
+    await phasesCommit(out, ctx, msg);
+  });
+  function mineOnly(o) { return !ctx && !!o.assigned !== !!ph.assigned; } // las fases propias no chocan con las del especialista (mandan las de él)
+  const len = () => { const a = document.getElementById('ph-start').value, b = document.getElementById('ph-end').value, el = document.getElementById('ph-len'); if (!a || !b || b < a) { el.textContent = ''; return; } const d = phaseDays(a, b) + 1; el.innerHTML = `<span translate="no">${Math.ceil(d / 7)}</span> <span>${Math.ceil(d / 7) === 1 ? 'semana' : 'semanas'}</span> · <span translate="no">${d}</span> <span>${d === 1 ? 'día' : 'días'}</span>`; };
+  ['ph-start', 'ph-end'].forEach(id => document.getElementById(id).addEventListener('change', len)); len();
+  document.querySelectorAll('#ph-type .chip').forEach(c => c.addEventListener('click', () => { document.querySelectorAll('#ph-type .chip').forEach(x => x.classList.toggle('selected', x === c)); }));
+  const del = document.getElementById('ph-del');
+  if (del) del.addEventListener('click', async () => { if (!confirm(t('¿Eliminar esta fase?'))) return; const out = list.slice(); out.splice(idx, 1); await phasesCommit(out, ctx, document.getElementById('ph-msg')); });
+}
+async function phasesCommit(out, ctx, msg) {
+  if (!ctx) { phasesSave(out); try { renderHoyDash(); } catch (e) {} try { renderMas(); } catch (e) {} try { renderComida(); } catch (e) {} openPhases(); return; }
+  const sv = document.getElementById('sheet-save'); if (sv) sv.disabled = true;
+  try { await ctx.save(out); ctx.list = out; if (sv) sv.disabled = false; openPhases(ctx); } catch (e) { if (msg) msg.textContent = authErr(e.code); if (sv) sv.disabled = false; }
+}
+// Fases que definió un especialista: reemplazan a las suyas anteriores en el teléfono del atleta.
+function asgApplyPhases() {
+  const a = asgList().filter(x => x.kind === 'phase').sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)))[0];
+  const all = S.get('phases', null), cur = Array.isArray(all) ? all : [], own = cur.filter(p => !p.assigned), had = cur.filter(p => p.assigned);
+  const sig = a ? asgSig(a) : '';
+  if (!a) { if (!had.length) return false; phasesSave(own); return true; }
+  if (had.length && had.every(p => p.assigned.sig === sig) && had.length === ((a.payload || {}).phases || []).length) return false;
+  const inc = ((a.payload || {}).phases || []).map(p => Object.assign({}, p, { id: 'asg_' + (p.id || uid()), assigned: { by: a.author_name || '', role: a.role, sig } }));
+  phasesSave(own.concat(inc));
+  return true;
+}
+function asgApplyPro() { let ch = false; try { ch = asgApplyGoals() || ch; } catch (e) {} try { ch = asgApplyPhases() || ch; } catch (e) {} return ch; }
+// Metas de nutrición de la fase en curso (si la fase las define).
+function phaseTargets() { try { const c = phaseCurrent(); return c && +c.kcal > 0 ? { kcal: +c.kcal, protein: +c.protein || 0, carbs: +c.carbs || 0, fat: +c.fat || 0, name: phaseName(c) } : null; } catch (e) { return null; } }
+// Vista del especialista: fase en curso del atleta.
+function phaseClientHtml(D) {
+  const list = (Array.isArray(D.phases) ? D.phases : []).slice().sort((a, b) => String(a.start).localeCompare(String(b.start)));
+  if (!list.length) return '';
+  const c = phaseAt(list), wl = D.weight_log || {};
+  return `<div class="sp-card"><div class="sp-card-n">Fases del plan</div>${phaseTimelineHtml(list)}${c ? phaseCardHtml(c, 0, null, wl).replace('class="goal phz', 'class="goal phz flat') : '<div class="sp-card-d">Sin fase en curso hoy.</div>'}</div>`;
+}
+// Botones del especialista en la ficha del atleta: poner objetivo, armar fases, editar lo ya asignado.
+function proWireClient(l, asg, D) {
+  const s = authGet() || {}, roles = linkRoles(l), back = () => { closeSheet(); _sp.tab = 'plans'; spOpenClient(l); };
+  const post = (kind, name, payload) => sbRest('assignments', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: { client_id: l.client_id, role: roles.includes('coach') ? 'coach' : roles[0], kind, name: String(name || kind).slice(0, 80), payload, author_name: s.name || s.user } });
+  const patch = (id, name, payload) => sbRest('assignments?id=eq.' + encodeURIComponent(id), { method: 'PATCH', body: { name: String(name).slice(0, 80), payload }, headers: { Prefer: 'return=minimal' } });
+  const routines = Array.isArray(D.gym_routines) ? D.gym_routines : [];
+  const gb = document.getElementById('sp-goal-new');
+  if (gb) gb.addEventListener('click', () => openGoalTypePicker({ routines, save: async (g, name) => { await post('goal', name, g); if (l.id) { try { await ntPost(l.id, t('Te puse un objetivo nuevo.'), { t: 'asg', kind: 'goal', name }); } catch (e) {} } back(); } }));
+  document.querySelectorAll('[data-asg-goal]').forEach(b => b.addEventListener('click', () => { const a = asg.find(x => x.id === b.dataset.asgGoal); if (a) openGoalForm(a.payload, 0, { routines, save: async (g, name) => { await patch(a.id, name, g); back(); } }); }));
+  const phA = asg.find(x => x.kind === 'phase');
+  const openPh = () => { const ctx = { list: phA ? ((phA.payload || {}).phases || []) : [], wlog: D.weight_log || {}, id: phA ? phA.id : null, dirty: false };
+    ctx.save = async out => { const payload = { phases: out.map(p => { const c = Object.assign({}, p); delete c.assigned; return c; }) };
+      if (ctx.id) await patch(ctx.id, 'Fases del plan', payload);
+      else { const r = await sbRest('assignments', { method: 'POST', headers: { Prefer: 'return=representation' }, body: { client_id: l.client_id, role: roles.includes('coach') ? 'coach' : 'nutriologo', kind: 'phase', name: 'Fases del plan', payload, author_name: s.name || s.user } }); ctx.id = r && r[0] && r[0].id; if (!ctx.id) { try { const q = await sbRest('assignments?select=id&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent(s.uid) + '&kind=eq.phase&status=eq.active&order=created_at.desc&limit=1'); ctx.id = q && q[0] && q[0].id; } catch (e) {} } if (l.id) { try { await ntPost(l.id, t('Te armé las fases de tu plan.'), { t: 'asg', kind: 'phase', name: 'Fases del plan' }); } catch (e) {} } }
+      ctx.dirty = true; };
+    openPhases(ctx);
+    const obs = setInterval(() => { if (!document.getElementById('sheet').classList.contains('show')) { clearInterval(obs); if (ctx.dirty) { _sp.tab = 'plans'; spOpenClient(l); } } }, 400); };
+  const pb = document.getElementById('sp-phase-edit'); if (pb) pb.addEventListener('click', openPh);
+  document.querySelectorAll('[data-asg-phase]').forEach(b => b.addEventListener('click', openPh));
 }
 
 // ============================================================
