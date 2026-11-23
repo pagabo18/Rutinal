@@ -3756,6 +3756,61 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Personalizar": {
+   "en": "Customize",
+   "pt-BR": "Personalizar",
+   "fr": "Personnaliser"
+  },
+  "Apaga lo que no uses: desaparece del menú y de Hoy. Tus datos no se borran y puedes volver a encenderlo cuando quieras.": {
+   "en": "Turn off what you don't use: it disappears from the menu and Today. Your data isn't deleted and you can turn it back on anytime.",
+   "pt-BR": "Desligue o que não usa: some do menu e de Hoje. Seus dados não são apagados e você pode religar quando quiser.",
+   "fr": "Désactivez ce que vous n'utilisez pas : cela disparaît du menu et d'Aujourd'hui. Vos données ne sont pas supprimées et vous pouvez le réactiver à tout moment."
+  },
+  "Rutinas, registro de entrenamiento y progreso": {
+   "en": "Routines, workout logging and progress",
+   "pt-BR": "Rotinas, registro de treino e progresso",
+   "fr": "Routines, suivi d'entraînement et progression"
+  },
+  "Registro de alimentos, metas y plan de alimentación": {
+   "en": "Food logging, goals and meal plan",
+   "pt-BR": "Registro de alimentos, metas e plano alimentar",
+   "fr": "Suivi alimentaire, objectifs et plan alimentaire"
+  },
+  "Hábitos del día, rachas e hidratación": {
+   "en": "Daily habits, streaks and hydration",
+   "pt-BR": "Hábitos do dia, sequências e hidratação",
+   "fr": "Habitudes du jour, séries et hydratation"
+  },
+  "Peso, medidas y composición corporal": {
+   "en": "Weight, measurements and body composition",
+   "pt-BR": "Peso, medidas e composição corporal",
+   "fr": "Poids, mesures et composition corporelle"
+  },
+  "El reporte semanal para tu especialista": {
+   "en": "The weekly report for your specialist",
+   "pt-BR": "O relatório semanal para seu especialista",
+   "fr": "Le bilan hebdomadaire pour votre spécialiste"
+  },
+  "Citas con tus especialistas": {
+   "en": "Appointments with your specialists",
+   "pt-BR": "Consultas com seus especialistas",
+   "fr": "Rendez-vous avec vos spécialistes"
+  },
+  "Entrenamiento": {
+   "en": "Training",
+   "pt-BR": "Treino",
+   "fr": "Entraînement"
+  },
+  "Solo palomear ejercicios": {
+   "en": "Just tick off exercises",
+   "pt-BR": "Só marcar exercícios",
+   "fr": "Cocher seulement les exercices"
+  },
+  "Sin anotar peso ni repeticiones: una palomita por ejercicio": {
+   "en": "No weight or reps to enter: one tick per exercise",
+   "pt-BR": "Sem anotar peso nem repetições: uma marca por exercício",
+   "fr": "Sans saisir poids ni répétitions : une coche par exercice"
+  },
   "incluida": {
    "en": "included",
    "pt-BR": "incluída",

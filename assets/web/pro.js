@@ -524,6 +524,44 @@ function bodyHoyCard() {
 }
 
 // ============================================================
+// PERSONALIZAR: cada persona enciende o apaga secciones de su perfil de atleta.
+// ============================================================
+const MOD_LIST = [
+  ['gym', 'Gym', 'Rutinas, registro de entrenamiento y progreso'],
+  ['comida', 'Comida', 'Registro de alimentos, metas y plan de alimentación'],
+  ['habitos', 'Hábitos', 'Hábitos del día, rachas e hidratación'],
+  ['pomo', 'Reloj', 'Pomodoro y temporizador'],
+  ['cal', 'Calendario', 'Tu día, semana y mes'],
+  ['cuerpo', 'Tu cuerpo', 'Peso, medidas y composición corporal'],
+  ['checkin', 'Check-in semanal', 'El reporte semanal para tu especialista'],
+  ['agenda', 'Agenda', 'Citas con tus especialistas'],
+  ['fotos', 'Fotos de progreso', ''],
+];
+function modPrefs() { const p = S.get('app_prefs', null); return p && typeof p === 'object' ? p : {}; }
+function modOn(k) { const p = modPrefs(); return k === 'gymSimple' ? !!p.gymSimple : p[k] !== false; }
+function modApply() {
+  const h = document.documentElement;
+  MOD_LIST.forEach(([k]) => h.classList.toggle('off-' + k, !modOn(k)));
+  h.classList.toggle('gym-simple', modOn('gymSimple'));
+}
+function modSet(k, on) {
+  const p = Object.assign({}, modPrefs());
+  if (k === 'gymSimple') { if (on) p.gymSimple = true; else delete p.gymSimple; } else if (on) delete p[k]; else p[k] = false;
+  S.set('app_prefs', p); modApply();
+  try { renderHoyDash(); } catch (e) {} try { if (typeof renderMas === 'function') renderMas(); } catch (e) {}
+}
+function modRenderSettings() {
+  const el = document.getElementById('mods-box'); if (!el) return;
+  const sw = (k, t1, t2, on) => `<label class="mod-row"><span><b>${t1}</b>${t2 ? `<small>${t2}</small>` : ''}</span><input type="checkbox" class="mod-sw" data-mod="${k}"${on ? ' checked' : ''}></label>`;
+  el.innerHTML = `<div class="mod-hint">Apaga lo que no uses: desaparece del menú y de Hoy. Tus datos no se borran y puedes volver a encenderlo cuando quieras.</div>
+    ${MOD_LIST.map(([k, n, d]) => sw(k, n, d, modOn(k))).join('')}
+    <div class="setting-label" style="margin-top:16px;">Entrenamiento</div>
+    ${sw('gymSimple', 'Solo palomear ejercicios', 'Sin anotar peso ni repeticiones: una palomita por ejercicio', modOn('gymSimple'))}`;
+  el.querySelectorAll('[data-mod]').forEach(i => i.addEventListener('change', () => modSet(i.dataset.mod, i.checked)));
+}
+try { modApply(); } catch (e) {}
+
+// ============================================================
 // PESO CON TENDENCIA Y CHECK-IN SEMANAL
 // El peso de un día engaña; lo que se decide es con el promedio de 7 días y su ritmo de cambio.
 // El check-in es el reporte semanal del atleta: datos automáticos + cómo se sintió; el especialista responde.

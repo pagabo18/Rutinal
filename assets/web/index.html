@@ -2690,6 +2690,25 @@
   .ant-fm b { display: block; font-size: 14px; font-weight: 600; } .ant-fm small { display: block; font-size: 11px; color: var(--text-3); line-height: 1.3; }
   .ant-fm em { font-style: normal; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-3); } .ant-fm.on em { color: var(--text); }
   .ant-fmt { display: flex; justify-content: space-between; align-items: baseline; background: var(--text); color: var(--bg); border-radius: 12px; padding: 10px 12px; margin: 8px 0 12px; font-size: 13px; } .ant-fmt b { font-size: 18px; }
+
+  /* ===== Personalizar: secciones apagadas ===== */
+  html.off-gym:not([data-mode="spec"]) nav button[data-tab="gym"], html.off-comida:not([data-mode="spec"]) nav button[data-tab="comida"],
+  html.off-habitos:not([data-mode="spec"]) nav button[data-tab="habitos"], html.off-pomo:not([data-mode="spec"]) nav button[data-tab="pomo"],
+  html.off-cal:not([data-mode="spec"]) nav button[data-tab="cal"],
+  html.off-comida:not([data-mode="spec"]) .mas-row[data-mas="nutri"], html.off-habitos:not([data-mode="spec"]) .mas-row[data-mas="habits"],
+  html.off-pomo:not([data-mode="spec"]) .mas-row[data-mas="pomo"], html.off-cal:not([data-mode="spec"]) .mas-row[data-mas="cal"],
+  html.off-agenda:not([data-mode="spec"]) .mas-row[data-mas="agenda"], html.off-fotos:not([data-mode="spec"]) .mas-row[data-mas="photos"],
+  html.off-cuerpo:not([data-mode="spec"]) .mas-row[data-mas="assess"], html.off-checkin:not([data-mode="spec"]) .mas-row[data-mas="checkins"] { display: none !important; }
+  html.off-pomo.off-cal:not([data-mode="spec"]) .mas-card:has([data-mas="pomo"]), html.off-pomo.off-cal:not([data-mode="spec"]) h2:has(+ .mas-card [data-mas="pomo"]) { display: none; }
+  .mod-hint { font-size: 12px; color: var(--text-3); line-height: 1.45; margin-bottom: 6px; }
+  .mod-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--border); cursor: pointer; }
+  .mod-row b { display: block; font-size: 14px; font-weight: 600; } .mod-row small { display: block; font-size: 12px; color: var(--text-3); }
+  .mod-sw { appearance: none; -webkit-appearance: none; width: 44px; height: 26px; border-radius: 999px; background: var(--surface-3, #D4D4D8); position: relative; flex: 0 0 auto; cursor: pointer; transition: background .15s; margin: 0; }
+  .mod-sw::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .15s; }
+  .mod-sw:checked { background: #16A34A; } .mod-sw:checked::after { transform: translateX(18px); }
+  .gym-ex.simple .gym-ex-head { cursor: default; }
+  .gym-quick { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--border-strong); background: transparent; color: transparent; font-size: 20px; font-weight: 700; cursor: pointer; flex: 0 0 auto; }
+  .gym-quick.on { background: #16A34A; border-color: #16A34A; color: #fff; }
 </style>
 </head>
 <body>
@@ -3260,6 +3279,10 @@ try {
           <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
           <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
         </div>
+      </div>
+      <div class="setting">
+        <div class="setting-label">Personalizar</div>
+        <div id="mods-box"></div>
       </div>
       <div class="setting">
         <div class="setting-label">Unidades</div>
@@ -5887,6 +5910,7 @@ function applyTheme(mode) {
   try { localStorage.setItem('theme', mode); } catch(e) {}
 }
 function renderAjustes() {
+  try { if (typeof modRenderSettings === 'function') modRenderSettings(); } catch (e) {}
   if (typeof authRenderAccount === 'function') authRenderAccount();
   document.querySelectorAll('[data-unit-k]').forEach(b => {
     b.classList.toggle('on', (S.get(b.dataset.unitK, 'kg') === 'lb' ? 'lb' : 'kg') === b.dataset.unitV);
@@ -10805,7 +10829,9 @@ function renderHoyDash() {
       return `<button class="hd-chat-row${un ? ' unread' : ''}" data-hd-chat="${i}"><span class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</span><span class="hd-chat-b"><b translate="no">${escapeHtml(l.name || '')}</b>
         <small translate="no">${n ? (n.author_id === s.uid ? `<span translate="yes">Tú</span>: ` : '') + escapeHtml(n.body) : `${linkRoles(l).map(r => `<span translate="yes">${escapeHtml(AUTH_SPECS[r] || r)}</span>`).join(' · ')} · <span translate="yes">Escríbele</span>`}</small></span>${un ? '<i class="hd-dot"></i>' : '<span class="mas-chev">›</span>'}</button>`; }).join('')}</div>`;
   } catch (e) {}
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${gym}${typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${appt}${chat}${food}${typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight}${week}`;
+  try { if (typeof modApply === 'function') modApply(); } catch (e) {}
+  const M = k => typeof modOn !== 'function' || modOn(k);
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${week}`;
   if (typeof ckWireHoy === 'function') ckWireHoy(el);
   el.querySelectorAll('[data-hd-ant]').forEach(c => c.addEventListener('click', e => { if (e.target.closest('button')) return; openMyAssessments(); }));
   el.querySelectorAll('[data-hd-agenda]').forEach(c => c.addEventListener('click', () => openAgenda()));
@@ -13485,6 +13511,10 @@ function openGymWorkout(routineId, dateKey, focusId) {
         </div>
         <div class="gym-ex-state${complete ? ' ok' : ''}">${complete ? '✓' : `${done}/${n}`}</div>
       </div>`;
+    if (typeof modOn === 'function' && modOn('gymSimple')) return `<div class="gym-ex simple${complete ? ' complete' : ''}" data-g="${gymExGroup(ex)}" data-ex-card="${ex.id}"><div class="gym-ex-head">
+        <div class="gym-ex-media" data-gym-info="${ex.id}">${gymMediaHtml(ex, 44)}</div>
+        <div class="gym-ex-body"><div class="gym-ex-name">${escapeHtml(ex.name)}</div><div class="gym-ex-sets">${escapeHtml(gymSetsText(ex.sets))}</div></div>
+        <button class="gym-quick${complete ? ' on' : ''}" data-gym-quick="${ex.id}" aria-label="Hecho">✓</button></div></div>`;
     if (!isOpen) return `<div class="gym-ex${complete ? ' complete' : ''}" data-ex-card="${ex.id}">${head}</div>`;
     const rows = Array.from({ length: n }, (_, i) => {
       const s = cur[i] || {};
@@ -13581,6 +13611,15 @@ function openGymWorkout(routineId, dateKey, focusId) {
     persist();
   };
   const bind = (sb) => {
+    sb.querySelectorAll('[data-gym-quick]').forEach(b => b.addEventListener('click', () => {
+      const ex = r.exercises.find(x => x.id === b.dataset.gymQuick); if (!ex) return;
+      const base = Math.max(1, gymTotalSets(ex)), was = exComplete(ex), arr = lg.ex[ex.id] || (lg.ex[ex.id] = []);
+      while (arr.length < base) arr.push({});
+      arr.forEach((st, i) => { st.done = !was; if (!was && !st.reps && i < base) { const rp = parseInt(gymSetRepsForIndex(ex, i), 10); if (rp) st.reps = String(rp); } });
+      if (!lg.start) lg.start = Date.now();
+      persist(); draw();
+    }));
+    sb.querySelectorAll('.gym-ex.simple [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => openGymExerciseInfo(r.id, m2.dataset.gymInfo, () => openGymWorkout(r.id, dateKey))));
     sb.querySelectorAll('[data-gym-toggle]').forEach(h => h.addEventListener('click', (ev) => {
       if (ev.target.closest('[data-gym-info]') && h.closest('.gym-ex.open')) return;
       openId = openId === h.dataset.gymToggle ? null : h.dataset.gymToggle;
