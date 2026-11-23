@@ -54,7 +54,13 @@ function antCalc(d) {
 
   // --- Índices de peso y talla ---
   if (w && hm) {
-    o.bmi = w / (hm * hm);
+    o.bmiStd = w / (hm * hm);
+    o.bmiNew = 1.3 * w / Math.pow(hm, 2.5); // Trefethen: corrige por estatura
+    o.ponderal = w / Math.pow(hm, 3);
+    o.bmiList = [{ id: 'bmi', name: 'IMC clásico (Quetelet)', v: o.bmiStd, note: 'kg / m²' }, { id: 'bmiNew', name: 'IMC corregido por talla (Trefethen)', v: o.bmiNew, note: '1.3 × kg / m^2.5' }];
+    const bsel = o.bmiList.filter(b => (d.bmiMethods || ['bmi']).includes(b.id));
+    o.bmiUsed = bsel.length ? bsel : [o.bmiList[0]];
+    o.bmi = o.bmiUsed.reduce((a, b) => a + b.v, 0) / o.bmiUsed.length;
     o.bmiClass = o.bmi < 18.5 ? 'Bajo peso' : o.bmi < 25 ? 'Normal' : o.bmi < 30 ? 'Sobrepeso' : o.bmi < 35 ? 'Obesidad I' : o.bmi < 40 ? 'Obesidad II' : 'Obesidad III';
     o.healthyMin = 18.5 * hm * hm; o.healthyMax = 24.9 * hm * hm;
   }
@@ -92,16 +98,34 @@ function antCalc(d) {
       ? 495 / (1.0324 - 0.19077 * Math.log10(v) + 0.15456 * Math.log10(hcm)) - 450
       : 495 / (1.29579 - 0.35004 * Math.log10(v) + 0.22100 * Math.log10(hcm)) - 450, male ? 'cuello, cintura, talla' : 'cuello, cintura, cadera, talla');
   }
+  if (age && all('abdominal', 'triceps', 'thigh', 'suprailiac')) {
+    const s = sum('abdominal', 'triceps', 'thigh', 'suprailiac');
+    add('jp4', 'Jackson-Pollock (4 pliegues)', male ? 0.29288 * s - 0.0005 * s * s + 0.15845 * age - 5.76377 : 0.29669 * s - 0.00043 * s * s + 0.02963 * age + 1.4072, 'abdominal, tríceps, muslo, cresta ilíaca');
+  }
+  if (male && all('thigh', 'subscapular')) add('sloan', 'Sloan (2 pliegues)', antSiri(1.1043 - 0.001327 * sk.thigh - 0.00131 * sk.subscapular), 'muslo, subescapular');
+  if (!male && all('suprailiac', 'triceps')) add('sloan', 'Sloan (2 pliegues)', antSiri(1.0764 - 0.00081 * sk.suprailiac - 0.00088 * sk.triceps), 'cresta ilíaca, tríceps');
+  if (hcm && gi.waist) add('rfm', 'Masa grasa relativa (RFM)', (male ? 64 : 76) - 20 * hcm / gi.waist, 'talla y cintura');
+  if (o.bmiStd && age) {
+    const b = o.bmiStd, sx = male ? 0 : 1;
+    add('cunbae', 'CUN-BAE (IMC, edad y sexo)', -44.988 + 0.503 * age + 10.689 * sx + 3.172 * b - 0.026 * b * b + 0.181 * b * sx - 0.02 * b * age - 0.005 * b * b * sx + 0.00021 * b * b * age, 'sin pliegues; no distingue músculo de grasa');
+    add('deurenberg', 'Deurenberg (IMC, edad y sexo)', 1.2 * b + 0.23 * age - 10.8 * (male ? 1 : 0) - 5.4, 'sin pliegues; no distingue músculo de grasa');
+  }
   if (+d.bfDevice > 0) add('device', 'Bioimpedancia / equipo', +d.bfDevice, 'medición directa');
-  if (o.bmi && age) o.bfBmi = 1.2 * o.bmi + 0.23 * age - 10.8 * (male ? 1 : 0) - 5.4; // Deurenberg: solo referencia
 
   // Método principal: el elegido, o el más completo disponible. El promedio se muestra aparte.
-  const pref = ['jp7', 'dw', 'jp3', 'yuhasz', 'faulkner', 'navy', 'device'];
-  const main = o.bf.find(b => b.id === d.method) || pref.map(id => o.bf.find(b => b.id === id)).find(Boolean) || null;
-  o.bfMain = main;
-  const skin = o.bf.filter(b => b.id !== 'device');
+  // % de grasa que se usa: el promedio de las fórmulas que el especialista marcó.
+  // Sin selección: la más completa con pliegues (o lo que haya).
+  const pref = ['jp7', 'dw', 'jp4', 'jp3', 'yuhasz', 'faulkner', 'sloan', 'navy', 'rfm', 'device', 'cunbae', 'deurenberg'];
+  o.bf.sort((x, y) => pref.indexOf(x.id) - pref.indexOf(y.id));
+  const chosen = Array.isArray(d.methods) && d.methods.length ? d.methods : (d.method ? [d.method] : null);
+  let used = chosen ? o.bf.filter(b => chosen.includes(b.id)) : [];
+  if (!used.length) { const m = pref.map(id => o.bf.find(b => b.id === id)).find(Boolean); used = m ? [m] : []; }
+  o.bfUsed = used; o.bfAuto = !chosen || !o.bf.some(b => chosen.includes(b.id));
+  const SK = ['jp7', 'dw', 'jp4', 'jp3', 'yuhasz', 'faulkner', 'sloan'], skin = o.bf.filter(b => SK.includes(b.id));
   o.bfAvg = skin.length ? skin.reduce((a, b) => a + b.pct, 0) / skin.length : null;
-  const pct = main ? main.pct : null;
+  o.bfAvgAll = o.bf.length ? o.bf.reduce((a, b) => a + b.pct, 0) / o.bf.length : null;
+  const pct = used.length ? used.reduce((a, b) => a + b.pct, 0) / used.length : null;
+  o.bfMain = !used.length ? null : used.length === 1 ? used[0] : { id: 'avg', name: 'Promedio de ' + used.length + ' fórmulas', pct };
   o.pct = pct;
   if (pct != null) {
     const cuts = male ? [6, 14, 18, 25] : [14, 21, 25, 32];
@@ -251,9 +275,12 @@ function antReportHtml(row, prevRow, all) {
   // Métodos de % de grasa
   let methods = '';
   if (c.bf.length) {
-    methods = `<table class="ant-t"><tbody>${c.bf.map(b => `<tr class="${c.bfMain && c.bfMain.id === b.id ? 'on' : ''}"><td><span>${b.name}</span>${c.bfMain && c.bfMain.id === b.id ? ' <em>principal</em>' : ''}<small>${b.sites}</small></td><td translate="no">${antN(b.pct, 1)} %</td></tr>`).join('')}
-      ${c.bf.filter(b => b.id !== 'device').length > 1 ? `<tr class="avg"><td><span>Promedio de los métodos</span></td><td translate="no">${antN(c.bfAvg, 1)} %</td></tr>` : ''}
-      ${c.bfBmi != null ? `<tr class="ref"><td><span>Estimado solo con IMC (Deurenberg)</span><small>referencia; no distingue músculo de grasa</small></td><td translate="no">${antN(c.bfBmi, 1)} %</td></tr>` : ''}</tbody></table>`;
+    const inU = b => c.bfUsed.some(u => u.id === b.id);
+    methods = `<table class="ant-t"><tbody>${c.bf.map(b => `<tr class="${inU(b) ? 'on' : 'off'}"><td><span>${b.name}</span>${inU(b) ? ` <em>${c.bfUsed.length > 1 ? 'incluida' : 'usada'}</em>` : ''}<small>${b.sites}</small></td><td translate="no">${antN(b.pct, 1)} %</td></tr>`).join('')}
+      ${c.bfUsed.length > 1 ? `<tr class="avg"><td><span>Promedio de las fórmulas elegidas</span><small><span translate="no">${c.bfUsed.length}</span> <span>fórmulas</span> · <span>es el % de grasa que usa todo el reporte</span></small></td><td translate="no">${antN(c.pct, 1)} %</td></tr>` : ''}
+      ${c.bf.length > 1 ? `<tr class="ref"><td><span>Promedio de todas</span></td><td translate="no">${antN(c.bfAvgAll, 1)} %</td></tr><tr class="ref"><td><span>Rango entre fórmulas</span></td><td translate="no">${antN(Math.min(...c.bf.map(b => b.pct)), 1)}–${antN(Math.max(...c.bf.map(b => b.pct)), 1)} %</td></tr>` : ''}</tbody></table>`;
+    if (c.bmiList) methods += `<div class="sp-card-n" style="margin-top:14px;">Índices de peso y talla</div><table class="ant-t"><tbody>${c.bmiList.map(b => `<tr class="${c.bmiUsed.some(u => u.id === b.id) ? 'on' : 'off'}"><td><span>${b.name}</span>${c.bmiUsed.some(u => u.id === b.id) ? ` <em>${c.bmiUsed.length > 1 ? 'incluida' : 'usada'}</em>` : ''}<small translate="no">${b.note}</small></td><td translate="no">${antN(b.v, 1)}</td></tr>`).join('')}
+      ${c.bmiUsed.length > 1 ? `<tr class="avg"><td><span>Promedio</span></td><td translate="no">${antN(c.bmi, 1)}</td></tr>` : ''}<tr class="ref"><td><span>Índice ponderal</span><small translate="no">kg / m³</small></td><td translate="no">${antN(c.ponderal, 1)}</td></tr></tbody></table>`;
   }
   // Distribución
   const dist = [];
@@ -297,7 +324,7 @@ function antReportHtml(row, prevRow, all) {
   }
   return `<div class="ant-h"><b>${escapeHtml(antDate(row.taken_on))}</b><span>${d.sex === 'F' ? 'Mujer' : 'Hombre'} · <span translate="no">${+d.age || '—'}</span> <span>años</span>${prevRow ? ` · <span>cambios vs.</span> ${escapeHtml(antDate(prevRow.taken_on))}` : ''}</span></div>
     <div class="ant-grid">${comp.join('')}</div>
-    ${sec('% de grasa por método', methods)}
+    ${sec('% de grasa por fórmula', methods)}
     ${dist.length ? `<div class="ant-grid">${dist.join('')}</div>` : ''}
     ${sec('Somatotipo (Heath-Carter)', som)}
     ${sec('Gasto energético en reposo', energy)}
@@ -361,15 +388,16 @@ function antOpenEditor(row) {
     </details>
     <details><summary>Perímetros <small>cm</small></summary>${fld('gi', ANT_GI, 'cm')}</details>
     <details><summary>Diámetros óseos <small>cm</small></summary><div class="ant-hint">Para el somatotipo.</div>${fld('bd', ANT_BD, 'cm')}</details>
+    <details open><summary>Fórmulas</summary><div class="ant-hint">Marca las fórmulas que quieres usar. El % de grasa y el IMC del reporte son el promedio de las que marques; si no marcas ninguna se usa la más completa.</div><div id="ant-forms"></div></details>
     <details><summary>Otros datos</summary>
       ${one('bfDevice', '% de grasa por bioimpedancia', '%', d.bfDevice)}${one('rhr', 'FC en reposo', 'lpm', d.rhr)}
       <div class="ant-f"><span>Presión arterial</span><span class="ant-in two"><input inputmode="numeric" data-ant="bpSys" value="${escapeHtml(String(d.bpSys || ''))}" placeholder="120"><b>/</b><input inputmode="numeric" data-ant="bpDia" value="${escapeHtml(String(d.bpDia || ''))}" placeholder="80"><i>mmHg</i></span></div>
       <label class="ant-f"><span>Nivel de actividad</span><span class="ant-in"><select id="ant-act">${ANT_ACT.map(([v, n]) => `<option value="${v}"${+d.activity === v ? ' selected' : ''}>${n}</option>`).join('')}</select></span></label>
       ${one('targetBf', '% de grasa objetivo', '%', d.targetBf)}
-      <label class="ant-f"><span>Método principal de % de grasa</span><span class="ant-in"><select id="ant-method"><option value="">Automático (el más completo)</option>${[['jp7', 'Jackson-Pollock 7'], ['dw', 'Durnin-Womersley'], ['jp3', 'Jackson-Pollock 3'], ['yuhasz', 'Yuhasz'], ['faulkner', 'Faulkner'], ['navy', 'Perímetros'], ['device', 'Bioimpedancia']].map(([v, n]) => `<option value="${v}"${d.method === v ? ' selected' : ''}>${n}</option>`).join('')}</select></span></label>
       <label class="ant-f col"><span>Notas</span><textarea id="ant-notes" rows="3" maxlength="800" placeholder="Condiciones de la medición, observaciones...">${escapeHtml(d.notes || '')}</textarea></label>
     </details>
     <p class="auth-msg" id="ant-msg"></p></div>`;
+  const sel = { bf: Array.isArray(d.methods) ? d.methods.slice() : (d.method ? [d.method] : []), bmi: Array.isArray(d.bmiMethods) ? d.bmiMethods.slice() : [] };
   const read = () => {
     const out = { sex: document.querySelector('#ant-sex .chip.selected').dataset.v, sk: {}, gi: {}, bd: {} };
     document.querySelectorAll('.ant-ed [data-ant]').forEach(i => {
@@ -378,14 +406,30 @@ function antOpenEditor(row) {
       else if (v !== '') { const n = parseFloat(v.replace(',', '.')); if (isFinite(n)) out[k] = k === 'weight' ? bwStore(n) : n; }
     });
     out.activity = +document.getElementById('ant-act').value || 1.55;
-    const m = document.getElementById('ant-method').value; if (m) out.method = m;
+    if (sel.bf.length) out.methods = sel.bf.slice();
+    if (sel.bmi.length) out.bmiMethods = sel.bmi.slice();
     const nt = document.getElementById('ant-notes').value.trim(); if (nt) out.notes = nt;
     return out;
   };
   const live = () => {
     const c = antCalc(read()), lb = bwUnit() === 'lb', kg = v => v == null ? null : (lb ? v * GYM_LB : v);
     document.getElementById('ant-live').innerHTML = [['IMC', antN(c.bmi, 1)], ['% grasa', antN(c.pct, 1)], ['Masa libre de grasa', antN(kg(c.ffm), 1)], ['Σ pliegues', antN(c.sum6 != null ? c.sum6 : c.sumAll, 1)]]
-      .map(([n, v]) => `<div><span>${n}</span><b translate="no">${v}</b></div>`).join('') + `<small>${c.bfMain ? `<span>Método:</span> <span>${c.bfMain.name}</span>` : '<span>Completa los pliegues de algún método para calcular el % de grasa.</span>'}</small>`;
+      .map(([n, v]) => `<div><span>${n}</span><b translate="no">${v}</b></div>`).join('') + `<small>${c.bfMain ? `<span>% de grasa:</span> <span>${c.bfMain.id === 'avg' ? 'promedio de las fórmulas marcadas' : c.bfMain.name}</span>` : '<span>Completa los pliegues de alguna fórmula para calcular el % de grasa.</span>'}</small>`;
+    const box = document.getElementById('ant-forms');
+    if (!box) return;
+    const line = (grp, b, val, on, sub) => `<label class="ant-fm${on ? ' on' : ''}"><input type="checkbox" data-fm="${grp}:${b.id}"${on ? ' checked' : ''}><span><b>${b.name}</b><small>${sub}</small></span><em translate="no">${val}</em></label>`;
+    box.innerHTML = `<div class="ant-fmh"><span>% de grasa</span><span><button type="button" class="lk-mini" data-fm-all="1">Todas</button> <button type="button" class="lk-mini" data-fm-all="0">Ninguna</button></span></div>
+      ${c.bf.length ? c.bf.map(b => line('bf', b, antN(b.pct, 1) + ' %', sel.bf.includes(b.id), b.sites)).join('') : '<div class="ant-hint">Aún no hay datos suficientes para ninguna fórmula.</div>'}
+      ${c.bf.length ? `<div class="ant-fmt"><span>${sel.bf.filter(id => c.bf.some(b => b.id === id)).length > 1 ? 'Promedio de las marcadas' : sel.bf.filter(id => c.bf.some(b => b.id === id)).length === 1 ? 'Fórmula marcada' : 'Automático (la más completa)'}</span><b translate="no">${antN(c.pct, 1)} %</b></div>` : ''}
+      ${c.bmiList ? `<div class="ant-fmh" style="margin-top:14px;"><span>IMC</span></div>${c.bmiList.map(b => line('bmi', b, antN(b.v, 1), (sel.bmi.length ? sel.bmi : ['bmi']).includes(b.id), b.note)).join('')}<div class="ant-fmt"><span>${c.bmiUsed.length > 1 ? 'Promedio' : 'IMC usado'}</span><b translate="no">${antN(c.bmi, 1)}</b></div>` : ''}`;
+    box.querySelectorAll('[data-fm]').forEach(i => i.addEventListener('change', () => {
+      const [g, id] = i.dataset.fm.split(':');
+      if (g === 'bmi' && !sel.bmi.length) sel.bmi = ['bmi'];
+      const arr = sel[g], k = arr.indexOf(id);
+      if (i.checked && k < 0) arr.push(id); else if (!i.checked && k >= 0) arr.splice(k, 1);
+      live();
+    }));
+    box.querySelectorAll('[data-fm-all]').forEach(b => b.addEventListener('click', () => { sel.bf = b.dataset.fmAll === '1' ? c.bf.map(x => x.id) : []; live(); }));
   };
   openSheet(row ? 'Editar evaluación' : 'Nueva evaluación', html, async () => {
     const data = read(), msg = document.getElementById('ant-msg'), date = document.getElementById('ant-date').value || keyDate();
@@ -402,7 +446,7 @@ function antOpenEditor(row) {
     if (_ant.ctx.onSaved) _ant.ctx.onSaved(); else closeSheet();
   });
   document.querySelectorAll('#ant-sex .chip').forEach(c => c.addEventListener('click', () => { document.querySelectorAll('#ant-sex .chip').forEach(x => x.classList.toggle('selected', x === c)); live(); }));
-  document.querySelector('.ant-ed').addEventListener('input', live);
+  document.querySelector('.ant-ed').addEventListener('input', e => { if (e.target && e.target.matches && e.target.matches('[data-fm]')) return; live(); });
   live();
 }
 

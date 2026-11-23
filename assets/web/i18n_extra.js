@@ -3756,6 +3756,156 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "incluida": {
+   "en": "included",
+   "pt-BR": "incluída",
+   "fr": "incluse"
+  },
+  "Fórmulas": {
+   "en": "Formulas",
+   "pt-BR": "Fórmulas",
+   "fr": "Formules"
+  },
+  "fórmulas": {
+   "en": "formulas",
+   "pt-BR": "fórmulas",
+   "fr": "formules"
+  },
+  "Marca las fórmulas que quieres usar. El % de grasa y el IMC del reporte son el promedio de las que marques; si no marcas ninguna se usa la más completa.": {
+   "en": "Tick the formulas you want to use. The report's body fat % and BMI are the average of the ticked ones; with none ticked the most complete one is used.",
+   "pt-BR": "Marque as fórmulas que quer usar. O % de gordura e o IMC do relatório são a média das marcadas; sem nenhuma marcada usa-se a mais completa.",
+   "fr": "Cochez les formules à utiliser. Le % de graisse et l'IMC du rapport sont la moyenne des formules cochées ; sans sélection, la plus complète est utilisée."
+  },
+  "Ninguna": {
+   "en": "None",
+   "pt-BR": "Nenhuma",
+   "fr": "Aucune"
+  },
+  "Aún no hay datos suficientes para ninguna fórmula.": {
+   "en": "Not enough data for any formula yet.",
+   "pt-BR": "Ainda não há dados suficientes para nenhuma fórmula.",
+   "fr": "Pas encore assez de données pour une formule."
+  },
+  "Promedio de las marcadas": {
+   "en": "Average of ticked",
+   "pt-BR": "Média das marcadas",
+   "fr": "Moyenne des cochées"
+  },
+  "Fórmula marcada": {
+   "en": "Ticked formula",
+   "pt-BR": "Fórmula marcada",
+   "fr": "Formule cochée"
+  },
+  "Automático (la más completa)": {
+   "en": "Automatic (most complete)",
+   "pt-BR": "Automático (a mais completa)",
+   "fr": "Automatique (la plus complète)"
+  },
+  "IMC usado": {
+   "en": "BMI used",
+   "pt-BR": "IMC usado",
+   "fr": "IMC utilisé"
+  },
+  "Promedio": {
+   "en": "Average",
+   "pt-BR": "Média",
+   "fr": "Moyenne"
+  },
+  "% de grasa:": {
+   "en": "Body fat %:",
+   "pt-BR": "% de gordura:",
+   "fr": "% de graisse :"
+  },
+  "promedio de las fórmulas marcadas": {
+   "en": "average of ticked formulas",
+   "pt-BR": "média das fórmulas marcadas",
+   "fr": "moyenne des formules cochées"
+  },
+  "Completa los pliegues de alguna fórmula para calcular el % de grasa.": {
+   "en": "Fill in the skinfolds of a formula to calculate body fat %.",
+   "pt-BR": "Preencha as dobras de alguma fórmula para calcular o % de gordura.",
+   "fr": "Renseignez les plis d'une formule pour calculer le % de graisse."
+  },
+  "% de grasa por fórmula": {
+   "en": "Body fat % by formula",
+   "pt-BR": "% de gordura por fórmula",
+   "fr": "% de graisse par formule"
+  },
+  "en el promedio": {
+   "en": "in the average",
+   "pt-BR": "na média",
+   "fr": "dans la moyenne"
+  },
+  "usada": {
+   "en": "used",
+   "pt-BR": "usada",
+   "fr": "utilisée"
+  },
+  "Promedio de las fórmulas elegidas": {
+   "en": "Average of chosen formulas",
+   "pt-BR": "Média das fórmulas escolhidas",
+   "fr": "Moyenne des formules choisies"
+  },
+  "es el % de grasa que usa todo el reporte": {
+   "en": "this is the body fat % used across the report",
+   "pt-BR": "é o % de gordura usado em todo o relatório",
+   "fr": "c'est le % de graisse utilisé dans tout le rapport"
+  },
+  "Promedio de todas": {
+   "en": "Average of all",
+   "pt-BR": "Média de todas",
+   "fr": "Moyenne de toutes"
+  },
+  "Rango entre fórmulas": {
+   "en": "Range across formulas",
+   "pt-BR": "Faixa entre fórmulas",
+   "fr": "Écart entre formules"
+  },
+  "Índices de peso y talla": {
+   "en": "Weight and height indices",
+   "pt-BR": "Índices de peso e altura",
+   "fr": "Indices poids-taille"
+  },
+  "Índice ponderal": {
+   "en": "Ponderal index",
+   "pt-BR": "Índice ponderal",
+   "fr": "Indice pondéral"
+  },
+  "IMC clásico (Quetelet)": {
+   "en": "Classic BMI (Quetelet)",
+   "pt-BR": "IMC clássico (Quetelet)",
+   "fr": "IMC classique (Quetelet)"
+  },
+  "IMC corregido por talla (Trefethen)": {
+   "en": "Height-corrected BMI (Trefethen)",
+   "pt-BR": "IMC corrigido pela altura (Trefethen)",
+   "fr": "IMC corrigé par la taille (Trefethen)"
+  },
+  "Jackson-Pollock (4 pliegues)": {
+   "en": "Jackson-Pollock (4 skinfolds)",
+   "pt-BR": "Jackson-Pollock (4 dobras)",
+   "fr": "Jackson-Pollock (4 plis)"
+  },
+  "Sloan (2 pliegues)": {
+   "en": "Sloan (2 skinfolds)",
+   "pt-BR": "Sloan (2 dobras)",
+   "fr": "Sloan (2 plis)"
+  },
+  "Masa grasa relativa (RFM)": {
+   "en": "Relative fat mass (RFM)",
+   "pt-BR": "Massa gorda relativa (RFM)",
+   "fr": "Masse grasse relative (RFM)"
+  },
+  "CUN-BAE (IMC, edad y sexo)": {
+   "en": "CUN-BAE (BMI, age and sex)",
+   "pt-BR": "CUN-BAE (IMC, idade e sexo)",
+   "fr": "CUN-BAE (IMC, âge et sexe)"
+  },
+  "Deurenberg (IMC, edad y sexo)": {
+   "en": "Deurenberg (BMI, age and sex)",
+   "pt-BR": "Deurenberg (IMC, idade e sexo)",
+   "fr": "Deurenberg (IMC, âge et sexe)"
+  },
   "Tu cuerpo": {
    "en": "Your body",
    "pt-BR": "Seu corpo",
