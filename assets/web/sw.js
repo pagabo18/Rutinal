@@ -1,6 +1,6 @@
 // Service worker de Rutinal (PWA): app shell offline-first.
 // Sube la versión del caché en cada release para forzar actualización.
-const CACHE = 'rutinal-v1.35.0';
+const CACHE = 'rutinal-v1.36.0';
 const SHELL = [
   './',
   './index.html',
@@ -13,6 +13,11 @@ const SHELL = [
   './icon-512.png',
   './apple-touch-icon.png',
   './privacy.html',
+  './img/ph-gym.jpg',
+  './img/ph-squat.jpg',
+  './img/ph-deadlift.jpg',
+  './img/ph-bench.jpg',
+  './img/ph-pullup.jpg',
 ];
 
 self.addEventListener('install', (e) => {

@@ -2552,6 +2552,34 @@
   .gym-mus[data-g] .gym-mus-bar { background: color-mix(in srgb, var(--gc) 14%, transparent); }
   .gym-mus[data-g] .gym-mus-bar div { background: var(--gc); }
   .gym-mus[data-g] span::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--gc); margin-right: 6px; }
+
+  /* ===== Fotos: acceso, entrenamiento de hoy y rutinas (una foto por grupo muscular) ===== */
+  #auth-gate { background: linear-gradient(180deg, rgba(0,0,0,.6) 0%, rgba(0,0,0,.74) 45%, rgba(0,0,0,.38) 100%), url(img/ph-gym.jpg) center / cover no-repeat #0A0A0A; }
+  #auth-gate .auth-title { color: #fff; }
+  #auth-gate .auth-sub, #auth-gate .auth-foot, #auth-gate .auth-msg.info { color: rgba(255,255,255,.72); }
+  #auth-gate .auth-field span { color: rgba(255,255,255,.7); }
+  #auth-gate .auth-field input, #auth-gate .auth-in { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.28); color: #fff; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  #auth-gate .auth-field input:focus, #auth-gate .auth-in:focus { border-color: #fff; }
+  #auth-gate .auth-pass button { color: rgba(255,255,255,.85); }
+  #auth-gate .btn-primary { background: #fff; color: #0A0A0A; }
+  #auth-gate .auth-msg:not(.info) { color: #FCA5A5; }
+  .hd-card.hd-hero { background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.62) 45%, rgba(0,0,0,.08) 100%), var(--ph) right center / cover no-repeat #0A0A0A; border-color: transparent; color: #fff; min-height: 196px; display: flex; flex-direction: column; justify-content: space-between; }
+  .hd-hero .hd-k, .hd-hero .hd-d { color: rgba(255,255,255,.8); }
+  .hd-hero .hd-t { font-size: 24px; color: #fff; }
+  .hd-hero .hd-badge, [data-theme="dark"] .hd-hero .hd-badge { background: rgba(255,255,255,.2); color: #fff; }
+  .hd-hero .hd-btn:not(.ghost) { background: #fff; color: #0A0A0A; }
+  .hd-hero .hd-btn.ghost { background: rgba(255,255,255,.2); color: #fff; }
+  .gym-today.ph { position: relative; overflow: hidden; padding-top: 72px; background: linear-gradient(180deg, rgba(0,0,0,.2) 0, rgba(0,0,0,.82) 152px, var(--surface) 152px), var(--ph) center top / 100% auto no-repeat #0A0A0A; }
+  .gym-today.ph .gym-today-k { color: rgba(255,255,255,.8); }
+  .gym-today.ph .gym-today-name, .gym-today.ph .gym-today-count, .gym-today.ph .gym-today-count b { color: #fff; }
+  .gym-today.ph .gym-today-count span { color: rgba(255,255,255,.8); }
+  .gym-today.ph .gym-g { background: rgba(0,0,0,.55); color: color-mix(in srgb, var(--gc) 70%, #fff); }
+  .gym-today.ph .gym-today-row { min-height: 68px; align-items: flex-end; }
+  .gym-today.ph .gym-prog { margin-top: 26px; }
+  .gym-routine.ph { position: relative; overflow: hidden; min-height: 92px; background: linear-gradient(90deg, var(--surface) 0%, var(--surface) 46%, color-mix(in srgb, var(--surface) 0%, transparent) 84%), var(--ph) right center / 62% auto no-repeat #0A0A0A; }
+  .gym-routine.ph > .gym-media { display: none; }
+  .gym-routine.ph .gym-icon-btn { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(0,0,0,.5); color: #fff; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+  .gym-routine.ph .gym-icon-btn svg { width: 14px; height: 14px; }
 </style>
 </head>
 <body>
@@ -10581,7 +10609,7 @@ function renderHoyDash() {
         <div class="hd-row"><div class="hd-d">Buen trabajo. Ya quedó registrado.</div><button class="hd-btn ghost" data-hd="gym">Ver detalle</button></div></div>`;
     } else if (r) {
       const names = (r.exercises || []).slice(0, 3).map(e => escapeHtml(e.name || '')).join(' · ');
-      gym = `<div class="hd-card"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge plan">${started ? 'En curso' : 'Programado'}</span></div><div class="hd-t">${escapeHtml(r.name)}</div>
+      gym = `<div class="hd-card hd-hero" style="${gymPhotoVar(r, true)}"><div class="hd-k"><span>Entrenamiento de hoy</span><span class="hd-badge plan">${started ? 'En curso' : 'Programado'}</span></div><div class="hd-t">${escapeHtml(r.name)}</div>
         <div class="hd-d">${names}${(r.exercises || []).length > 3 ? ' …' : ''}</div>
         <div class="hd-row"><div class="hd-d"><span>${(r.exercises || []).length}</span> <span>ejercicios</span></div><button class="hd-btn" data-hd-start="${escapeHtml(r.id)}">${started ? 'Continuar' : 'Empezar'}</button></div></div>`;
     } else if (gymRoutines().length) {
@@ -12989,6 +13017,14 @@ function gymGroupChips(r) {
   const gs = gymRoutineGroups(r);
   return gs.length ? `<div class="gym-gs">${gs.map(g => `<span class="gym-g" data-g="${g}">${GYM_GROUP_ES[g]}</span>`).join('')}</div>` : '';
 }
+// Foto por grupo muscular (provisionales; se cambian por las de la sesión de fotos)
+const GYM_PHOTO_HERO = { pierna: 'squat', pecho: 'bench', espalda: 'pullup' };
+const GYM_PHOTO_CARD = { pierna: 'deadlift', pecho: 'bench', espalda: 'pullup' };
+function gymPhotoVar(r, hero) {
+  const g = gymRoutineGroups(r)[0];
+  const f = (hero ? GYM_PHOTO_HERO : GYM_PHOTO_CARD)[g] || 'gym';
+  return `--ph:url(img/ph-${f}.jpg)`;
+}
 function gymMediaHtml(ex, size) {
   const G = ` data-g="${gymExGroup(ex)}"`;
   const st = `width:${size}px;height:${size}px;`;
@@ -13141,7 +13177,7 @@ function renderGym() {
         <div class="gym-prev-s">${exDone ? '✓' : escapeHtml(gymSetsShort(ex))}</div>
       </div>`;
     }).join('');
-    todayCard = `<div class="gym-today">
+    todayCard = `<div class="gym-today ph" style="${gymPhotoVar(today, true)}">
       <div class="gym-today-row">
         <div>
           <div class="gym-today-k">Hoy toca</div>
@@ -13176,7 +13212,7 @@ function renderGym() {
   // ---- Rutinas ----
   const list = routines.map(r => {
     const days = order.filter(d => sched[String(d)] === r.id).map(d => dows[d]).join(', ');
-    return `<div class="gym-routine" data-gym-open="${r.id}">
+    return `<div class="gym-routine ph" style="${gymPhotoVar(r)}" data-gym-open="${r.id}">
       ${gymMediaHtml(r.exercises[0] || {}, 44)}
       <div class="gym-routine-body">
         <div class="gym-routine-name">${escapeHtml(r.name)}</div>${gymGroupChips(r)}
