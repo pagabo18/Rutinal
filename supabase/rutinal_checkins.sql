@@ -45,3 +45,13 @@ create policy checkin_reviews_insert on public.checkin_reviews for insert to aut
 create policy checkin_reviews_update on public.checkin_reviews for update to authenticated
   using (reviewer_id = (select auth.uid())) with check (reviewer_id = (select auth.uid()));
 create policy checkin_reviews_delete on public.checkin_reviews for delete to authenticated using (reviewer_id = (select auth.uid()));
+
+-- 23 nov 2026 · migración `rutinal_role_keys_sports`: coach y fisioterapeuta también leen
+-- las actividades (cardio y otros deportes) y el perfil de atleta de sus atletas.
+create or replace function private.role_keys(p_role text) returns text[] language sql immutable set search_path = '' as $$
+  select case p_role
+    when 'coach' then array['gym_logs','gym_routines','gym_schedule','weight_log','act_log','athlete_profile']
+    when 'nutriologo' then array['meal_log','nutri_profile','food_goal_kcal','weight_log','hydration_log','hydration_settings']
+    when 'fisioterapeuta' then array['gym_logs','gym_routines','gym_schedule','act_log','athlete_profile']
+    else array[]::text[] end
+$$;

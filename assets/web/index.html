@@ -2759,6 +2759,9 @@
   .act-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 8px; cursor: pointer; box-shadow: var(--card-sh); }
   .act-row b { display: block; font-size: 14px; } .act-row b small { font-weight: 500; color: var(--text-3); margin-left: 4px; } .act-row span { font-size: 12px; color: var(--text-2); } .act-row em { font-style: normal; font-size: 11px; color: var(--text-3); flex: 0 0 auto; }
   .gym-h2-btns { flex-wrap: wrap; justify-content: flex-end; }
+
+  .mood-ic { vertical-align: -3px; color: var(--text); }
+  .gym-mood .mood-ic { width: 30px; height: 24px; }
 </style>
 </head>
 <body>
@@ -9213,8 +9216,8 @@ function openAuthUserEditor(u) {
 // escribiendo en el dispositivo; aquí solo se suben los cambios y se bajan los de otros
 // dispositivos. En conflicto gana lo último que llega al servidor, por documento.
 // ============================================================
-const SYNC_DATED = ['meal_log', 'gym_logs', 'habitLog', 'weight_log', 'hydration_log'];
-const SYNC_WHOLE = ['nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'habits', 'habitTimes', 'cats', 'catGoals',
+const SYNC_DATED = ['meal_log', 'gym_logs', 'habitLog', 'weight_log', 'hydration_log', 'act_log'];
+const SYNC_WHOLE = ['athlete_profile', 'app_prefs', 'nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'habits', 'habitTimes', 'cats', 'catGoals',
   'sch_weekday', 'sch_saturday', 'sch_sunday', 'imprevistos', 'plan', 'planTasks', 'plan_start', 'hydration_settings',
   'custom_foods', 'dishes', 'diary', 'gym_unit', 'body_unit', 'achievements', 'bestStreak', 'streak_pauses', 'pomo_settings', 'pomo_sessions'];
 const SYNC_MAX_DOC = 300000; // caracteres; documentos más grandes (p. ej. con fotos) no se suben
@@ -9461,7 +9464,7 @@ function onAuthReady() {
 // El especialista genera un código de invitación; el atleta lo acepta viendo qué comparte.
 // El servidor decide qué documentos puede leer cada rol (política de user_docs).
 // ============================================================
-const LINK_KEY_LABELS = { gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
+const LINK_KEY_LABELS = { act_log: 'cardio y otros deportes', athlete_profile: 'perfil de atleta', gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
 const LINK_ERRORS = { bad_code: 'Ese código no existe o ya venció.', own_code: 'Ese código es tuyo; compártelo con tu atleta.', too_many: 'Tienes demasiadas invitaciones pendientes. Cancela alguna.', forbidden: 'Tu cuenta no tiene esa especialidad.' };
 function linkErr(code) { return LINK_ERRORS[code] || authErr(code); }
 async function linkRpc(fn, args) {
@@ -10149,7 +10152,7 @@ function openEndServices(l, mine, onDone) {
   }));
   document.getElementById('end-all').addEventListener('click', async () => { if (!confirm(msgAll)) return; closeSheet(); await endAll(); });
 }
-const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log'], nutriologo: ['meal_log', 'nutri_profile', 'weight_log', 'hydration_log'], fisioterapeuta: ['gym_logs', 'gym_routines'] };
+const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log', 'act_log', 'athlete_profile'], nutriologo: ['meal_log', 'nutri_profile', 'weight_log', 'hydration_log'], fisioterapeuta: ['gym_logs', 'gym_routines', 'act_log', 'athlete_profile'] };
 // El servicio (rol) con el que se puede dejar un tipo de plantilla a esta persona
 function asgRoleFor(l, kind) { return linkRoles(l).find(r => (ASG_ROLE_KINDS[r] || []).includes(kind)) || null; }
 function asgKindsFor(l) { const out = []; linkRoles(l).forEach(r => (ASG_ROLE_KINDS[r] || []).forEach(k => { if (!out.includes(k)) out.push(k); })); return out; }
@@ -10446,7 +10449,7 @@ async function spOpenClient(l) {
   const rep = spClientReport(D, l, asg);
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button>',
     progress: `<div class="sp-rep-btns"><button class="sp-act" id="sp-rep-copy">Copiar resumen</button><button class="sp-act" id="sp-rep-pdf">Guardar PDF</button></div>
-      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${rep}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}</div><div id="sp-photos"></div>`,
+      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${rep}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
     checkins: '<div id="sp-ck"></div>',
     assess: '<div id="sp-assess"></div>',
     logs: logs.join('') };
@@ -13859,7 +13862,7 @@ function gymShareLoads(r, dateKey) {
   r.exercises.forEach(ex => { const f = lg.exFeel && lg.exFeel[ex.id]; if (f && (f.pain != null || f.rpe != null)) lines.push(`  ${ex.name}: ${f.pain != null ? t('Dolor') + ' ' + f.pain + '/10' : ''}${f.pain != null && f.rpe != null ? ', ' : ''}${f.rpe != null ? 'RPE ' + f.rpe : ''}`); });
   if (fe.mood || fe.pain != null || fe.rpe != null || fe.note) {
     lines.push('');
-    if (fe.mood) lines.push(`${t('Al terminar')}: ${GYM_MOODS[fe.mood - 1][0]} ${t(GYM_MOODS[fe.mood - 1][1])}`);
+    if (fe.mood) lines.push(`${t('Al terminar')}: ${t(GYM_MOODS[fe.mood - 1][1])} (${fe.mood}/5)`);
     if (fe.pain != null) lines.push(`${t('Dolor (NPRS)')}: ${fe.pain}/10`);
     if (fe.rpe != null) lines.push(`${t('RPE sesión')}: ${fe.rpe}/10`);
     if (fe.note) lines.push(`${t('Notas')}: ${fe.note}`);
@@ -14049,7 +14052,12 @@ function gymScaleHtml(kind, exId, val) {
   return `<div class="gym-scale"><div class="gym-scale-l">${label}</div><div class="gym-scale-b">${btns}</div></div>`;
 }
 function gymPainLabel(v) { return v == null ? '' : v === 0 ? 'Sin dolor' : v <= 3 ? 'Leve' : v <= 6 ? 'Moderado' : 'Severo'; }
-const GYM_MOODS = [['😫', 'Muy mal'], ['🙁', 'Mal'], ['😐', 'Normal'], ['🙂', 'Bien'], ['💪', 'Excelente']];
+// Ícono de nivel (5 barras) en lugar de caritas: se llena hasta el nivel y toma el color del estado.
+function gymMoodIcon(n) {
+  const col = ['#DC2626', '#D97706', '#71717A', '#22C55E', '#16A34A'][n - 1] || '#71717A';
+  return `<svg class="mood-ic" viewBox="0 0 22 18" width="22" height="18" aria-hidden="true">${[0, 1, 2, 3, 4].map(i => `<rect x="${i * 4.5}" y="${14 - i * 3.2}" width="3" height="${4 + i * 3.2}" rx="1.2" fill="${i < n ? col : 'currentColor'}"${i < n ? '' : ' opacity=".18"'}/>`).join('')}</svg>`;
+}
+const GYM_MOODS = [[gymMoodIcon(1), 'Muy mal'], [gymMoodIcon(2), 'Mal'], [gymMoodIcon(3), 'Normal'], [gymMoodIcon(4), 'Bien'], [gymMoodIcon(5), 'Excelente']];
 
 // Métricas de una sesión
 function gymSessionStats(lg, r) {

@@ -733,6 +733,26 @@ function openAthleteProfile() {
 }
 function athSummary() { const s = athSports(); return s.length ? s.map(id => SPORT_BY[id].name).join(' · ') : ''; }
 
+// Lo que ve el especialista de las actividades y el perfil de su atleta (ficha → Progreso).
+function actClientHtml(D) {
+  const ap = D.athlete_profile || {}, log = D.act_log || {}, sports = (ap.sports || []).filter(id => SPORT_BY[id]);
+  let prof = '';
+  if (sports.length || ap.goal || ap.level) {
+    const marks = sports.map(id => { const sp = SPORT_BY[id], m = (ap.marks || {})[id] || {}, rows = (sp.prof || []).filter(([k]) => m[k]); return rows.length ? `<tr class="ref"><td colspan="2"><b>${sp.name}</b></td></tr>` + rows.map(([k, n, u]) => `<tr><td><span>${n}</span></td><td translate="no">${escapeHtml(m[k])}${u && !u.includes(':') && u !== 'fecha' ? ' ' + u : ''}</td></tr>`).join('') : ''; }).join('');
+    prof = `<div class="sp-card"><div class="sp-card-n">Perfil de atleta</div><div class="gym-gs" style="margin:8px 0;">${sports.map(id => `<span class="eq-chip" style="--ec:var(--text-3)">${SPORT_BY[id].name}</span>`).join('')}</div>
+      <div class="sp-card-d">${ap.level ? `<span>${ap.level}</span>` : ''}${ap.days ? ` · <span translate="no">${ap.days}</span> <span>días por semana</span>` : ''}</div>${ap.goal ? `<div class="sp-card-d" style="color:var(--text);margin-top:4px;" translate="no">${escapeHtml(ap.goal)}</div>` : ''}
+      ${marks ? `<table class="ant-t"><tbody>${marks}</tbody></table>` : ''}</div>`;
+  }
+  const rows = []; Object.keys(log).sort().reverse().slice(0, 30).forEach(k => (log[k] || []).forEach(a => rows.push([k, a])));
+  let acts = '';
+  if (rows.length) {
+    const wk = { n: 0, sec: 0, km: 0 }; rows.forEach(([k, a]) => { if ((Date.now() - parseKey(k)) / 864e5 < 7) { wk.n++; wk.sec += +a.time || 0; wk.km += (+a.dist_km || 0) + (+a.dist_m || 0) / 1000; } });
+    acts = `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">Cardio y otros deportes</div><span class="cd-num" translate="no">${wk.n} · ${actFmtTime(wk.sec) || '0:00'}${wk.km ? ' · ' + (Math.round(wk.km * 10) / 10) + ' km' : ''}</span></div><div class="sp-card-d">Últimos 7 días</div>
+      <table class="ant-t"><tbody>${rows.slice(0, 12).map(([k, a]) => `<tr><td><span>${(SPORT_BY[a.sport] || { name: a.sport }).name}</span>${a.type ? ` <span style="color:var(--text-3)">· ${escapeHtml(a.type)}</span>` : ''}<small translate="no">${escapeHtml(actLine(a))}${a.notes ? ' — ' + escapeHtml(a.notes) : ''}</small></td><td translate="no">${escapeHtml(cdFmtDay(k))}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  return prof + acts;
+}
+
 // Rutinas prehechas por deporte (se copian a "Mis rutinas" y se editan como cualquier otra).
 const SPORT_ROUTINES = [
   { sport: 'box', name: 'Box · Técnica y saco', ex: [['Salto de cuerda', 3, '3 min'], ['Sombra', 3, '3 min'], ['Saco: jab y cross', 4, '3 min'], ['Saco: combinaciones', 4, '3 min'], ['Manoplas o saco libre', 2, '3 min'], ['Plancha', 3, '45 s']] },
