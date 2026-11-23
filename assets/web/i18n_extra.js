@@ -3756,6 +3756,26 @@ window.__I18N_EXTRA = {
    "pt-BR": "Você já cobriu sua proteína de hoje",
    "fr": "Vous avez déjà couvert vos protéines du jour"
   },
+  "Cambiar a mi perfil de atleta": {
+   "en": "Switch to my athlete profile",
+   "pt-BR": "Mudar para meu perfil de atleta",
+   "fr": "Passer à mon profil d'athlète"
+  },
+  "Tus propios registros, rutinas y comidas": {
+   "en": "Your own logs, routines and meals",
+   "pt-BR": "Seus próprios registros, treinos e refeições",
+   "fr": "Vos propres saisies, routines et repas"
+  },
+  "Cambiar a especialista": {
+   "en": "Switch to specialist",
+   "pt-BR": "Mudar para especialista",
+   "fr": "Passer en mode spécialiste"
+  },
+  "Tus atletas, plantillas y mensajes": {
+   "en": "Your athletes, templates and messages",
+   "pt-BR": "Seus atletas, modelos e mensagens",
+   "fr": "Vos athlètes, modèles et messages"
+  },
   "Check-in semanal": {
    "en": "Weekly check-in",
    "pt-BR": "Check-in semanal",

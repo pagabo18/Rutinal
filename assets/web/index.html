@@ -3873,6 +3873,7 @@ function renderMas() {
   el.innerHTML = `
     ${logged ? `<button class="mas-profile" data-mas="ajustes"><span class="acct-av" translate="no">${escapeHtml(String(s.name || s.user || '?').trim().slice(0, 1).toUpperCase())}</span>
       <span class="acct-id"><span class="acct-name" translate="no">${escapeHtml(s.name || s.user || '')}</span><span class="acct-sub"><span translate="no">@${escapeHtml(s.user || '')}</span> · ${authRolesHtml(s.specs, s.admin)}</span></span><span class="mas-chev">›</span></button>` : ''}
+    ${logged && (s.specs || []).length ? `<div class="mas-card">${typeof spMode === 'function' && spMode() ? row('mode', I.people, 'Cambiar a mi perfil de atleta', 'Tus propios registros, rutinas y comidas') : row('mode', I.people, 'Cambiar a especialista', 'Tus atletas, plantillas y mensajes')}</div>` : ''}
     <h2>Herramientas</h2>
     <div class="mas-card">${row('pomo', I.clock, 'Reloj', 'Pomodoro y temporizador')}${row('cal', I.cal, 'Calendario', 'Tu día, semana y mes')}</div>
     <h2>Tu contenido</h2>
@@ -3884,6 +3885,7 @@ function renderMas() {
     if (k === 'pomo' || k === 'cal') masGo(k);
     else if (k === 'links') openLinks();
     else if (k === 'agenda') openAgenda();
+    else if (k === 'mode') { if (typeof spSetMode === 'function') spSetMode(!spMode()); }
     else if (k === 'photos') openPhotos();
     else if (k === 'assess') openMyAssessments();
     else if (k === 'checkins') openMyCheckins();
