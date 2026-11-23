@@ -251,3 +251,20 @@ Si alguien es a la vez tu coach y tu nutriólogo, aparece **una sola vez** con s
 - **Ficha y plantillas**: la ficha muestra lo de todos los servicios y solo se pueden asignar los tipos de plantilla que esos servicios permiten; cada asignación se guarda con el servicio que le corresponde (`asgRoleFor`).
 - **Chat**: se leen juntos los mensajes de todos los vínculos de la pareja y los nuevos se escriben en el más antiguo.
 - **Terminar**: "Dejar de compartir" o "Terminar vínculo" cierra todos los servicios con esa persona.
+
+## Herramientas profesionales (`assets/web/pro.js`)
+
+**Evaluación antropométrica.** En la ficha del atleta, pestaña *Evaluación* (y en *Más → Composición corporal* para el propio atleta). Se capturan peso, talla, edad, sexo, 10 pliegues, 11 perímetros, 3 diámetros, FC en reposo y presión arterial; cada pliegue acepta varias tomas (promedio de 2, mediana de 3). La app calcula:
+
+- IMC y rango de peso saludable; índice cintura-cadera, cintura-talla y riesgo por cintura.
+- % de grasa por Durnin-Womersley, Jackson-Pollock 3 y 7, Faulkner, Yuhasz y perímetros (Marina de EE. UU.), con conversión de Siri, promedio de métodos y referencia de Deurenberg.
+- Masa grasa, masa libre de grasa, IMG, IMLG (y normalizado), masa muscular de Lee, área muscular del brazo, sumatorias de 6 y 8 pliegues.
+- Somatotipo de Heath-Carter.
+- Gasto en reposo por Mifflin-St Jeor, Harris-Benedict revisada, Katch-McArdle y Cunningham, promedio y gasto total con factor de actividad.
+- Peso objetivo para un % de grasa meta y zonas de frecuencia cardiaca (Tanaka y Karvonen).
+
+Cada evaluación se compara con la anterior, hay gráficas de evolución y se puede guardar en PDF. Tabla `assessments` (`supabase/rutinal_assessments.sql`).
+
+**Sistema de equivalentes.** Un plan de alimentación puede ser un menú con gramos o un plan por equivalentes (grupos y aportes del Sistema Mexicano de Alimentos Equivalentes). El especialista llena el cuadro por grupo y comida y ve la adecuación contra la meta; el atleta ve cuántos equivalentes le tocan en cada comida, abre la lista de intercambios y registra lo que eligió.
+
+**Dietas prehechas.** Se elige el tipo (equilibrada, alta en proteína, volumen, baja en carbohidratos) y las calorías; la app arma el plan por equivalentes y se puede ajustar antes de guardarlo o asignarlo.
