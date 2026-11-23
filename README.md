@@ -283,4 +283,6 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 
 **Foto del plato y porciones con la mano.** En Comida: «Foto del plato» (o la cámara de cada comida) sube la foto al bucket privado `meals` y la registra en `meal_photos` para ese día y comida; la ve el nutriólogo en Registros. «Con la mano» estima macros por palmas, puñados, pulgares y puños (valores aproximados del método de la mano) y los registra como alimentos del día.
 
+**Recuperar contraseña (sin correo).** Ajustes → Cuenta → «Código de recuperación» genera un código de un solo uso (en la base solo queda su huella). En la pantalla de acceso, «¿Olvidaste tu contraseña?» pide usuario + código + contraseña nueva y llama a la función pública `recover` (`verify_jwt = false`); 5 fallos bloquean 30 minutos. Sin código, el usuario puede dejar un aviso que el administrador ve en Usuarios («Pidió contraseña nueva»). SQL en `supabase/rutinal_recovery.sql`.
+
 **Personalizar.** En Ajustes se apagan las secciones que no se usan y se activa «Solo palomear ejercicios». Preferencias en `app_prefs`.

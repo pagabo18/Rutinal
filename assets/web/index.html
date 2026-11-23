@@ -2080,6 +2080,9 @@
     font-size: 13px; font-weight: 600; padding: 8px; cursor: pointer; }
   .auth-msg { min-height: 20px; font-size: 13px; color: var(--danger, #DC2626); margin: 4px 0 12px; line-height: 1.4; }
   .auth-msg.info { color: var(--text-3); }
+  .auth-link { display: block; width: 100%; margin-top: 12px; background: none; border: 0; font: inherit; font-size: 13px; font-weight: 600; color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: center; }
+  #auth-gate .auth-link { color: rgba(255,255,255,.85); }
+  .rc-code { font-size: 20px; font-weight: 700; letter-spacing: .06em; text-align: center; padding: 18px 10px; border-radius: 14px; background: var(--surface-2); margin: 12px 0; font-variant-numeric: tabular-nums; user-select: all; -webkit-user-select: all; }
   .auth-foot { font-size: 12px; color: var(--text-3); text-align: center; margin-top: 16px; line-height: 1.5; }
   .acct-user { font-size: 15px; margin-bottom: 10px; }
   .usr-row { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; cursor: pointer; background: var(--surface); }
@@ -2821,7 +2824,25 @@
     </label>
     <div class="auth-msg" id="auth-msg"></div>
     <button class="btn-primary" id="auth-submit" type="submit" style="width:100%;">Entrar</button>
+    <button type="button" class="auth-link" id="auth-forgot">¿Olvidaste tu contraseña?</button>
     <div class="auth-foot">¿No tienes cuenta? Pídele tu usuario y contraseña a quien te compartió la app.</div>
+  </form>
+  <form class="auth-box" id="auth-rec" autocomplete="off" style="display:none;">
+    <div class="auth-title" style="font-size:22px;">Recuperar acceso</div>
+    <div class="auth-sub">Usa el código de recuperación que guardaste desde Ajustes.</div>
+    <label class="auth-field"><span>Usuario</span>
+      <input id="rec-user" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" required>
+    </label>
+    <label class="auth-field"><span>Código de recuperación</span>
+      <input id="rec-code" type="text" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="24" placeholder="XXXX-XXXX-XXXX-XXXX" required>
+    </label>
+    <label class="auth-field"><span>Contraseña nueva</span>
+      <input id="rec-pass" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="new-password" maxlength="72" required>
+    </label>
+    <div class="auth-msg" id="rec-msg"></div>
+    <button class="btn-primary" id="rec-submit" type="submit" style="width:100%;">Cambiar contraseña</button>
+    <button type="button" class="auth-link" id="rec-nocode">No tengo código: avisar a quien me dio la cuenta</button>
+    <button type="button" class="auth-link" id="rec-back">Volver a iniciar sesión</button>
   </form>
 </div>
 
@@ -3383,6 +3404,7 @@ try {
           <button class="btn-secondary" id="btn-acct-links">Especialistas y atletas</button>
           <button class="btn-secondary" id="btn-acct-sync">Respaldo en la nube</button>
           <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
+          <button class="btn-secondary" id="btn-acct-rec">Código de recuperación</button>
           <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
         </div>
       </div>
@@ -8984,6 +9006,7 @@ const AUTH_ERRORS = {
   forbidden: 'Tu cuenta no tiene permiso para administrar usuarios.',
   session: 'Tu sesión ya no es válida. Vuelve a iniciar sesión.',
   create: 'No se pudo crear el usuario.',
+  rec_invalid: 'Usuario o código incorrectos. Tras varios intentos fallidos hay que esperar 30 minutos.',
 };
 function authErr(code) { return AUTH_ERRORS[code] || AUTH_ERRORS.network; }
 function authEndSession(msg, info) {
@@ -9132,6 +9155,40 @@ function chatBgRender() {
     });
   };
 }
+// ---- Código de recuperación: permite cambiar la contraseña desde la pantalla de acceso si se olvida ----
+async function openRecoveryCode(nudge) {
+  openSheet('Código de recuperación', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i class="s"></i></div>');
+  let at = null;
+  try { at = await sbRest('rpc/rutinal_recovery_status', { method: 'POST', body: {} }); } catch (e) { openSheet('Código de recuperación', `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
+  const show = () => openSheet('Código de recuperación', `
+    <p class="fit-note" style="margin:0 0 12px;">Si olvidas tu contraseña, con este código puedes poner una nueva desde la pantalla de acceso, sin pedírsela a nadie. Sirve una sola vez.</p>
+    <div class="lk-d" style="margin-bottom:12px;">${at ? `<span>Ya tienes un código, creado el</span> <span translate="no">${escapeHtml(authFmtDate(at))}</span>. <span>Por seguridad no se puede volver a mostrar; si lo perdiste, genera uno nuevo.</span>` : '<span>Todavía no tienes código.</span>'}</div>
+    <button class="btn-primary" id="rc-new" style="width:100%;">${at ? 'Generar uno nuevo' : 'Generar código'}</button>
+    ${at ? '<div class="fit-note" style="margin-top:8px;">Al generar uno nuevo, el anterior deja de servir.</div>' : ''}<div class="auth-msg" id="rc-msg"></div>`);
+  show();
+  document.getElementById('rc-new').addEventListener('click', async () => {
+    const b = document.getElementById('rc-new'); b.disabled = true;
+    let code = '';
+    try { code = await sbRest('rpc/rutinal_recovery_new', { method: 'POST', body: {} }); } catch (e) { b.disabled = false; document.getElementById('rc-msg').textContent = authErr(e.code); return; }
+    try { localStorage.setItem('__rc_ok', (authGet() || {}).user || '1'); } catch (e) {}
+    openSheet('Código de recuperación', `
+      <p class="fit-note" style="margin:0;">Este es tu código. Guárdalo ahora fuera de este teléfono (una nota, una foto impresa, tu gestor de contraseñas): no se volverá a mostrar.</p>
+      <div class="rc-code" id="rc-code" translate="no">${escapeHtml(String(code))}</div>
+      <button class="btn-primary" id="rc-copy" style="width:100%;">Copiar código</button>
+      <div class="fit-note" style="margin-top:10px;">Quien tenga este código y tu usuario puede cambiar tu contraseña. No lo compartas.</div>`);
+    document.getElementById('rc-copy').addEventListener('click', async ev => { try { await navigator.clipboard.writeText(String(code)); ev.target.textContent = t('Copiado'); } catch (e) { const r = document.createRange(); r.selectNodeContents(document.getElementById('rc-code')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } });
+  });
+}
+// Una sola vez por cuenta y teléfono: sugerir crear el código si aún no existe.
+async function recoveryNudge() {
+  const s = authGet(); if (!s || !s.user) return;
+  try { if (localStorage.getItem('__rc_ok') === s.user || localStorage.getItem('__rc_ask') === s.user) return; } catch (e) { return; }
+  let at = null; try { at = await sbRest('rpc/rutinal_recovery_status', { method: 'POST', body: {} }); } catch (e) { return; }
+  if (!at && (document.getElementById('sheet').classList.contains('show') || !document.documentElement.classList.contains('auth-ok'))) return; // se pregunta en otra ocasión
+  try { localStorage.setItem(at ? '__rc_ok' : '__rc_ask', s.user); } catch (e) {}
+  if (at) return;
+  openRecoveryCode(true);
+}
 // ---- Administración de usuarios (solo administradores) ----
 async function authAdmin(action, args) {
   try {
@@ -9146,6 +9203,9 @@ async function openAuthUsers() {
   const r = await authAdmin('list');
   if (!r.ok) { openSheet('Usuarios', `<p class="auth-msg">${escapeHtml(authErr(r.error))}</p>`); return; }
   _authUsers = r.users || [];
+  let asked = []; try { asked = (await sbRest('rpc/rutinal_admin_reset_requests', { method: 'POST', body: {} }) || []).map(x => x.username); } catch (e) {}
+  _authUsers.forEach(u => { u.reset_asked = asked.includes(u.username); });
+  _authUsers.sort((a, b) => (b.reset_asked ? 1 : 0) - (a.reset_asked ? 1 : 0));
   const me = (authGet() || {}).user;
   const rows = _authUsers.map((u, i) => {
     const d = [u.display_name, u.note, u.last_login ? `Último acceso: ${authFmtDate(u.last_login)}` : 'Aún no ha entrado'].filter(Boolean);
@@ -9153,7 +9213,7 @@ async function openAuthUsers() {
     return `<div class="usr-row" data-usr="${i}">
       <div class="usr-body"><div class="usr-n" translate="no">${escapeHtml(u.username)}${u.username === me ? ' · <span style="font-weight:500;color:var(--text-3);">tú</span>' : ''}</div>
       <div class="usr-d">${d.map(x => `<span>${escapeHtml(x)}</span>`).join(' · ')}</div>
-      <div class="usr-badges">${specs}${u.is_admin ? '<span class="usr-badge">Admin</span>' : ''}<span class="usr-badge ${u.active ? 'on' : 'off'}">${u.active ? 'Activo' : 'Desactivado'}</span></div></div>
+      <div class="usr-badges">${specs}${u.reset_asked ? '<span class="usr-badge off">Pidió contraseña nueva</span>' : ''}${u.is_admin ? '<span class="usr-badge">Admin</span>' : ''}<span class="usr-badge ${u.active ? 'on' : 'off'}">${u.active ? 'Activo' : 'Desactivado'}</span></div></div>
     </div>`;
   }).join('');
   openSheet('Usuarios', `
@@ -9169,6 +9229,7 @@ function openAuthUserEditor(u) {
   const self = !isNew && u.username === me;
   const has = k => !isNew && (u.specialties || []).includes(k);
   openSheet(isNew ? 'Nuevo usuario' : 'Editar usuario', `
+    ${!isNew && u.reset_asked ? '<div class="fit-note" style="margin-bottom:12px;">Este usuario avisó que olvidó su contraseña. Genera una nueva aquí abajo, guárdala y pásasela por un medio seguro.</div>' : ''}
     <label class="auth-field"><span>Usuario</span><input class="auth-in" id="ue-user" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" value="${isNew ? '' : escapeHtml(u.username)}" ${isNew ? '' : 'disabled'}></label>
     <label class="auth-field"><span>${isNew ? 'Contraseña' : 'Contraseña nueva (opcional)'}</span>
       <div style="display:flex;gap:8px;"><input class="auth-in" id="ue-pass" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="72" value="${isNew ? authGenPass() : ''}" style="flex:1 1 auto;min-width:0;width:auto;"><button class="btn-secondary" type="button" id="ue-gen" style="white-space:nowrap;width:auto;flex:0 0 auto;padding:0 16px;">Generar</button></div>
@@ -9197,6 +9258,7 @@ function openAuthUserEditor(u) {
       active: self ? true : document.getElementById('ue-active').checked });
     if (!r.ok) { msg.textContent = authErr(r.error); return; }
     if (self) authVerify(true);
+    if (pass && !isNew && u.reset_asked) { try { await sbRest('rpc/rutinal_admin_reset_clear', { method: 'POST', body: { p_username: user } }); } catch (e) {} }
     if (pass) {
       const text = `Rutinal\nUsuario: ${user}\nContraseña: ${pass}`;
       openSheet(isNew ? 'Usuario creado' : 'Contraseña actualizada', `
@@ -9254,6 +9316,34 @@ function openAuthUserEditor(u) {
     if (typeof onAuthReady === 'function') onAuthReady();
     if (authIsSpecialist()) openModeChooser();
   });
+  // ---- Recuperar acceso (sin sesión): código de recuperación o aviso al administrador ----
+  const rec = document.getElementById('auth-rec');
+  const recShow = on => { form.style.display = on ? 'none' : ''; rec.style.display = on ? '' : 'none'; const m = document.getElementById('rec-msg'); m.textContent = ''; m.classList.remove('info');
+    if (on) document.getElementById('rec-user').value = document.getElementById('auth-user').value.trim().toLowerCase(); };
+  const recCall = async body => { try { const r = await fetch(SB_URL + '/functions/v1/recover', { method: 'POST', cache: 'no-store', headers: sbHeaders(), body: JSON.stringify(body) }); return await r.json().catch(() => ({ ok: false, error: 'network' })); } catch (e) { return { ok: false, error: 'network' }; } };
+  document.getElementById('auth-forgot').addEventListener('click', () => recShow(true));
+  document.getElementById('rec-back').addEventListener('click', () => recShow(false));
+  rec.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const user = document.getElementById('rec-user').value.trim().toLowerCase(), code = document.getElementById('rec-code').value.trim(), pass = document.getElementById('rec-pass').value;
+    const m = document.getElementById('rec-msg'), b = document.getElementById('rec-submit'); m.classList.remove('info');
+    if (!/^[a-z0-9._-]{3,32}$/.test(user)) { m.textContent = authErr('bad_user'); return; }
+    if (pass.length < 6) { m.textContent = authErr('weak'); return; }
+    b.disabled = true;
+    const r = await recCall({ action: 'reset', username: user, code, password: pass });
+    b.disabled = false;
+    if (!r.ok) { m.textContent = authErr(r.error === 'invalid' ? 'rec_invalid' : r.error === 'weak' ? 'weak' : 'network'); return; }
+    document.getElementById('rec-code').value = ''; document.getElementById('rec-pass').value = '';
+    recShow(false); document.getElementById('auth-user').value = user;
+    const am = document.getElementById('auth-msg'); am.textContent = t('Listo. Entra con tu contraseña nueva y genera otro código de recuperación en Ajustes.'); am.classList.add('info');
+  });
+  document.getElementById('rec-nocode').addEventListener('click', async () => {
+    const user = document.getElementById('rec-user').value.trim().toLowerCase(), m = document.getElementById('rec-msg'); m.classList.remove('info');
+    if (!/^[a-z0-9._-]{3,32}$/.test(user)) { m.textContent = t('Escribe tu usuario para poder avisar.'); return; }
+    const r = await recCall({ action: 'request', username: user });
+    if (!r.ok) { m.textContent = authErr('network'); return; }
+    m.textContent = t('Aviso enviado. Quien te dio la cuenta te pasará una contraseña nueva.'); m.classList.add('info');
+  });
   document.getElementById('auth-show').addEventListener('click', (ev) => {
     const i = document.getElementById('auth-pass');
     const show = i.type === 'password';
@@ -9262,6 +9352,7 @@ function openAuthUserEditor(u) {
   });
   document.getElementById('btn-acct-logout').addEventListener('click', authLogout);
   document.getElementById('btn-acct-pass').addEventListener('click', openAuthChangePass);
+  document.getElementById('btn-acct-rec').addEventListener('click', () => openRecoveryCode());
   document.getElementById('btn-acct-users').addEventListener('click', openAuthUsers);
   const s = authGet();
   if (s && s.token && !s.refresh) {
@@ -9495,6 +9586,7 @@ function openSyncSheet(first) {
 function onAuthReady() {
   const s = authGet();
   if (!s || !s.uid) return;
+  setTimeout(() => { try { recoveryNudge(); } catch (e) {} }, 6000);
   let m = syncMeta();
   if (m.uid && m.uid !== s.uid) {
     // El dispositivo tiene datos de otra cuenta: no se mezclan

@@ -4391,6 +4391,126 @@ window.__I18N_EXTRA = {
    "pt-BR": "fotos das refeições",
    "fr": "photos des repas"
   },
+  "¿Olvidaste tu contraseña?": {
+   "en": "Forgot your password?",
+   "pt-BR": "Esqueceu sua senha?",
+   "fr": "Mot de passe oublié ?"
+  },
+  "Recuperar acceso": {
+   "en": "Recover access",
+   "pt-BR": "Recuperar acesso",
+   "fr": "Récupérer l'accès"
+  },
+  "Usa el código de recuperación que guardaste desde Ajustes.": {
+   "en": "Use the recovery code you saved from Settings.",
+   "pt-BR": "Use o código de recuperação que você salvou em Ajustes.",
+   "fr": "Utilisez le code de récupération enregistré depuis les Réglages."
+  },
+  "Código de recuperación": {
+   "en": "Recovery code",
+   "pt-BR": "Código de recuperação",
+   "fr": "Code de récupération"
+  },
+  "Contraseña nueva": {
+   "en": "New password",
+   "pt-BR": "Nova senha",
+   "fr": "Nouveau mot de passe"
+  },
+  "No tengo código: avisar a quien me dio la cuenta": {
+   "en": "I have no code: notify whoever gave me the account",
+   "pt-BR": "Não tenho código: avisar quem me deu a conta",
+   "fr": "Je n'ai pas de code : prévenir la personne qui m'a donné le compte"
+  },
+  "Volver a iniciar sesión": {
+   "en": "Back to sign in",
+   "pt-BR": "Voltar para entrar",
+   "fr": "Retour à la connexion"
+  },
+  "Usuario o código incorrectos. Tras varios intentos fallidos hay que esperar 30 minutos.": {
+   "en": "Wrong username or code. After several failed attempts you must wait 30 minutes.",
+   "pt-BR": "Usuário ou código incorretos. Após várias tentativas é preciso esperar 30 minutos.",
+   "fr": "Identifiant ou code incorrect. Après plusieurs échecs, il faut attendre 30 minutes."
+  },
+  "Listo. Entra con tu contraseña nueva y genera otro código de recuperación en Ajustes.": {
+   "en": "Done. Sign in with your new password and generate another recovery code in Settings.",
+   "pt-BR": "Pronto. Entre com sua nova senha e gere outro código de recuperação em Ajustes.",
+   "fr": "C'est fait. Connectez-vous avec le nouveau mot de passe et générez un autre code dans les Réglages."
+  },
+  "Escribe tu usuario para poder avisar.": {
+   "en": "Enter your username so we can send the notice.",
+   "pt-BR": "Escreva seu usuário para poder avisar.",
+   "fr": "Saisissez votre identifiant pour envoyer l'avis."
+  },
+  "Aviso enviado. Quien te dio la cuenta te pasará una contraseña nueva.": {
+   "en": "Notice sent. Whoever gave you the account will send you a new password.",
+   "pt-BR": "Aviso enviado. Quem te deu a conta vai te passar uma nova senha.",
+   "fr": "Avis envoyé. La personne qui vous a donné le compte vous enverra un nouveau mot de passe."
+  },
+  "Si olvidas tu contraseña, con este código puedes poner una nueva desde la pantalla de acceso, sin pedírsela a nadie. Sirve una sola vez.": {
+   "en": "If you forget your password, this code lets you set a new one from the sign-in screen without asking anyone. It works only once.",
+   "pt-BR": "Se esquecer sua senha, com este código você define uma nova na tela de acesso, sem pedir a ninguém. Serve uma única vez.",
+   "fr": "Si vous oubliez votre mot de passe, ce code permet d'en définir un nouveau depuis l'écran de connexion, sans rien demander à personne. Il ne sert qu'une fois."
+  },
+  "Ya tienes un código, creado el": {
+   "en": "You already have a code, created on",
+   "pt-BR": "Você já tem um código, criado em",
+   "fr": "Vous avez déjà un code, créé le"
+  },
+  "Por seguridad no se puede volver a mostrar; si lo perdiste, genera uno nuevo.": {
+   "en": "For security it can't be shown again; if you lost it, generate a new one.",
+   "pt-BR": "Por segurança não pode ser mostrado de novo; se o perdeu, gere um novo.",
+   "fr": "Par sécurité il ne peut plus être affiché ; si vous l'avez perdu, générez-en un nouveau."
+  },
+  "Todavía no tienes código.": {
+   "en": "You don't have a code yet.",
+   "pt-BR": "Você ainda não tem código.",
+   "fr": "Vous n'avez pas encore de code."
+  },
+  "Generar uno nuevo": {
+   "en": "Generate a new one",
+   "pt-BR": "Gerar um novo",
+   "fr": "En générer un nouveau"
+  },
+  "Generar código": {
+   "en": "Generate code",
+   "pt-BR": "Gerar código",
+   "fr": "Générer le code"
+  },
+  "Al generar uno nuevo, el anterior deja de servir.": {
+   "en": "Generating a new one makes the previous one stop working.",
+   "pt-BR": "Ao gerar um novo, o anterior deixa de funcionar.",
+   "fr": "En générer un nouveau rend l'ancien inutilisable."
+  },
+  "Este es tu código. Guárdalo ahora fuera de este teléfono (una nota, una foto impresa, tu gestor de contraseñas): no se volverá a mostrar.": {
+   "en": "This is your code. Save it now outside this phone (a note, a printout, your password manager): it won't be shown again.",
+   "pt-BR": "Este é o seu código. Guarde-o agora fora deste telefone (uma nota, uma impressão, seu gerenciador de senhas): não será mostrado de novo.",
+   "fr": "Voici votre code. Conservez-le maintenant hors de ce téléphone (une note, une impression, votre gestionnaire de mots de passe) : il ne sera plus affiché."
+  },
+  "Copiar código": {
+   "en": "Copy code",
+   "pt-BR": "Copiar código",
+   "fr": "Copier le code"
+  },
+  "Copiado": {
+   "en": "Copied",
+   "pt-BR": "Copiado",
+   "fr": "Copié"
+  },
+  "Quien tenga este código y tu usuario puede cambiar tu contraseña. No lo compartas.": {
+   "en": "Anyone with this code and your username can change your password. Don't share it.",
+   "pt-BR": "Quem tiver este código e seu usuário pode mudar sua senha. Não o compartilhe.",
+   "fr": "Toute personne ayant ce code et votre identifiant peut changer votre mot de passe. Ne le partagez pas."
+  },
+  "Pidió contraseña nueva": {
+   "en": "Asked for a new password",
+   "pt-BR": "Pediu nova senha",
+   "fr": "A demandé un nouveau mot de passe"
+  },
+  "Este usuario avisó que olvidó su contraseña. Genera una nueva aquí abajo, guárdala y pásasela por un medio seguro.": {
+   "en": "This user reported a forgotten password. Generate a new one below, save, and send it to them through a secure channel.",
+   "pt-BR": "Este usuário avisou que esqueceu a senha. Gere uma nova abaixo, salve e envie por um meio seguro.",
+   "fr": "Cet utilisateur a signalé un mot de passe oublié. Générez-en un nouveau ci-dessous, enregistrez et transmettez-le par un moyen sûr."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
@@ -8426,11 +8546,6 @@ window.__I18N_EXTRA = {
    "pt-BR": "Senha atual",
    "fr": "Mot de passe actuel"
   },
-  "Contraseña nueva": {
-   "en": "New password",
-   "pt-BR": "Nova senha",
-   "fr": "Nouveau mot de passe"
-  },
   "Repite la contraseña nueva": {
    "en": "Repeat the new password",
    "pt-BR": "Repita a nova senha",
@@ -8565,11 +8680,6 @@ window.__I18N_EXTRA = {
    "en": "Copy",
    "pt-BR": "Copiar",
    "fr": "Copier"
-  },
-  "Copiado": {
-   "en": "Copied",
-   "pt-BR": "Copiado",
-   "fr": "Copié"
   },
   "No se pudo copiar": {
    "en": "Couldn't copy",
