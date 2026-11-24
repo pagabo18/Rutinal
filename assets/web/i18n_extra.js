@@ -4756,6 +4756,11 @@ window.__I18N_EXTRA = {
    "pt-BR": "Quantos atletas ativos pode ter como especialista. Administradores não têm limite.",
    "fr": "Nombre d'athlètes actifs autorisés en tant que spécialiste. Les administrateurs n'ont pas de limite."
   },
+  "Ese usuario ya existe. Si es la misma persona, vuelve atrás, elige «Ya tiene cuenta» y dale un código. Si es otra persona, prueba con otro usuario.": {
+   "en": "That username already exists. If it's the same person, go back, choose “Already has an account” and give them a code. If it's someone else, try another username.",
+   "pt-BR": "Esse usuário já existe. Se for a mesma pessoa, volte, escolha “Já tem conta” e dê um código. Se for outra pessoa, tente outro usuário.",
+   "fr": "Cet identifiant existe déjà. Si c'est la même personne, revenez en arrière, choisissez « A déjà un compte » et donnez-lui un code. Sinon, essayez un autre identifiant."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
