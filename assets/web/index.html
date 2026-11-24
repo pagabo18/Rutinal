@@ -9164,6 +9164,32 @@ function chatBgRender() {
     });
   };
 }
+// ---- Invitación reservada: el especialista creó esta cuenta; al entrar se pide aceptar compartir ----
+async function reservedInvitePrompt(tries) {
+  const s = authGet(); if (!s || !s.uid || (typeof spMode === 'function' && spMode())) return;
+  try { if (sessionStorage.getItem('__resv') === s.uid) return; } catch (e) {}
+  let code = null; try { code = await sbRest('rpc/rutinal_my_reserved_invite', { method: 'POST', body: {} }); } catch (e) { return; }
+  if (!code) return;
+  // si hay otra hoja abierta (por ejemplo, la del respaldo en la nube), se espera a que la cierre
+  if (document.getElementById('sheet').classList.contains('show')) { if ((tries || 0) < 40) setTimeout(() => reservedInvitePrompt((tries || 0) + 1), 3000); return; }
+  const pv = await linkRpc('rutinal_invite_preview', { p_code: code }); if (!pv.ok) return;
+  try { sessionStorage.setItem('__resv', s.uid); } catch (e) {}
+  openSheet('Tu especialista', `<p style="font-size:15px;line-height:1.5;"><b translate="no">${escapeHtml(pv.specialist)}</b> <span>creó tu cuenta para acompañarte como</span> ${(pv.roles || [pv.role]).map(r => `<b>${escapeHtml(AUTH_SPECS[r] || r)}</b>`).join(', ')}.</p>
+    <div class="lk-row"><div class="lk-d" style="margin-top:0;font-size:14px;color:var(--text-2);"><span>Podrá ver:</span> ${linkSees(pv.keys)}</div></div>
+    <div class="fit-note" style="margin:10px 0;">Para compartir se activa el respaldo en la nube. No podrá cambiar tus registros, y puedes dejar de compartir cuando quieras en Más → Especialistas y atletas.</div>
+    <div class="auth-msg" id="rv-msg"></div>
+    <button class="btn-primary" id="rv-ok" style="width:100%;margin-bottom:8px;">Aceptar y compartir</button>
+    <button class="btn-secondary" id="rv-no" style="width:100%;">Ahora no</button>`);
+  document.getElementById('rv-no').addEventListener('click', closeSheet);
+  document.getElementById('rv-ok').addEventListener('click', async ev => {
+    ev.target.disabled = true; const m = document.getElementById('rv-msg');
+    if (!syncOn()) { const ok = await syncEnable(); if (!ok) { m.textContent = authErr('network'); ev.target.disabled = false; return; } }
+    const a = await linkRpc('rutinal_invite_accept', { p_code: code });
+    if (!a.ok) { m.textContent = linkErr(a.error === 'athlete_limit' ? 'athlete_limit_client' : a.error); ev.target.disabled = false; return; }
+    syncNow(); try { msgRefresh(true); } catch (e) {} try { asgRefresh(true); } catch (e) {}
+    closeSheet(); try { renderHoyDash(); } catch (e) {}
+  });
+}
 // ---- Código de recuperación: permite cambiar la contraseña desde la pantalla de acceso si se olvida ----
 async function openRecoveryCode(nudge) {
   openSheet('Código de recuperación', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i class="s"></i></div>');
@@ -9217,7 +9243,7 @@ async function openAuthUsers() {
   _authUsers.sort((a, b) => (b.reset_asked ? 1 : 0) - (a.reset_asked ? 1 : 0));
   const me = (authGet() || {}).user;
   const rows = _authUsers.map((u, i) => {
-    const d = [u.display_name, u.note, u.last_login ? `Último acceso: ${authFmtDate(u.last_login)}` : 'Aún no ha entrado'].filter(Boolean);
+    const d = [u.display_name, u.note, (u.specialties || []).length && !u.is_admin ? `Límite: ${u.athlete_limit == null ? 5 : u.athlete_limit}` : null, u.created_by ? `Creado por ${u.created_by}` : null, u.last_login ? `Último acceso: ${authFmtDate(u.last_login)}` : 'Aún no ha entrado'].filter(Boolean);
     const specs = (u.specialties || []).map(x => `<span class="usr-badge spec">${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join('');
     return `<div class="usr-row" data-usr="${i}">
       <div class="usr-body"><div class="usr-n" translate="no">${escapeHtml(u.username)}${u.username === me ? ' · <span style="font-weight:500;color:var(--text-3);">tú</span>' : ''}</div>
@@ -9248,6 +9274,8 @@ function openAuthUserEditor(u) {
     <div class="setting-label" style="margin-top:14px;">Especialista en</div>
     <div class="fit-note" style="margin:-4px 0 4px;">Sin marcar ninguna, la cuenta es solo de atleta.</div>
     ${Object.keys(AUTH_SPECS).map(k => `<label class="usr-check"><input type="checkbox" data-spec="${k}" ${has(k) ? 'checked' : ''}><span>${AUTH_SPECS[k]}</span></label>`).join('')}
+    <label class="auth-field" style="margin-top:10px;"><span>Límite de atletas</span><input class="auth-in" id="ue-limit" type="number" inputmode="numeric" min="0" max="1000" value="${isNew || u.athlete_limit == null ? 5 : u.athlete_limit}"></label>
+    <div class="fit-note" style="margin:-4px 0 4px;">Cuántos atletas activos puede tener como especialista. Los administradores no tienen límite.</div>
     ${self ? '' : `<div class="setting-label" style="margin-top:14px;">Acceso</div>
     <label class="usr-check"><input type="checkbox" id="ue-active" ${isNew || u.active ? 'checked' : ''}><span>Acceso activo</span></label>
     <label class="usr-check"><input type="checkbox" id="ue-admin" ${!isNew && u.is_admin ? 'checked' : ''}><span>Administrador (puede dar de alta usuarios)</span></label>`}
@@ -9263,6 +9291,7 @@ function openAuthUserEditor(u) {
     const r = await authAdmin('save', { username: user, password: pass || null,
       display_name: document.getElementById('ue-name').value, note: document.getElementById('ue-note').value,
       specialties: Array.from(document.querySelectorAll('[data-spec]')).filter(c => c.checked).map(c => c.dataset.spec),
+      athlete_limit: Math.max(0, Math.min(1000, parseInt(document.getElementById('ue-limit').value, 10) || 0)),
       is_admin: self ? true : document.getElementById('ue-admin').checked,
       active: self ? true : document.getElementById('ue-active').checked });
     if (!r.ok) { msg.textContent = authErr(r.error); return; }
@@ -9595,6 +9624,7 @@ function openSyncSheet(first) {
 function onAuthReady() {
   const s = authGet();
   if (!s || !s.uid) return;
+  setTimeout(() => { try { reservedInvitePrompt(); } catch (e) {} }, 2500);
   setTimeout(() => { try { recoveryNudge(); } catch (e) {} }, 6000);
   let m = syncMeta();
   if (m.uid && m.uid !== s.uid) {
@@ -9631,12 +9661,14 @@ function onAuthReady() {
 // El servidor decide qué documentos puede leer cada rol (política de user_docs).
 // ============================================================
 const LINK_KEY_LABELS = { meal_photos: 'fotos de comidas', goals: 'objetivos', phases: 'fases del plan', act_log: 'cardio y otros deportes', athlete_profile: 'perfil de atleta', gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
-const LINK_ERRORS = { bad_code: 'Ese código no existe o ya venció.', own_code: 'Ese código es tuyo; compártelo con tu atleta.', too_many: 'Tienes demasiadas invitaciones pendientes. Cancela alguna.', forbidden: 'Tu cuenta no tiene esa especialidad.' };
+const LINK_ERRORS = { bad_code: 'Ese código no existe o ya venció.', own_code: 'Ese código es tuyo; compártelo con tu atleta.', too_many: 'Tienes demasiadas invitaciones pendientes. Cancela alguna.', forbidden: 'Tu cuenta no tiene esa especialidad.', athlete_limit: 'Llegaste a tu límite de atletas. Para sumar más, pide un plan mayor a quien administra Rutinal, o termina el vínculo con un atleta que ya no acompañes.', athlete_limit_client: 'Tu especialista ya llegó a su límite de atletas. Avísale para que libere un lugar o amplíe su plan.', taken: 'Ese usuario ya existe. Prueba con otro.' };
 function linkErr(code) { return LINK_ERRORS[code] || authErr(code); }
 async function linkRpc(fn, args) {
   try {
     const r = await sbFetch('/rest/v1/rpc/' + fn, { method: 'POST', body: args || {} });
     const j = await r.json().catch(() => null);
+    if (!r.ok && j && /athlete_limit/.test(j.message || '')) return { ok: false, error: 'athlete_limit' };
+    if (!r.ok && j && /reserved/.test(j.message || '')) return { ok: false, error: 'bad_code' };
     return (r.ok && j) ? j : { ok: false, error: 'network' };
   } catch (e) { return { ok: false, error: e && e.code === 'session' ? 'session' : 'network' }; }
 }
@@ -9714,7 +9746,7 @@ async function openLinks() {
     document.getElementById('lk-cancel').addEventListener('click', openLinks);
     document.getElementById('lk-accept').addEventListener('click', async () => {
       const a = await linkRpc('rutinal_invite_accept', { p_code: code });
-      if (!a.ok) { document.getElementById('lk-msg2').textContent = linkErr(a.error); return; }
+      if (!a.ok) { document.getElementById('lk-msg2').textContent = linkErr(a.error === 'athlete_limit' ? 'athlete_limit_client' : a.error); return; }
       syncNow(); try { msgRefresh(true); } catch (e) {}
       openLinks();
     });
@@ -10336,7 +10368,56 @@ function spRowHtml(l, i) {
     <div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(l.name || '')}</div><div class="sp-row-d">${spStatusLine(l)}</div></div>
     <span class="sp-roles">${rolesBadges(l)}</span><span class="sp-chev">›</span></div>`;
 }
+async function spSlots(force) {
+  if (!force && _sp.slots && Date.now() - _sp.slots.at < 30000) return _sp.slots;
+  try { const r = await sbRest('rpc/rutinal_my_slots', { method: 'POST', body: {} }); if (r) _sp.slots = Object.assign({ at: Date.now() }, r); } catch (e) {}
+  return _sp.slots || null;
+}
+function spSlotsText(sl) { return !sl ? '' : sl.unlimited ? '<span>Sin límite de atletas</span>' : `<span translate="no">${sl.used}</span> <span>de</span> <span translate="no">${sl.limit}</span> <span>lugares ocupados</span>`; }
+// Punto de entrada: crear la cuenta del atleta, o darle un código si ya tiene cuenta.
 async function spInvite() {
+  openSheet('Agregar atleta', '<div class="skel" aria-busy="true"><i class="a"></i><i class="s"></i></div>');
+  const sl = await spSlots(true), full = sl && !sl.unlimited && (sl.used + (sl.pending || 0)) >= sl.limit;
+  openSheet('Agregar atleta', `${sl ? `<div class="fit-note" style="margin:0 0 12px;"><span>${spSlotsText(sl)}</span>${sl.pending ? ` · <span translate="no">${sl.pending}</span> <span>por aceptar</span>` : ''}</div>` : ''}
+    ${full ? `<p class="auth-msg" style="margin:0 0 12px;">${escapeHtml(linkErr('athlete_limit'))}</p>` : ''}
+    <div class="goal-types" style="grid-template-columns:1fr;">
+      <button data-add="new"${full ? ' disabled style="opacity:.5"' : ''}><b>Crear su cuenta</b><span>Para quien todavía no usa Rutinal. Le das usuario y contraseña; al entrar acepta compartir contigo.</span></button>
+      <button data-add="code"${full ? ' disabled style="opacity:.5"' : ''}><b>Ya tiene cuenta</b><span>Le das un código que escribe en Más → Especialistas y atletas.</span></button>
+    </div>`);
+  document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => b.dataset.add === 'new' ? spCreateAthlete() : spInviteCode()));
+}
+function spCreateAthlete() {
+  const specs = (authGet() || {}).specs || [];
+  openSheet('Crear cuenta de atleta', `
+    <label class="auth-field"><span>Nombre</span><input class="auth-in" id="ca-name" type="text" maxlength="80" placeholder="Como quieres verlo en tu lista"></label>
+    <label class="auth-field"><span>Usuario</span><input class="auth-in" id="ca-user" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" placeholder="ej. ana.lopez"></label>
+    <label class="auth-field"><span>Contraseña</span><div style="display:flex;gap:8px;"><input class="auth-in" id="ca-pass" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="72" value="${authGenPass()}" style="flex:1 1 auto;min-width:0;width:auto;"><button class="btn-secondary" type="button" id="ca-gen" style="width:auto;padding:0 14px;">Otra</button></div></label>
+    ${specs.length > 1 ? `<div class="setting-label" style="margin-top:12px;">Servicios que le das</div>${specs.map(k => `<label class="usr-check"><input type="checkbox" data-ca="${k}" checked><span>${AUTH_SPECS[k]}</span></label>`).join('')}` : ''}
+    <div class="fit-note" style="margin-top:10px;">Al entrar por primera vez, la app le pedirá aceptar compartir sus datos contigo. Si no entra en 14 días, la invitación vence y tendrás que darle un código.</div>
+    <div class="auth-msg" id="ca-msg"></div>`, async () => {
+    const msg = document.getElementById('ca-msg'), user = document.getElementById('ca-user').value.trim().toLowerCase(), pass = document.getElementById('ca-pass').value;
+    const roles = specs.length > 1 ? Array.from(document.querySelectorAll('[data-ca]')).filter(c => c.checked).map(c => c.dataset.ca) : specs;
+    if (!/^[a-z0-9._-]{3,32}$/.test(user)) { msg.textContent = authErr('bad_user'); return; }
+    if (pass.length < 6) { msg.textContent = authErr('weak'); return; }
+    if (!roles.length) { msg.textContent = t('Elige al menos un servicio.'); return; }
+    const sv = document.getElementById('sheet-save'); if (sv) sv.disabled = true; msg.textContent = '';
+    let r = null;
+    try { const x = await sbFetch('/functions/v1/athletes', { method: 'POST', body: { action: 'create', username: user, password: pass, display_name: document.getElementById('ca-name').value, roles } }); r = await x.json().catch(() => null); } catch (e) { r = { ok: false, error: e && e.code === 'session' ? 'session' : 'network' }; }
+    if (sv) sv.disabled = false;
+    if (!r || !r.ok) { msg.textContent = linkErr((r && r.error) || 'network'); return; }
+    _sp.at = 0; _sp.slots = null;
+    const text = `Rutinal\n${location.origin}${location.pathname}\nUsuario: ${user}\nContraseña: ${pass}`;
+    openSheet('Cuenta creada', `<p style="color:var(--text-2);font-size:14px;">Pásale estos datos por un medio privado. La contraseña no se podrá volver a ver aquí.</p>
+      <div class="usr-cred" translate="no"><span>Usuario:</span> <b>${escapeHtml(user)}</b><br><span>Contraseña:</span> <b>${escapeHtml(pass)}</b></div>
+      <button class="btn-primary" id="ca-copy" style="width:100%;">Copiar datos</button>
+      <div class="fit-note" style="margin-top:10px;">Aparecerá en tu lista cuando acepte compartir contigo.</div>`);
+    document.getElementById('ca-copy').addEventListener('click', async ev => { let ok = false; try { await navigator.clipboard.writeText(text); ok = true; } catch (x) {} ev.target.textContent = ok ? t('Copiado') : t('No se pudo copiar'); });
+    try { tabRenderers['sp-clients'](); } catch (e) {}
+  });
+  const sv = document.getElementById('sheet-save'); if (sv) sv.textContent = t('Crear cuenta');
+  document.getElementById('ca-gen').addEventListener('click', () => { document.getElementById('ca-pass').value = authGenPass(); });
+}
+async function spInviteCode() {
   const specs = (authGet() || {}).specs || [];
   const make = async (roles) => {
     const e = await linkRpc('rutinal_invite_many', { p_roles: roles });
@@ -10381,7 +10462,7 @@ tabRenderers['sp-home'] = async function () {
     ${apptUpcoming().slice(0, 4).map(a => `<div class="sp-row" data-sp-agenda="1"><div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(a.title || '')}</div><div class="sp-row-d" translate="no">${escapeHtml(apptName(a.link_id))} · ${escapeHtml(apptWhen(a.starts_at))}</div></div><span class="sp-chev">›</span></div>`).join('') || '<div class="sp-alert ok"><div class="sp-alert-d">No tienes citas próximas.</div></div>'}
     <button class="sp-act" data-sp-agenda="1" style="width:100%;margin-bottom:6px;">Abrir agenda</button>
     ${recent.length ? `<div class="sp-h">Actividad reciente</div>${recent.map(l => spRowHtml(l, cs.indexOf(l))).join('')}` : ''}
-    <div class="sp-actions"><button class="sp-act primary" id="sp-invite">Invitar atleta</button><button class="sp-act" data-sp-tab="sp-templates">Mis plantillas</button></div>`;
+    <div class="sp-actions"><button class="sp-act primary" id="sp-invite">Agregar atleta</button><button class="sp-act" data-sp-tab="sp-templates">Mis plantillas</button></div>`;
   el.querySelectorAll('[data-sp-tab]').forEach(x => x.addEventListener('click', () => spGo(x.dataset.spTab)));
   el.querySelectorAll('[data-sp-open]').forEach(x => x.addEventListener('click', () => { spGo('sp-clients'); spOpenClient(cs[+x.dataset.spOpen]); }));
   el.querySelectorAll('[data-sp-ck]').forEach(x => x.addEventListener('click', () => { _sp.tab = 'checkins'; spGo('sp-clients'); spOpenClient(cs[+x.dataset.spCk]); }));
@@ -10399,10 +10480,11 @@ tabRenderers['sp-clients'] = async function () {
   const shown = cs.filter(l => !q || normalizeFoodQuery((l.name || '') + ' ' + (l.username || '')).includes(q));
   el.innerHTML = `<div class="sp-hello">Atletas</div><div class="sp-sub">Las personas que acompañas</div>
     <input class="sp-search" id="sp-q" type="search" placeholder="Buscar por nombre…" value="${escapeHtml(_sp.q || '')}">
-    <div class="sp-h" style="margin-top:0;"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Atletas</span><small><span>${cs.length}</span> <span>${cs.length === 1 ? 'activo' : 'activos'}</span></small></div>
+    <div class="sp-h" style="margin-top:0;"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Atletas</span><small id="sp-slots"><span>${cs.length}</span> <span>${cs.length === 1 ? 'activo' : 'activos'}</span></small></div>
     <div id="sp-list">${shown.map(l => spRowHtml(l, cs.indexOf(l))).join('') || `<div class="sp-empty">${cs.length ? 'Nadie coincide con la búsqueda.' : 'Aún no tienes atletas. Invita al primero con un código.'}</div>`}</div>
-    ${pend.length ? `<div class="sp-h"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Invitaciones sin usar</span></div>${pend.map(l => `<div class="sp-row" style="cursor:default;"><div class="sp-row-b"><div class="sp-row-n" translate="no" style="letter-spacing:.08em;">${escapeHtml(l.code || '')}</div><div class="sp-row-d">${linkRoles(l).map(x => `<span>${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join(' · ')}</div></div><button class="btn-secondary" data-sp-cancel="${linkIds(l).join(',')}" style="padding:8px 12px;width:auto;">Cancelar</button></div>`).join('')}` : ''}
-    <div class="sp-actions" style="grid-template-columns:1fr;"><button class="sp-act primary" id="sp-invite2">Invitar atleta</button></div>`;
+    ${pend.length ? `<div class="sp-h"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Invitaciones sin usar</span></div>${pend.map(l => `<div class="sp-row" style="cursor:default;"><div class="sp-row-b"><div class="sp-row-n" translate="no"${l.client_id ? '' : ' style="letter-spacing:.08em;"'}>${escapeHtml(l.client_id ? (l.name || l.username || '') : (l.code || ''))}</div>${l.client_id ? '<div class="sp-row-d"><span>Cuenta creada · esperando que acepte</span></div>' : ''}<div class="sp-row-d">${linkRoles(l).map(x => `<span>${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join(' · ')}</div></div><button class="btn-secondary" data-sp-cancel="${linkIds(l).join(',')}" style="padding:8px 12px;width:auto;">Cancelar</button></div>`).join('')}` : ''}
+    <div class="sp-actions" style="grid-template-columns:1fr;"><button class="sp-act primary" id="sp-invite2">Agregar atleta</button></div>`;
+  spSlots().then(sl => { const e2 = document.getElementById('sp-slots'); if (e2 && sl) { e2.innerHTML = spSlotsText(sl); try { i18n.apply && i18n.apply(e2); } catch (x) {} } });
   const inp = document.getElementById('sp-q');
   inp.addEventListener('input', () => { _sp.q = inp.value; const pos = inp.selectionStart; tabRenderers['sp-clients']().then(() => { const n = document.getElementById('sp-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) {} } }); });
   el.querySelectorAll('[data-sp-open]').forEach(x => x.addEventListener('click', () => spOpenClient(cs[+x.dataset.spOpen])));

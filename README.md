@@ -289,4 +289,6 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 
 **Bioimpedancia (Tanita, InBody…).** En la evaluación de composición corporal hay una sección para copiar lo que da el equipo: % de grasa (entra como método «Bioimpedancia / equipo»), masa muscular, agua, grasa visceral, masa ósea, metabolismo basal, edad metabólica y ángulo de fase, más el modelo. Salen en el reporte con su cambio, en la evolución y en «Tu cuerpo». No hay conexión automática con la báscula.
 
+**Altas por el especialista y límite de atletas.** El administrador crea a los especialistas; cada especialista crea las cuentas de sus atletas desde «Agregar atleta» (función `athletes`), que quedan con una invitación reservada: al entrar, el atleta decide si acepta compartir. Cada especialista tiene un límite de atletas activos (`profiles.athlete_limit`, 5 por omisión; los administradores no tienen límite) que el administrador cambia en Usuarios. Lo hace cumplir el disparador `links_guard` en la base, también para invitaciones por código. SQL en `supabase/rutinal_athlete_limit.sql`.
+
 **Personalizar.** En Ajustes se apagan las secciones que no se usan y se activa «Solo palomear ejercicios». Preferencias en `app_prefs`.

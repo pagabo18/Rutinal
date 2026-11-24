@@ -1,7 +1,7 @@
 // Rutinal · administración de usuarios (solo cuentas con is_admin).
 // La app la llama con el token de sesión del usuario en Authorization. Aquí se valida ese
 // token contra Supabase Auth y se comprueba que el perfil sea administrador y esté activo.
-// Acciones: list, save (alta o edición), delete.
+// Acciones: list, save (alta o edición, incluye athlete_limit), delete.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const DOMAIN = "rutinal.invalid"; // los usuarios entran con nombre de usuario; el correo es interno y no recibe mensajes
@@ -52,6 +52,8 @@ Deno.serve(async (req: Request) => {
         users: (profs ?? []).map((p) => ({
           username: p.username, display_name: p.display_name, specialties: p.specialties,
           is_admin: p.is_admin, active: p.active, note: p.note, created_at: p.created_at,
+          athlete_limit: p.athlete_limit,
+          created_by: (profs ?? []).find((x) => x.id === p.created_by)?.username ?? null,
           last_login: last.get(p.id) ?? null,
         })),
       });
@@ -69,6 +71,8 @@ Deno.serve(async (req: Request) => {
       const active = body.active !== false;
       const note = String(body.note ?? "").trim().slice(0, 200) || null;
       const display_name = String(body.display_name ?? "").trim().slice(0, 80) || null;
+      const lim = Number(body.athlete_limit);
+      const limit = Number.isInteger(lim) && lim >= 0 && lim <= 1000 ? lim : null;
 
       const { data: old } = await db.from("profiles").select("id").eq("username", username).maybeSingle();
       if (!old) {
@@ -78,7 +82,7 @@ Deno.serve(async (req: Request) => {
         });
         if (ce || !cu?.user) return json({ ok: false, error: "create", detail: ce?.message ?? "" });
         const { error: pe } = await db.from("profiles")
-          .insert({ id: cu.user.id, username, display_name, specialties, is_admin, active, note });
+          .insert({ id: cu.user.id, username, display_name, specialties, is_admin, active, note, ...(limit != null ? { athlete_limit: limit } : {}) });
         if (pe) {
           await db.auth.admin.deleteUser(cu.user.id);
           return json({ ok: false, error: "create", detail: pe.message });
@@ -93,7 +97,7 @@ Deno.serve(async (req: Request) => {
       const { error: ue } = await db.auth.admin.updateUserById(old.id, attrs);
       if (ue) return json({ ok: false, error: "server", detail: ue.message }, 500);
       const { error: pe } = await db.from("profiles")
-        .update({ display_name, specialties, is_admin, active, note }).eq("id", old.id);
+        .update({ display_name, specialties, is_admin, active, note, ...(limit != null ? { athlete_limit: limit } : {}) }).eq("id", old.id);
       if (pe) return json({ ok: false, error: "server", detail: pe.message }, 500);
       // cerrar sus sesiones si se desactivó o se le cambió la contraseña
       if ((!active || password) && old.id !== me.id) await db.rpc("rutinal_revoke_sessions", { p_user: old.id });

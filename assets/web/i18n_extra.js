@@ -4631,6 +4631,131 @@ window.__I18N_EXTRA = {
    "pt-BR": "Massa muscular (equipamento)",
    "fr": "Masse musculaire (appareil)"
   },
+  "Agregar atleta": {
+   "en": "Add athlete",
+   "pt-BR": "Adicionar atleta",
+   "fr": "Ajouter un athlète"
+  },
+  "Crear su cuenta": {
+   "en": "Create their account",
+   "pt-BR": "Criar a conta",
+   "fr": "Créer son compte"
+  },
+  "Ya tiene cuenta": {
+   "en": "Already has an account",
+   "pt-BR": "Já tem conta",
+   "fr": "A déjà un compte"
+  },
+  "Para quien todavía no usa Rutinal. Le das usuario y contraseña; al entrar acepta compartir contigo.": {
+   "en": "For someone who doesn't use Rutinal yet. You give them a username and password; on signing in they accept sharing with you.",
+   "pt-BR": "Para quem ainda não usa o Rutinal. Você dá usuário e senha; ao entrar, aceita compartilhar com você.",
+   "fr": "Pour quelqu'un qui n'utilise pas encore Rutinal. Vous lui donnez identifiant et mot de passe ; à la connexion il accepte de partager avec vous."
+  },
+  "Le das un código que escribe en Más → Especialistas y atletas.": {
+   "en": "You give them a code to enter in More → Specialists and athletes.",
+   "pt-BR": "Você dá um código que ele digita em Mais → Especialistas e atletas.",
+   "fr": "Vous lui donnez un code à saisir dans Plus → Spécialistes et athlètes."
+  },
+  "Crear cuenta de atleta": {
+   "en": "Create athlete account",
+   "pt-BR": "Criar conta de atleta",
+   "fr": "Créer un compte athlète"
+  },
+  "Crear cuenta": {
+   "en": "Create account",
+   "pt-BR": "Criar conta",
+   "fr": "Créer le compte"
+  },
+  "Como quieres verlo en tu lista": {
+   "en": "How you want to see them in your list",
+   "pt-BR": "Como quer vê-lo na sua lista",
+   "fr": "Comment l'afficher dans votre liste"
+  },
+  "Servicios que le das": {
+   "en": "Services you provide",
+   "pt-BR": "Serviços que você oferece",
+   "fr": "Services que vous offrez"
+  },
+  "Al entrar por primera vez, la app le pedirá aceptar compartir sus datos contigo. Si no entra en 14 días, la invitación vence y tendrás que darle un código.": {
+   "en": "When they first sign in, the app will ask them to accept sharing their data with you. If they don't sign in within 14 days, the invitation expires and you'll need to give them a code.",
+   "pt-BR": "Ao entrar pela primeira vez, o app pedirá que aceite compartilhar os dados com você. Se não entrar em 14 dias, o convite expira e você terá que dar um código.",
+   "fr": "À sa première connexion, l'app lui demandera d'accepter de partager ses données avec vous. S'il ne se connecte pas sous 14 jours, l'invitation expire et il faudra lui donner un code."
+  },
+  "Cuenta creada": {
+   "en": "Account created",
+   "pt-BR": "Conta criada",
+   "fr": "Compte créé"
+  },
+  "Pásale estos datos por un medio privado. La contraseña no se podrá volver a ver aquí.": {
+   "en": "Send them these details privately. The password can't be shown here again.",
+   "pt-BR": "Envie esses dados por um meio privado. A senha não poderá ser vista de novo aqui.",
+   "fr": "Transmettez-lui ces informations en privé. Le mot de passe ne pourra plus être affiché ici."
+  },
+  "Copiar datos": {
+   "en": "Copy details",
+   "pt-BR": "Copiar dados",
+   "fr": "Copier les informations"
+  },
+  "Aparecerá en tu lista cuando acepte compartir contigo.": {
+   "en": "They'll appear in your list once they accept sharing with you.",
+   "pt-BR": "Aparecerá na sua lista quando aceitar compartilhar com você.",
+   "fr": "Il apparaîtra dans votre liste quand il acceptera de partager avec vous."
+  },
+  "Cuenta creada · esperando que acepte": {
+   "en": "Account created · waiting for acceptance",
+   "pt-BR": "Conta criada · aguardando aceite",
+   "fr": "Compte créé · en attente d'acceptation"
+  },
+  "lugares ocupados": {
+   "en": "slots used",
+   "pt-BR": "vagas ocupadas",
+   "fr": "places occupées"
+  },
+  "Sin límite de atletas": {
+   "en": "No athlete limit",
+   "pt-BR": "Sem limite de atletas",
+   "fr": "Pas de limite d'athlètes"
+  },
+  "por aceptar": {
+   "en": "pending acceptance",
+   "pt-BR": "a aceitar",
+   "fr": "en attente"
+  },
+  "Llegaste a tu límite de atletas. Para sumar más, pide un plan mayor a quien administra Rutinal, o termina el vínculo con un atleta que ya no acompañes.": {
+   "en": "You've reached your athlete limit. To add more, ask the Rutinal administrator for a bigger plan, or end the link with an athlete you no longer coach.",
+   "pt-BR": "Você atingiu seu limite de atletas. Para adicionar mais, peça um plano maior a quem administra o Rutinal, ou encerre o vínculo com um atleta que não acompanha mais.",
+   "fr": "Vous avez atteint votre limite d'athlètes. Pour en ajouter, demandez un plan supérieur à l'administrateur de Rutinal, ou terminez le lien avec un athlète que vous ne suivez plus."
+  },
+  "Tu especialista ya llegó a su límite de atletas. Avísale para que libere un lugar o amplíe su plan.": {
+   "en": "Your specialist has reached their athlete limit. Let them know so they can free a slot or upgrade their plan.",
+   "pt-BR": "Seu especialista atingiu o limite de atletas. Avise para liberar uma vaga ou ampliar o plano.",
+   "fr": "Votre spécialiste a atteint sa limite d'athlètes. Prévenez-le pour qu'il libère une place ou élargisse son plan."
+  },
+  "Ese usuario ya existe. Prueba con otro.": {
+   "en": "That username already exists. Try another.",
+   "pt-BR": "Esse usuário já existe. Tente outro.",
+   "fr": "Cet identifiant existe déjà. Essayez-en un autre."
+  },
+  "creó tu cuenta para acompañarte como": {
+   "en": "created your account to support you as",
+   "pt-BR": "criou sua conta para te acompanhar como",
+   "fr": "a créé votre compte pour vous accompagner en tant que"
+  },
+  "Para compartir se activa el respaldo en la nube. No podrá cambiar tus registros, y puedes dejar de compartir cuando quieras en Más → Especialistas y atletas.": {
+   "en": "Sharing turns on cloud backup. They can't change your records, and you can stop sharing anytime in More → Specialists and athletes.",
+   "pt-BR": "Para compartilhar, o backup na nuvem é ativado. Ele não poderá mudar seus registros, e você pode parar de compartilhar quando quiser em Mais → Especialistas e atletas.",
+   "fr": "Le partage active la sauvegarde dans le cloud. Il ne pourra pas modifier vos données, et vous pouvez arrêter de partager à tout moment dans Plus → Spécialistes et athlètes."
+  },
+  "Límite de atletas": {
+   "en": "Athlete limit",
+   "pt-BR": "Limite de atletas",
+   "fr": "Limite d'athlètes"
+  },
+  "Cuántos atletas activos puede tener como especialista. Los administradores no tienen límite.": {
+   "en": "How many active athletes they can have as a specialist. Administrators have no limit.",
+   "pt-BR": "Quantos atletas ativos pode ter como especialista. Administradores não têm limite.",
+   "fr": "Nombre d'athlètes actifs autorisés en tant que spécialiste. Les administrateurs n'ont pas de limite."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

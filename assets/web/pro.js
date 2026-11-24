@@ -1054,7 +1054,7 @@ function phaseCardHtml(ph, i, key, wlog) {
     ${ph.rate != null && ph.rate !== '' ? `<div class="goal-d"><span>Ritmo de peso</span>: <span translate="no">${phaseRateText(ph.rate)}</span> <span>por semana</span>${pace ? ` · <span class="gym-tag ${pace.cls === 'ok' ? 'good' : 'warn'}">${pace.text}</span> <span translate="no">(${phaseRateText(pace.rate)})</span>` : ''}</div>` : ''}
     ${ph.note ? `<div class="goal-d" style="color:var(--text-2)" translate="no">${escapeHtml(ph.note)}</div>` : ''}</div>`;
 }
-function phasesSummary() { const c = phaseCurrent(); if (!c) return ''; const inf = phaseInfo(c); return `${phaseName(c)} · ${t('Semana')} ${inf.week} ${t('de')} ${inf.weeks}`; }
+function phasesSummary() { const c = phaseCurrent(); if (!c) return ''; const inf = phaseInfo(c); return `${phaseName(c)} · ${t('Semana')} ${inf.week}/${inf.weeks}`; }
 function phaseHoyCard() {
   const list = phasesAll(), c = phaseAt(list), key = keyDate();
   if (!c) { const nx = list.find(p => p.start > key); if (!nx) return ''; return `<div class="hd-card" data-hd-phase="1" style="cursor:pointer;"><div class="hd-k"><span>Fase del plan</span><span class="hd-badge">Próxima</span></div><div class="hd-big" style="font-size:20px;"${nx.name ? ' translate="no"' : ''}>${escapeHtml(phaseName(nx))}</div><div class="goal-d"><span>Empieza el</span> <span translate="no">${escapeHtml(antDate(nx.start))}</span></div></div>`; }
