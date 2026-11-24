@@ -287,4 +287,6 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 
 **Fotos de progreso por pose.** Cada foto lleva su pose (frente, perfil, espalda o libre; columna `pose`). En Fotos de progreso hay un comparador lado a lado por pose con dos fechas a elegir. El check-in semanal tiene tres casillas (frente, perfil, espalda) que suben la foto ya compartida; el especialista las ve en la revisión junto a la foto anterior de la misma pose.
 
+**Bioimpedancia (Tanita, InBody…).** En la evaluación de composición corporal hay una sección para copiar lo que da el equipo: % de grasa (entra como método «Bioimpedancia / equipo»), masa muscular, agua, grasa visceral, masa ósea, metabolismo basal, edad metabólica y ángulo de fase, más el modelo. Salen en el reporte con su cambio, en la evolución y en «Tu cuerpo». No hay conexión automática con la báscula.
+
 **Personalizar.** En Ajustes se apagan las secciones que no se usan y se activa «Solo palomear ejercicios». Preferencias en `app_prefs`.

@@ -4556,6 +4556,81 @@ window.__I18N_EXTRA = {
    "pt-BR": "As fotos enviadas aqui são compartilhadas com seus especialistas. Mesmo lugar, mesma luz e mesma distância toda semana.",
    "fr": "Les photos ajoutées ici sont partagées avec vos spécialistes. Même endroit, même lumière et même distance chaque semaine."
   },
+  "Tanita, InBody…": {
+   "en": "Tanita, InBody…",
+   "pt-BR": "Tanita, InBody…",
+   "fr": "Tanita, InBody…"
+  },
+  "Copia los valores tal como los da el equipo. Para comparar entre fechas, mide en las mismas condiciones: en ayunas, sin entrenar antes y a la misma hora.": {
+   "en": "Copy the values exactly as the device shows them. To compare across dates, measure under the same conditions: fasting, without training beforehand and at the same time of day.",
+   "pt-BR": "Copie os valores exatamente como o equipamento mostra. Para comparar entre datas, meça nas mesmas condições: em jejum, sem treinar antes e no mesmo horário.",
+   "fr": "Recopiez les valeurs telles que l'appareil les affiche. Pour comparer entre dates, mesurez dans les mêmes conditions : à jeun, sans entraînement avant et à la même heure."
+  },
+  "Agua corporal": {
+   "en": "Body water",
+   "pt-BR": "Água corporal",
+   "fr": "Eau corporelle"
+  },
+  "Grasa visceral": {
+   "en": "Visceral fat",
+   "pt-BR": "Gordura visceral",
+   "fr": "Graisse viscérale"
+  },
+  "Masa ósea": {
+   "en": "Bone mass",
+   "pt-BR": "Massa óssea",
+   "fr": "Masse osseuse"
+  },
+  "Metabolismo basal": {
+   "en": "Basal metabolism",
+   "pt-BR": "Metabolismo basal",
+   "fr": "Métabolisme de base"
+  },
+  "Edad metabólica": {
+   "en": "Metabolic age",
+   "pt-BR": "Idade metabólica",
+   "fr": "Âge métabolique"
+  },
+  "Ángulo de fase": {
+   "en": "Phase angle",
+   "pt-BR": "Ângulo de fase",
+   "fr": "Angle de phase"
+  },
+  "nivel": {
+   "en": "level",
+   "pt-BR": "nível",
+   "fr": "niveau"
+  },
+  "vs. su edad": {
+   "en": "vs. actual age",
+   "pt-BR": "vs. idade real",
+   "fr": "vs. âge réel"
+  },
+  "Igual a su edad": {
+   "en": "Same as actual age",
+   "pt-BR": "Igual à idade real",
+   "fr": "Identique à l'âge réel"
+  },
+  "Pliegues:": {
+   "en": "Skinfolds:",
+   "pt-BR": "Dobras:",
+   "fr": "Plis :"
+  },
+  "Valores del equipo. Cambian con la hidratación, la comida y el ejercicio reciente; compáralos solo entre mediciones en las mismas condiciones.": {
+   "en": "Device values. They change with hydration, food and recent exercise; compare them only between measurements taken under the same conditions.",
+   "pt-BR": "Valores do equipamento. Mudam com a hidratação, a comida e o exercício recente; compare-os só entre medições nas mesmas condições.",
+   "fr": "Valeurs de l'appareil. Elles varient avec l'hydratation, le repas et l'exercice récent ; ne les comparez qu'entre mesures prises dans les mêmes conditions."
+  },
+  "La masa muscular del equipo incluye más tejido que la masa muscular esquelética calculada con perímetros y pliegues, por eso sale más alta. No se comparan entre sí.": {
+   "en": "The device's muscle mass includes more tissue than the skeletal muscle mass calculated from girths and skinfolds, so it reads higher. They aren't comparable.",
+   "pt-BR": "A massa muscular do equipamento inclui mais tecido do que a massa muscular esquelética calculada com perímetros e dobras, por isso dá mais alta. Não são comparáveis.",
+   "fr": "La masse musculaire de l'appareil inclut plus de tissus que la masse musculaire squelettique calculée avec périmètres et plis, d'où une valeur plus élevée. Elles ne sont pas comparables."
+  },
+  "Masa muscular (equipo)": {
+   "en": "Muscle mass (device)",
+   "pt-BR": "Massa muscular (equipamento)",
+   "fr": "Masse musculaire (appareil)"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

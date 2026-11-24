@@ -17,6 +17,13 @@ const ANT_GI = [
   ['forearm', 'Antebrazo'], ['waist', 'Cintura'], ['abdomen', 'Abdomen (ombligo)'], ['hip', 'Cadera'], ['thighg', 'Muslo medio'], ['calfg', 'Pantorrilla'],
 ];
 const ANT_BD = [['humerus', 'Húmero (codo)'], ['femur', 'Fémur (rodilla)'], ['wrist', 'Muñeca']];
+// Lo que reportan los equipos de bioimpedancia (Tanita, InBody, Omron…). Se capturan tal cual los da el equipo.
+// [clave, nombre, unidad, ¿es masa?, decimales]. Las masas se guardan en kg.
+const ANT_BIA = [
+  ['bfDevice', '% de grasa', '%', 0, 1], ['biaMuscle', 'Masa muscular', 'kg', 1, 1], ['biaWater', 'Agua corporal', '%', 0, 1],
+  ['biaVisceral', 'Grasa visceral', 'nivel', 0, 1], ['biaBone', 'Masa ósea', 'kg', 1, 1], ['biaBmr', 'Metabolismo basal', 'kcal', 0, 0],
+  ['biaMetAge', 'Edad metabólica', 'años', 0, 0], ['biaPhase', 'Ángulo de fase', '°', 0, 1],
+];
 const ANT_ACT = [[1.2, 'Sedentario'], [1.375, 'Ligero (1–3 días/sem)'], [1.55, 'Moderado (3–5 días/sem)'], [1.725, 'Intenso (6–7 días/sem)'], [1.9, 'Muy intenso (doble sesión)']];
 const ANT_DW = {
   M: [[17, 1.1533, 0.0643], [20, 1.1620, 0.0630], [30, 1.1631, 0.0632], [40, 1.1422, 0.0544], [50, 1.1620, 0.0700], [999, 1.1715, 0.0779]],
@@ -282,6 +289,15 @@ function antReportHtml(row, prevRow, all) {
     if (c.bmiList) methods += `<div class="sp-card-n" style="margin-top:14px;">Índices de peso y talla</div><table class="ant-t"><tbody>${c.bmiList.map(b => `<tr class="${c.bmiUsed.some(u => u.id === b.id) ? 'on' : 'off'}"><td><span>${b.name}</span>${c.bmiUsed.some(u => u.id === b.id) ? ` <em>${c.bmiUsed.length > 1 ? 'incluida' : 'usada'}</em>` : ''}<small translate="no">${b.note}</small></td><td translate="no">${antN(b.v, 1)}</td></tr>`).join('')}
       ${c.bmiUsed.length > 1 ? `<tr class="avg"><td><span>Promedio</span></td><td translate="no">${antN(c.bmi, 1)}</td></tr>` : ''}<tr class="ref"><td><span>Índice ponderal</span><small translate="no">kg / m³</small></td><td translate="no">${antN(c.ponderal, 1)}</td></tr></tbody></table>`;
   }
+  // Bioimpedancia (lo que dio el equipo)
+  const bia = ANT_BIA.filter(([k]) => +d[k] > 0).map(([k, n, u, mass, dec]) => {
+    const v = mass ? kg(+d[k]) : +d[k], pv = pd[k] != null ? (mass ? kg(+pd[k]) : +pd[k]) : null;
+    let sub = '';
+    if (k === 'biaMetAge' && +d.age) { const df = +d[k] - +d.age; sub = df ? `<span translate="no">${df > 0 ? '+' : ''}${df}</span> <span>vs. su edad</span>` : '<span>Igual a su edad</span>'; }
+    if (k === 'bfDevice' && c.pct != null && c.bfUsed && !c.bfUsed.some(b => b.id === 'device')) sub = `<span>Pliegues:</span> <span translate="no">${antN(c.pct, 1)} %</span>`;
+    return antCard(n, antN(v, dec, mass ? wu : u === 'nivel' ? '' : u), sub, antDelta(v, pv, dec));
+  });
+  const biaHtml = bia.length ? `<div class="sp-card"><div class="sp-card-n">Bioimpedancia${d.biaDevice ? ` · <span translate="no">${escapeHtml(d.biaDevice)}</span>` : ''}</div><div class="ant-grid" style="margin-top:8px;">${bia.join('')}</div><div class="sp-card-d">Valores del equipo. Cambian con la hidratación, la comida y el ejercicio reciente; compáralos solo entre mediciones en las mismas condiciones.</div>${+d.biaMuscle && c.smm != null ? '<div class="sp-card-d">La masa muscular del equipo incluye más tejido que la masa muscular esquelética calculada con perímetros y pliegues, por eso sale más alta. No se comparan entre sí.</div>' : ''}</div>` : '';
   // Distribución
   const dist = [];
   if (c.gi.waist) dist.push(antCard('Cintura', antN(c.gi.waist, 1, 'cm'), `<span class="ant-r ${antRiskCls(c.waistRisk)}">${c.waistRisk}</span>`, antDelta(c.gi.waist, pc.gi && pc.gi.waist)));
@@ -320,10 +336,13 @@ function antReportHtml(row, prevRow, all) {
     const asc = all.slice().reverse().map(r => ({ d: r.taken_on, c: antCalc(r.data || {}), w: +(r.data || {}).weight || null }));
     evo = antTrend('Peso', wu, asc.map(x => ({ d: x.d, v: kg(x.w) })), 1) + antTrend('% de grasa', '%', asc.map(x => ({ d: x.d, v: x.c.pct })), 1)
       + antTrend('Masa libre de grasa', wu, asc.map(x => ({ d: x.d, v: kg(x.c.ffm) })), 1) + antTrend('Cintura', 'cm', asc.map(x => ({ d: x.d, v: x.c.gi.waist })), 1)
-      + antTrend('Σ pliegues', 'mm', asc.map(x => ({ d: x.d, v: x.c.sum6 != null ? x.c.sum6 : x.c.sumAll })), 1);
+      + antTrend('Σ pliegues', 'mm', asc.map(x => ({ d: x.d, v: x.c.sum6 != null ? x.c.sum6 : x.c.sumAll })), 1)
+      + antTrend('Masa muscular (equipo)', wu, all.slice().reverse().map(r => ({ d: r.taken_on, v: +(r.data || {}).biaMuscle ? kg(+(r.data || {}).biaMuscle) : null })), 1)
+      + antTrend('Grasa visceral', '', all.slice().reverse().map(r => ({ d: r.taken_on, v: +(r.data || {}).biaVisceral || null })), 1);
   }
   return `<div class="ant-h"><b>${escapeHtml(antDate(row.taken_on))}</b><span>${d.sex === 'F' ? 'Mujer' : 'Hombre'} · <span translate="no">${+d.age || '—'}</span> <span>años</span>${prevRow ? ` · <span>cambios vs.</span> ${escapeHtml(antDate(prevRow.taken_on))}` : ''}</span></div>
     <div class="ant-grid">${comp.join('')}</div>
+    ${biaHtml}
     ${sec('% de grasa por fórmula', methods)}
     ${dist.length ? `<div class="ant-grid">${dist.join('')}</div>` : ''}
     ${sec('Somatotipo (Heath-Carter)', som)}
@@ -389,8 +408,13 @@ function antOpenEditor(row) {
     <details><summary>Perímetros <small>cm</small></summary>${fld('gi', ANT_GI, 'cm')}</details>
     <details><summary>Diámetros óseos <small>cm</small></summary><div class="ant-hint">Para el somatotipo.</div>${fld('bd', ANT_BD, 'cm')}</details>
     <details open><summary>Fórmulas</summary><div class="ant-hint">Marca las fórmulas que quieres usar. El % de grasa y el IMC del reporte son el promedio de las que marques; si no marcas ninguna se usa la más completa.</div><div id="ant-forms"></div></details>
+    <details${ANT_BIA.some(([k]) => d[k] != null) ? ' open' : ''}><summary>Bioimpedancia <small>Tanita, InBody…</small></summary>
+      <div class="ant-hint">Copia los valores tal como los da el equipo. Para comparar entre fechas, mide en las mismas condiciones: en ayunas, sin entrenar antes y a la misma hora.</div>
+      <label class="ant-f"><span>Equipo</span><span class="ant-in"><input id="ant-biadev" maxlength="40" value="${escapeHtml(d.biaDevice || '')}" placeholder="Tanita BC-545, InBody 270…" autocomplete="off"></span></label>
+      ${ANT_BIA.map(([k, n, u, mass]) => one(k, n, mass ? bwUnit() : u, d[k] == null ? '' : mass ? bwDisp(d[k]) : d[k])).join('')}
+    </details>
     <details><summary>Otros datos</summary>
-      ${one('bfDevice', '% de grasa por bioimpedancia', '%', d.bfDevice)}${one('rhr', 'FC en reposo', 'lpm', d.rhr)}
+      ${one('rhr', 'FC en reposo', 'lpm', d.rhr)}
       <div class="ant-f"><span>Presión arterial</span><span class="ant-in two"><input inputmode="numeric" data-ant="bpSys" value="${escapeHtml(String(d.bpSys || ''))}" placeholder="120"><b>/</b><input inputmode="numeric" data-ant="bpDia" value="${escapeHtml(String(d.bpDia || ''))}" placeholder="80"><i>mmHg</i></span></div>
       <label class="ant-f"><span>Nivel de actividad</span><span class="ant-in"><select id="ant-act">${ANT_ACT.map(([v, n]) => `<option value="${v}"${+d.activity === v ? ' selected' : ''}>${n}</option>`).join('')}</select></span></label>
       ${one('targetBf', '% de grasa objetivo', '%', d.targetBf)}
@@ -403,8 +427,9 @@ function antOpenEditor(row) {
     document.querySelectorAll('.ant-ed [data-ant]').forEach(i => {
       const k = i.dataset.ant, v = i.value.trim();
       if (k.includes('.')) { const [g, f] = k.split('.'); const p = antParseTakes(v); if (p != null) out[g][f] = p; }
-      else if (v !== '') { const n = parseFloat(v.replace(',', '.')); if (isFinite(n)) out[k] = k === 'weight' ? bwStore(n) : n; }
+      else if (v !== '') { const n = parseFloat(v.replace(',', '.')); if (isFinite(n)) out[k] = (k === 'weight' || ANT_BIA.some(b => b[0] === k && b[3])) ? bwStore(n) : n; }
     });
+    const bdv = document.getElementById('ant-biadev').value.trim(); if (bdv) out.biaDevice = bdv;
     out.activity = +document.getElementById('ant-act').value || 1.55;
     if (sel.bf.length) out.methods = sel.bf.slice();
     if (sel.bmi.length) out.bmiMethods = sel.bmi.slice();
@@ -494,6 +519,7 @@ function bodyHoyCard() {
   const wl = S.get('weight_log', {}) || {}, ks = Object.keys(wl).sort(), rows = antHoyCache(), np = S.get('nutri_profile', null) || {};
   const lb = bwUnit() === 'lb', kg = v => v == null ? null : (lb ? v * GYM_LB : v);
   const a = rows[0] ? (rows[0].data || {}) : null, c = a ? antCalc(a) : null, pc = rows[1] ? antCalc(rows[1].data || {}) : null;
+  const ld = a || {}, pd = rows[1] ? (rows[1].data || {}) : null;
   const last = ks.length ? +wl[ks[ks.length - 1]] : (a && +a.weight) || null;
   const prevW = ks.length > 1 ? +wl[ks[ks.length - 2]] : null;
   const hcm = (a && +a.height) || +np.heightCm || null;
@@ -510,6 +536,10 @@ function bodyHoyCard() {
     if (c.smm != null) cells.push(cell(antN(kg(c.smm), 1, bwUnit()), 'Masa muscular', pc ? dl(kg(c.smm), kg(pc.smm), 1) : ''));
     [['waist', 'Cintura'], ['hip', 'Cadera'], ['chestg', 'Tórax'], ['arm', 'Brazo'], ['thighg', 'Muslo'], ['calfg', 'Pantorrilla']].forEach(([k, n]) => { if (c.gi[k]) cells.push(cell(antN(c.gi[k], 1, 'cm'), n, pc && pc.gi ? dl(c.gi[k], pc.gi[k], 1) : '')); });
     if (c.whr != null) cells.push(cell(antN(c.whr, 2), 'Cintura-cadera', ''));
+    if (+ld.biaMuscle && c.smm == null) cells.push(cell(antN(kg(+ld.biaMuscle), 1, bwUnit()), 'Masa muscular', pd && +pd.biaMuscle ? dl(kg(+ld.biaMuscle), kg(+pd.biaMuscle), 1) : ''));
+    if (+ld.biaVisceral) cells.push(cell(antN(+ld.biaVisceral, 1), 'Grasa visceral', pd && +pd.biaVisceral ? dl(+ld.biaVisceral, +pd.biaVisceral, 1) : ''));
+    if (+ld.biaWater) cells.push(cell(antN(+ld.biaWater, 1, '%'), 'Agua corporal', ''));
+    if (+ld.biaMetAge) cells.push(cell(antN(+ld.biaMetAge, 0), 'Edad metabólica', ''));
     if (c.bmrMain) cells.push(cell(antN(c.tdee || c.bmrMain.kcal, 0), c.tdee ? 'Gasto diario (kcal)' : 'Gasto en reposo (kcal)', ''));
   }
   if (hcm) cells.push(cell(antN(hcm, 0, 'cm'), 'Talla', ''));
