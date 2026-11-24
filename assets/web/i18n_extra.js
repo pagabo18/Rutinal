@@ -4761,6 +4761,301 @@ window.__I18N_EXTRA = {
    "pt-BR": "Esse usuário já existe. Se for a mesma pessoa, volte, escolha “Já tem conta” e dê um código. Se for outra pessoa, tente outro usuário.",
    "fr": "Cet identifiant existe déjà. Si c'est la même personne, revenez en arrière, choisissez « A déjà un compte » et donnez-lui un code. Sinon, essayez un autre identifiant."
   },
+  "Si tu especialista ya te creó una cuenta, entra con el usuario y la contraseña que te dio.": {
+   "en": "If your specialist already created an account for you, sign in with the username and password they gave you.",
+   "pt-BR": "Se seu especialista já criou uma conta para você, entre com o usuário e a senha que ele te deu.",
+   "fr": "Si votre spécialiste vous a déjà créé un compte, connectez-vous avec l'identifiant et le mot de passe qu'il vous a donnés."
+  },
+  "Gratis, para llevar tu entrenamiento y tu alimentación.": {
+   "en": "Free, to track your training and nutrition.",
+   "pt-BR": "Grátis, para acompanhar seu treino e sua alimentação.",
+   "fr": "Gratuit, pour suivre votre entraînement et votre alimentation."
+  },
+  "Nombre": {
+   "en": "Name",
+   "pt-BR": "Nome",
+   "fr": "Nom"
+  },
+  "letras, números, . _ -": {
+   "en": "letters, numbers, . _ -",
+   "pt-BR": "letras, números, . _ -",
+   "fr": "lettres, chiffres, . _ -"
+  },
+  "mínimo 8 caracteres": {
+   "en": "at least 8 characters",
+   "pt-BR": "mínimo 8 caracteres",
+   "fr": "8 caractères minimum"
+  },
+  "Correo (opcional)": {
+   "en": "Email (optional)",
+   "pt-BR": "E-mail (opcional)",
+   "fr": "E-mail (facultatif)"
+  },
+  "para recuperar tu cuenta más adelante": {
+   "en": "to recover your account later",
+   "pt-BR": "para recuperar sua conta mais tarde",
+   "fr": "pour récupérer votre compte plus tard"
+  },
+  "Leí y acepto el": {
+   "en": "I have read and accept the",
+   "pt-BR": "Li e aceito o",
+   "fr": "J'ai lu et j'accepte l'"
+  },
+  "aviso de privacidad": {
+   "en": "privacy notice",
+   "pt-BR": "aviso de privacidade",
+   "fr": "avis de confidentialité"
+  },
+  "Ya tengo cuenta": {
+   "en": "I already have an account",
+   "pt-BR": "Já tenho conta",
+   "fr": "J'ai déjà un compte"
+  },
+  "La contraseña debe tener al menos 8 caracteres.": {
+   "en": "The password must be at least 8 characters.",
+   "pt-BR": "A senha deve ter pelo menos 8 caracteres.",
+   "fr": "Le mot de passe doit contenir au moins 8 caractères."
+  },
+  "Revisa el correo.": {
+   "en": "Check the email address.",
+   "pt-BR": "Verifique o e-mail.",
+   "fr": "Vérifiez l'e-mail."
+  },
+  "Para crear la cuenta hay que aceptar el aviso de privacidad.": {
+   "en": "To create the account you must accept the privacy notice.",
+   "pt-BR": "Para criar a conta é preciso aceitar o aviso de privacidade.",
+   "fr": "Pour créer le compte, il faut accepter l'avis de confidentialité."
+  },
+  "Demasiados registros desde esta conexión. Intenta en una hora.": {
+   "en": "Too many sign-ups from this connection. Try again in an hour.",
+   "pt-BR": "Muitos cadastros a partir desta conexão. Tente em uma hora.",
+   "fr": "Trop d'inscriptions depuis cette connexion. Réessayez dans une heure."
+  },
+  "Soy especialista": {
+   "en": "I'm a specialist",
+   "pt-BR": "Sou especialista",
+   "fr": "Je suis spécialiste"
+  },
+  "Solicitud en revisión.": {
+   "en": "Application under review.",
+   "pt-BR": "Solicitação em análise.",
+   "fr": "Demande en cours d'examen."
+  },
+  "La enviaste el": {
+   "en": "You sent it on",
+   "pt-BR": "Você enviou em",
+   "fr": "Envoyée le"
+  },
+  "Cuando se apruebe, el modo especialista aparecerá al volver a abrir la app. Mientras tanto puedes corregirla.": {
+   "en": "Once approved, specialist mode will appear when you reopen the app. Meanwhile you can edit it.",
+   "pt-BR": "Quando for aprovada, o modo especialista aparecerá ao reabrir o app. Enquanto isso, você pode corrigi-la.",
+   "fr": "Une fois approuvée, le mode spécialiste apparaîtra à la réouverture de l'app. En attendant, vous pouvez la corriger."
+  },
+  "Solicitud no aprobada.": {
+   "en": "Application not approved.",
+   "pt-BR": "Solicitação não aprovada.",
+   "fr": "Demande non approuvée."
+  },
+  "Puedes corregirla y enviarla de nuevo.": {
+   "en": "You can correct it and send it again.",
+   "pt-BR": "Você pode corrigi-la e enviá-la de novo.",
+   "fr": "Vous pouvez la corriger et la renvoyer."
+  },
+  "Solicitud aprobada.": {
+   "en": "Application approved.",
+   "pt-BR": "Solicitação aprovada.",
+   "fr": "Demande approuvée."
+  },
+  "Puedes pedir otro servicio aquí.": {
+   "en": "You can request another service here.",
+   "pt-BR": "Você pode pedir outro serviço aqui.",
+   "fr": "Vous pouvez demander un autre service ici."
+  },
+  "Tu cuenta ya tiene todos los servicios de especialista.": {
+   "en": "Your account already has all specialist services.",
+   "pt-BR": "Sua conta já tem todos os serviços de especialista.",
+   "fr": "Votre compte a déjà tous les services de spécialiste."
+  },
+  "Para dar rutinas o planes de alimentación en Rutinal, revisamos que seas profesional. Nutriólogos y fisioterapeutas: con tu cédula profesional, que se consulta en el Registro Nacional de Profesionistas de la SEP. Coaches: con tu carrera o certificación.": {
+   "en": "To give routines or meal plans on Rutinal, we check that you're a professional. Nutritionists and physiotherapists: with your professional license (cédula), checked in the SEP National Registry of Professionals. Coaches: with your degree or certification.",
+   "pt-BR": "Para dar rotinas ou planos alimentares no Rutinal, verificamos que você é profissional. Nutricionistas e fisioterapeutas: com a cédula profissional, consultada no Registro Nacional de Profissionais da SEP. Coaches: com sua graduação ou certificação.",
+   "fr": "Pour proposer des routines ou des plans alimentaires sur Rutinal, nous vérifions que vous êtes professionnel. Nutritionnistes et kinés : avec votre cédula professionnelle, vérifiée au Registre national des professionnels de la SEP. Coachs : avec votre diplôme ou certification."
+  },
+  "Servicios que das": {
+   "en": "Services you provide",
+   "pt-BR": "Serviços que você oferece",
+   "fr": "Services que vous proposez"
+  },
+  "Nombre completo (como aparece en tu cédula o certificado)": {
+   "en": "Full name (as on your license or certificate)",
+   "pt-BR": "Nome completo (como aparece na cédula ou certificado)",
+   "fr": "Nom complet (tel qu'il figure sur votre cédula ou certificat)"
+  },
+  "Número de cédula profesional": {
+   "en": "Professional license number",
+   "pt-BR": "Número da cédula profissional",
+   "fr": "Numéro de cédula professionnelle"
+  },
+  "obligatoria para nutriólogo y fisioterapeuta": {
+   "en": "required for nutritionist and physiotherapist",
+   "pt-BR": "obrigatória para nutricionista e fisioterapeuta",
+   "fr": "obligatoire pour nutritionniste et kiné"
+  },
+  "Estudios y certificaciones": {
+   "en": "Education and certifications",
+   "pt-BR": "Estudos e certificações",
+   "fr": "Études et certifications"
+  },
+  "Ej. Lic. en Ciencias del Deporte, UANL. Certificación NSCA-CSCS. ISAK nivel 1.": {
+   "en": "E.g. B.Sc. Sports Science. NSCA-CSCS certification. ISAK level 1.",
+   "pt-BR": "Ex.: Graduação em Ciências do Esporte. Certificação NSCA-CSCS. ISAK nível 1.",
+   "fr": "Ex. Licence en sciences du sport. Certification NSCA-CSCS. ISAK niveau 1."
+  },
+  "Para nutriólogo o fisioterapeuta escribe tu número de cédula (6 a 10 dígitos).": {
+   "en": "For nutritionist or physiotherapist, enter your license number (6 to 10 digits).",
+   "pt-BR": "Para nutricionista ou fisioterapeuta, escreva o número da cédula (6 a 10 dígitos).",
+   "fr": "Pour nutritionniste ou kiné, saisissez votre numéro de cédula (6 à 10 chiffres)."
+  },
+  "Cuéntanos tus estudios o certificaciones como coach.": {
+   "en": "Tell us about your education or certifications as a coach.",
+   "pt-BR": "Conte seus estudos ou certificações como coach.",
+   "fr": "Indiquez vos études ou certifications de coach."
+  },
+  "Escribe tu nombre completo.": {
+   "en": "Enter your full name.",
+   "pt-BR": "Escreva seu nome completo.",
+   "fr": "Saisissez votre nom complet."
+  },
+  "Espera un minuto antes de volver a enviar.": {
+   "en": "Wait a minute before sending again.",
+   "pt-BR": "Espere um minuto antes de enviar de novo.",
+   "fr": "Attendez une minute avant de renvoyer."
+  },
+  "Solicitud enviada.": {
+   "en": "Application sent.",
+   "pt-BR": "Solicitação enviada.",
+   "fr": "Demande envoyée."
+  },
+  "La revisamos y, al aprobarla, tu cuenta tendrá el modo especialista. Mientras tanto puedes usar Rutinal como atleta.": {
+   "en": "We'll review it and, once approved, your account will have specialist mode. Meanwhile you can use Rutinal as an athlete.",
+   "pt-BR": "Vamos analisá-la e, ao aprová-la, sua conta terá o modo especialista. Enquanto isso, use o Rutinal como atleta.",
+   "fr": "Nous l'examinons et, une fois approuvée, votre compte aura le mode spécialiste. En attendant, utilisez Rutinal en tant qu'athlète."
+  },
+  "Actualizar": {
+   "en": "Update",
+   "pt-BR": "Atualizar",
+   "fr": "Mettre à jour"
+  },
+  "Cédula verificada": {
+   "en": "License verified",
+   "pt-BR": "Cédula verificada",
+   "fr": "Cédula vérifiée"
+  },
+  "Perfil verificado": {
+   "en": "Profile verified",
+   "pt-BR": "Perfil verificado",
+   "fr": "Profil vérifié"
+  },
+  "Sin verificar": {
+   "en": "Not verified",
+   "pt-BR": "Não verificado",
+   "fr": "Non vérifié"
+  },
+  "Verificado": {
+   "en": "Verified",
+   "pt-BR": "Verificado",
+   "fr": "Vérifié"
+  },
+  "Solicitudes de especialista": {
+   "en": "Specialist applications",
+   "pt-BR": "Solicitações de especialista",
+   "fr": "Demandes de spécialiste"
+  },
+  "Cédula": {
+   "en": "License",
+   "pt-BR": "Cédula",
+   "fr": "Cédula"
+  },
+  "Por revisar": {
+   "en": "To review",
+   "pt-BR": "A analisar",
+   "fr": "À examiner"
+  },
+  "Solicitud de especialista": {
+   "en": "Specialist application",
+   "pt-BR": "Solicitação de especialista",
+   "fr": "Demande de spécialiste"
+  },
+  "Enviada el": {
+   "en": "Sent on",
+   "pt-BR": "Enviada em",
+   "fr": "Envoyée le"
+  },
+  "Cédula:": {
+   "en": "License:",
+   "pt-BR": "Cédula:",
+   "fr": "Cédula :"
+  },
+  "Verificar en el Registro de la SEP": {
+   "en": "Check in the SEP Registry",
+   "pt-BR": "Verificar no Registro da SEP",
+   "fr": "Vérifier au Registre de la SEP"
+  },
+  "Busca la cédula y revisa que el nombre coincida y que la carrera corresponda (nutrición, fisioterapia).": {
+   "en": "Look up the license and check that the name matches and the degree fits (nutrition, physiotherapy).",
+   "pt-BR": "Busque a cédula e confira se o nome coincide e se o curso corresponde (nutrição, fisioterapia).",
+   "fr": "Recherchez la cédula et vérifiez que le nom correspond et que le diplôme convient (nutrition, kiné)."
+  },
+  "Sin cédula: revisa sus estudios o certificación antes de aprobar.": {
+   "en": "No license: review their education or certification before approving.",
+   "pt-BR": "Sem cédula: revise os estudos ou a certificação antes de aprovar.",
+   "fr": "Sans cédula : vérifiez ses études ou sa certification avant d'approuver."
+  },
+  "Aprobar como": {
+   "en": "Approve as",
+   "pt-BR": "Aprovar como",
+   "fr": "Approuver en tant que"
+  },
+  "Nota para la persona (opcional)": {
+   "en": "Note for the person (optional)",
+   "pt-BR": "Nota para a pessoa (opcional)",
+   "fr": "Note pour la personne (facultatif)"
+  },
+  "Si la rechazas, dile qué falta": {
+   "en": "If you reject it, tell them what's missing",
+   "pt-BR": "Se recusar, diga o que falta",
+   "fr": "Si vous refusez, indiquez ce qui manque"
+  },
+  "Aprobar": {
+   "en": "Approve",
+   "pt-BR": "Aprovar",
+   "fr": "Approuver"
+  },
+  "Rechazar": {
+   "en": "Reject",
+   "pt-BR": "Recusar",
+   "fr": "Refuser"
+  },
+  "¿Aprobar? Tendrá el modo especialista y verá los datos de quienes acepten compartir con él.": {
+   "en": "Approve? They'll get specialist mode and see the data of whoever agrees to share with them.",
+   "pt-BR": "Aprovar? Terá o modo especialista e verá os dados de quem aceitar compartilhar.",
+   "fr": "Approuver ? Il aura le mode spécialiste et verra les données de ceux qui acceptent de partager."
+  },
+  "Cédula profesional": {
+   "en": "Professional license",
+   "pt-BR": "Cédula profissional",
+   "fr": "Cédula professionnelle"
+  },
+  "Verificado (revisé su cédula o certificación)": {
+   "en": "Verified (I checked their license or certification)",
+   "pt-BR": "Verificado (revisei a cédula ou certificação)",
+   "fr": "Vérifié (j'ai contrôlé sa cédula ou certification)"
+  },
+  "La cédula debe tener de 6 a 10 dígitos.": {
+   "en": "The license must have 6 to 10 digits.",
+   "pt-BR": "A cédula deve ter de 6 a 10 dígitos.",
+   "fr": "La cédula doit comporter 6 à 10 chiffres."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

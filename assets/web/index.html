@@ -2080,6 +2080,8 @@
     font-size: 13px; font-weight: 600; padding: 8px; cursor: pointer; }
   .auth-msg { min-height: 20px; font-size: 13px; color: var(--danger, #DC2626); margin: 4px 0 12px; line-height: 1.4; }
   .auth-msg.info { color: var(--text-3); }
+  textarea.auth-in { font-family: inherit; line-height: 1.45; resize: vertical; }
+  .auth-check { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.4; margin: 4px 0 10px; text-align: left; } .auth-check input { margin-top: 2px; width: 18px; height: 18px; flex: 0 0 auto; } #auth-gate .auth-check { color: rgba(255,255,255,.85); } #auth-gate .auth-check a { color: #fff; }
   .auth-link { display: block; width: 100%; margin-top: 12px; background: none; border: 0; font: inherit; font-size: 13px; font-weight: 600; color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; text-align: center; }
   #auth-gate .auth-link { color: rgba(255,255,255,.85); }
   .rc-code { font-size: 20px; font-weight: 700; letter-spacing: .06em; text-align: center; padding: 18px 10px; border-radius: 14px; background: var(--surface-2); margin: 12px 0; font-variant-numeric: tabular-nums; user-select: all; -webkit-user-select: all; }
@@ -2834,7 +2836,27 @@
     <div class="auth-msg" id="auth-msg"></div>
     <button class="btn-primary" id="auth-submit" type="submit" style="width:100%;">Entrar</button>
     <button type="button" class="auth-link" id="auth-forgot">¿Olvidaste tu contraseña?</button>
-    <div class="auth-foot">¿No tienes cuenta? Pídele tu usuario y contraseña a quien te compartió la app.</div>
+    <button type="button" class="auth-link" id="auth-new" style="font-size:15px;">Crear cuenta</button>
+    <div class="auth-foot">Si tu especialista ya te creó una cuenta, entra con el usuario y la contraseña que te dio.</div>
+  </form>
+  <form class="auth-box" id="auth-reg" autocomplete="on" style="display:none;">
+    <div class="auth-title" style="font-size:22px;">Crear cuenta</div>
+    <div class="auth-sub">Gratis, para llevar tu entrenamiento y tu alimentación.</div>
+    <label class="auth-field"><span>Nombre</span><input id="reg-name" type="text" autocomplete="name" maxlength="80"></label>
+    <label class="auth-field"><span>Usuario</span>
+      <input id="reg-user" type="text" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="32" placeholder="letras, números, . _ -" required>
+    </label>
+    <label class="auth-field"><span>Contraseña</span>
+      <input id="reg-pass" type="password" autocomplete="new-password" maxlength="72" placeholder="mínimo 8 caracteres" required>
+    </label>
+    <label class="auth-field"><span>Correo (opcional)</span>
+      <input id="reg-email" type="email" autocomplete="email" maxlength="254" placeholder="para recuperar tu cuenta más adelante">
+    </label>
+    <input id="reg-web" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+    <label class="auth-check"><input type="checkbox" id="reg-priv"><span>Leí y acepto el <a href="privacy.html" target="_blank" rel="noopener">aviso de privacidad</a></span></label>
+    <div class="auth-msg" id="reg-msg"></div>
+    <button class="btn-primary" id="reg-submit" type="submit" style="width:100%;">Crear cuenta</button>
+    <button type="button" class="auth-link" id="reg-back">Ya tengo cuenta</button>
   </form>
   <form class="auth-box" id="auth-rec" autocomplete="off" style="display:none;">
     <div class="auth-title" style="font-size:22px;">Recuperar acceso</div>
@@ -3414,6 +3436,7 @@ try {
           <button class="btn-secondary" id="btn-acct-sync">Respaldo en la nube</button>
           <button class="btn-secondary" id="btn-acct-pass">Cambiar contraseña</button>
           <button class="btn-secondary" id="btn-acct-rec">Código de recuperación</button>
+          <button class="btn-secondary" id="btn-acct-spec">Soy especialista</button>
           <button class="btn-secondary" id="btn-acct-logout">Cerrar sesión</button>
         </div>
       </div>
@@ -9175,11 +9198,13 @@ async function reservedInvitePrompt(tries) {
   const pv = await linkRpc('rutinal_invite_preview', { p_code: code }); if (!pv.ok) return;
   try { sessionStorage.setItem('__resv', s.uid); } catch (e) {}
   openSheet('Tu especialista', `<p style="font-size:15px;line-height:1.5;"><b translate="no">${escapeHtml(pv.specialist)}</b> <span>creó tu cuenta para acompañarte como</span> ${(pv.roles || [pv.role]).map(r => `<b>${escapeHtml(AUTH_SPECS[r] || r)}</b>`).join(', ')}.</p>
+    <div data-badge="${escapeHtml(pv.username || '')}" style="margin:-4px 0 8px;"></div>
     <div class="lk-row"><div class="lk-d" style="margin-top:0;font-size:14px;color:var(--text-2);"><span>Podrá ver:</span> ${linkSees(pv.keys)}</div></div>
     <div class="fit-note" style="margin:10px 0;">Para compartir se activa el respaldo en la nube. No podrá cambiar tus registros, y puedes dejar de compartir cuando quieras en Más → Especialistas y atletas.</div>
     <div class="auth-msg" id="rv-msg"></div>
     <button class="btn-primary" id="rv-ok" style="width:100%;margin-bottom:8px;">Aceptar y compartir</button>
     <button class="btn-secondary" id="rv-no" style="width:100%;">Ahora no</button>`);
+  specBadgesFill(document.getElementById('sheet-body'));
   document.getElementById('rv-no').addEventListener('click', closeSheet);
   document.getElementById('rv-ok').addEventListener('click', async ev => {
     ev.target.disabled = true; const m = document.getElementById('rv-msg');
@@ -9190,6 +9215,46 @@ async function reservedInvitePrompt(tries) {
     closeSheet(); try { renderHoyDash(); } catch (e) {}
   });
 }
+// ---- Solicitud para ser especialista (la aprueba el administrador tras revisar cédula o certificación) ----
+const SEP_RNP = 'https://cedulaprofesional.sep.gob.mx/';
+async function openSpecialistApply() {
+  openSheet('Soy especialista', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i class="s"></i></div>');
+  const s = authGet() || {}, have = s.specs || [];
+  let app = null; try { const rows = await sbRest('specialist_applications?select=roles,full_name,cedula,credentials,status,review_note,created_at'); app = rows && rows[0]; } catch (e) {}
+  const st = app && app.status, pend = st === 'pending';
+  const status = !app ? '' : pend ? `<div class="fit-note" style="margin:0 0 12px;"><b>Solicitud en revisión.</b> <span>La enviaste el</span> <span translate="no">${escapeHtml(authFmtDate(app.created_at))}</span>. <span>Cuando se apruebe, el modo especialista aparecerá al volver a abrir la app. Mientras tanto puedes corregirla.</span></div>`
+    : st === 'rejected' ? `<div class="auth-msg" style="margin:0 0 12px;"><b>Solicitud no aprobada.</b>${app.review_note ? ` <span translate="no">${escapeHtml(app.review_note)}</span>` : ''} <span>Puedes corregirla y enviarla de nuevo.</span></div>`
+    : `<div class="fit-note" style="margin:0 0 12px;"><b>Solicitud aprobada.</b> <span>Puedes pedir otro servicio aquí.</span></div>`;
+  const roles = app && pend ? app.roles : [], open = Object.keys(AUTH_SPECS).filter(k => !have.includes(k));
+  if (!open.length) { openSheet('Soy especialista', `<p class="fit-note" style="margin:0;">Tu cuenta ya tiene todos los servicios de especialista.</p>`); return; }
+  openSheet('Soy especialista', `${status}
+    <p class="fit-note" style="margin:0 0 12px;">Para dar rutinas o planes de alimentación en Rutinal, revisamos que seas profesional. Nutriólogos y fisioterapeutas: con tu cédula profesional, que se consulta en el Registro Nacional de Profesionistas de la SEP. Coaches: con tu carrera o certificación.</p>
+    <div class="setting-label">Servicios que das</div>
+    ${open.map(k => `<label class="usr-check"><input type="checkbox" data-ap="${k}"${roles.includes(k) ? ' checked' : ''}><span>${AUTH_SPECS[k]}</span></label>`).join('')}
+    <label class="auth-field" style="margin-top:10px;"><span>Nombre completo (como aparece en tu cédula o certificado)</span><input class="auth-in" id="ap-name" maxlength="120" value="${escapeHtml((app && app.full_name) || s.name || '')}"></label>
+    <label class="auth-field"><span>Número de cédula profesional</span><input class="auth-in" id="ap-ced" inputmode="numeric" maxlength="10" value="${escapeHtml((app && app.cedula) || '')}" placeholder="obligatoria para nutriólogo y fisioterapeuta"></label>
+    <label class="auth-field"><span>Estudios y certificaciones</span><textarea class="auth-in" id="ap-cred" rows="4" maxlength="600" placeholder="Ej. Lic. en Ciencias del Deporte, UANL. Certificación NSCA-CSCS. ISAK nivel 1.">${escapeHtml((app && app.credentials) || '')}</textarea></label>
+    <div class="auth-msg" id="ap-msg"></div>`, async () => {
+    const m = document.getElementById('ap-msg'), r = Array.from(document.querySelectorAll('[data-ap]')).filter(c => c.checked).map(c => c.dataset.ap);
+    const ced = document.getElementById('ap-ced').value.replace(/\D/g, '');
+    if (!r.length) { m.textContent = t('Elige al menos un servicio.'); return; }
+    if (r.some(x => x !== 'coach') && !/^\d{6,10}$/.test(ced)) { m.textContent = t('Para nutriólogo o fisioterapeuta escribe tu número de cédula (6 a 10 dígitos).'); return; }
+    if (r.includes('coach') && !r.some(x => x !== 'coach') && document.getElementById('ap-cred').value.trim().length < 10) { m.textContent = t('Cuéntanos tus estudios o certificaciones como coach.'); return; }
+    const x = await linkRpc('rutinal_apply_specialist', { p_roles: r, p_full_name: document.getElementById('ap-name').value, p_cedula: ced, p_credentials: document.getElementById('ap-cred').value });
+    if (!x.ok) { m.textContent = x.error === 'cedula' ? t('Para nutriólogo o fisioterapeuta escribe tu número de cédula (6 a 10 dígitos).') : x.error === 'name' ? t('Escribe tu nombre completo.') : x.error === 'wait' ? t('Espera un minuto antes de volver a enviar.') : linkErr(x.error); return; }
+    openSheet('Soy especialista', `<p style="font-size:15px;line-height:1.5;"><b>Solicitud enviada.</b></p><p class="fit-note">La revisamos y, al aprobarla, tu cuenta tendrá el modo especialista. Mientras tanto puedes usar Rutinal como atleta.</p>`);
+  });
+  const sv = document.getElementById('sheet-save'); if (sv) sv.textContent = t(pend ? 'Actualizar' : 'Enviar');
+}
+// Insignia de verificación de un especialista (para el atleta).
+const _badges = {};
+async function specBadgeHtml(username) {
+  if (!username) return '';
+  if (!(username in _badges)) { try { _badges[username] = await sbRest('rpc/rutinal_specialist_badge', { method: 'POST', body: { p_username: username } }); } catch (e) { return ''; } }
+  const b = _badges[username]; if (!b) return '';
+  return b.verified ? `<span class="usr-badge on">${b.cedula ? `<span>Cédula verificada</span> <span translate="no">${escapeHtml(b.cedula)}</span>` : '<span>Perfil verificado</span>'}</span>` : '<span class="usr-badge">Sin verificar</span>';
+}
+function specBadgesFill(root) { (root || document).querySelectorAll('[data-badge]').forEach(async el => { el.innerHTML = await specBadgeHtml(el.dataset.badge); }); }
 // ---- Código de recuperación: permite cambiar la contraseña desde la pantalla de acceso si se olvida ----
 async function openRecoveryCode(nudge) {
   openSheet('Código de recuperación', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i class="s"></i></div>');
@@ -9239,24 +9304,54 @@ async function openAuthUsers() {
   if (!r.ok) { openSheet('Usuarios', `<p class="auth-msg">${escapeHtml(authErr(r.error))}</p>`); return; }
   _authUsers = r.users || [];
   let asked = []; try { asked = (await sbRest('rpc/rutinal_admin_reset_requests', { method: 'POST', body: {} }) || []).map(x => x.username); } catch (e) {}
+  let apps = [], ver = {}; try { apps = await sbRest('rpc/rutinal_admin_applications', { method: 'POST', body: {} }) || []; } catch (e) {} try { ver = await sbRest('rpc/rutinal_admin_verifications', { method: 'POST', body: {} }) || {}; } catch (e) {}
+  _authUsers.forEach(u => { const v = ver[u.username] || {}; u.cedula = v.cedula || null; u.verified = !!v.verified; u.email = v.email || null; });
+  _authApps = apps;
   _authUsers.forEach(u => { u.reset_asked = asked.includes(u.username); });
   _authUsers.sort((a, b) => (b.reset_asked ? 1 : 0) - (a.reset_asked ? 1 : 0));
   const me = (authGet() || {}).user;
   const rows = _authUsers.map((u, i) => {
-    const d = [u.display_name, u.note, (u.specialties || []).length && !u.is_admin ? `Límite: ${u.athlete_limit == null ? 5 : u.athlete_limit}` : null, u.created_by ? `Creado por ${u.created_by}` : null, u.last_login ? `Último acceso: ${authFmtDate(u.last_login)}` : 'Aún no ha entrado'].filter(Boolean);
+    const d = [u.display_name, u.email, u.note, (u.specialties || []).length && !u.is_admin ? `Límite: ${u.athlete_limit == null ? 5 : u.athlete_limit}` : null, u.created_by ? `Creado por ${u.created_by}` : null, u.last_login ? `Último acceso: ${authFmtDate(u.last_login)}` : 'Aún no ha entrado'].filter(Boolean);
     const specs = (u.specialties || []).map(x => `<span class="usr-badge spec">${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join('');
     return `<div class="usr-row" data-usr="${i}">
       <div class="usr-body"><div class="usr-n" translate="no">${escapeHtml(u.username)}${u.username === me ? ' · <span style="font-weight:500;color:var(--text-3);">tú</span>' : ''}</div>
       <div class="usr-d">${d.map(x => `<span>${escapeHtml(x)}</span>`).join(' · ')}</div>
-      <div class="usr-badges">${specs}${u.reset_asked ? '<span class="usr-badge off">Pidió contraseña nueva</span>' : ''}${u.is_admin ? '<span class="usr-badge">Admin</span>' : ''}<span class="usr-badge ${u.active ? 'on' : 'off'}">${u.active ? 'Activo' : 'Desactivado'}</span></div></div>
+      <div class="usr-badges">${specs}${u.reset_asked ? '<span class="usr-badge off">Pidió contraseña nueva</span>' : ''}${(u.specialties || []).length ? (u.verified ? '<span class="usr-badge on">Verificado</span>' : '<span class="usr-badge">Sin verificar</span>') : ''}${u.is_admin ? '<span class="usr-badge">Admin</span>' : ''}<span class="usr-badge ${u.active ? 'on' : 'off'}">${u.active ? 'Activo' : 'Desactivado'}</span></div></div>
     </div>`;
   }).join('');
   openSheet('Usuarios', `
+    ${_authApps.length ? `<div class="setting-label">Solicitudes de especialista</div>${_authApps.map((a, i) => `<div class="usr-row" data-app="${i}"><div class="usr-body"><div class="usr-n" translate="no">${escapeHtml(a.full_name)}</div><div class="usr-d"><span translate="no">${escapeHtml(a.username)}</span>${a.cedula ? ` · <span>Cédula</span> <span translate="no">${escapeHtml(a.cedula)}</span>` : ''}</div><div style="margin-top:6px;">${a.roles.map(x => `<span class="usr-badge spec">${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join('')}<span class="usr-badge off">Por revisar</span></div></div></div>`).join('')}<div class="setting-label" style="margin-top:14px;">Usuarios</div>` : ''}
     <button class="btn-primary" id="usr-new" style="width:100%;margin-bottom:14px;">Nuevo usuario</button>
     ${rows}
     <div class="fit-note" style="margin-top:10px;">Al desactivar o eliminar un usuario, pierde el acceso la próxima vez que su app tenga internet.</div>`);
   document.getElementById('usr-new').addEventListener('click', () => openAuthUserEditor(null));
+  document.querySelectorAll('[data-app]').forEach(el => el.addEventListener('click', () => openAppReview(_authApps[+el.dataset.app])));
   document.querySelectorAll('[data-usr]').forEach(el => el.addEventListener('click', () => openAuthUserEditor(_authUsers[+el.dataset.usr])));
+}
+let _authApps = [];
+function openAppReview(a) {
+  openSheet('Solicitud de especialista', `
+    <div class="usr-cred" style="font-size:14px;line-height:1.6;"><b translate="no">${escapeHtml(a.full_name)}</b><br><span>Usuario:</span> <span translate="no">${escapeHtml(a.username)}</span><br><span>Enviada el</span> <span translate="no">${escapeHtml(authFmtDate(a.created_at))}</span>
+      ${a.cedula ? `<br><span>Cédula:</span> <b translate="no">${escapeHtml(a.cedula)}</b>` : ''}</div>
+    ${a.cedula ? `<a class="btn-secondary" href="${SEP_RNP}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin:10px 0;">Verificar en el Registro de la SEP</a>
+    <div class="fit-note" style="margin:-4px 0 10px;">Busca la cédula y revisa que el nombre coincida y que la carrera corresponda (nutrición, fisioterapia).</div>` : '<div class="fit-note" style="margin:10px 0;">Sin cédula: revisa sus estudios o certificación antes de aprobar.</div>'}
+    ${a.credentials ? `<div class="setting-label">Estudios y certificaciones</div><p style="font-size:14px;line-height:1.5;white-space:pre-wrap;" translate="no">${escapeHtml(a.credentials)}</p>` : ''}
+    <div class="setting-label" style="margin-top:10px;">Aprobar como</div>
+    ${a.roles.map(k => `<label class="usr-check"><input type="checkbox" data-rv="${k}" checked><span>${AUTH_SPECS[k] || k}</span></label>`).join('')}
+    <label class="auth-field" style="margin-top:10px;"><span>Nota para la persona (opcional)</span><input class="auth-in" id="rv-note" maxlength="300" placeholder="Si la rechazas, dile qué falta"></label>
+    <div class="auth-msg" id="rv-m"></div>
+    <button class="btn-primary" id="rv-yes" style="width:100%;margin-bottom:8px;">Aprobar</button>
+    <button class="btn-danger" id="rv-nope" style="width:100%;">Rechazar</button>`);
+  const go = async ok => {
+    const roles = Array.from(document.querySelectorAll('[data-rv]')).filter(c => c.checked).map(c => c.dataset.rv), m = document.getElementById('rv-m');
+    if (ok && !roles.length) { m.textContent = t('Elige al menos un servicio.'); return; }
+    if (ok && !confirm(t('¿Aprobar? Tendrá el modo especialista y verá los datos de quienes acepten compartir con él.'))) return;
+    const r = await linkRpc('rutinal_admin_review', { p_username: a.username, p_approve: ok, p_roles: roles, p_note: document.getElementById('rv-note').value });
+    if (!r.ok) { m.textContent = linkErr(r.error); return; }
+    openAuthUsers();
+  };
+  document.getElementById('rv-yes').addEventListener('click', () => go(true));
+  document.getElementById('rv-nope').addEventListener('click', () => go(false));
 }
 function openAuthUserEditor(u) {
   const isNew = !u;
@@ -9274,6 +9369,8 @@ function openAuthUserEditor(u) {
     <div class="setting-label" style="margin-top:14px;">Especialista en</div>
     <div class="fit-note" style="margin:-4px 0 4px;">Sin marcar ninguna, la cuenta es solo de atleta.</div>
     ${Object.keys(AUTH_SPECS).map(k => `<label class="usr-check"><input type="checkbox" data-spec="${k}" ${has(k) ? 'checked' : ''}><span>${AUTH_SPECS[k]}</span></label>`).join('')}
+    <label class="auth-field" style="margin-top:10px;"><span>Cédula profesional</span><input class="auth-in" id="ue-ced" inputmode="numeric" maxlength="10" value="${isNew ? '' : escapeHtml(u.cedula || '')}" placeholder="opcional"></label>
+    <label class="usr-check"><input type="checkbox" id="ue-ver" ${!isNew && u.verified ? 'checked' : ''}><span>Verificado (revisé su cédula o certificación)</span></label>
     <label class="auth-field" style="margin-top:10px;"><span>Límite de atletas</span><input class="auth-in" id="ue-limit" type="number" inputmode="numeric" min="0" max="1000" value="${isNew || u.athlete_limit == null ? 5 : u.athlete_limit}"></label>
     <div class="fit-note" style="margin:-4px 0 4px;">Cuántos atletas activos puede tener como especialista. Los administradores no tienen límite.</div>
     ${self ? '' : `<div class="setting-label" style="margin-top:14px;">Acceso</div>
@@ -9295,6 +9392,11 @@ function openAuthUserEditor(u) {
       is_admin: self ? true : document.getElementById('ue-admin').checked,
       active: self ? true : document.getElementById('ue-active').checked });
     if (!r.ok) { msg.textContent = authErr(r.error); return; }
+    const ced = document.getElementById('ue-ced').value.replace(/\D/g, ''), vf = document.getElementById('ue-ver').checked;
+    if (ced !== ((u && u.cedula) || '') || vf !== !!(u && u.verified)) {
+      const v = await linkRpc('rutinal_admin_set_verification', { p_username: user, p_cedula: ced, p_verified: vf });
+      if (!v.ok) { msg.textContent = v.error === 'cedula' ? t('La cédula debe tener de 6 a 10 dígitos.') : linkErr(v.error); return; }
+    }
     if (self) authVerify(true);
     if (pass && !isNew && u.reset_asked) { try { await sbRest('rpc/rutinal_admin_reset_clear', { method: 'POST', body: { p_username: user } }); } catch (e) {} }
     if (pass) {
@@ -9354,6 +9456,29 @@ function openAuthUserEditor(u) {
     if (typeof onAuthReady === 'function') onAuthReady();
     if (authIsSpecialist()) openModeChooser();
   });
+  // ---- Registro propio de atletas (función pública `signup`) ----
+  const reg = document.getElementById('auth-reg');
+  const regShow = on => { form.style.display = on ? 'none' : ''; reg.style.display = on ? '' : 'none'; document.getElementById('reg-msg').textContent = ''; };
+  document.getElementById('auth-new').addEventListener('click', () => regShow(true));
+  document.getElementById('reg-back').addEventListener('click', () => regShow(false));
+  reg.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const m = document.getElementById('reg-msg'), b = document.getElementById('reg-submit');
+    const user = document.getElementById('reg-user').value.trim().toLowerCase(), pass = document.getElementById('reg-pass').value, email = document.getElementById('reg-email').value.trim();
+    m.textContent = '';
+    if (!/^[a-z0-9._-]{3,32}$/.test(user)) { m.textContent = authErr('bad_user'); return; }
+    if (pass.length < 8) { m.textContent = t('La contraseña debe tener al menos 8 caracteres.'); return; }
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.textContent = t('Revisa el correo.'); return; }
+    if (!document.getElementById('reg-priv').checked) { m.textContent = t('Para crear la cuenta hay que aceptar el aviso de privacidad.'); return; }
+    b.disabled = true;
+    let r = null;
+    try { const x = await fetch(SB_URL + '/functions/v1/signup', { method: 'POST', cache: 'no-store', headers: sbHeaders(), body: JSON.stringify({ username: user, password: pass, email, display_name: document.getElementById('reg-name').value, privacy: true, website: document.getElementById('reg-web').value }) }); r = await x.json().catch(() => null); } catch (e) {}
+    b.disabled = false;
+    if (!r || !r.ok) { const e = (r && r.error) || 'network'; m.textContent = e === 'taken' ? t('Ese usuario ya existe. Prueba con otro.') : e === 'locked' ? t('Demasiados registros desde esta conexión. Intenta en una hora.') : e === 'email' ? t('Revisa el correo.') : authErr(e); return; }
+    regShow(false);
+    document.getElementById('auth-user').value = user; document.getElementById('auth-pass').value = pass;
+    form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true }));
+  });
   // ---- Recuperar acceso (sin sesión): código de recuperación o aviso al administrador ----
   const rec = document.getElementById('auth-rec');
   const recShow = on => { form.style.display = on ? 'none' : ''; rec.style.display = on ? '' : 'none'; const m = document.getElementById('rec-msg'); m.textContent = ''; m.classList.remove('info');
@@ -9391,6 +9516,7 @@ function openAuthUserEditor(u) {
   document.getElementById('btn-acct-logout').addEventListener('click', authLogout);
   document.getElementById('btn-acct-pass').addEventListener('click', openAuthChangePass);
   document.getElementById('btn-acct-rec').addEventListener('click', () => openRecoveryCode());
+  document.getElementById('btn-acct-spec').addEventListener('click', () => openSpecialistApply());
   document.getElementById('btn-acct-users').addEventListener('click', openAuthUsers);
   const s = authGet();
   if (s && s.token && !s.refresh) {
@@ -9685,7 +9811,7 @@ async function openLinks() {
   _links = r;
   const s = authGet() || {}, specs = s.specs || [];
   const mineG = mySpecialists(r);
-  const mine = mineG.map((l, i) => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name)}</div><span class="sp-roles">${rolesBadges(l)}</span></div>
+  const mine = mineG.map((l, i) => `<div class="lk-row"><div class="lk-top"><div class="lk-n" translate="no">${escapeHtml(l.name)}</div><span class="sp-roles">${rolesBadges(l)}</span></div><div data-badge="${escapeHtml(l.username || '')}" style="margin-top:4px;"></div>
       <div class="lk-d"><span>Puede ver:</span> ${linkSees(l.keys)}</div>
       <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-secondary" data-lk-notes="${i}" style="padding:8px 12px;flex:1;">Mensajes</button>
       <button class="btn-secondary" data-lk-stop="${i}" style="padding:8px 12px;flex:1;">Dejar de compartir</button></div></div>`).join('');
@@ -9738,11 +9864,13 @@ async function openLinks() {
     const pv = await linkRpc('rutinal_invite_preview', { p_code: code });
     if (!pv.ok) { msg.textContent = linkErr(pv.error); return; }
     openSheet('Aceptar invitación', `<p style="font-size:15px;line-height:1.5;"><b translate="no">${escapeHtml(pv.specialist)}</b> <span>quiere acompañarte como</span> ${(pv.roles || [pv.role]).map(r => `<b>${escapeHtml(AUTH_SPECS[r] || r)}</b>`).join(' <span>y</span> ')}.</p>
+      <div data-badge="${escapeHtml(pv.username || '')}" style="margin:-4px 0 8px;"></div>
       <div class="lk-row"><div class="lk-d" style="margin-top:0;font-size:14px;color:var(--text-2);"><span>Podrá ver:</span> ${linkSees(pv.keys)}</div></div>
       <div class="fit-note" style="margin:10px 0;">No podrá cambiar tus registros. Puedes dejar de compartir cuando quieras desde esta misma pantalla.</div>
       <div class="auth-msg" id="lk-msg2"></div>
       <button class="btn-primary" id="lk-accept" style="width:100%;margin-bottom:8px;">Aceptar y compartir</button>
       <button class="btn-secondary" id="lk-cancel" style="width:100%;">Cancelar</button>`);
+    specBadgesFill(document.getElementById('sheet-body'));
     document.getElementById('lk-cancel').addEventListener('click', openLinks);
     document.getElementById('lk-accept').addEventListener('click', async () => {
       const a = await linkRpc('rutinal_invite_accept', { p_code: code });
