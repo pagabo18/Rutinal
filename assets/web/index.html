@@ -2818,6 +2818,23 @@
   .ck-ph button b { font-size: 26px; font-weight: 400; line-height: 1; } .ck-ph button span { font-size: 12px; font-weight: 600; }
   .ck-ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .ck-ph figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 6px 5px; font-size: 10px; font-weight: 600; color: #fff; background: linear-gradient(to top, rgba(0,0,0,.6), transparent); }
+
+  /* ===== RIR por serie y técnicas ===== */
+  .gym-set[data-ex], .gym-set-h { grid-template-columns: 54px 1fr 1fr 46px 44px; gap: 6px; }
+  .gym-set[data-ex] .gym-in.rir { font-size: 15px; }
+  button.gym-set-target { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .set-tech { display: flex; gap: 2px; margin-top: 2px; color: var(--text); } .set-tech.add { font-size: 9px; color: var(--text-3); font-weight: 600; white-space: nowrap; }
+  .gym-set.tagging .gym-set-target b { text-decoration: underline; text-underline-offset: 3px; }
+  .set-tags-pick { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0 10px; }
+  .tech-chip { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .tech-chip.on { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .tech-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .tech-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); font-size: 11px; font-weight: 600; }
+  .tech-tag.sm { padding: 2px 7px; font-size: 10px; }
+  .tech-ic { flex: 0 0 auto; vertical-align: -2px; }
+  .ge-tech { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } .ge-lbl { font-size: 11px; color: var(--text-3); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+  .gym-circ { display: flex; align-items: center; gap: 5px; }
+  .rir-n { font-size: 11px; color: var(--text-3); } .tech-mini { display: inline-flex; vertical-align: -1px; color: var(--text-2); }
 </style>
 </head>
 <body>
@@ -10796,7 +10813,7 @@ async function spOpenClient(l) {
       const lg = D.gym_logs[d] || {}, rt = routines.find(x => x.id === lg.routineId) || { name: '', exercises: [] }, lines = [];
       Object.keys(lg.ex || {}).forEach(exId => {
         const ex = (rt.exercises || []).find(x => x.id === exId) || {}, sw = lg.swap && lg.swap[exId];
-        const sets = (lg.ex[exId] || []).filter(x => x && x.done).map(x => `${gymDispW(x.kg) || 0}×${x.reps || 0}`);
+        const sets = (lg.ex[exId] || []).filter(x => x && x.done).map(x => `${gymDispW(x.kg) || 0}×${x.reps || 0}${x.rir !== undefined && x.rir !== '' ? ` <span class="rir-n">RIR ${escapeHtml(String(x.rir))}</span>` : ''}${(x.tags || []).length ? ` ${(x.tags || []).filter(id => GYM_TECH_BY[id]).map(id => `<span class="tech-mini" title="${escapeHtml(t(GYM_TECH_BY[id][1]))}">${gymTechIcon(id, 11)}</span>`).join('')}` : ''}`);
         if (!sets.length) return;
         const ef = (lg.exFeel && lg.exFeel[exId]) || {};
         lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}`);
@@ -13736,6 +13753,26 @@ function gymSearch(q, limit) {
 function gymBestMatch(name) { const r = gymSearch(name, 1); return r[0] ? r[0].i : null; }
 
 // ---------- Utilidades de formato ----------
+// Técnicas de intensidad: se marcan en la rutina (planeado) y en cada serie (lo que se hizo).
+const GYM_TECH = [
+  ['warm', 'Aproximación', 'M12 3c1 3 4 4.5 4 8a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 0-7z'],
+  ['neg', 'Negativas', 'M12 4v14M6 12l6 6 6-6'],
+  ['partial', 'Parciales', 'M5 17a7 7 0 0 1 14 0M12 17V10'],
+  ['iso', 'Isométrico', 'M9 6v12M15 6v12'],
+  ['drop', 'Drop set', 'M4 6h5v5h5v5h6M17 13l3 3-3 3'],
+  ['rp', 'Rest-pause', 'M7 6v12M11 6v12M15 7l5 5-5 5'],
+  ['myo', 'Myo-reps', 'M5 12h2M11 12h2M17 12h2M4 7h16'],
+  ['cluster', 'Cluster', 'M6 9h3v6H6zM11 9h3v6h-3zM16 9h3v6h-3z'],
+  ['forced', 'Forzadas', 'M12 20V8M7 13l5-5 5 5M5 4h14'],
+  ['fail', 'Al fallo', 'M13 3L5 14h6l-1 7 8-11h-6z'],
+];
+const GYM_TECH_BY = {}; GYM_TECH.forEach(x => { GYM_TECH_BY[x[0]] = x; });
+function gymTechIcon(id, sz) { const x = GYM_TECH_BY[id]; return x ? `<svg class="tech-ic" width="${sz || 14}" height="${sz || 14}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${x[2]}"/></svg>` : ''; }
+function gymTechTags(ids, small) { return (ids || []).filter(id => GYM_TECH_BY[id]).map(id => `<span class="tech-tag${small ? ' sm' : ''}">${gymTechIcon(id, small ? 11 : 13)}<span>${GYM_TECH_BY[id][1]}</span></span>`).join(''); }
+function gymTechText(ids) { return (ids || []).filter(id => GYM_TECH_BY[id]).map(id => t(GYM_TECH_BY[id][1])).join(', '); }
+// Nombre del grupo de ejercicios encadenados según cuántos son.
+function gymGroupName(n) { return n === 2 ? 'Biserie' : n === 3 ? 'Triserie' : 'Circuito'; }
+const GYM_GROUP_IC = '<svg class="tech-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>';
 function gymSetsText(sets) { return (sets || []).map(s => `${s.count}×${s.reps}${s.note ? ' ' + s.note : ''}`).join(' · '); }
 function gymParseSetsText(txt) {
   const out = [];
@@ -13968,6 +14005,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
           <div class="gym-ex-name">${escapeHtml(ex.name)}</div>
           ${sw ? `<div class="gym-ex-swapped">⇄ <span>en lugar de</span> ${escapeHtml(exOrig.name)}</div>` : ''}
           <div class="gym-ex-sets">${escapeHtml(gymSetsText(ex.sets))}${ex.rir ? ' · <b>RIR</b> ' + escapeHtml(ex.rir) : ''}${ex.rpe ? ' · <b>RPE</b> ' + escapeHtml(ex.rpe) : ''}</div>
+          ${(ex.tech || []).length ? `<div class="tech-row">${gymTechTags(ex.tech, true)}</div>` : ''}
         </div>
         <div class="gym-ex-state${complete ? ' ok' : ''}">${complete ? '✓' : `${done}/${n}`}</div>
       </div>`;
@@ -13979,12 +14017,14 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const rows = Array.from({ length: n }, (_, i) => {
       const s = cur[i] || {};
       const prev = last && last.sets[i];
-      return `<div class="gym-set${s.done ? ' done' : ''}" data-ex="${ex.id}" data-i="${i}">
-        <div class="gym-set-target"><b>${i + 1}</b><small>${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small></div>
+      const tg = (s.tags || []).filter(id => GYM_TECH_BY[id]), tOpen = tagOpen === ex.id + ':' + i;
+      return `<div class="gym-set${s.done ? ' done' : ''}${tOpen ? ' tagging' : ''}" data-ex="${ex.id}" data-i="${i}">
+        <button class="gym-set-target" data-set-tags="${ex.id}:${i}" aria-label="Técnica de la serie"><b>${i + 1}</b><small>${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small>${tg.length ? `<span class="set-tech">${tg.map(id => gymTechIcon(id, 11)).join('')}</span>` : '<span class="set-tech add">+ técnica</span>'}</button>
         <input class="gym-in" inputmode="decimal" data-f="kg" value="${escapeHtml(gymDispW(s.kg))}" placeholder="${rec(i) ? escapeHtml(gymDispW(rec(i))) : prev && prev.kg ? escapeHtml(gymDispW(prev.kg)) : U}">
         <input class="gym-in" inputmode="numeric" data-f="reps" value="${escapeHtml(s.reps || '')}" placeholder="${prev && prev.reps ? escapeHtml(prev.reps) : 'reps'}">
+        <input class="gym-in rir" inputmode="numeric" data-f="rir" maxlength="3" value="${escapeHtml(s.rir == null ? '' : s.rir)}" placeholder="${escapeHtml(String(ex.rir || '').split(/[-–]/)[0] || '–')}">
         <button class="gym-check" aria-label="Hecho">✓</button>
-      </div>`;
+      </div>${tOpen ? `<div class="set-tags-pick" data-ex="${ex.id}" data-i="${i}">${GYM_TECH.map(([id, n]) => `<button class="tech-chip${tg.includes(id) ? ' on' : ''}" data-tech="${id}">${gymTechIcon(id, 13)}<span>${n}</span></button>`).join('')}</div>` : ''}`;
     }).join('');
     const tempo = ex.tempo || r.tempo;
     const best1rm = gymBestE1RM(ex.id, dateKey);
@@ -13998,14 +14038,14 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const swapBtn = sw
       ? `<button class="gym-swap-btn" data-gym-unswap="${ex.id}">↺ Volver al original</button>`
       : `<button class="gym-swap-btn" data-gym-swap="${ex.id}">⇄ Reemplazar ejercicio</button>`;
-    const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${gymDispW(s.kg) || '?'}×${s.reps || '?'}`).join('  '))}</div>` : '';
+    const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${gymDispW(s.kg) || '?'}×${s.reps || '?'}${s.rir !== undefined && s.rir !== '' ? ' @' + s.rir : ''}`).join('  '))}</div>` : '';
     return `<div class="gym-ex open${complete ? ' complete' : ''}" data-g="${gymExGroup(ex)}" data-ex-card="${ex.id}">${head}
       ${extra ? `<div class="gym-chips">${extra}</div>` : ''}
       ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
       ${!sw && exOrig.loads && exOrig.loads.length ? `<div class="gym-rec"><b>Carga recomendada</b>${r.assigned && r.assigned.by ? ` <span translate="no">· ${escapeHtml(r.assigned.by)}</span>` : ''}<span class="gym-rec-v" translate="no">${Array.from({ length: n }, (_, i) => escapeHtml(gymDispW(rec(i)))).join(' · ')} ${U}</span></div>` : ''}
       ${advHtml}
       ${lastTxt}
-      <div class="gym-sets"><div class="gym-set gym-set-h"><div>Serie</div><div translate="no">${U}</div><div>Reps</div><div>Hecho</div></div>${rows}</div>
+      <div class="gym-sets"><div class="gym-set gym-set-h"><div>Serie</div><div translate="no">${U}</div><div>Reps</div><div translate="no">RIR</div><div>Hecho</div></div>${rows}</div>
       <div class="gym-setbtns"><button class="gym-addset" data-gym-addset="${ex.id}">+ Agregar serie</button>${cur.length > base ? `<button class="gym-addset rm" data-gym-rmset="${ex.id}">Quitar serie</button>` : ''}</div>
       ${feelHtml}
       ${swapBtn}
@@ -14029,7 +14069,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const rs = restDefault, restTxt = Math.floor(rs / 60) + ':' + String(rs % 60).padStart(2, '0');
     const doneSets = r.exercises.reduce((a, ex) => a + exDoneCount(ex), 0);
     const body = groups.map(g => {
-      const head = g.circuit != null && g.items.length > 1 ? `<div class="gym-circ"><span>Circuito</span> ${g.circuit} · <span>alternar ejercicios</span></div>` : '';
+      const head = g.circuit != null && g.items.length > 1 ? `<div class="gym-circ">${GYM_GROUP_IC}<span>${gymGroupName(g.items.length)}</span> <span translate="no">${g.circuit}</span> · <span>sin descanso entre ejercicios</span></div>` : '';
       return `<div class="gym-group${g.items.length > 1 ? ' multi' : ''}">${head}${g.items.map(exCard).join('')}</div>`;
     }).join('');
     const sb = document.getElementById('sheet-body');
@@ -14064,6 +14104,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
   };
 
   const persist = () => { const all = gymLogs(); lg.ts = Date.now(); all[dateKey] = lg; saveGymLogs(all); };
+  let tagOpen = null;
   const setVal = (exId, i, f, v) => {
     const arr = lg.ex[exId] || (lg.ex[exId] = []);
     while (arr.length <= i) arr.push({});
@@ -14090,10 +14131,16 @@ function openGymWorkout(routineId, dateKey, focusId) {
     sb.querySelectorAll('.gym-ex.open [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => {
       openGymExerciseInfo(r.id, m2.dataset.gymInfo, () => openGymWorkout(r.id, dateKey));
     }));
+    sb.querySelectorAll('[data-set-tags]').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); tagOpen = tagOpen === b.dataset.setTags ? null : b.dataset.setTags; draw(); }));
+    sb.querySelectorAll('.set-tags-pick [data-tech]').forEach(b => b.addEventListener('click', () => {
+      const box = b.closest('.set-tags-pick'), exId = box.dataset.ex, i = +box.dataset.i, arr = lg.ex[exId] || [], cur = ((arr[i] || {}).tags || []).slice(), id = b.dataset.tech, k = cur.indexOf(id);
+      if (k >= 0) cur.splice(k, 1); else cur.push(id);
+      setVal(exId, i, 'tags', cur); draw();
+    }));
     sb.querySelectorAll('.gym-set[data-ex] .gym-in').forEach(inp => inp.addEventListener('input', () => {
       const row = inp.closest('.gym-set');
       const v = inp.value.replace(',', '.').trim();
-      setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.dataset.f === 'kg' ? gymStoreW(v) : v);
+      setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.dataset.f === 'kg' ? gymStoreW(v) : inp.dataset.f === 'rir' ? v.replace(/[^0-9]/g, '').slice(0, 2) : v);
     }));
     sb.querySelectorAll('[data-gym-unit]').forEach(b => b.addEventListener('click', () => { S.set('gym_unit', b.dataset.gymUnit); draw(); }));
     sb.querySelectorAll('[data-gym-addset]').forEach(b => b.addEventListener('click', () => {
@@ -14785,6 +14832,7 @@ function gymEditorSync() {
     ex.sets = gymParseSetsText(g('sets'));
     ex.rir = g('rir').trim(); ex.rpe = g('rpe').trim(); ex.tempo = g('tempo').trim(); ex.rest = g('rest').trim(); ex.notes = g('notes').trim();
     ex.pct1rm = g('pct1rm').trim();
+    const tc = Array.from(row.querySelectorAll('[data-ge-tech].on')).map(b => b.dataset.geTech); if (tc.length) ex.tech = tc; else delete ex.tech;
     const ld = gymParseLoads(g('loads')); if (ld.length) ex.loads = ld; else delete ex.loads;
   });
 }
@@ -14797,7 +14845,7 @@ function gymDrawEditor(isNew) {
       ${gymMediaHtml(ex, 40)}
       <div class="ge-mini-body">
         <div class="ge-mini-name">${ex.circuit != null ? `<span class="ge-circ">${ex.circuit}</span>` : ''}${escapeHtml(ex.name || '—')}</div>
-        <div class="ge-mini-meta">${escapeHtml(gymSetsText(ex.sets) || '—')}${ex.rir ? ' · RIR ' + escapeHtml(ex.rir) : ''}${ex.rpe ? ' · RPE ' + escapeHtml(ex.rpe) : ''}${ex.loads && ex.loads.length ? ' · ' + escapeHtml(gymLoadsText(ex)) + ' ' + gymUnit() : ''}</div>
+        <div class="ge-mini-meta">${escapeHtml(gymSetsText(ex.sets) || '—')}${(ex.tech || []).length ? ' · ' + escapeHtml(gymTechText(ex.tech)) : ''}${ex.rir ? ' · RIR ' + escapeHtml(ex.rir) : ''}${ex.rpe ? ' · RPE ' + escapeHtml(ex.rpe) : ''}${ex.loads && ex.loads.length ? ' · ' + escapeHtml(gymLoadsText(ex)) + ' ' + gymUnit() : ''}</div>
       </div>
       <div class="gym-routine-chev">›</div>
     </div>` : `
@@ -14816,7 +14864,9 @@ function gymDrawEditor(isNew) {
         <label><span>Descanso</span><input class="field-input" data-f="rest" value="${escapeHtml(ex.rest || '')}" placeholder="90 s"></label>
         <label class="ge-full"><span>Carga recomendada por serie</span><input class="field-input" data-f="loads" value="${escapeHtml(gymLoadsText(ex))}" placeholder="${gymUnit() === 'lb' ? '135, 135, 145' : '60, 60, 62.5'} (${gymUnit()})"></label>
         <label class="ge-full"><span>Notas</span><input class="field-input" data-f="notes" value="${escapeHtml(ex.notes || '')}"></label>
+        <div class="ge-full"><span class="ge-lbl">Técnicas</span><div class="ge-tech">${GYM_TECH.map(([id, n]) => `<button type="button" class="tech-chip${(ex.tech || []).includes(id) ? ' on' : ''}" data-ge-tech="${id}">${gymTechIcon(id, 13)}<span>${n}</span></button>`).join('')}</div></div>
       </div>
+      <div class="fit-note" style="margin:6px 0 0;">Para una biserie o triserie, pon el mismo número de circuito en los ejercicios seguidos que van juntos.</div>
       <div class="ge-ex-btns">
         <button class="food-edit-btn" data-ge-mv="${i}" data-d="-1" ${i === 0 ? 'disabled' : ''}>↑</button>
         <button class="food-edit-btn" data-ge-mv="${i}" data-d="1" ${i === e.exercises.length - 1 ? 'disabled' : ''}>↓</button>
@@ -14898,6 +14948,7 @@ function gymDrawEditor(isNew) {
     const el = document.querySelector(`.ge-ex[data-id="${r.dataset.geOpen}"]`);
     if (el) el.scrollIntoView({ block: 'nearest' });
   }));
+  sb.querySelectorAll('[data-ge-tech]').forEach(b => b.addEventListener('click', () => b.classList.toggle('on')));
   sb.querySelectorAll('[data-ge-close]').forEach(b => b.addEventListener('click', () => {
     gymEditorSync(); _gymEdit._open = null; gymDrawEditor(isNew);
   }));

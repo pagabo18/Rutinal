@@ -5056,6 +5056,91 @@ window.__I18N_EXTRA = {
    "pt-BR": "A cédula deve ter de 6 a 10 dígitos.",
    "fr": "La cédula doit comporter 6 à 10 chiffres."
   },
+  "Aproximación": {
+   "en": "Warm-up set",
+   "pt-BR": "Aproximação",
+   "fr": "Approche"
+  },
+  "Negativas": {
+   "en": "Negatives",
+   "pt-BR": "Negativas",
+   "fr": "Négatives"
+  },
+  "Parciales": {
+   "en": "Partials",
+   "pt-BR": "Parciais",
+   "fr": "Partielles"
+  },
+  "Isométrico": {
+   "en": "Isometric",
+   "pt-BR": "Isométrico",
+   "fr": "Isométrique"
+  },
+  "Drop set": {
+   "en": "Drop set",
+   "pt-BR": "Drop set",
+   "fr": "Drop set"
+  },
+  "Rest-pause": {
+   "en": "Rest-pause",
+   "pt-BR": "Rest-pause",
+   "fr": "Rest-pause"
+  },
+  "Myo-reps": {
+   "en": "Myo-reps",
+   "pt-BR": "Myo-reps",
+   "fr": "Myo-reps"
+  },
+  "Cluster": {
+   "en": "Cluster",
+   "pt-BR": "Cluster",
+   "fr": "Cluster"
+  },
+  "Forzadas": {
+   "en": "Forced reps",
+   "pt-BR": "Forçadas",
+   "fr": "Forcées"
+  },
+  "Al fallo": {
+   "en": "To failure",
+   "pt-BR": "Até a falha",
+   "fr": "Jusqu'à l'échec"
+  },
+  "Biserie": {
+   "en": "Superset",
+   "pt-BR": "Bi-set",
+   "fr": "Superset"
+  },
+  "Triserie": {
+   "en": "Tri-set",
+   "pt-BR": "Tri-set",
+   "fr": "Tri-set"
+  },
+  "sin descanso entre ejercicios": {
+   "en": "no rest between exercises",
+   "pt-BR": "sem descanso entre exercícios",
+   "fr": "sans repos entre les exercices"
+  },
+  "+ técnica": {
+   "en": "+ technique",
+   "pt-BR": "+ técnica",
+   "fr": "+ technique"
+  },
+  "Técnica de la serie": {
+   "en": "Set technique",
+   "pt-BR": "Técnica da série",
+   "fr": "Technique de la série"
+  },
+  "Técnicas": {
+   "en": "Techniques",
+   "pt-BR": "Técnicas",
+   "fr": "Techniques"
+  },
+  "Para una biserie o triserie, pon el mismo número de circuito en los ejercicios seguidos que van juntos.": {
+   "en": "For a superset or tri-set, give the same circuit number to the consecutive exercises that go together.",
+   "pt-BR": "Para um bi-set ou tri-set, use o mesmo número de circuito nos exercícios seguidos que vão juntos.",
+   "fr": "Pour un superset ou un tri-set, donnez le même numéro de circuit aux exercices consécutifs qui vont ensemble."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
