@@ -5576,6 +5576,161 @@ window.__I18N_EXTRA = {
    "pt-BR": "Glúteo e pernas B",
    "fr": "Fessiers et jambes B"
   },
+  "Instrucciones en inglés: todavía no están traducidas para este ejercicio.": {
+   "en": "Instructions in English: not yet translated for this exercise.",
+   "pt-BR": "Instruções em inglês: ainda não foram traduzidas para este exercício.",
+   "fr": "Instructions en anglais : pas encore traduites pour cet exercice."
+  },
+  "Traducción automática del navegador.": {
+   "en": "Automatic browser translation.",
+   "pt-BR": "Tradução automática do navegador.",
+   "fr": "Traduction automatique du navigateur."
+  },
+  "Tipo de rutina": {
+   "en": "Routine type",
+   "pt-BR": "Tipo de rotina",
+   "fr": "Type de routine"
+  },
+  "Gimnasio (peso y repeticiones)": {
+   "en": "Gym (weight and reps)",
+   "pt-BR": "Academia (peso e repetições)",
+   "fr": "Salle (charge et répétitions)"
+  },
+  "En otros deportes se registra tiempo, distancia o rondas por serie, y al terminar queda como actividad.": {
+   "en": "For other sports you log time, distance or rounds per set, and when you finish it's saved as an activity.",
+   "pt-BR": "Em outros esportes você registra tempo, distância ou rodadas por série, e ao terminar fica salvo como atividade.",
+   "fr": "Pour les autres sports, on note le temps, la distance ou les tours par série, et à la fin c'est enregistré comme activité."
+  },
+  "Series × distancia o tiempo": {
+   "en": "Sets × distance or time",
+   "pt-BR": "Séries × distância ou tempo",
+   "fr": "Séries × distance ou temps"
+  },
+  "Dist./reps": {
+   "en": "Dist./reps",
+   "pt-BR": "Dist./reps",
+   "fr": "Dist./reps"
+  },
+  "Récords": {
+   "en": "Records",
+   "pt-BR": "Recordes",
+   "fr": "Records"
+  },
+  "Mejor serie": {
+   "en": "Best set",
+   "pt-BR": "Melhor série",
+   "fr": "Meilleure série"
+  },
+  "Nuevo récord": {
+   "en": "New record",
+   "pt-BR": "Novo recorde",
+   "fr": "Nouveau record"
+  },
+  "Más largo": {
+   "en": "Longest",
+   "pt-BR": "Mais longo",
+   "fr": "Plus long"
+  },
+  "Mejor ritmo": {
+   "en": "Best pace",
+   "pt-BR": "Melhor ritmo",
+   "fr": "Meilleure allure"
+  },
+  "nuevos esta semana": {
+   "en": "new this week",
+   "pt-BR": "novos nesta semana",
+   "fr": "nouveaux cette semaine"
+  },
+  "Otros deportes": {
+   "en": "Other sports",
+   "pt-BR": "Outros esportes",
+   "fr": "Autres sports"
+  },
+  "Running · Series 8×400 m": {
+   "en": "Running · 8×400 m intervals",
+   "pt-BR": "Corrida · Tiros 8×400 m",
+   "fr": "Course · Fractionné 8×400 m"
+  },
+  "Running · Tempo de 20 min": {
+   "en": "Running · 20 min tempo",
+   "pt-BR": "Corrida · Tempo de 20 min",
+   "fr": "Course · Tempo de 20 min"
+  },
+  "Ciclismo · Intervalos 5×4 min": {
+   "en": "Cycling · 5×4 min intervals",
+   "pt-BR": "Ciclismo · Intervalos 5×4 min",
+   "fr": "Cyclisme · Intervalles 5×4 min"
+  },
+  "Natación · Aeróbico 1500 m": {
+   "en": "Swimming · 1500 m aerobic",
+   "pt-BR": "Natação · Aeróbico 1500 m",
+   "fr": "Natation · Aérobie 1500 m"
+  },
+  "Trote de calentamiento": {
+   "en": "Warm-up jog",
+   "pt-BR": "Trote de aquecimento",
+   "fr": "Footing d'échauffement"
+  },
+  "Series a ritmo de 5 km": {
+   "en": "Repeats at 5K pace",
+   "pt-BR": "Tiros no ritmo de 5 km",
+   "fr": "Répétitions à allure 5 km"
+  },
+  "Trote de enfriamiento": {
+   "en": "Cool-down jog",
+   "pt-BR": "Trote de desaquecimento",
+   "fr": "Footing de retour au calme"
+  },
+  "Trote suave": {
+   "en": "Easy jog",
+   "pt-BR": "Trote leve",
+   "fr": "Footing facile"
+  },
+  "Tempo a ritmo cómodo-duro": {
+   "en": "Tempo at comfortably hard pace",
+   "pt-BR": "Tempo em ritmo confortável-forte",
+   "fr": "Tempo à allure soutenue"
+  },
+  "Rodar suave": {
+   "en": "Easy spin",
+   "pt-BR": "Pedal leve",
+   "fr": "Pédalage facile"
+  },
+  "Intervalo fuerte": {
+   "en": "Hard interval",
+   "pt-BR": "Intervalo forte",
+   "fr": "Intervalle intense"
+  },
+  "Vuelta a la calma": {
+   "en": "Cool-down",
+   "pt-BR": "Volta à calma",
+   "fr": "Retour au calme"
+  },
+  "Serie aeróbica": {
+   "en": "Aerobic set",
+   "pt-BR": "Série aeróbica",
+   "fr": "Série aérobie"
+  },
+  "Entre series, 90 s de trote o caminata.": {
+   "en": "Between repeats, 90 s of jogging or walking.",
+   "pt-BR": "Entre os tiros, 90 s de trote ou caminhada.",
+   "fr": "Entre les répétitions, 90 s de footing ou de marche."
+  },
+  "Entre intervalos, 3 min de pedaleo suave.": {
+   "en": "Between intervals, 3 min of easy pedaling.",
+   "pt-BR": "Entre intervalos, 3 min de pedal leve.",
+   "fr": "Entre les intervalles, 3 min de pédalage facile."
+  },
+  "Descanso de 15 a 20 s entre cada 100 m.": {
+   "en": "Rest 15 to 20 s between each 100 m.",
+   "pt-BR": "Descanso de 15 a 20 s entre cada 100 m.",
+   "fr": "Repos de 15 à 20 s entre chaque 100 m."
+  },
+  "tiempo": {
+   "en": "time",
+   "pt-BR": "tempo",
+   "fr": "temps"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

@@ -2846,6 +2846,17 @@
   .rx-ex-n { font-size: 14px; font-weight: 600; } .rx-ex-d { grid-column: 1; font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
   .rx-swap { grid-row: 1 / span 2; grid-column: 2; width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-2); font-size: 15px; cursor: pointer; }
   .rx-chips { margin: 4px 0 12px; flex-wrap: wrap; }
+
+  /* ===== Récords del atleta (vista del especialista) ===== */
+  .rec-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); }
+  .rec-card .sp-card-top + .rec-row { border-top: 0; }
+  .rec-n { font-size: 14px; font-weight: 700; } .rec-d { font-size: 12px; color: var(--text-3); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .rec-new { display: inline-block; margin-top: 5px; }
+  .rec-r { text-align: right; min-width: 92px; } .rec-v { font-size: 20px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; } .rec-v small { font-size: 11px; font-weight: 600; color: var(--text-3); }
+  .rec-k { font-size: 11px; color: var(--text-3); } .rec-k b.up { color: #16A34A; } .rec-k b.dn { color: #DC2626; }
+  #sp-report .rec-spark, .rec-spark { display: block; width: 92px; height: 24px; margin-top: 4px; color: var(--text-2); }
+  .rec-row.fresh .rec-spark { color: #16A34A; }
+  .rec-sep { height: 8px; }
 </style>
 </head>
 <body>
@@ -10781,9 +10792,7 @@ function spClientReport(D, l, asg) {
       charts.push(card('<span>Dolor y esfuerzo por sesión</span>', gymLineSvg([{ color: '#EF4444', pts: feel.filter(f => f.pain != null).map(f => ({ x: X(f), y: f.pain })) }, { color: '#3B82F6', pts: feel.filter(f => f.rpe != null).map(f => ({ x: X(f), y: f.rpe })) }], { min: 0, max: 10, ticks: [0, 5, 10], h: 120 })
         + '<div class="gym-leg"><span><i style="background:#EF4444"></i><span>Dolor (NPRS)</span></span><span><i style="background:#3B82F6"></i><span>RPE sesión</span></span></div>'));
     }
-    const top = Object.values(e1).filter(x => x.v.length >= 2).sort((x, y) => y.v.length - x.v.length).slice(0, 5);
-    if (top.length) charts.push(card('<span>1RM estimado</span>', top.map(x => { const a = x.v[0], b = x.v[x.v.length - 1], d = pct(b, a);
-      return `<div class="sp-e1"><span translate="no">${escapeHtml(x.name)}</span><span translate="no">${gymFmtKg(a)} → <b>${gymFmtKg(b)} ${U}</b>${d != null ? ` <i class="${d < 0 ? 'dn' : 'up'}">${sgn(d)}%</i>` : ''}</span></div>`; }).join('')));
+    // los récords por ejercicio se muestran aparte (spRecordsHtml)
   }
   const ws = Object.keys(D.weight_log || {}).sort();
   if (ws.length >= 2) { const a = +D.weight_log[ws[0]], b = +D.weight_log[ws[ws.length - 1]]; sum.push(line(`<span>Peso</span>: <b>${bwDisp(b)} ${bwUnit()}</b> (${bwDiff(b - a)} ${bwUnit()})`)); }
@@ -10891,7 +10900,7 @@ async function spOpenClient(l) {
   const rep = spClientReport(D, l, asg);
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button><div class="sp-actions" style="margin-top:8px;"><button class="sp-act" id="sp-goal-new">Poner objetivo</button>' + (linkRoles(l).some(r => r !== 'fisioterapeuta') ? '<button class="sp-act" id="sp-phase-edit">Fases del plan</button>' : '') + '</div>',
     progress: `<div class="sp-rep-btns"><button class="sp-act" id="sp-rep-copy">Copiar resumen</button><button class="sp-act" id="sp-rep-pdf">Guardar PDF</button></div>
-      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${typeof phaseClientHtml === 'function' ? phaseClientHtml(D) : ''}${typeof goalsClientHtml === 'function' ? goalsClientHtml(D) : ''}${rep}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
+      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${typeof phaseClientHtml === 'function' ? phaseClientHtml(D) : ''}${typeof goalsClientHtml === 'function' ? goalsClientHtml(D) : ''}${rep}${typeof spRecordsHtml === 'function' ? spRecordsHtml(D) : ''}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
     checkins: '<div id="sp-ck"></div>',
     assess: '<div id="sp-assess"></div>',
     logs: logs.join('') + (nutri ? '<div id="sp-mp"></div>' : '') };
@@ -13654,7 +13663,7 @@ function loadGymDb() {
     _gymDbPromise = new Promise((resolve, reject) => {
       const s = document.createElement('script');
       s.src = 'gym_db.js';
-      s.onload = () => resolve(window.GYM_DB || []);
+      s.onload = () => { resolve(window.GYM_DB || []); if (!window.GYM_STEPS_ES) { const s2 = document.createElement('script'); s2.src = 'gym_steps.js'; document.head.appendChild(s2); } };
       s.onerror = () => { _gymDbPromise = null; reject(new Error('gym_db')); };
       document.head.appendChild(s);
     });
@@ -13707,12 +13716,13 @@ function gymPhotoVar(r, hero) {
   const f = (hero ? GYM_PHOTO_HERO : GYM_PHOTO_CARD)[g] || 'gym';
   return `--ph:url(img/ph-${f}.jpg)`;
 }
-function gymMediaHtml(ex, size) {
+function gymMediaHtml(ex, size, sport) {
   const G = ` data-g="${gymExGroup(ex)}"`;
   const st = `width:${size}px;height:${size}px;`;
   if (ex.photo) return `<img class="gym-media"${G} src="${ex.photo}" style="${st}" alt="">`;
   const fr = ex.dbId ? gymDbFrames(ex.dbId) : [];
   if (fr.length) return `<img class="gym-media gym-anim"${G} src="${fr[0]}" data-frames="${fr.join('|')}" style="${st}" alt="" loading="lazy" onerror="this.classList.add('gym-media-err')">`;
+  if (sport) return `<div class="gym-media gym-media-empty"${G} style="${st}"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5M12 2.5v3.5"/></svg></div>`;
   return `<div class="gym-media gym-media-empty"${G} style="${st}"><svg viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg></div>`;
 }
 setInterval(() => {
@@ -13825,11 +13835,14 @@ function gymSetsText(sets) { return (sets || []).map(s => `${s.count}×${s.reps}
 function gymParseSetsText(txt) {
   const out = [];
   String(txt || '').split(/[,;\n·]+/).forEach(part => {
-    const m = part.trim().match(/^(\d{1,2})\s*[x×X]\s*(\d{1,3}(?:\s*[-–]\s*\d{1,3})?)\s*(.*)$/);
+    const m = part.trim().match(/^(\d{1,2})\s*[x×X]\s*(\d{1,5}(?:\.\d+)?(?:\s*[-–]\s*\d{1,5}(?:\.\d+)?)?)\s*(.*)$/);
     if (m) out.push({ count: parseInt(m[1], 10), reps: m[2].replace(/\s+/g, '').replace('–', '-'), note: m[3].trim() });
   });
   return out;
 }
+// ¿Rutina de otro deporte (running, natación, box…)? Se registra por tiempo y distancia, no por peso.
+function gymIsSport(r) { const sp = r && r.meta && r.meta.sport; return !!sp && typeof SPORT_BY !== 'undefined' && !!SPORT_BY[sp] && !SPORT_BY[sp].gym; }
+function gymSetNoteForIndex(ex, i) { for (const s of ex.sets || []) { if (i < s.count) return s.note || ''; i -= s.count; } return ''; }
 function gymTotalSets(ex) { return (ex.sets || []).reduce((a, s) => a + (s.count || 0), 0); }
 function gymSetRepsForIndex(ex, idx) {
   let i = idx;
@@ -13915,7 +13928,7 @@ function renderGym() {
   const list = routines.map(r => {
     const days = order.filter(d => sched[String(d)] === r.id).map(d => dows[d]).join(', ');
     return `<div class="gym-routine ph" style="${gymPhotoVar(r)}" data-gym-open="${r.id}">
-      ${gymMediaHtml(r.exercises[0] || {}, 44)}
+      ${gymMediaHtml(r.exercises[0] || {}, 44, gymIsSport(r))}
       <div class="gym-routine-body">
         <div class="gym-routine-name">${escapeHtml(r.name)}</div>${gymGroupChips(r)}
         <div class="gym-routine-meta">${r.exercises.length} ejercicios${days ? ' · ' + escapeHtml(days) : ''}</div>
@@ -14036,6 +14049,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
   let openId = focusId || (r.exercises.find(ex => !exComplete(ex)) || {}).id || null;
 
   const chip = (k, v) => v ? `<span class="gym-chip"><b>${k}</b> ${escapeHtml(v)}</span>` : '';
+  const sportR = gymIsSport(r);
   const exCard = (exOrig) => {
     const sw = lg.swap && lg.swap[exOrig.id];
     const ex = sw ? Object.assign({}, exOrig, { name: sw.name, dbId: sw.dbId, photo: null }) : exOrig;
@@ -14049,7 +14063,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const last = gymLastLog(ex.id, dateKey, sw ? sw.name : null);
     const rec = i => (sw ? null : gymRecLoad(exOrig, i));
     const head = `<div class="gym-ex-head" data-gym-toggle="${ex.id}">
-        <div class="gym-ex-media"${sw ? '' : ` data-gym-info="${ex.id}"`}>${gymMediaHtml(ex, isOpen ? 64 : 44)}</div>
+        <div class="gym-ex-media"${sw ? '' : ` data-gym-info="${ex.id}"`}>${gymMediaHtml(ex, isOpen ? 64 : 44, sportR)}</div>
         <div class="gym-ex-body">
           <div class="gym-ex-name">${escapeHtml(ex.name)}</div>
           ${sw ? `<div class="gym-ex-swapped">⇄ <span>en lugar de</span> ${escapeHtml(exOrig.name)}</div>` : ''}
@@ -14066,6 +14080,13 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const rows = Array.from({ length: n }, (_, i) => {
       const s = cur[i] || {};
       const prev = last && last.sets[i];
+      if (sportR) return `<div class="gym-set${s.done ? ' done' : ''}" data-ex="${ex.id}" data-i="${i}">
+        <div class="gym-set-target"><b>${i + 1}</b><small translate="no">${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small></div>
+        <input class="gym-in" inputmode="text" data-f="time" value="${escapeHtml(s.time || '')}" placeholder="${prev && prev.time ? escapeHtml(prev.time) : 'mm:ss'}">
+        <input class="gym-in" inputmode="decimal" data-f="reps" value="${escapeHtml(s.reps || '')}" placeholder="${escapeHtml(i < base ? String(gymSetRepsForIndex(ex, i)).split(' ')[0] : '')}">
+        <input class="gym-in rir" inputmode="numeric" data-f="rpe" maxlength="2" value="${escapeHtml(s.rpe == null ? '' : s.rpe)}" placeholder="–">
+        <button class="gym-check" aria-label="Hecho">✓</button>
+      </div>`;
       const tg = (s.tags || []).filter(id => GYM_TECH_BY[id]), tOpen = tagOpen === ex.id + ':' + i;
       return `<div class="gym-set${s.done ? ' done' : ''}${tOpen ? ' tagging' : ''}" data-ex="${ex.id}" data-i="${i}">
         <button class="gym-set-target" data-set-tags="${ex.id}:${i}" aria-label="Técnica de la serie"><b>${i + 1}</b><small>${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small>${tg.length ? `<span class="set-tech">${tg.map(id => gymTechIcon(id, 11)).join('')}</span>` : '<span class="set-tech add">+ técnica</span>'}</button>
@@ -14079,22 +14100,22 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const best1rm = gymBestE1RM(ex.id, dateKey);
     const pr = gymRange(ex.pct1rm);
     const pctTxt = pr ? (best1rm ? `${ex.pct1rm}% ≈ ${gymFmtLoad(best1rm * pr[0] / 100)}${pr[1] !== pr[0] ? '–' + gymFmtLoad(best1rm * pr[1] / 100) : ''} ${U}` : `${ex.pct1rm}%`) : '';
-    const extra = [chip('%1RM', pctTxt), chip('Tempo', tempo), chip('Descanso', ex.rest), best1rm ? chip('1RM est.', gymFmtKg(best1rm) + ' ' + U) : ''].join('');
-    const adv = sw ? null : gymAdvice(r, ex, dateKey);
+    const extra = sportR ? [chip('Descanso', ex.rest)].join('') : [chip('%1RM', pctTxt), chip('Tempo', tempo), chip('Descanso', ex.rest), best1rm ? chip('1RM est.', gymFmtKg(best1rm) + ' ' + U) : ''].join('');
+    const adv = sw || sportR ? null : gymAdvice(r, ex, dateKey);
     const advHtml = adv ? `<div class="gym-adv ${adv.kind}"><b>${adv.title}</b> <span>${escapeHtml(adv.text)}</span></div>` : '';
     const ef = (lg.exFeel && lg.exFeel[ex.id]) || {};
     const feelHtml = done ? `<div class="gym-exfeel">${gymScaleHtml('pain', ex.id, ef.pain)}${gymScaleHtml('rpe', ex.id, ef.rpe)}</div>` : '';
-    const swapBtn = sw
+    const swapBtn = sportR ? '' : sw
       ? `<button class="gym-swap-btn" data-gym-unswap="${ex.id}">↺ Volver al original</button>`
       : `<button class="gym-swap-btn" data-gym-swap="${ex.id}">⇄ Reemplazar ejercicio</button>`;
-    const lastTxt = last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${gymDispW(s.kg) || '?'}×${s.reps || '?'}${s.rir !== undefined && s.rir !== '' ? ' @' + s.rir : ''}`).join('  '))}</div>` : '';
+    const lastTxt = last && sportR ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.time || s.reps).map(s => [s.reps, s.time].filter(Boolean).join(' en ')).join('  '))}</div>` : last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${gymDispW(s.kg) || '?'}×${s.reps || '?'}${s.rir !== undefined && s.rir !== '' ? ' @' + s.rir : ''}`).join('  '))}</div>` : '';
     return `<div class="gym-ex open${complete ? ' complete' : ''}" data-g="${gymExGroup(ex)}" data-ex-card="${ex.id}">${head}
       ${extra ? `<div class="gym-chips">${extra}</div>` : ''}
       ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
       ${!sw && exOrig.loads && exOrig.loads.length ? `<div class="gym-rec"><b>Carga recomendada</b>${r.assigned && r.assigned.by ? ` <span translate="no">· ${escapeHtml(r.assigned.by)}</span>` : ''}<span class="gym-rec-v" translate="no">${Array.from({ length: n }, (_, i) => escapeHtml(gymDispW(rec(i)))).join(' · ')} ${U}</span></div>` : ''}
       ${advHtml}
       ${lastTxt}
-      <div class="gym-sets"><div class="gym-set gym-set-h"><div>Serie</div><div translate="no">${U}</div><div>Reps</div><div translate="no">RIR</div><div>Hecho</div></div>${rows}</div>
+      <div class="gym-sets"><div class="gym-set gym-set-h">${sportR ? '<div>Serie</div><div>Tiempo</div><div>Dist./reps</div><div translate="no">RPE</div><div>Hecho</div>' : `<div>Serie</div><div translate="no">${U}</div><div>Reps</div><div translate="no">RIR</div><div>Hecho</div>`}</div>${rows}</div>
       <div class="gym-setbtns"><button class="gym-addset" data-gym-addset="${ex.id}">+ Agregar serie</button>${cur.length > base ? `<button class="gym-addset rm" data-gym-rmset="${ex.id}">Quitar serie</button>` : ''}</div>
       ${feelHtml}
       ${swapBtn}
@@ -14131,8 +14152,8 @@ function openGymWorkout(routineId, dateKey, focusId) {
       </div>
       <div class="gym-wo-top">
         <div class="gym-wo-head"><div class="gym-wo-date">${escapeHtml(dLabel)}${m.musculos ? ' · ' + escapeHtml(m.musculos) : ''}</div>
-          <div class="gym-unit" translate="no"><button data-gym-unit="kg" class="${U === 'kg' ? 'on' : ''}">kg</button><button data-gym-unit="lb" class="${U === 'lb' ? 'on' : ''}">lb</button></div></div>
-        <div class="gym-chips">${freq ? chip('Frecuencia', freq + '×/sem') : ''}${chip('Descanso', '2–3 min')}${chip('Tempo', r.tempo)}</div>
+          ${sportR ? '' : `<div class="gym-unit" translate="no"><button data-gym-unit="kg" class="${U === 'kg' ? 'on' : ''}">kg</button><button data-gym-unit="lb" class="${U === 'lb' ? 'on' : ''}">lb</button></div>`}</div>
+        <div class="gym-chips">${freq ? chip('Frecuencia', freq + '×/sem') : ''}${sportR ? '' : chip('Descanso', '2–3 min')}${sportR ? '' : chip('Tempo', r.tempo)}</div>
         ${info ? `<details class="gym-info"><summary>Indicaciones del coach</summary>${info}</details>` : ''}
       </div>
       ${body}
@@ -14142,7 +14163,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
         <span class="gym-resti-t">${restTxt}</span>
       </button>
       <div class="gym-wo-btns">
-        <button class="btn-secondary" id="gym-share">Compartir cargas</button>
+        ${sportR ? '' : '<button class="btn-secondary" id="gym-share">Compartir cargas</button>'}
         <button class="btn-secondary" id="gym-edit">Editar rutina</button>
       </div>
       <div class="gym-cta-wrap"><button class="btn-primary gym-cta" id="gym-finish">${lg.done ? '✓ Entrenamiento terminado · editar cómo me sentí' : 'Terminar entrenamiento'}</button></div>
@@ -14189,7 +14210,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
     sb.querySelectorAll('.gym-set[data-ex] .gym-in').forEach(inp => inp.addEventListener('input', () => {
       const row = inp.closest('.gym-set');
       const v = inp.value.replace(',', '.').trim();
-      setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.dataset.f === 'kg' ? gymStoreW(v) : inp.dataset.f === 'rir' ? v.replace(/[^0-9]/g, '').slice(0, 2) : v);
+      setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.dataset.f === 'kg' ? gymStoreW(v) : inp.dataset.f === 'rir' || inp.dataset.f === 'rpe' ? v.replace(/[^0-9]/g, '').slice(0, 2) : inp.dataset.f === 'time' ? inp.value.replace(/[^0-9:.]/g, '').slice(0, 8) : v);
     }));
     sb.querySelectorAll('[data-gym-unit]').forEach(b => b.addEventListener('click', () => { S.set('gym_unit', b.dataset.gymUnit); draw(); }));
     sb.querySelectorAll('[data-gym-addset]').forEach(b => b.addEventListener('click', () => {
@@ -14271,7 +14292,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
       persist(); draw();
     }));
     sb.querySelector('#gym-edit').addEventListener('click', () => openGymEditor(r.id));
-    sb.querySelector('#gym-share').addEventListener('click', () => gymShareLoads(r, dateKey));
+    const gsh = sb.querySelector('#gym-share'); if (gsh) gsh.addEventListener('click', () => gymShareLoads(r, dateKey));
     sb.querySelector('#gym-finish').addEventListener('click', () => {
       gymRestStop();
       openGymFinish(r, dateKey, lg, persist, () => { closeSheet(); renderGym(); });
@@ -14361,6 +14382,24 @@ function gymShareLoads(r, dateKey) {
 }
 
 // ---------- Ficha del ejercicio (imagen, músculos, instrucciones, vincular) ----------
+// Instrucciones del ejercicio en el idioma de la app: español propio para los más usados; si no, traducción
+// del navegador cuando existe (Chrome con Translator); si no, el original en inglés con aviso.
+function gymLang() { const l = (window.i18n && window.i18n.lang) ? window.i18n.lang() : (localStorage.getItem('rutinal_lang') || 'es'); return String(l || 'es').slice(0, 2); }
+function gymStepsLocal(db) { const l = gymLang(); if (l === 'en') return db.t; if (l === 'es' && window.GYM_STEPS_ES && window.GYM_STEPS_ES[db.i]) return window.GYM_STEPS_ES[db.i]; try { const c = JSON.parse(localStorage.getItem('__gtr_' + l) || '{}'); if (c[db.i]) return c[db.i]; } catch (e) {} return null; }
+function gymStepsHtml(db) {
+  const own = gymStepsLocal(db), steps = own || db.t;
+  return `<ol class="gym-steps"${own ? ' translate="no"' : ' lang="en"'}>${steps.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ol>${own ? '' : '<div class="fit-note" id="gym-steps-note" style="margin-top:-4px;">Instrucciones en inglés: todavía no están traducidas para este ejercicio.</div>'}`;
+}
+async function gymStepsTranslate(db) {
+  const l = gymLang(); if (l === 'en' || gymStepsLocal(db) || !('Translator' in self)) return null;
+  try {
+    if ((await Translator.availability({ sourceLanguage: 'en', targetLanguage: l })) === 'unavailable') return null;
+    const tr = await Translator.create({ sourceLanguage: 'en', targetLanguage: l }), out = [];
+    for (const x of db.t) out.push(await tr.translate(x));
+    try { const c = JSON.parse(localStorage.getItem('__gtr_' + l) || '{}'); c[db.i] = out; localStorage.setItem('__gtr_' + l, JSON.stringify(c)); } catch (e) {}
+    return out;
+  } catch (e) { return null; }
+}
 function openGymExerciseInfo(routineId, exId, back) {
   const r = gymRoutineById(routineId);
   const ex = r && r.exercises.find(e => e.id === exId);
@@ -14380,13 +14419,14 @@ function openGymExerciseInfo(routineId, exId, back) {
         </div>
         ${db ? `<div class="gym-db-name">${escapeHtml(db.n)}</div>
           <div class="gym-chips">${mus ? `<span class="gym-chip"><b>Músculo</b> ${escapeHtml(mus)}</span>` : ''}${sec ? `<span class="gym-chip"><b>Secundarios</b> ${escapeHtml(sec)}</span>` : ''}${db.e ? `<span class="gym-chip"><b>Equipo</b> ${escapeHtml(GYM_EQUIP_ES[db.e] || db.e)}</span>` : ''}</div>
-          ${db.t && db.t.length ? `<ol class="gym-steps">${db.t.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ol>` : ''}` : '<div class="fe-lbl">Este ejercicio no está vinculado a la base. Vincúlalo para ver su animación y músculos.</div>'}
+          ${db.t && db.t.length ? `<div id="gym-steps-box">${gymStepsHtml(db)}</div>` : ''}` : '<div class="fe-lbl">Este ejercicio no está vinculado a la base. Vincúlalo para ver su animación y músculos.</div>'}
         <button class="btn-secondary" id="gym-link">${db ? 'Cambiar ejercicio vinculado' : 'Vincular con la base'}</button>
         <label class="btn-secondary gym-photo-btn">${ex.photo ? 'Cambiar foto' : 'Agregar foto'}<input type="file" accept="image/*" id="gym-photo" style="display:none"></label>
         ${ex.photo ? '<button class="btn-secondary" id="gym-photo-del">Quitar foto</button>' : ''}
         ${back ? '<button class="btn-secondary" id="gym-back">‹ Volver</button>' : ''}
       </div>`);
   document.getElementById('sheet-body').scrollTop = 0;
+    if (db && db.t && db.t.length) gymStepsTranslate(db).then(out => { const bx = document.getElementById('gym-steps-box'); if (out && bx) bx.innerHTML = `<ol class="gym-steps" translate="no">${out.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ol><div class="fit-note" style="margin-top:-4px;">Traducción automática del navegador.</div>`; });
     const update = (fn) => {
       const all = gymRoutines();
       const rr = all.find(x => x.id === routineId);
@@ -14559,10 +14599,12 @@ function openGymFinish(r, dateKey, lg, persist, onDone) {
   const moods = GYM_MOODS.map((m, i) => `<button class="gym-mood${f.mood === i + 1 ? ' on' : ''}" data-mood="${i + 1}"><span>${m[0]}</span><small>${m[1]}</small></button>`).join('');
   openSheet('¿Cómo te sentiste?', `<div class="gym-finish">
     <div class="gym-fin-stats">
-      <div><b>${st.sets}</b><span>series</span></div>
+      ${gymIsSport(r) && typeof actRoutineTotals === 'function' ? (T => `<div><b>${T.sets}</b><span>series</span></div>
+      ${T.meters ? `<div><b translate="no">${T.meters >= 1000 ? (Math.round(T.meters / 10) / 100).toLocaleString(_loc()) : Math.round(T.meters)}</b><span translate="no">${T.meters >= 1000 ? 'km' : 'm'}</span></div>` : ''}
+      ${T.secs ? `<div><b translate="no">${actFmtTime(T.secs)}</b><span>tiempo</span></div>` : ''}`)(actRoutineTotals(r, Object.assign({}, lg, { end: lg.end || Date.now() }))) : `<div><b>${st.sets}</b><span>series</span></div>
       <div><b>${Math.round(gymVolU(st.vol)).toLocaleString(_loc())}</b><span>${gymUnit()} de volumen</span></div>
       ${st.mins >= 1 ? `<div><b>${Math.round(st.mins)}</b><span>min</span></div>` : ''}
-      ${st.density ? `<div><b>${Math.round(gymVolU(st.density))}</b><span>${gymUnit()}/min (densidad)</span></div>` : ''}
+      ${st.density ? `<div><b>${Math.round(gymVolU(st.density))}</b><span>${gymUnit()}/min (densidad)</span></div>` : ''}`}
     </div>
     <div class="fe-lbl">Al terminar, ¿cómo te sentiste?</div>
     <div class="gym-moods">${moods}</div>
@@ -14587,6 +14629,7 @@ function openGymFinish(r, dateKey, lg, persist, onDone) {
   document.getElementById('gym-fin-save').addEventListener('click', () => {
     feel.note = document.getElementById('gym-fin-note').value.trim();
     lg.feel = feel; lg.done = true; lg.end = lg.end || Date.now();
+    try { if (gymIsSport(r) && typeof actFromRoutine === 'function') actFromRoutine(r, dateKey, lg); } catch (e) {}
     persist(); onDone();
   });
 }
@@ -14872,6 +14915,7 @@ function gymEditorSync() {
   if (v('ge-name') !== undefined) _gymEdit.name = v('ge-name').trim();
   ['musculos', 'objetivo', 'periodo', 'calentamiento', 'descanso', 'notas'].forEach(k => { const x = v('ge-' + k); if (x !== undefined) _gymEdit.meta[k] = x.trim(); });
   if (v('ge-tempo') !== undefined) _gymEdit.tempo = v('ge-tempo').trim();
+  if (v('ge-sport') !== undefined) { _gymEdit.meta = _gymEdit.meta || {}; if (v('ge-sport')) _gymEdit.meta.sport = v('ge-sport'); else delete _gymEdit.meta.sport; }
   sb.querySelectorAll('.ge-ex').forEach(row => {
     const ex = _gymEdit.exercises.find(e => e.id === row.dataset.id);
     if (!ex || !row.querySelector('[data-f="name"]')) return;
@@ -14905,7 +14949,7 @@ function gymDrawEditor(isNew) {
       </div>
       <div class="ge-grid">
         <label><span>Circuito</span><input class="field-input" data-f="circuit" inputmode="numeric" value="${ex.circuit == null ? '' : ex.circuit}"></label>
-        <label class="ge-wide"><span>Series × reps</span><input class="field-input" data-f="sets" value="${escapeHtml(gymSetsText(ex.sets).replace(/ · /g, ', ').replace(/×/g, 'x'))}" placeholder="2x10-15, 1x15-20"></label>
+        <label class="ge-wide"><span>${gymIsSport(e) ? 'Series × distancia o tiempo' : 'Series × reps'}</span><input class="field-input" data-f="sets" value="${escapeHtml(gymSetsText(ex.sets).replace(/ · /g, ', ').replace(/×/g, 'x'))}" placeholder="${gymIsSport(e) ? '8x400 m, 1x10 min' : '2x10-15, 1x15-20'}"></label>
         <label><span>RIR</span><input class="field-input" data-f="rir" value="${escapeHtml(ex.rir || '')}"></label>
         <label><span>RPE</span><input class="field-input" data-f="rpe" value="${escapeHtml(ex.rpe || '')}"></label>
         <label><span>%1RM</span><input class="field-input" data-f="pct1rm" inputmode="numeric" value="${escapeHtml(ex.pct1rm || '')}" placeholder="70-75"></label>
@@ -14928,6 +14972,8 @@ function gymDrawEditor(isNew) {
     <div class="gym-editor">
       <label class="fe-lbl">Nombre de la rutina</label>
       <input class="field-input" id="ge-name" value="${escapeHtml(e.name)}" placeholder="Ej. Día 1 · Pecho / espalda">
+      ${typeof SPORTS !== 'undefined' ? `<label class="fe-lbl" style="margin-top:12px;">Tipo de rutina</label><select class="field-input" id="ge-sport"><option value="">Gimnasio (peso y repeticiones)</option>${SPORTS.filter(x => !x.gym).map(x => `<option value="${x.id}"${(e.meta || {}).sport === x.id ? ' selected' : ''}>${escapeHtml(x.name)}</option>`).join('')}</select>
+      <div class="lk-d" style="margin:4px 0 0;">En otros deportes se registra tiempo, distancia o rondas por serie, y al terminar queda como actividad.</div>` : ''}
       ${_gymEditTarget ? (_gymEditTarget.sub ? `<div class="lk-d" style="margin:8px 0 0;">${_gymEditTarget.sub}</div>` : '') : `<label class="fe-lbl" style="margin-top:12px;">Días de la semana</label>
       <div class="chips small" id="ge-days">${order.map(d => `<div class="chip ${e._days.includes(String(d)) ? 'selected' : ''}" data-d="${d}">${escapeHtml(dows[d])}</div>`).join('')}</div>`}
       <div class="ge-grid" style="margin-top:12px;">

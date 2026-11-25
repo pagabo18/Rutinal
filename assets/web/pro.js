@@ -792,6 +792,10 @@ const SPORT_ROUTINES = [
   { sport: 'escalada', name: 'Escalada · Fuerza de dedos y tracción', ex: [['Calentamiento en vías fáciles', 1, '15 min'], ['Suspensiones en regleta', 6, '10 s'], ['Dominadas', 4, '5'], ['Bloqueos a 90°', 4, '8 s'], ['Boulder de proyecto', 6, '1 intento'], ['Flexiones (antagonistas)', 3, '12'], ['Elevación de piernas colgado', 3, '10']] },
   { sport: 'fisio', name: 'Fisio · Movilidad y activación general', ex: [['Gato-camello', 2, '10'], ['Puente de glúteo', 3, '12'], ['Bird-dog', 3, '8'], ['Clamshell con banda', 3, '12'], ['Rotación torácica', 2, '8'], ['Estiramiento de flexor de cadera', 2, '30 s']], note: 'Ejemplo general. Tu fisioterapeuta indica los ejercicios y la dosis para tu caso.' },
   { sport: 'running', name: 'Running · Técnica y fuerza', ex: [['Skipping', 3, '20 m'], ['Zancadas', 3, '10'], ['Elevación de talones', 3, '15'], ['Peso muerto a una pierna', 3, '8'], ['Plancha lateral', 3, '30 s']] },
+  { sport: 'running', name: 'Running · Series 8×400 m', ex: [['Trote de calentamiento', 1, '2 km'], ['Series a ritmo de 5 km', 8, '400 m'], ['Trote de enfriamiento', 1, '2 km']], note: 'Entre series, 90 s de trote o caminata.' },
+  { sport: 'running', name: 'Running · Tempo de 20 min', ex: [['Trote suave', 1, '15 min'], ['Tempo a ritmo cómodo-duro', 1, '20 min'], ['Trote suave', 1, '10 min']] },
+  { sport: 'ciclismo', name: 'Ciclismo · Intervalos 5×4 min', ex: [['Rodar suave', 1, '15 min'], ['Intervalo fuerte', 5, '4 min'], ['Vuelta a la calma', 1, '10 min']], note: 'Entre intervalos, 3 min de pedaleo suave.' },
+  { sport: 'natacion', name: 'Natación · Aeróbico 1500 m', ex: [['Calentamiento', 1, '300 m'], ['Serie aeróbica', 10, '100 m'], ['Vuelta a la calma', 1, '200 m']], note: 'Descanso de 15 a 20 s entre cada 100 m.' },
   { sport: 'natacion', name: 'Natación · Sesión técnica de 2000 m', ex: [['Calentamiento suave', 1, '400 m'], ['Patada con tabla', 4, '50 m'], ['Técnica: punto muerto', 4, '50 m'], ['Serie principal', 8, '100 m'], ['Vuelta a la calma', 1, '200 m']] },
 ];
 function openSportRoutines() {
@@ -802,7 +806,7 @@ function openSportRoutines() {
   document.querySelectorAll('[data-sr-add]').forEach(b => b.addEventListener('click', () => {
     const r = SPORT_ROUTINES[+b.dataset.srAdd], all = gymRoutines();
     all.push({ id: uid(), name: r.name, meta: { sport: r.sport }, tempo: '', source: 'manual', createdAt: Date.now(), notes: r.note || '',
-      exercises: r.ex.map(e => ({ id: uid(), name: e[0], sets: [{ count: e[1], reps: e[2] }] })) });
+      exercises: r.ex.map(e => ({ id: uid(), name: e[0], sets: gymParseSetsText(e[1] + 'x' + e[2]).length ? gymParseSetsText(e[1] + 'x' + e[2]) : [{ count: e[1], reps: e[2], note: '' }] })) });
     saveGymRoutines(all); closeSheet(); try { renderGym(); } catch (e) {}
   }));
 }
@@ -993,7 +997,12 @@ function openRoutinePlans(ctx) {
   openSheet('Plantillas de rutina', `<div class="lk-d" style="margin:0 0 10px;">Divisiones clásicas listas para usar. Eliges tu equipo, revisas los ejercicios y quedan en ${ctx && ctx.spec ? 'tus plantillas para asignarlas' : 'Mis rutinas, programadas en tu semana'}. Después puedes editar todo.</div>
     <label class="auth-field"><span>Equipo</span><select class="auth-in" id="rp-eq">${RX_EQUIP.map(([k, n]) => `<option value="${k}">${n}</option>`).join('')}</select></label>
     ${RX_SPLITS.map((sp, i) => `<button class="rx-card" data-rp="${i}"><b>${sp.name}</b><span>${sp.desc}</span><small><span>${sp.level}</span> · <span translate="no">${sp.dows.map(d => t(RX_DOW_N[d])).join(' ')}</span></small></button>`).join('')}
-    ${ctx && ctx.spec ? '' : '<button class="btn-secondary" id="rp-sport" style="width:100%;margin-top:6px;">Rutinas por deporte</button>'}`);
+    ${ctx && ctx.spec ? `<div class="setting-label" style="margin-top:14px;">Otros deportes</div>${SPORT_ROUTINES.map((r, i) => `<button class="rx-card" data-rp-sport="${i}"><b>${r.name}</b><span>${r.ex.map(e => e[0]).join(' · ')}</span></button>`).join('')}` : '<button class="btn-secondary" id="rp-sport" style="width:100%;margin-top:6px;">Rutinas por deporte</button>'}`);
+  document.querySelectorAll('[data-rp-sport]').forEach(b => b.addEventListener('click', async () => {
+    const r = SPORT_ROUTINES[+b.dataset.rpSport], payload = { name: r.name, meta: { sport: r.sport }, tempo: '', notes: r.note || '', exercises: r.ex.map(e => ({ id: uid(), name: e[0], sets: gymParseSetsText(e[1] + 'x' + e[2]).length ? gymParseSetsText(e[1] + 'x' + e[2]) : [{ count: e[1], reps: e[2], note: '' }] })) };
+    try { await sbRest('templates', { method: 'POST', body: { kind: 'routine', name: r.name, payload }, headers: { Prefer: 'return=minimal' } }); } catch (e) { alert(authErr(e.code)); return; }
+    if (typeof openTemplates === 'function') openTemplates(ctx.forClient);
+  }));
   document.querySelectorAll('[data-rp]').forEach(b => b.addEventListener('click', () => {
     const sp = RX_SPLITS[+b.dataset.rp], eq = sp.equip || document.getElementById('rp-eq').value;
     const goal = sp.goal === 'hip' && eq === 'home' ? 'grasa' : sp.goal;
@@ -1038,6 +1047,74 @@ function openRoutineHub(ctx) {
     if (k === 'ai') openRoutineAssistant(ctx); else if (k === 'tpl') openRoutinePlans(ctx); else if (k === 'sport') openSportRoutines();
     else { closeSheet(); const id = k === 'pdf' ? 'gym-import' : 'gym-new'; setTimeout(() => { const x = document.getElementById(id) || document.getElementById(id + '-big'); if (x) x.click(); }, 50); }
   }));
+}
+
+// Al terminar una rutina de otro deporte queda registrada como actividad (distancia y tiempo sumados de las series).
+function actRoutineTotals(r, lg) {
+  let meters = 0, secs = 0, sets = 0;
+  (r.exercises || []).forEach(ex => ((lg.ex || {})[ex.id] || []).forEach((st, i) => {
+    if (!st || !st.done) return; sets++;
+    const unit = String(gymSetNoteForIndex(ex, i) || '').toLowerCase().trim(), v = parseFloat(String(st.reps || gymSetRepsForIndex(ex, i)).replace(',', '.')) || 0;
+    if (/^km/.test(unit)) meters += v * 1000; else if (/^m(\b|$|ts|etros)/.test(unit)) meters += v;
+    const tt = st.time ? actParseTime(st.time) : null;
+    if (tt) secs += tt; else if (/^min/.test(unit)) secs += v * 60; else if (/^(s|seg)/.test(unit)) secs += v;
+  }));
+  const dur = lg.start && lg.end ? Math.round((lg.end - lg.start) / 1000) : 0;
+  if (dur > secs && dur < 6 * 3600) secs = dur;
+  return { meters, secs, sets };
+}
+function actFromRoutine(r, dateKey, lg) {
+  const sp = SPORT_BY[r.meta.sport]; if (!sp) return;
+  const { meters, secs, sets } = actRoutineTotals(r, lg);
+  if (!sets) return;
+  const L = actLog(), day = (L[dateKey] || []).filter(a => a.rid !== r.id), f = sp.f || [];
+  const a = { id: uid(), sport: sp.id, rid: r.id, src: 'routine', wod: r.name };
+  if ((sp.types || []).includes('Series')) a.type = 'Series';
+  if (meters) { if (f.includes('dist_m')) a.dist_m = Math.round(meters); else a.dist_km = Math.round(meters / 10) / 100; }
+  if (secs) a.time = secs;
+  if (lg.feel && lg.feel.rpe != null) a.rpe = lg.feel.rpe;
+  day.push(a); L[dateKey] = day; actSave(L);
+}
+// Récords del atleta para el especialista: fuerza (1RM estimado, mejor serie, tendencia) y deportes (mejores marcas).
+function spRecordsHtml(D) {
+  const logs = D.gym_logs || {}, routines = Array.isArray(D.gym_routines) ? D.gym_routines : [], U = gymUnit(), by = {};
+  const days = Object.keys(logs).sort(), d7 = keyDate(new Date(Date.now() - 7 * 864e5));
+  days.forEach(d => {
+    const lg = logs[d] || {}, rt = routines.find(x => x.id === lg.routineId) || { exercises: [] };
+    if (gymIsSport(rt)) return;
+    Object.keys(lg.ex || {}).forEach(exId => {
+      const sw = lg.swap && lg.swap[exId], ex = (rt.exercises || []).find(x => x.id === exId) || {}, name = (sw && sw.name) || ex.name; if (!name) return;
+      const k = goalNorm(name), done = (lg.ex[exId] || []).filter(x => x && x.done && gymNum(x.kg) > 0 && gymNum(x.reps) > 0); if (!done.length) return;
+      const R = by[k] || (by[k] = { name, dbId: (sw && sw.dbId) || ex.dbId, pts: [], best: null, top: null, prDay: null });
+      let dayBest = 0, daySet = null;
+      done.forEach(x => { const e = gymE1RM(x.kg, x.reps); if (e > dayBest) { dayBest = e; daySet = x; } if (!R.top || gymNum(x.kg) > gymNum(R.top.kg)) R.top = { kg: x.kg, reps: x.reps, d }; });
+      R.pts.push({ d, v: dayBest });
+      if (!R.best || dayBest > R.best.v) { R.best = { v: dayBest, kg: daySet.kg, reps: daySet.reps, d }; R.prDay = d; }
+    });
+  });
+  const list = Object.values(by).filter(R => R.best).sort((a, b) => (b.prDay > a.prDay ? 1 : b.prDay < a.prDay ? -1 : b.best.v - a.best.v)).slice(0, 12);
+  const spark = pts => { const p = pts.slice(-10); if (p.length < 2) return ''; const mn = Math.min(...p.map(x => x.v)), mx = Math.max(...p.map(x => x.v)), r = mx - mn || 1;
+    return `<svg class="rec-spark" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${p.map((x, i) => `${(i / (p.length - 1) * 100).toFixed(1)},${(26 - (x.v - mn) / r * 24).toFixed(1)}`).join(' ')}"/></svg>`; };
+  const fmtD = d => { try { return new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' }).format(parseKey(d)); } catch (e) { return d; } };
+  const str = list.map(R => { const first = R.pts[0].v, ch = first ? Math.round((R.best.v - first) / first * 100) : 0, fresh = R.prDay >= d7;
+    return `<div class="rec-row${fresh ? ' fresh' : ''}"><div class="rec-l"><div class="rec-n" translate="no">${escapeHtml(R.name)}</div>
+      <div class="rec-d"><span>Mejor serie</span> <span translate="no">${gymFmtKg(R.best.kg)} ${U} × ${escapeHtml(String(R.best.reps))}</span> · <span translate="no">${escapeHtml(fmtD(R.best.d))}</span></div>
+      ${fresh ? '<span class="hd-badge ok rec-new">Nuevo récord</span>' : ''}</div>
+      <div class="rec-r"><div class="rec-v" translate="no">${gymFmtKg(R.best.v)}<small> ${U}</small></div><div class="rec-k">1RM est.${R.pts.length > 1 && ch ? ` · <b class="${ch < 0 ? 'dn' : 'up'}" translate="no">${ch > 0 ? '+' : ''}${ch}%</b>` : ''}</div>${spark(R.pts)}</div></div>`; }).join('');
+  // Deportes: distancia más larga y mejor ritmo por deporte
+  const A = D.act_log || {}, sp = {};
+  Object.keys(A).forEach(d => (A[d] || []).forEach(a => {
+    const S2 = SPORT_BY[a.sport]; if (!S2 || S2.gym) return;
+    const km = (+a.dist_km || 0) + (+a.dist_m || 0) / 1000, T = sp[a.sport] || (sp[a.sport] = { n: S2.name, far: null, pace: null, swim: (S2.f || []).includes('dist_m') });
+    if (km && (!T.far || km > T.far.km)) T.far = { km, d };
+    if (km >= (T.swim ? 0.1 : 1) && +a.time) { const pc = a.time / (T.swim ? km * 10 : km); if (!T.pace || pc < T.pace.v) T.pace = { v: pc, d, km }; }
+  }));
+  const spRows = Object.values(sp).filter(T => T.far || T.pace).map(T => `<div class="rec-row"><div class="rec-l"><div class="rec-n">${escapeHtml(T.n)}</div>
+      ${T.far ? `<div class="rec-d"><span>Más largo</span> <span translate="no">${T.swim ? Math.round(T.far.km * 1000) + ' m' : (Math.round(T.far.km * 10) / 10) + ' km'}</span> · <span translate="no">${escapeHtml(fmtD(T.far.d))}</span></div>` : ''}</div>
+      <div class="rec-r">${T.pace ? `<div class="rec-v" translate="no">${actFmtTime(Math.round(T.pace.v))}<small>${T.swim ? ' /100 m' : ' /km'}</small></div><div class="rec-k"><span>Mejor ritmo</span></div>` : ''}</div></div>`).join('');
+  if (!str && !spRows) return '';
+  return `<div class="sp-card rec-card"><div class="sp-card-top"><div class="sp-card-n">Récords</div><span class="cd-num">${list.filter(R => R.prDay >= d7).length ? `<span translate="no">${list.filter(R => R.prDay >= d7).length}</span> <span>nuevos esta semana</span>` : ''}</span></div>
+    ${str}${spRows ? `${str ? '<div class="rec-sep"></div>' : ''}${spRows}` : ''}</div>`;
 }
 
 // ============================================================
