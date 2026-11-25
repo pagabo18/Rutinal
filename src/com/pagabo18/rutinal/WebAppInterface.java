@@ -46,6 +46,17 @@ public class WebAppInterface {
         } catch (Exception ignored) {}
     }
 
+    /** Colores de la barra de estado y de navegación según el tema de la app. */
+    @JavascriptInterface
+    public void setSystemBars(final String color, final boolean dark) {
+        if (activity == null || color == null) return;
+        try {
+            activity.runOnUiThread(new Runnable() {
+                @Override public void run() { activity.applySystemBars(color, dark); }
+            });
+        } catch (Exception ignored) {}
+    }
+
     /** ¿Se puede abrir la ventana flotante (picture-in-picture)? */
     @JavascriptInterface
     public boolean canPip() {

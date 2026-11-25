@@ -10,7 +10,8 @@
 <meta name="app-version" content="31.2">
 <!-- PWA (solo aplica servida por http/https; el APK la ignora) -->
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#F2F2F0">
+<meta name="theme-color" content="#FAFAFA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0A0A0A" media="(prefers-color-scheme: dark)">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2902,6 +2903,28 @@
   .imgv-h { font-size: 12px; color: #A1A1AA; text-align: center; }
   .imgv-info { border: 0; border-radius: 12px; padding: 12px 18px; width: 100%; max-width: 360px; background: #F4F4F5; color: #18181B; font: inherit; font-weight: 700; cursor: pointer; }
   .gym-big-media img, .gym-res img.gym-media { cursor: zoom-in; }
+
+  /* ===== Calentamiento y cardio ===== */
+  .cv-ed-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; }
+  .cv-ed { border: 1px solid var(--border); border-radius: 14px; padding: 10px; background: var(--surface); display: flex; flex-direction: column; gap: 8px; }
+  .cv-ed-top { display: flex; gap: 8px; align-items: center; } .cv-ed-top select { flex: 1; }
+  .cv-ed-f { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .cv-ed-f label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: var(--text-3); min-width: 0; }
+  .cv-ed-f label i { font-style: normal; color: var(--text-3); }
+  .cv-ed-f .field-input { padding: 8px 10px; font-size: 15px; }
+  .cv-card { border: 1px solid var(--border); border-radius: 18px; background: var(--surface); padding: 12px 14px; margin: 0 0 12px; }
+  .cv-card-h { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); margin-bottom: 4px; }
+  .cv-n { font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  .cv-it { padding: 10px 0; border-top: 1px solid var(--border); } .cv-card-h + .cv-it { border-top: 0; }
+  .cv-it-h { display: flex; gap: 10px; align-items: center; } .cv-it-b { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .cv-it-b b { font-size: 15px; } .cv-it-b small { font-size: 12px; color: var(--text-3); } .cv-note { font-style: italic; }
+  .cv-check { width: 34px; flex: 0 0 34px; }
+  .cv-it.done .cv-check { background: #22C55E; border-color: #22C55E; color: #fff; }
+  .cv-it-f { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; margin-top: 8px; }
+  .cv-it-f label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: var(--text-3); min-width: 0; }
+  .cv-inw { display: flex; align-items: center; gap: 4px; } .cv-inw .gym-in { min-width: 0; flex: 1; } .cv-inw i { font-style: normal; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .cv-it.done .cv-it-f .gym-in { background: transparent; }
+  .cv-prog { font-size: 12px; color: var(--text-3); margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -6177,7 +6200,21 @@ let editBlockKind = 'weekday';
 function applyTheme(mode) {
   document.documentElement.setAttribute('data-theme', mode);
   try { localStorage.setItem('theme', mode); } catch(e) {}
+  syncSystemBars();
 }
+// Barra de estado y barra de navegación del teléfono con el color del tema (claro u oscuro)
+function syncSystemBars() {
+  try {
+    const mode = document.documentElement.getAttribute('data-theme') || 'auto';
+    const dark = mode === 'dark' || (mode === 'auto' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    const color = dark ? '#0A0A0A' : '#FAFAFA';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.setAttribute('content', color); m.removeAttribute('media'); });
+    if (window.Android && typeof window.Android.setSystemBars === 'function') window.Android.setSystemBars(color, dark);
+  } catch (e) {}
+}
+syncSystemBars();
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncSystemBars); } catch (e) {}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) syncSystemBars(); });
 function renderAjustes() {
   try { if (typeof modRenderSettings === 'function') modRenderSettings(); } catch (e) {}
   if (typeof authRenderAccount === 'function') authRenderAccount();
@@ -8540,13 +8577,34 @@ function closeSheet() {
   }, 0);
 }
 let _sheetHist = false, _sheetPopSkip = 0;
+// Hojas que se abrieron desde otra (instrucciones desde el entrenamiento, buscar ejercicio desde
+// el editor…) traen su botón «Volver»: «atrás» y la flecha de arriba regresan a la anterior.
+function sheetBackBtn() {
+  if (!sheet.classList.contains('show')) return null;
+  const sb = document.getElementById('sheet-body');
+  if (!sb) return null;
+  return Array.from(sb.querySelectorAll('button[id$="-back"]')).find(b => b.offsetParent !== null && /Volver|Back|Voltar|Retour/i.test(b.textContent)) || null;
+}
 window.addEventListener('popstate', () => {
   if (_sheetPopSkip > 0) { _sheetPopSkip--; return; }
   if (typeof _imgV !== 'undefined' && _imgV) { delete _imgV.dataset.hist; closeImgViewer(true); return; }
-  if (_sheetHist) { _sheetHist = false; closeSheet(); }
+  if (_sheetHist) {
+    _sheetHist = false;
+    const bb = sheetBackBtn();
+    if (bb) {
+      bb.click();
+      // si la hoja anterior no volvió a apuntar el historial, hacerlo aquí
+      if (!_sheetHist && sheet.classList.contains('show')) { try { history.pushState({ sheet: 1 }, ''); _sheetHist = true; } catch (e) {} }
+      return;
+    }
+    closeSheet();
+  }
 });
 backdrop.addEventListener('click', closeSheet);
-document.getElementById('sheet-close').addEventListener('click', closeSheet);
+document.getElementById('sheet-close').addEventListener('click', () => {
+  const bb = sheetCtx && sheetCtx.onSave ? null : sheetBackBtn();
+  if (bb) bb.click(); else closeSheet();
+});
 document.getElementById('sheet-save').addEventListener('click', () => { if (sheetCtx?.onSave) sheetCtx.onSave(); });
 
 // ---------- BLOCK SHEET ----------
@@ -10939,6 +10997,7 @@ async function spOpenClient(l) {
         const ef = (lg.exFeel && lg.exFeel[exId]) || {};
         lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}`);
       });
+      cvAll(rt).forEach(([kind, it]) => { const v = (lg.cv || {})[it.id]; if (v && v.done) lines.push(`<b>${CV_KIND[kind]}</b>: <span translate="no">${escapeHtml(cvName(it))} · ${cvText(it, v, true)}</span>`); });
       if (!lines.length && !lg.done) return;
       const fl = lg.feel || {};
       if (d >= d7) { if (lg.done) n7++; if (fl.pain != null && (pmax == null || fl.pain > pmax)) pmax = fl.pain; }
@@ -14321,24 +14380,27 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const keepScroll = sb ? sb.scrollTop : 0;
     sb.innerHTML = `<div class="gym-wo">
       <div class="gym-wo-bar">
-        <div class="gym-wo-prog"><div class="gym-prog"><div style="width:${Math.min(100, Math.round(doneSets / Math.max(1, totalSets) * 100))}%"></div></div>
-          <span><b>${doneSets}</b>/${totalSets} <span>series</span></span></div>
+        ${r.exercises.length ? `<div class="gym-wo-prog"><div class="gym-prog"><div style="width:${Math.min(100, Math.round(doneSets / Math.max(1, totalSets) * 100))}%"></div></div>
+          <span><b>${doneSets}</b>/${totalSets} <span>series</span></span></div>` : ''}
+        ${cvAll(r).length ? `<div class="cv-prog" translate="no">${cvAll(r).filter(([, it]) => ((lg.cv || {})[it.id] || {}).done).length}/${cvAll(r).length} <span>calentamiento y cardio</span></div>` : ''}
         <div class="gym-rest" id="gym-rest" style="display:none"></div>
       </div>
       <div class="gym-wo-top">
         <div class="gym-wo-head"><div class="gym-wo-date">${escapeHtml(dLabel)}${m.musculos ? ' · ' + escapeHtml(m.musculos) : ''}</div>
-          ${sportR ? '' : `<div class="gym-unit" translate="no"><button data-gym-unit="kg" class="${U === 'kg' ? 'on' : ''}">kg</button><button data-gym-unit="lb" class="${U === 'lb' ? 'on' : ''}">lb</button></div>`}</div>
-        <div class="gym-chips">${freq ? chip('Frecuencia', freq + '×/sem') : ''}${sportR ? '' : chip('Descanso', '2–3 min')}${sportR ? '' : chip('Tempo', r.tempo)}</div>
+          ${sportR || !r.exercises.length ? '' : `<div class="gym-unit" translate="no"><button data-gym-unit="kg" class="${U === 'kg' ? 'on' : ''}">kg</button><button data-gym-unit="lb" class="${U === 'lb' ? 'on' : ''}">lb</button></div>`}</div>
+        <div class="gym-chips">${freq ? chip('Frecuencia', freq + '×/sem') : ''}${sportR || !r.exercises.length ? '' : chip('Descanso', '2–3 min')}${sportR ? '' : chip('Tempo', r.tempo)}</div>
         ${info ? `<details class="gym-info"><summary>Indicaciones del coach</summary>${info}</details>` : ''}
       </div>
+      ${cvWorkoutHtml(r, lg, 'warmup')}
       ${body}
-      <button class="gym-resti" id="gym-rest-idle">
+      ${cvWorkoutHtml(r, lg, 'cardio')}
+      ${r.exercises.length ? `<button class="gym-resti" id="gym-rest-idle">
         <span class="gym-resti-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7.5"/><path d="M12 10v4l2.5 2M9.5 2.5h5M12 2.5v4"/></svg></span>
         <span class="gym-resti-b"><b>Temporizador de descanso</b><small>Toca para iniciar el descanso</small></span>
         <span class="gym-resti-t">${restTxt}</span>
-      </button>
+      </button>` : ''}
       <div class="gym-wo-btns">
-        ${sportR ? '' : '<button class="btn-secondary" id="gym-share">Compartir cargas</button>'}
+        ${sportR ? '' : `<button class="btn-secondary" id="gym-share">${r.exercises.length ? 'Compartir cargas' : 'Compartir'}</button>`}
         <button class="btn-secondary" id="gym-edit">Editar rutina</button>
       </div>
       ${dateKey === keyDate() && !lg.end && gymPipAvailable() ? `<button class="gym-pip-btn" id="gym-pip"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="6" rx="1"/></svg><span>Ventana flotante</span><small>${lg.start ? 'Ve el ejercicio que sigue sobre otras apps' : 'Disponible al marcar tu primera serie'}</small></button>` : ''}
@@ -14379,6 +14441,22 @@ function openGymWorkout(routineId, dateKey, focusId) {
       if (card && openId) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }));
     sb.querySelectorAll('.gym-ex.open [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => zoomOrInfo(m2)));
+    sb.querySelectorAll('[data-cv-in]').forEach(inp => inp.addEventListener('input', () => {
+      lg.cv = lg.cv || {};
+      const o = lg.cv[inp.dataset.cvIn] || (lg.cv[inp.dataset.cvIn] = {});
+      const v = inp.value.replace(',', '.').trim();
+      if (v) o[inp.dataset.f] = v; else delete o[inp.dataset.f];
+      persist();
+    }));
+    sb.querySelectorAll('[data-cv-done]').forEach(b => b.addEventListener('click', () => {
+      const it = cvAll(r).map(x => x[1]).find(x => x.id === b.dataset.cvDone); if (!it) return;
+      lg.cv = lg.cv || {};
+      const o = lg.cv[it.id] || {}, was = !!o.done;
+      lg.cv[it.id] = was ? Object.assign(o, { done: false }) : Object.assign(cvFill(it, o), { done: true });
+      if (!was && !lg.start) lg.start = Date.now();
+      if (!was && navigator.vibrate) navigator.vibrate(15);
+      persist(); draw();
+    }));
     sb.querySelectorAll('[data-set-pain]').forEach(b => b.addEventListener('click', ev => {
       ev.stopPropagation();
       const [exId, i] = b.dataset.setPain.split(':'), v = +b.dataset.v, arr = lg.ex[exId] || [], cur = (arr[+i] || {}).pain;
@@ -14578,6 +14656,8 @@ function gymLiveQueue(r, lg, dk) {
   r.exercises.forEach(ex => { const g = groups[groups.length - 1]; if (g && ex.circuit != null && g.circuit === ex.circuit) g.items.push(ex); else groups.push({ circuit: ex.circuit, items: [ex] }); });
   const m = r.meta || {}, restDef = Math.min(GYM_REST_MAX, Math.max(GYM_REST_MIN, gymRestSeconds(m.descanso) || 150));
   const sport = gymIsSport(r), U = gymUnit(), q = [], tot = ex => Math.max(1, gymTotalSets(ex), ((lg.ex || {})[ex.id] || []).length);
+  const cvq = kind => cvItems(r, kind).forEach(it => { if (!((lg.cv || {})[it.id] || {}).done) q.push({ ex: 'cv:' + it.id, i: 0, n: cvName(it), s: _tt(CV_KIND[kind]), t: cvText(it, it.t), r: 0 }); });
+  cvq('warmup');
   groups.forEach(g => {
     const rounds = Math.max(...g.items.map(tot));
     for (let k = 0; k < rounds; k++) g.items.forEach(ex => {
@@ -14587,6 +14667,7 @@ function gymLiveQueue(r, lg, dk) {
       q.push({ ex: ex.id, i: k, n: sw ? sw.name : ex.name, s: `${_tt('Serie')} ${k + 1}/${tot(ex)}`, t: tgt.filter(Boolean).join(' · '), r: gymRestSeconds(ex.rest) || restDef });
     });
   });
+  cvq('cardio');
   return q;
 }
 function gymLiveSnap() {
@@ -14600,8 +14681,9 @@ function gymLiveSnap() {
   const a = gymLiveLog();
   if (!a) return { v: 1, active: false, on: gymLiveOn(), week, L };
   const q = gymLiveQueue(a.r, a.lg, a.dk);
-  const total = a.r.exercises.reduce((n, ex) => n + Math.max(1, gymTotalSets(ex), ((a.lg.ex || {})[ex.id] || []).length), 0);
-  const done = a.r.exercises.reduce((n, ex) => n + ((a.lg.ex || {})[ex.id] || []).filter(x => x && x.done).length, 0);
+  const cvA = cvAll(a.r);
+  const total = a.r.exercises.reduce((n, ex) => n + Math.max(1, gymTotalSets(ex), ((a.lg.ex || {})[ex.id] || []).length), 0) + cvA.length;
+  const done = a.r.exercises.reduce((n, ex) => n + ((a.lg.ex || {})[ex.id] || []).filter(x => x && x.done).length, 0) + cvA.filter(([, it]) => ((a.lg.cv || {})[it.id] || {}).done).length;
   const rest = _gymRest && _gymRest.end > Date.now() ? { end: _gymRest.end, total: _gymRest.total } : null;
   return { v: 1, active: true, on: gymLiveOn(), exp: a.exp, date: a.dk, rid: a.r.id, name: a.r.name, done, total, queue: q.slice(0, 60), rest, week, L };
 }
@@ -14628,6 +14710,14 @@ function gymLiveApply(acts) {
       if (a.t === 'gym_set') {
         const lg = all[a.date], r = gymRoutineById(a.rid);
         if (!lg || !r || lg.routineId !== r.id) return;
+        if (String(a.ex).startsWith('cv:')) {
+          const it = cvAll(r).map(x => x[1]).find(x => 'cv:' + x.id === a.ex); if (!it) return;
+          lg.cv = lg.cv || {}; lg.cv[it.id] = Object.assign(cvFill(it, lg.cv[it.id]), { done: true });
+          if (!lg.start) lg.start = Date.now();
+          lg.ts = Date.now(); reopen = { rid: r.id, date: a.date };
+          if (a.rest != null) restEnd = +a.rest;
+          return;
+        }
         const ex = r.exercises.find(e => e.id === a.ex);
         if (!ex) return;
         lg.ex = lg.ex || {};
@@ -14756,6 +14846,7 @@ function gymShareLoads(r, dateKey) {
     const nm = sw ? `${sw.name} (${t('en lugar de')} ${ex.name})` : ex.name;
     lines.push(`${nm}: ${sets.map(s => `${gymDispW(s.kg) || '?'} ${gymUnit()} × ${s.reps || '?'}${s.pain > 0 ? ` (${t('dolor')} ${s.pain}/10)` : ''}`).join(', ')}`);
   });
+  cvAll(r).forEach(([kind, it]) => { const v = lg && lg.cv && lg.cv[it.id]; if (v && v.done) { any = true; lines.push(`${t(CV_KIND[kind])} · ${cvName(it)}: ${cvText(it, v)}`); } });
   if (!any) { alert(t('Todavía no registras cargas en este entrenamiento.')); return; }
   const fe = (lg && lg.feel) || {};
   r.exercises.forEach(ex => { const f = lg.exFeel && lg.exFeel[ex.id]; if (f && (f.pain != null || f.rpe != null)) lines.push(`  ${ex.name}: ${f.pain != null ? t('Dolor') + ' ' + f.pain + '/10' : ''}${f.pain != null && f.rpe != null ? ', ' : ''}${f.rpe != null ? 'RPE ' + f.rpe : ''}`); });
@@ -15006,6 +15097,7 @@ function openGymFinish(r, dateKey, lg, persist, onDone) {
       <div><b>${Math.round(gymVolU(st.vol)).toLocaleString(_loc())}</b><span>${gymUnit()} de volumen</span></div>
       ${st.mins >= 1 ? `<div><b>${Math.round(st.mins)}</b><span>min</span></div>` : ''}
       ${st.density ? `<div><b>${Math.round(gymVolU(st.density))}</b><span>${gymUnit()}/min (densidad)</span></div>` : ''}`}
+      ${cvMinutes(r, lg) ? `<div><b translate="no">${Math.round(cvMinutes(r, lg))}</b><span>min de calentamiento y cardio</span></div>` : ''}
     </div>
     <div class="fe-lbl">Al terminar, ¿cómo te sentiste?</div>
     <div class="gym-moods">${moods}</div>
@@ -15317,6 +15409,7 @@ function gymEditorSync() {
   ['musculos', 'objetivo', 'periodo', 'calentamiento', 'descanso', 'notas'].forEach(k => { const x = v('ge-' + k); if (x !== undefined) _gymEdit.meta[k] = x.trim(); });
   if (v('ge-tempo') !== undefined) _gymEdit.tempo = v('ge-tempo').trim();
   if (v('ge-sport') !== undefined) { _gymEdit.meta = _gymEdit.meta || {}; if (v('ge-sport')) _gymEdit.meta.sport = v('ge-sport'); else delete _gymEdit.meta.sport; }
+  try { cvEditorSync(sb, _gymEdit); } catch (e) {}
   sb.querySelectorAll('.ge-ex').forEach(row => {
     const ex = _gymEdit.exercises.find(e => e.id === row.dataset.id);
     if (!ex || !row.querySelector('[data-f="name"]')) return;
@@ -15386,16 +15479,21 @@ function gymDrawEditor(isNew) {
         <label class="ge-full"><span>Descanso entre series</span><input class="field-input" id="ge-descanso" value="${escapeHtml(e.meta.descanso || '')}"></label>
         <label class="ge-full"><span>Notas</span><textarea class="field-input" id="ge-notas" rows="2">${escapeHtml(e.meta.notas || '')}</textarea></label>
       </div>
+      <h2>Calentamiento <span class="gym-h2-hint">máquina o ejercicio, tiempo y ajustes</span></h2>
+      ${cvEditorHtml(e, 'warmup')}
       <h2>Ejercicios (${e.exercises.length}) <span class="gym-h2-hint">toca uno para editarlo</span></h2>
       ${exRows || '<div class="empty">Agrega tu primer ejercicio.</div>'}
       <button class="btn-secondary" id="ge-add" style="margin-top:8px;">+ Agregar ejercicio</button>
+      <h2>Cardio <span class="gym-h2-hint">al final de la rutina</span></h2>
+      ${cvEditorHtml(e, 'cardio')}
       ${!isNew && !_gymEditTarget ? '<button class="btn-secondary" id="ge-dup" style="margin-top:8px;">Duplicar rutina</button><button class="btn-danger" id="ge-delete" style="margin-top:8px;width:100%;padding:12px;">Eliminar rutina</button>' : ''}
     </div>`;
   openSheet(_gymEditTarget && _gymEditTarget.title ? _gymEditTarget.title : isNew ? 'Nueva rutina' : 'Editar rutina', body, () => {
     gymEditorSync();
     const t = s => (window.i18n && window.i18n.t) ? window.i18n.t(s) : s;
     if (!_gymEdit.name) { alert(t('Ponle nombre a la rutina.')); return; }
-    if (!_gymEdit.exercises.length) { alert(t('Agrega al menos un ejercicio.')); return; }
+    if (!_gymEdit.exercises.length && !cvAll(_gymEdit).length) { alert(t('Agrega al menos un ejercicio.')); return; }
+    ['warmup', 'cardio'].forEach(k => { if (Array.isArray(_gymEdit[k]) && !_gymEdit[k].length) delete _gymEdit[k]; });
     _gymEdit.exercises.forEach(ex => { if (!ex.name) ex.name = '—'; });
     const days = _gymEdit._days;
     const clean = JSON.parse(JSON.stringify(_gymEdit)); delete clean._days; delete clean._open;
@@ -15462,6 +15560,18 @@ function gymDrawEditor(isNew) {
     const ex = _gymEdit.exercises.find(x => x.id === b.dataset.geLink);
     openGymExercisePicker(ex ? ex.name : '', (dbEx) => { if (ex) ex.dbId = dbEx.i; gymDrawEditor(isNew); }, () => gymDrawEditor(isNew));
   }));
+  sb.querySelectorAll('[data-cv-add]').forEach(b => b.addEventListener('click', () => {
+    gymEditorSync();
+    const k = b.dataset.cvAdd, list = _gymEdit[k] || (_gymEdit[k] = []);
+    list.push({ id: uid(), m: k === 'warmup' ? (list.length ? 'libre' : 'cinta') : 'eliptica', t: k === 'warmup' ? { time: list.length ? '' : '10' } : { time: '20' } });
+    gymDrawEditor(isNew);
+  }));
+  sb.querySelectorAll('[data-cv-del]').forEach(b => b.addEventListener('click', () => {
+    gymEditorSync();
+    ['warmup', 'cardio'].forEach(k => { if (_gymEdit[k]) _gymEdit[k] = _gymEdit[k].filter(x => x.id !== b.dataset.cvDel); });
+    gymDrawEditor(isNew);
+  }));
+  sb.querySelectorAll('.cv-ed [data-cvf="m"], .cv-ed [data-cvf="su"]').forEach(sel => sel.addEventListener('change', () => { gymEditorSync(); gymDrawEditor(isNew); }));
   document.getElementById('ge-add').addEventListener('click', () => {
     gymEditorSync();
     openGymExercisePicker('', (dbEx) => {

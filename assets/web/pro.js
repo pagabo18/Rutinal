@@ -950,7 +950,11 @@ function rxToRoutines(plan, cfg, title) {
     });
     return { id: uid(), name: tag + d.name, tempo: '', source: 'plan', createdAt: Date.now(), _dow: d.dow,
       meta: { objetivo: rxGoalName(cfg.goal), descanso: '', notas: (cfg.goal === 'grasa' ? t('Suma 20–30 min de cardio moderado o 8–10 mil pasos al día.') + ' ' : '') + t('Ajusta el peso para terminar cada serie con el RIR indicado.') + ((cfg.care || []).length ? ' ' + t('Se evitaron ejercicios que suelen molestar en las zonas que marcaste; si hay dolor, consulta a tu fisioterapeuta.') : '') },
-      exercises: exs };
+      exercises: exs,
+      // Calentamiento general antes de empezar; con objetivo de perder grasa, cardio al final
+      warmup: [cfg.equip === 'gym' ? { id: uid(), m: 'cinta', t: { time: '5-10' }, note: t('Ritmo cómodo, que puedas platicar.') }
+        : { id: uid(), m: 'libre', name: t('Movilidad y saltos suaves'), t: { time: '5-10' } }],
+      ...(cfg.goal === 'grasa' ? { cardio: [{ id: uid(), m: cfg.equip === 'gym' ? 'eliptica' : 'caminata', t: { time: '20' }, note: t('Moderado: respiras rápido pero puedes hablar.') }] } : {}) };
   });
 }
 function rxPreviewHtml(plan) {
@@ -1140,6 +1144,118 @@ function gymMissedFrom(sched, logs, routines, todayKey, opts) {
     out[rid] = { date: dk, dow: d.getDay(), rid, name: r.name, times: prev ? prev.times + 1 : 1, dates: (prev ? prev.dates : []).concat(dk) };
   }
   return Object.values(out).sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+// ============================================================
+// CALENTAMIENTO Y CARDIO EN LA RUTINA (máquinas)
+// ============================================================
+// En la rutina: r.warmup / r.cardio = [{ id, m, name?, t: { campo: objetivo }, su?, note? }]
+// En el registro del día: gym_logs[fecha].cv[id] = { done, campo: valor… }
+const CV_F = {
+  time: { n: 'Tiempo', u: 'min', ph: '10' }, speed: { n: 'Velocidad', u: 'km/h', ph: '5.5' }, incline: { n: 'Inclinación', u: '%', ph: '3' },
+  res: { n: 'Resistencia', u: '', ph: '8' }, level: { n: 'Nivel', u: '', ph: '6' }, rpm: { n: 'Cadencia', u: 'rpm', ph: '80' },
+  spm: { n: 'Ritmo', u: '', ph: '40' }, dist: { n: 'Distancia', u: 'km', ph: '1.5' }, kcal: { n: 'Calorías', u: 'kcal', ph: '100' },
+  hr: { n: 'Pulso', u: 'lpm', ph: '130' }, reps: { n: 'Reps o rondas', u: '', ph: '10' }
+};
+const CV_MACHINES = [
+  { id: 'cinta', n: 'Caminadora', f: ['time', 'speed', 'incline', 'dist', 'hr'] },
+  { id: 'eliptica', n: 'Elíptica', f: ['time', 'res', 'spm', 'dist', 'hr'], lab: { spm: 'Zancadas/min' } },
+  { id: 'bici', n: 'Bicicleta fija', f: ['time', 'res', 'rpm', 'dist', 'hr'] },
+  { id: 'escaladora', n: 'Escaladora', f: ['time', 'level', 'spm', 'hr'], lab: { spm: 'Escalones/min' } },
+  { id: 'remo', n: 'Remo', f: ['time', 'res', 'dist', 'spm', 'hr'], lab: { spm: 'Paladas/min' }, du: 'm' },
+  { id: 'airbike', n: 'Air bike', f: ['time', 'rpm', 'kcal', 'hr'] },
+  { id: 'cuerda', n: 'Cuerda para saltar', f: ['time', 'reps'] },
+  { id: 'caminata', n: 'Caminata o trote', f: ['time', 'speed', 'dist', 'hr'] },
+  { id: 'libre', n: 'Movilidad u otro ejercicio', f: ['time', 'reps'], free: true }
+];
+const CV_BY = {}; CV_MACHINES.forEach(m => { CV_BY[m.id] = m; });
+const CV_KIND = { warmup: 'Calentamiento', cardio: 'Cardio' };
+function cvM(it) { return CV_BY[it && it.m] || CV_BY.libre; }
+function cvName(it) { const m = cvM(it); return it && it.name && String(it.name).trim() ? String(it.name).trim() : m.n; }
+function cvUnit(it, f) {
+  const m = cvM(it);
+  if (f === 'speed') return it.su === 'mph' ? 'mph' : 'km/h';
+  if (f === 'dist') return m.du || (it.su === 'mph' ? 'mi' : 'km');
+  return CV_F[f] ? CV_F[f].u : '';
+}
+function cvLabel(it, f) { const m = cvM(it); return (m.lab && m.lab[f]) || (CV_F[f] ? CV_F[f].n : f); }
+const _cvE = v => (typeof escapeHtml === 'function' ? escapeHtml(String(v)) : String(v));
+// "10 min · 5.5 km/h · 3 % · Resistencia 8" (html: con <span> para que se traduzcan las etiquetas)
+function cvText(it, vals, html) {
+  const m = cvM(it); vals = vals || {};
+  const w = s => html ? `<span>${_cvE(s)}</span>` : s;
+  return m.f.filter(f => vals[f] != null && String(vals[f]).trim() !== '').map(f => {
+    const v = html ? _cvE(String(vals[f]).trim()) : String(vals[f]).trim(), u = cvUnit(it, f);
+    if (f === 'res' || f === 'level') return `${w(cvLabel(it, f))} ${v}`;
+    if (f === 'reps') return `${v} ${w('reps')}`;
+    if (f === 'hr') return `${v} ${w('lpm')}`;
+    if (f === 'spm') return `${v} ${w(cvLabel(it, f).toLowerCase())}`;
+    return `${v}${u === '%' ? ' %' : u ? ' ' + u : ''}`;
+  }).join(' · ');
+}
+// Valor con el que se registra si no se escribió nada: el objetivo (primer número de un rango)
+function cvFill(it, v) {
+  const out = Object.assign({}, v || {}), t = it.t || {};
+  cvM(it).f.forEach(f => {
+    if ((out[f] == null || out[f] === '') && t[f] != null && String(t[f]).trim() !== '') {
+      const s = String(t[f]).trim(), n = s.match(/^\d+(?:[.,]\d+)?/);
+      out[f] = n ? n[0].replace(',', '.') : s;
+    }
+  });
+  return out;
+}
+function cvItems(r, kind) { return Array.isArray(r && r[kind]) ? r[kind] : []; }
+function cvAll(r) { return cvItems(r, 'warmup').map(it => ['warmup', it]).concat(cvItems(r, 'cardio').map(it => ['cardio', it])); }
+function cvMinutes(r, lg) {
+  return cvAll(r).reduce((a, [, it]) => { const v = ((lg && lg.cv) || {})[it.id]; return a + (v && v.done ? (parseFloat(String(v.time || '').replace(',', '.')) || 0) : 0); }, 0);
+}
+// Editor de la rutina
+function cvEditorHtml(r, kind) {
+  const list = cvItems(r, kind);
+  return `<div class="cv-ed-list" data-cv-kind="${kind}">${list.map(it => {
+    const m = cvM(it), t = it.t || {};
+    return `<div class="cv-ed" data-cv="${_cvE(it.id)}">
+      <div class="cv-ed-top"><select class="field-input" data-cvf="m">${CV_MACHINES.map(x => `<option value="${x.id}"${x.id === m.id ? ' selected' : ''}>${_cvE(x.n)}</option>`).join('')}</select>
+        <button type="button" class="food-edit-btn ge-del" data-cv-del="${_cvE(it.id)}">Quitar</button></div>
+      ${m.free ? `<input class="field-input cv-ed-name" data-cvf="name" value="${_cvE(it.name || '')}" placeholder="${kind === 'warmup' ? 'Ej. Movilidad de cadera, sentadilla sin peso' : 'Ej. Burpees, cuerdas de batalla'}">` : ''}
+      <div class="cv-ed-f">${m.f.map(f => `<label><span>${_cvE(cvLabel(it, f))}${cvUnit(it, f) ? ` <i translate="no">${_cvE(cvUnit(it, f))}</i>` : ''}</span><input class="field-input" data-cvf="t.${f}" inputmode="decimal" value="${_cvE(t[f] || '')}" placeholder="${CV_F[f].ph}"></label>`).join('')}
+        ${m.f.includes('speed') ? `<label><span>Unidad</span><select class="field-input" data-cvf="su"><option value="kmh">km/h</option><option value="mph"${it.su === 'mph' ? ' selected' : ''}>mph</option></select></label>` : ''}</div>
+      <input class="field-input cv-ed-note" data-cvf="note" value="${_cvE(it.note || '')}" placeholder="Nota (opcional): intervalos, zona 2, ritmo cómodo…">
+    </div>`;
+  }).join('')}<button type="button" class="btn-secondary cv-add" data-cv-add="${kind}">+ ${kind === 'warmup' ? 'Agregar calentamiento' : 'Agregar cardio'}</button></div>`;
+}
+function cvEditorSync(root, r) {
+  ['warmup', 'cardio'].forEach(kind => {
+    const box = root.querySelector(`.cv-ed-list[data-cv-kind="${kind}"]`);
+    if (!box) return;
+    box.querySelectorAll('.cv-ed').forEach(row => {
+      const it = cvItems(r, kind).find(x => x.id === row.dataset.cv); if (!it) return;
+      it.t = it.t || {};
+      row.querySelectorAll('[data-cvf]').forEach(inp => {
+        const k = inp.dataset.cvf, v = String(inp.value || '').trim();
+        if (k.startsWith('t.')) { if (v) it.t[k.slice(2)] = v; else delete it.t[k.slice(2)]; }
+        else if (k === 'su') { if (v === 'mph') it.su = 'mph'; else delete it.su; }
+        else if (k === 'm') it.m = v;
+        else if (v) it[k] = v; else delete it[k];
+      });
+      // solo los campos de esa máquina
+      const keep = cvM(it).f; Object.keys(it.t).forEach(f => { if (!keep.includes(f)) delete it.t[f]; });
+    });
+  });
+}
+// Entrenamiento
+function cvWorkoutHtml(r, lg, kind) {
+  const list = cvItems(r, kind); if (!list.length) return '';
+  const L = (lg && lg.cv) || {}, done = list.filter(it => (L[it.id] || {}).done).length;
+  return `<div class="cv-card" data-cv-kind="${kind}"><div class="cv-card-h"><span>${CV_KIND[kind]}</span><span class="cv-n" translate="no">${done}/${list.length}</span></div>
+    ${list.map(it => {
+      const v = L[it.id] || {}, m = cvM(it), tgt = cvText(it, it.t, true);
+      return `<div class="cv-it${v.done ? ' done' : ''}" data-cv-it="${_cvE(it.id)}">
+        <div class="cv-it-h"><div class="cv-it-b"><b translate="no">${_cvE(cvName(it))}</b>${tgt ? `<small translate="no">${tgt}</small>` : ''}${it.note ? `<small class="cv-note">${_cvE(it.note)}</small>` : ''}</div>
+          <button class="gym-check cv-check" data-cv-done="${_cvE(it.id)}" aria-label="Hecho">✓</button></div>
+        <div class="cv-it-f">${m.f.map(f => `<label><span>${_cvE(cvLabel(it, f))}</span><span class="cv-inw"><input class="gym-in" data-cv-in="${_cvE(it.id)}" data-f="${f}" inputmode="decimal" value="${_cvE(v[f] || '')}" placeholder="${_cvE((it.t || {})[f] || '–')}">${cvUnit(it, f) ? `<i translate="no">${_cvE(cvUnit(it, f))}</i>` : ''}</span></label>`).join('')}</div>
+      </div>`;
+    }).join('')}</div>`;
 }
 
 // ============================================================
@@ -2203,4 +2319,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { gymMissedFrom, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

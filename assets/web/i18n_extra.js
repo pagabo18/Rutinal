@@ -5901,6 +5901,171 @@ window.__I18N_EXTRA = {
    "pt-BR": "Ver instruções",
    "fr": "Voir les instructions"
   },
+  "Cardio": {
+   "en": "Cardio",
+   "pt-BR": "Cardio",
+   "fr": "Cardio"
+  },
+  "máquina o ejercicio, tiempo y ajustes": {
+   "en": "machine or exercise, time and settings",
+   "pt-BR": "máquina ou exercício, tempo e ajustes",
+   "fr": "machine ou exercice, temps et réglages"
+  },
+  "al final de la rutina": {
+   "en": "at the end of the routine",
+   "pt-BR": "no final da rotina",
+   "fr": "à la fin de la routine"
+  },
+  "+ Agregar calentamiento": {
+   "en": "+ Add warm-up",
+   "pt-BR": "+ Adicionar aquecimento",
+   "fr": "+ Ajouter un échauffement"
+  },
+  "+ Agregar cardio": {
+   "en": "+ Add cardio",
+   "pt-BR": "+ Adicionar cardio",
+   "fr": "+ Ajouter du cardio"
+  },
+  "Caminadora": {
+   "en": "Treadmill",
+   "pt-BR": "Esteira",
+   "fr": "Tapis de course"
+  },
+  "Elíptica": {
+   "en": "Elliptical",
+   "pt-BR": "Elíptico",
+   "fr": "Elliptique"
+  },
+  "Bicicleta fija": {
+   "en": "Stationary bike",
+   "pt-BR": "Bicicleta ergométrica",
+   "fr": "Vélo d'appartement"
+  },
+  "Escaladora": {
+   "en": "Stair climber",
+   "pt-BR": "Escada",
+   "fr": "Stepper"
+  },
+  "Remo": {
+   "en": "Rower",
+   "pt-BR": "Remo",
+   "fr": "Rameur"
+  },
+  "Air bike": {
+   "en": "Air bike",
+   "pt-BR": "Air bike",
+   "fr": "Air bike"
+  },
+  "Cuerda para saltar": {
+   "en": "Jump rope",
+   "pt-BR": "Corda de pular",
+   "fr": "Corde à sauter"
+  },
+  "Caminata o trote": {
+   "en": "Walk or jog",
+   "pt-BR": "Caminhada ou trote",
+   "fr": "Marche ou footing"
+  },
+  "Movilidad u otro ejercicio": {
+   "en": "Mobility or other exercise",
+   "pt-BR": "Mobilidade ou outro exercício",
+   "fr": "Mobilité ou autre exercice"
+  },
+  "Inclinación": {
+   "en": "Incline",
+   "pt-BR": "Inclinação",
+   "fr": "Inclinaison"
+  },
+  "Pulso": {
+   "en": "Heart rate",
+   "pt-BR": "Pulso",
+   "fr": "Pouls"
+  },
+  "Reps o rondas": {
+   "en": "Reps or rounds",
+   "pt-BR": "Reps ou rodadas",
+   "fr": "Reps ou tours"
+  },
+  "Zancadas/min": {
+   "en": "Strides/min",
+   "pt-BR": "Passadas/min",
+   "fr": "Foulées/min"
+  },
+  "Escalones/min": {
+   "en": "Steps/min",
+   "pt-BR": "Degraus/min",
+   "fr": "Marches/min"
+  },
+  "Paladas/min": {
+   "en": "Strokes/min",
+   "pt-BR": "Remadas/min",
+   "fr": "Coups/min"
+  },
+  "zancadas/min": {
+   "en": "strides/min",
+   "pt-BR": "passadas/min",
+   "fr": "foulées/min"
+  },
+  "escalones/min": {
+   "en": "steps/min",
+   "pt-BR": "degraus/min",
+   "fr": "marches/min"
+  },
+  "paladas/min": {
+   "en": "strokes/min",
+   "pt-BR": "remadas/min",
+   "fr": "coups/min"
+  },
+  "Nota (opcional): intervalos, zona 2, ritmo cómodo…": {
+   "en": "Note (optional): intervals, zone 2, easy pace…",
+   "pt-BR": "Nota (opcional): intervalos, zona 2, ritmo confortável…",
+   "fr": "Note (facultatif) : intervalles, zone 2, rythme aisé…"
+  },
+  "Ej. Movilidad de cadera, sentadilla sin peso": {
+   "en": "E.g. Hip mobility, bodyweight squat",
+   "pt-BR": "Ex. Mobilidade de quadril, agachamento sem peso",
+   "fr": "Ex. Mobilité de hanche, squat au poids du corps"
+  },
+  "Ej. Burpees, cuerdas de batalla": {
+   "en": "E.g. Burpees, battle ropes",
+   "pt-BR": "Ex. Burpees, cordas navais",
+   "fr": "Ex. Burpees, cordes ondulatoires"
+  },
+  "calentamiento y cardio": {
+   "en": "warm-up and cardio",
+   "pt-BR": "aquecimento e cardio",
+   "fr": "échauffement et cardio"
+  },
+  "min de calentamiento y cardio": {
+   "en": "min of warm-up and cardio",
+   "pt-BR": "min de aquecimento e cardio",
+   "fr": "min d'échauffement et de cardio"
+  },
+  "Compartir": {
+   "en": "Share",
+   "pt-BR": "Compartilhar",
+   "fr": "Partager"
+  },
+  "lpm": {
+   "en": "bpm",
+   "pt-BR": "bpm",
+   "fr": "bpm"
+  },
+  "Movilidad y saltos suaves": {
+   "en": "Mobility and light hops",
+   "pt-BR": "Mobilidade e saltos leves",
+   "fr": "Mobilité et petits sauts"
+  },
+  "Ritmo cómodo, que puedas platicar.": {
+   "en": "Easy pace, you can still talk.",
+   "pt-BR": "Ritmo confortável, dá para conversar.",
+   "fr": "Rythme aisé, tu peux parler."
+  },
+  "Moderado: respiras rápido pero puedes hablar.": {
+   "en": "Moderate: breathing fast but you can talk.",
+   "pt-BR": "Moderado: respira rápido mas consegue falar.",
+   "fr": "Modéré : respiration rapide mais tu peux parler."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

@@ -302,6 +302,32 @@ public class MainActivity extends Activity {
         return super.onKeyDown(keyCode, event);
     }
 
+    /** Barra de estado y de navegación con el color del tema; íconos oscuros en tema claro. */
+    @SuppressWarnings("deprecation")
+    public void applySystemBars(String color, boolean dark) {
+        try {
+            int c = Color.parseColor(color);
+            getWindow().setStatusBarColor(c);
+            getWindow().setNavigationBarColor(c);
+            if (Build.VERSION.SDK_INT >= 30) {
+                WindowInsetsController ic = getWindow().getInsetsController();
+                if (ic != null) {
+                    int light = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+                    ic.setSystemBarsAppearance(dark ? 0 : light, light);
+                }
+            } else if (Build.VERSION.SDK_INT >= 23) {
+                View d = getWindow().getDecorView();
+                int f = d.getSystemUiVisibility();
+                f = dark ? (f & ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR) : (f | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+                if (Build.VERSION.SDK_INT >= 26) {
+                    f = dark ? (f & ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR) : (f | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+                }
+                d.setSystemUiVisibility(f);
+            }
+            if (webView != null) webView.setBackgroundColor(c);
+        } catch (Exception ignored) {}
+    }
+
     // ---------- Ventana flotante del entrenamiento ----------
 
     /** Entra en picture-in-picture con los botones del entrenamiento. */
