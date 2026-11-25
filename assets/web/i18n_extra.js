@@ -5886,6 +5886,21 @@ window.__I18N_EXTRA = {
    "pt-BR": "Não feitos (7 dias)",
    "fr": "Manqués (7 jours)"
   },
+  "Toca una posición para verla quieta.": {
+   "en": "Tap a position to see it still.",
+   "pt-BR": "Toque uma posição para vê-la parada.",
+   "fr": "Touche une position pour la voir fixe."
+  },
+  "Toca la imagen para acercar.": {
+   "en": "Tap the image to zoom in.",
+   "pt-BR": "Toque a imagem para ampliar.",
+   "fr": "Touche l'image pour zoomer."
+  },
+  "Ver instrucciones": {
+   "en": "See instructions",
+   "pt-BR": "Ver instruções",
+   "fr": "Voir les instructions"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

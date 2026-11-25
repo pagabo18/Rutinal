@@ -2882,6 +2882,26 @@
   .miss-k { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #D97706; }
   .miss-t { font-size: 16px; font-weight: 700; margin-top: 2px; } .miss-d { font-size: 13px; color: var(--text-3); margin-top: 2px; line-height: 1.35; }
   .miss-btns { display: flex; gap: 8px; margin-top: 10px; } .miss-btns > button { margin: 0; } .miss-btns .btn-primary { flex: 1 1 auto; width: auto; } .miss-btns .btn-secondary { flex: 0 0 auto; width: auto; padding: 10px 18px; }
+
+  /* ===== Visor de foto del ejercicio ===== */
+  .imgv { position: fixed; inset: 0; z-index: 9000; background: #09090B; display: flex; flex-direction: column; opacity: 0; transition: opacity .18s ease; color: #F4F4F5; }
+  .imgv.show { opacity: 1; }
+  .imgv-top { display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 8px; }
+  .imgv-t { flex: 1; font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .imgv-x { width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .12); color: #fff; font-size: 18px; cursor: pointer; }
+  .imgv-stage { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 8px; }
+  .imgv-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px; background: #fff; cursor: zoom-in; }
+  .imgv.zoom .imgv-stage { display: block; }
+  .imgv.zoom .imgv-img { max-width: none; max-height: none; width: 200%; cursor: zoom-out; }
+  .imgv-bot { padding: 8px 14px calc(env(safe-area-inset-bottom, 0px) + 14px); display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .imgv-fr { display: flex; gap: 8px; }
+  .imgv-fr button { width: 56px; height: 56px; padding: 0; border-radius: 10px; border: 2px solid transparent; background: #fff; overflow: hidden; cursor: pointer; }
+  .imgv-fr button img { width: 100%; height: 100%; object-fit: cover; }
+  .imgv-fr button.on { border-color: #F4F4F5; outline: 2px solid #18181B; outline-offset: -4px; }
+  .imgv-fr .imgv-play { background: rgba(255, 255, 255, .12); color: #fff; font-size: 16px; }
+  .imgv-h { font-size: 12px; color: #A1A1AA; text-align: center; }
+  .imgv-info { border: 0; border-radius: 12px; padding: 12px 18px; width: 100%; max-width: 360px; background: #F4F4F5; color: #18181B; font: inherit; font-weight: 700; cursor: pointer; }
+  .gym-big-media img, .gym-res img.gym-media { cursor: zoom-in; }
 </style>
 </head>
 <body>
@@ -8522,6 +8542,7 @@ function closeSheet() {
 let _sheetHist = false, _sheetPopSkip = 0;
 window.addEventListener('popstate', () => {
   if (_sheetPopSkip > 0) { _sheetPopSkip--; return; }
+  if (typeof _imgV !== 'undefined' && _imgV) { delete _imgV.dataset.hist; closeImgViewer(true); return; }
   if (_sheetHist) { _sheetHist = false; closeSheet(); }
 });
 backdrop.addEventListener('click', closeSheet);
@@ -13819,6 +13840,68 @@ setInterval(() => {
   });
 }, 1000);
 
+// ---------- Ver la foto del ejercicio en grande ----------
+// Toca la imagen para acercar (×2) y vuelve a tocar para alejar; con varias
+// posiciones se anima y se puede elegir una. "Atrás" del teléfono la cierra.
+let _imgV = null;
+function gymImgSrcs(el) {
+  const img = el && (el.tagName === 'IMG' ? el : el.querySelector('img'));
+  if (!img || img.classList.contains('gym-media-err')) return [];
+  return img.dataset.frames ? img.dataset.frames.split('|').filter(Boolean) : (img.getAttribute('src') ? [img.getAttribute('src')] : []);
+}
+function openImgViewer(srcs, opts) {
+  opts = opts || {};
+  if (!srcs || !srcs.length) return false;
+  closeImgViewer(true);
+  const multi = srcs.length > 1, v = document.createElement('div');
+  v.className = 'imgv';
+  v.innerHTML = `<div class="imgv-top"><span class="imgv-t" translate="no">${escapeHtml(opts.title || '')}</span><button class="imgv-x" aria-label="Cerrar">✕</button></div>
+    <div class="imgv-stage"><img class="imgv-img${multi ? ' gym-anim' : ''}" src="${escapeHtml(srcs[0])}"${multi ? ` data-frames="${escapeHtml(srcs.join('|'))}"` : ''} alt=""></div>
+    <div class="imgv-bot">${multi ? `<div class="imgv-fr">${srcs.map((x, i) => `<button data-imgv-f="${i}" aria-label="Posición ${i + 1}"><img src="${escapeHtml(x)}" alt=""></button>`).join('')}<button class="imgv-play on" data-imgv-play aria-label="Animar">▶</button></div>` : ''}
+      <div class="imgv-h">${multi ? '<span>Toca una posición para verla quieta.</span> ' : ''}<span>Toca la imagen para acercar.</span></div>
+      ${opts.onInfo ? '<button class="imgv-info">Ver instrucciones</button>' : ''}</div>`;
+  document.body.appendChild(v);
+  const img = v.querySelector('.imgv-img'), stage = v.querySelector('.imgv-stage');
+  img.addEventListener('click', ev => {
+    ev.stopPropagation();
+    const r = img.getBoundingClientRect(), fx = (ev.clientX - r.left) / r.width, fy = (ev.clientY - r.top) / r.height;
+    const z = v.classList.toggle('zoom');
+    if (z) requestAnimationFrame(() => { stage.scrollLeft = img.offsetWidth * fx - stage.clientWidth / 2; stage.scrollTop = img.offsetHeight * fy - stage.clientHeight / 2; });
+  });
+  stage.addEventListener('click', ev => { if (ev.target === stage && !v.classList.contains('zoom')) closeImgViewer(); });
+  v.querySelector('.imgv-x').addEventListener('click', () => closeImgViewer());
+  v.querySelectorAll('[data-imgv-f]').forEach(b => b.addEventListener('click', () => {
+    img.removeAttribute('data-frames'); img.classList.remove('gym-anim'); img.src = srcs[+b.dataset.imgvF];
+    v.querySelectorAll('.imgv-fr button').forEach(x => x.classList.toggle('on', x === b));
+  }));
+  const play = v.querySelector('[data-imgv-play]');
+  if (play) play.addEventListener('click', () => {
+    img.dataset.frames = srcs.join('|'); img.classList.add('gym-anim');
+    v.querySelectorAll('.imgv-fr button').forEach(x => x.classList.toggle('on', x === play));
+  });
+  const info = v.querySelector('.imgv-info');
+  if (info) info.addEventListener('click', () => { closeImgViewer(); opts.onInfo(); });
+  _imgV = v;
+  try { history.pushState({ imgv: 1 }, ''); v.dataset.hist = '1'; } catch (e) {}
+  requestAnimationFrame(() => v.classList.add('show'));
+  return true;
+}
+function closeImgViewer(silent) {
+  const v = _imgV; if (!v) return;
+  _imgV = null;
+  v.classList.remove('show');
+  setTimeout(() => v.remove(), 180);
+  if (v.dataset.hist && !silent) { _sheetPopSkip++; try { history.back(); } catch (e) { _sheetPopSkip--; } }
+}
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && _imgV) closeImgViewer(); });
+// En las listas para elegir o reemplazar un ejercicio: tocar la miniatura la agranda (sin elegirlo)
+document.addEventListener('click', ev => {
+  const m = ev.target.closest && ev.target.closest('.gym-res img.gym-media, .gym-big-media img');
+  if (!m) return;
+  const row = m.closest('.gym-res'), name = row ? row.querySelector('.gym-res-name') : document.getElementById('sheet-title');
+  if (openImgViewer(gymImgSrcs(m), { title: name ? name.textContent : '' })) { ev.stopPropagation(); ev.preventDefault(); }
+}, true);
+
 // ---------- Búsqueda ES/EN sobre la base ----------
 const GYM_ES_EN = [
   ['elevaciones laterales', 'side lateral raise'], ['elevacion frontal', 'front raise'],
@@ -14283,7 +14366,11 @@ function openGymWorkout(routineId, dateKey, focusId) {
       if (!lg.start) lg.start = Date.now();
       persist(); draw();
     }));
-    sb.querySelectorAll('.gym-ex.simple [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => openGymExerciseInfo(r.id, m2.dataset.gymInfo, () => openGymWorkout(r.id, dateKey))));
+    const zoomOrInfo = m2 => {
+      const exId = m2.dataset.gymInfo, ex = r.exercises.find(e => e.id === exId) || {}, info = () => openGymExerciseInfo(r.id, exId, () => openGymWorkout(r.id, dateKey));
+      if (!openImgViewer(gymImgSrcs(m2), { title: ex.name, onInfo: info })) info();
+    };
+    sb.querySelectorAll('.gym-ex.simple [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => zoomOrInfo(m2)));
     sb.querySelectorAll('[data-gym-toggle]').forEach(h => h.addEventListener('click', (ev) => {
       if (ev.target.closest('[data-gym-info]') && h.closest('.gym-ex.open')) return;
       openId = openId === h.dataset.gymToggle ? null : h.dataset.gymToggle;
@@ -14291,9 +14378,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
       const card = sb.querySelector(`[data-ex-card="${h.dataset.gymToggle}"]`);
       if (card && openId) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }));
-    sb.querySelectorAll('.gym-ex.open [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => {
-      openGymExerciseInfo(r.id, m2.dataset.gymInfo, () => openGymWorkout(r.id, dateKey));
-    }));
+    sb.querySelectorAll('.gym-ex.open [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => zoomOrInfo(m2)));
     sb.querySelectorAll('[data-set-pain]').forEach(b => b.addEventListener('click', ev => {
       ev.stopPropagation();
       const [exId, i] = b.dataset.setPain.split(':'), v = +b.dataset.v, arr = lg.ex[exId] || [], cur = (arr[+i] || {}).pain;
