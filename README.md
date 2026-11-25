@@ -295,4 +295,6 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 
 **RIR y técnicas por serie.** En el entrenamiento cada serie tiene RIR (`gym_logs[día].ex[id][i].rir`) y, tocando el número de serie, técnicas con ícono (`tags`): aproximación, negativas, parciales, isométrico, drop set, rest-pause, myo-reps, cluster, forzadas, al fallo. En la rutina se marcan las técnicas planeadas por ejercicio (`exercises[].tech`). Ejercicios seguidos con el mismo número de circuito se muestran como biserie (2), triserie (3) o circuito (4+). El especialista ve RIR e íconos en el historial del atleta.
 
+**Tiempo real y vigencia.** La app abre un canal de Supabase Realtime (WebSocket, sin librería; `rtStart` en `pro.js`) para `notes` y `assignments`: mensajes y asignaciones llegan en segundos; la revisión periódica queda de respaldo. Al asignar se elige vigencia (permanente, horas, días o fecha); `assignments.expires_at` y la política RLS del atleta ocultan lo vencido, y la app retira la rutina vencida aunque esté sin conexión. SQL en `supabase/rutinal_realtime_expiry.sql`.
+
 **Personalizar.** En Ajustes se apagan las secciones que no se usan y se activa «Solo palomear ejercicios». Preferencias en `app_prefs`.

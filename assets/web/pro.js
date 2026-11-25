@@ -1351,6 +1351,54 @@ function ckPhotosReviewHtml(photos, wk) {
 }
 
 // ============================================================
+// TIEMPO REAL — Supabase Realtime (canal Phoenix por WebSocket, sin librería).
+// Avisa al instante de mensajes nuevos (notes) y de lo que asigna un especialista (assignments);
+// la app vuelve a pedir los datos con las funciones de siempre. Si el canal falla, sigue la revisión periódica.
+// ============================================================
+const RT = { ws: null, ref: 1, hb: null, retry: 0, tok: null, timer: null, deb: {} };
+function rtSend(topic, event, payload) { try { if (RT.ws && RT.ws.readyState === 1) RT.ws.send(JSON.stringify({ topic, event, payload: payload || {}, ref: String(RT.ref++) })); } catch (e) {} }
+function rtSoon(key, fn) { clearTimeout(RT.deb[key]); RT.deb[key] = setTimeout(() => { try { fn(); } catch (e) {} }, 400); }
+function rtStop() { clearInterval(RT.hb); clearTimeout(RT.timer); RT.hb = null; if (RT.ws) { try { RT.ws.onclose = null; RT.ws.close(); } catch (e) {} } RT.ws = null; }
+async function rtStart() {
+  const s = authGet();
+  if (!s || !s.uid || !s.refresh || !('WebSocket' in window) || navigator.onLine === false) return;
+  if (RT.ws && RT.ws.readyState <= 1) return;
+  let tok; try { tok = await authToken(); } catch (e) { return; }
+  RT.tok = tok;
+  const ws = new WebSocket(SB_URL.replace(/^http/, 'ws') + '/realtime/v1/websocket?apikey=' + encodeURIComponent(SB_KEY) + '&vsn=1.0.0');
+  RT.ws = ws;
+  ws.onopen = () => {
+    RT.retry = 0;
+    rtSend('realtime:rutinal-' + s.uid, 'phx_join', { access_token: tok, config: { broadcast: { self: false }, presence: { key: '' }, private: false, postgres_changes: [
+      { event: 'INSERT', schema: 'public', table: 'notes' },
+      { event: '*', schema: 'public', table: 'assignments', filter: 'client_id=eq.' + s.uid },
+    ] } });
+    clearInterval(RT.hb);
+    RT.hb = setInterval(async () => {
+      rtSend('phoenix', 'heartbeat', {});
+      // el token de sesión dura poco: al renovarse se le pasa al canal
+      try { const t2 = await authToken(); if (t2 !== RT.tok) { RT.tok = t2; rtSend('realtime:rutinal-' + s.uid, 'access_token', { access_token: t2 }); } } catch (e) {}
+    }, 25000);
+  };
+  ws.onmessage = ev => {
+    let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (m.event !== 'postgres_changes') return;
+    const tbl = m.payload && m.payload.data && m.payload.data.table;
+    if (tbl === 'notes') rtSoon('n', () => { msgRefresh(true); if (typeof _ntReload === 'function') _ntReload(); });
+    if (tbl === 'assignments') rtSoon('a', () => asgRefresh(true));
+  };
+  ws.onclose = () => {
+    clearInterval(RT.hb); RT.ws = null;
+    if (!authLogged()) return;
+    RT.retry = Math.min(RT.retry + 1, 6);
+    clearTimeout(RT.timer); RT.timer = setTimeout(rtStart, Math.min(60000, 1500 * Math.pow(2, RT.retry)));
+  };
+  ws.onerror = () => { try { ws.close(); } catch (e) {} };
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && authLogged()) { if (!RT.ws) rtStart(); msgRefresh(true); asgRefresh(true); } });
+window.addEventListener('online', () => { if (authLogged()) rtStart(); });
+
+// ============================================================
 // PESO CON TENDENCIA Y CHECK-IN SEMANAL
 // El peso de un día engaña; lo que se decide es con el promedio de 7 días y su ritmo de cambio.
 // El check-in es el reporte semanal del atleta: datos automáticos + cómo se sintió; el especialista responde.

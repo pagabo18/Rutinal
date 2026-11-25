@@ -2834,6 +2834,7 @@
   .tech-ic { flex: 0 0 auto; vertical-align: -2px; }
   .ge-tech { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; } .ge-lbl { font-size: 11px; color: var(--text-3); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
   .gym-circ { display: flex; align-items: center; gap: 5px; }
+  .asg-until { font-weight: 700; color: #B45309; }
   .rir-n { font-size: 11px; color: var(--text-3); } .tech-mini { display: inline-flex; vertical-align: -1px; color: var(--text-2); }
 </style>
 </head>
@@ -9109,6 +9110,7 @@ function authRenderAccount() {
 async function authLogout() {
   if (!confirm('¿Cerrar sesión? Tus datos se quedan guardados en este dispositivo.')) return;
   try { await sbFetch('/auth/v1/logout?scope=local', { method: 'POST', body: {} }); } catch (e) {}
+  try { rtStop(); } catch (e) {}
   authEndSession('');
 }
 function authGenPass() {
@@ -9767,6 +9769,7 @@ function openSyncSheet(first) {
 function onAuthReady() {
   const s = authGet();
   if (!s || !s.uid) return;
+  setTimeout(() => { try { rtStart(); } catch (e) {} }, 800);
   setTimeout(() => { try { reservedInvitePrompt(); } catch (e) {} }, 2500);
   setTimeout(() => { try { recoveryNudge(); } catch (e) {} }, 6000);
   let m = syncMeta();
@@ -10126,26 +10129,29 @@ async function openAssign(tp, forClient) {
     ${clients.map((l, i) => `<label class="usr-check"><input type="checkbox" data-as-c="${i}" ${forClient ? 'checked' : ''}><span translate="no">${escapeHtml(l.name || '')}</span> ${rolesBadges(l)}</label>`).join('') || '<div class="lk-d">No tienes atletas a los que puedas asignar este tipo de plantilla.</div>'}
     <label class="auth-field" style="margin-top:12px;"><span>Nota para el atleta (opcional)</span><input class="auth-in" id="as-note" type="text" maxlength="300"></label>
     ${tp.kind === 'diet' || tp.kind === 'targets' ? '<div class="fit-note">Reemplaza lo que ya le hayas asignado de este mismo tipo.</div>' : ''}
+    ${asgTtlHtml('as-ttl')}
     <div class="auth-msg" id="as-msg"></div>`, async () => {
     const msg = document.getElementById('as-msg');
     const sel = Array.from(document.querySelectorAll('[data-as-c]')).filter(c => c.checked).map(c => clients[+c.dataset.asC]);
     if (!sel.length) { msg.textContent = 'Elige al menos un atleta.'; return; }
-    const s = authGet() || {}, note = document.getElementById('as-note').value.trim() || null;
+    const s = authGet() || {}, note = document.getElementById('as-note').value.trim() || null, until = asgTtlValue('as-ttl');
+    if (until === 'bad') { msg.textContent = t('Elige una fecha y hora futuras.'); return; }
     try {
       if (tp.kind === 'diet' || tp.kind === 'targets') {
         for (const l of sel) await sbRest('assignments?specialist_id=eq.' + encodeURIComponent(s.uid) + '&client_id=eq.' + encodeURIComponent(l.client_id) + '&kind=eq.' + tp.kind + '&status=eq.active', { method: 'PATCH', body: { status: 'ended' }, headers: { Prefer: 'return=minimal' } });
       }
       await sbRest('assignments', { method: 'POST', headers: { Prefer: 'return=minimal' },
-        body: sel.map(l => ({ client_id: l.client_id, role: asgRoleFor(l, tp.kind) || l.role, kind: tp.kind, name: tp.name, payload: tp.payload, note, author_name: s.name || s.user })) });
+        body: sel.map(l => Object.assign({ client_id: l.client_id, role: asgRoleFor(l, tp.kind) || l.role, kind: tp.kind, name: tp.name, payload: tp.payload, note, author_name: s.name || s.user }, until ? { expires_at: until } : {})) });
     } catch (e) { msg.textContent = authErr(e.code); return; }
     // Aviso en el chat de cada atleta, con lo asignado adjunto
     for (const l of sel) { if (l.id) { try { await ntPost(l.id, note || t('Te dejé esto en tu app.'), { t: 'asg', kind: tp.kind, name: tp.name }); } catch (e) {} } }
     tplDone(forClient);
   });
+  asgTtlWire('as-ttl');
 }
 // ---- Mensajes: chat por vínculo entre especialista y atleta ----
 // Los mensajes viven en public.notes; `ref` adjunta algo asignado (rutina, dieta, metas, indicaciones).
-let _ntRefCol = true, _ntTimer = null, _msgAt = 0;
+let _ntRefCol = true, _ntTimer = null, _msgAt = 0, _ntReload = null;
 function ntSeen() { try { return JSON.parse(localStorage.getItem('__nt_seen') || '{}') || {}; } catch (e) { return {}; } }
 function ntMarkSeen(linkId, iso) {
   if (!iso) return;
@@ -10310,13 +10316,41 @@ async function openNotes(linkId, name, back, opts) {
     await load(true);
   });
   await load(true);
+  _ntReload = () => { if (alive()) load(false); else _ntReload = null; };
   _ntTimer = setInterval(() => { if (!alive()) { clearInterval(_ntTimer); _ntTimer = null; return; } if (document.visibilityState === 'visible') load(false); }, 12000);
 }
 // Revisar mensajes nuevos al volver a la app y cada par de minutos
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') msgRefresh(false); });
 setInterval(() => { if (document.visibilityState === 'visible') msgRefresh(false); }, 120000);
 // ---- Atleta: lo que le asignaron ----
-function asgList() { try { const a = JSON.parse(localStorage.getItem('__asg') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+// Lo asignado ya vencido no cuenta, aunque la copia local aún no se haya refrescado del servidor.
+function asgLive(a) { return !a || !a.expires_at || Date.parse(a.expires_at) > Date.now(); }
+function asgList() { try { const a = JSON.parse(localStorage.getItem('__asg') || '[]'); return Array.isArray(a) ? a.filter(asgLive) : []; } catch (e) { return []; } }
+// Vigencia: opciones para el especialista y texto "vence en…".
+const ASG_TTL = [['', 'Permanente'], ['6h', '6 horas'], ['12h', '12 horas'], ['1d', '1 día'], ['3d', '3 días'], ['7d', '1 semana'], ['14d', '2 semanas'], ['28d', '4 semanas'], ['date', 'Hasta una fecha…']];
+function asgTtlHtml(id) { return `<label class="auth-field" style="margin-top:12px;"><span>Vigencia</span><select class="auth-in" id="${id}">${ASG_TTL.map(([v, n]) => `<option value="${v}">${n}</option>`).join('')}</select></label>
+  <input class="auth-in" id="${id}-dt" type="datetime-local" style="display:none;margin-top:-4px;">
+  <div class="fit-note" id="${id}-hint" style="display:none;">Al vencer se retira de su app y ya no la puede usar. Sus registros de entrenamiento se conservan.</div>`; }
+function asgTtlWire(id) {
+  const sel = document.getElementById(id), dt = document.getElementById(id + '-dt'), h = document.getElementById(id + '-hint');
+  const upd = () => { dt.style.display = sel.value === 'date' ? '' : 'none'; h.style.display = sel.value ? '' : 'none'; if (sel.value === 'date' && !dt.value) { const d = new Date(Date.now() + 7 * 864e5); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); dt.value = d.toISOString().slice(0, 16); } };
+  sel.addEventListener('change', upd); upd();
+}
+function asgTtlValue(id) {
+  const v = document.getElementById(id).value; if (!v) return null;
+  if (v === 'date') { const x = Date.parse(document.getElementById(id + '-dt').value); return isFinite(x) && x > Date.now() + 60000 ? new Date(x).toISOString() : 'bad'; }
+  const n = parseInt(v, 10), ms = v.endsWith('h') ? n * 36e5 : n * 864e5;
+  return new Date(Date.now() + ms).toISOString();
+}
+function asgUntilText(iso) {
+  if (!iso) return '';
+  const ms = Date.parse(iso) - Date.now();
+  if (ms <= 0) return `<span>Vencida</span>`;
+  const h = ms / 36e5;
+  if (h < 1) return `<span>Vence en</span> <span translate="no">${Math.max(1, Math.round(ms / 60000))} min</span>`;
+  if (h < 48) return `<span>Vence en</span> <span translate="no">${Math.round(h)} h</span>`;
+  return `<span>Vence el</span> <span translate="no">${escapeHtml(new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)))}</span>`;
+}
 function assignedTargets() {
   const a = asgList().filter(x => x.kind === 'targets').sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)))[0];
   return a ? a.payload : null;
@@ -10336,24 +10370,25 @@ function asgApplyRoutines() {
       // Ya la tiene: si el especialista la cambió, su copia se actualiza (mismo id, sus registros no se tocan)
       if (cur.assigned && cur.assigned.sig === sig) return;
       const i = rs.indexOf(cur);
-      rs[i] = Object.assign({}, JSON.parse(JSON.stringify(a.payload || {})), { id, name: a.name || cur.name, assigned: { by: a.author_name || '', role: a.role, sig } });
+      rs[i] = Object.assign({}, JSON.parse(JSON.stringify(a.payload || {})), { id, name: a.name || cur.name, assigned: { by: a.author_name || '', role: a.role, sig, until: a.expires_at || null } });
       changed = true;
       return;
     }
-    rs.push(Object.assign({}, JSON.parse(JSON.stringify(a.payload || {})), { id, name: a.name || (a.payload || {}).name, assigned: { by: a.author_name || '', role: a.role, sig } }));
+    rs.push(Object.assign({}, JSON.parse(JSON.stringify(a.payload || {})), { id, name: a.name || (a.payload || {}).name, assigned: { by: a.author_name || '', role: a.role, sig, until: a.expires_at || null } }));
     changed = true;
   });
   if (changed) S.set('gym_routines', rs);
   return changed;
 }
 let _asgLast = 0;
+setInterval(() => { try { if (gymRoutines().some(r => r.assigned && r.assigned.until && Date.parse(r.assigned.until) <= Date.now())) { asgApplyRoutines(); asgRenderCard(); try { renderGym(); } catch (e) {} try { renderHoyDash(); } catch (e) {} } } catch (e) {} }, 30000);
 async function asgRefresh(force) {
   const s = authGet();
   if (!s || !s.refresh || !s.uid || navigator.onLine === false) return;
   if (!force && Date.now() - _asgLast < 120000) return;
   _asgLast = Date.now();
   let rows;
-  try { rows = await sbRest('assignments?select=id,kind,name,payload,note,author_name,role,created_at&client_id=eq.' + encodeURIComponent(s.uid) + '&status=eq.active&order=created_at.desc'); }
+  try { rows = await sbRest('assignments?select=id,kind,name,payload,note,author_name,role,created_at,expires_at&client_id=eq.' + encodeURIComponent(s.uid) + '&status=eq.active&order=created_at.desc'); }
   catch (e) { return; }
   const before = localStorage.getItem('__asg') || '[]', after = JSON.stringify(rows || []);
   if (before === after) return;
@@ -10777,7 +10812,7 @@ async function spOpenClient(l) {
     const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(l.client_id) + '&or=(sub.eq.,sub.gte.' + from + ')&limit=2000');
     if (!r.ok) throw authErrObj('network');
     rows = await r.json();
-    asg = await sbRest('assignments?select=id,kind,name,payload,created_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent(me) + '&role=in.(' + linkRoles(l).join(',') + ')&status=eq.active&order=created_at.desc') || [];
+    asg = await sbRest('assignments?select=id,kind,name,payload,created_at,expires_at&client_id=eq.' + encodeURIComponent(l.client_id) + '&specialist_id=eq.' + encodeURIComponent(me) + '&role=in.(' + linkRoles(l).join(',') + ')&status=eq.active&order=created_at.desc') || [];
   } catch (e) { el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Atletas</span></button><p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`; document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); }); return; }
   if (_sp.client !== l) return;
   const D = {};
@@ -10838,7 +10873,7 @@ async function spOpenClient(l) {
       <div class="sp-card-d">${escapeHtml(cdFmtDay(ws[0]))} → ${escapeHtml(cdFmtDay(ws[ws.length - 1]))}</div>${spWeightChart(D.weight_log)}</div>`;
   }
   const plans = asg.map(a => `<div class="sp-card"><div class="sp-card-top"><div class="sp-card-n">${escapeHtml(a.name)}</div><span class="usr-badge">${ASG_KINDS[a.kind] || a.kind}</span></div>
-      <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}</div><div class="sp-card-btns">${a.kind === 'routine' ? `<button class="btn-secondary" data-asg-loads="${a.id}">Cargas por serie</button><button class="btn-secondary" data-asg-rt="${a.id}">Editar</button>` : ''}${a.kind === 'diet' ? `<button class="btn-secondary" data-asg-diet="${a.id}">Editar</button>` : ''}${a.kind === 'goal' ? `<button class="btn-secondary" data-asg-goal="${a.id}">Editar</button>` : ''}${a.kind === 'phase' ? `<button class="btn-secondary" data-asg-phase="${a.id}">Editar</button>` : ''}<button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
+      <div class="sp-card-d"><span>Asignado</span>: ${escapeHtml(cdFmtDay(String(a.created_at).slice(0, 10)))}${a.expires_at ? ` · ${asgUntilText(a.expires_at)}` : ` · <span>Permanente</span>`}</div><div class="sp-card-btns">${a.kind === 'routine' ? `<button class="btn-secondary" data-asg-loads="${a.id}">Cargas por serie</button><button class="btn-secondary" data-asg-rt="${a.id}">Editar</button>` : ''}${a.kind === 'diet' ? `<button class="btn-secondary" data-asg-diet="${a.id}">Editar</button>` : ''}${a.kind === 'goal' ? `<button class="btn-secondary" data-asg-goal="${a.id}">Editar</button>` : ''}${a.kind === 'phase' ? `<button class="btn-secondary" data-asg-phase="${a.id}">Editar</button>` : ''}<button class="btn-secondary" data-asg-end="${a.id}">Quitar</button></div></div>`).join('') || '<div class="sp-empty">Nada asignado todavía.</div>';
   // --- Resumen de la semana y gráficas (8 semanas) ---
   const rep = spClientReport(D, l, asg);
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button><div class="sp-actions" style="margin-top:8px;"><button class="sp-act" id="sp-goal-new">Poner objetivo</button>' + (linkRoles(l).some(r => r !== 'fisioterapeuta') ? '<button class="sp-act" id="sp-phase-edit">Fases del plan</button>' : '') + '</div>',
@@ -13871,7 +13906,7 @@ function renderGym() {
       <div class="gym-routine-body">
         <div class="gym-routine-name">${escapeHtml(r.name)}</div>${gymGroupChips(r)}
         <div class="gym-routine-meta">${r.exercises.length} ejercicios${days ? ' · ' + escapeHtml(days) : ''}</div>
-        ${r.assigned ? `<div class="gym-routine-meta"><span class="usr-badge spec">De tu especialista</span>${r.assigned.by ? ' ' + escapeHtml(r.assigned.by) : ''}</div>` : ''}
+        ${r.assigned ? `<div class="gym-routine-meta"><span class="usr-badge spec">De tu especialista</span>${r.assigned.by ? ' ' + escapeHtml(r.assigned.by) : ''}</div>${r.assigned.until ? `<div class="gym-routine-meta asg-until">${asgUntilText(r.assigned.until)}</div>` : ''}` : ''}
       </div>
       <button class="gym-icon-btn" data-gym-edit="${r.id}" aria-label="Editar"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
     </div>`;
@@ -13974,6 +14009,7 @@ let _gymRest = null; // { end, total, timer }
 function openGymWorkout(routineId, dateKey, focusId) {
   const r = gymRoutineById(routineId);
   if (!r) return;
+  if (r.assigned && r.assigned.until && Date.parse(r.assigned.until) <= Date.now()) { alert(t('Esta rutina ya venció. Pídele a tu especialista una nueva.')); asgApplyRoutines(); try { renderGym(); } catch (e) {} return; }
   dateKey = dateKey || keyDate();
   const logs = gymLogs();
   const lg = (logs[dateKey] && logs[dateKey].routineId === r.id) ? logs[dateKey] : { routineId: r.id, ex: {} };

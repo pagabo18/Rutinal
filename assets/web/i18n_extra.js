@@ -5141,6 +5141,86 @@ window.__I18N_EXTRA = {
    "pt-BR": "Para um bi-set ou tri-set, use o mesmo número de circuito nos exercícios seguidos que vão juntos.",
    "fr": "Pour un superset ou un tri-set, donnez le même numéro de circuit aux exercices consécutifs qui vont ensemble."
   },
+  "Vigencia": {
+   "en": "Valid for",
+   "pt-BR": "Validade",
+   "fr": "Validité"
+  },
+  "Permanente": {
+   "en": "Permanent",
+   "pt-BR": "Permanente",
+   "fr": "Permanent"
+  },
+  "6 horas": {
+   "en": "6 hours",
+   "pt-BR": "6 horas",
+   "fr": "6 heures"
+  },
+  "12 horas": {
+   "en": "12 hours",
+   "pt-BR": "12 horas",
+   "fr": "12 heures"
+  },
+  "1 día": {
+   "en": "1 day",
+   "pt-BR": "1 dia",
+   "fr": "1 jour"
+  },
+  "3 días": {
+   "en": "3 days",
+   "pt-BR": "3 dias",
+   "fr": "3 jours"
+  },
+  "1 semana": {
+   "en": "1 week",
+   "pt-BR": "1 semana",
+   "fr": "1 semaine"
+  },
+  "2 semanas": {
+   "en": "2 weeks",
+   "pt-BR": "2 semanas",
+   "fr": "2 semaines"
+  },
+  "4 semanas": {
+   "en": "4 weeks",
+   "pt-BR": "4 semanas",
+   "fr": "4 semaines"
+  },
+  "Hasta una fecha…": {
+   "en": "Until a date…",
+   "pt-BR": "Até uma data…",
+   "fr": "Jusqu'à une date…"
+  },
+  "Al vencer se retira de su app y ya no la puede usar. Sus registros de entrenamiento se conservan.": {
+   "en": "When it expires it's removed from their app and can't be used. Their training records are kept.",
+   "pt-BR": "Ao vencer, sai do app e não pode mais ser usada. Os registros de treino são mantidos.",
+   "fr": "À l'expiration, elle disparaît de son app et ne peut plus être utilisée. Ses données d'entraînement sont conservées."
+  },
+  "Vencida": {
+   "en": "Expired",
+   "pt-BR": "Vencida",
+   "fr": "Expirée"
+  },
+  "Vence en": {
+   "en": "Expires in",
+   "pt-BR": "Vence em",
+   "fr": "Expire dans"
+  },
+  "Vence el": {
+   "en": "Expires on",
+   "pt-BR": "Vence em",
+   "fr": "Expire le"
+  },
+  "Elige una fecha y hora futuras.": {
+   "en": "Choose a future date and time.",
+   "pt-BR": "Escolha uma data e hora futuras.",
+   "fr": "Choisissez une date et une heure futures."
+  },
+  "Esta rutina ya venció. Pídele a tu especialista una nueva.": {
+   "en": "This routine has expired. Ask your specialist for a new one.",
+   "pt-BR": "Esta rotina venceu. Peça uma nova ao seu especialista.",
+   "fr": "Cette routine a expiré. Demandez-en une nouvelle à votre spécialiste."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
