@@ -5796,6 +5796,96 @@ window.__I18N_EXTRA = {
    "pt-BR": "Mostrar na tela de bloqueio",
    "fr": "Afficher sur l'écran de verrouillage"
   },
+  "Dolor en la serie": {
+   "en": "Pain in set",
+   "pt-BR": "Dor na série",
+   "fr": "Douleur à la série"
+  },
+  "0 = sin dolor · 10 = el peor": {
+   "en": "0 = no pain · 10 = worst",
+   "pt-BR": "0 = sem dor · 10 = a pior",
+   "fr": "0 = aucune douleur · 10 = la pire"
+  },
+  "Dolor alto en esta serie.": {
+   "en": "High pain in this set.",
+   "pt-BR": "Dor alta nesta série.",
+   "fr": "Douleur élevée sur cette série."
+  },
+  "Baja la carga o detén el ejercicio, y coméntalo con tu especialista.": {
+   "en": "Lower the load or stop the exercise, and tell your specialist.",
+   "pt-BR": "Diminua a carga ou pare o exercício, e comente com seu especialista.",
+   "fr": "Baisse la charge ou arrête l'exercice, et parles-en à ton spécialiste."
+  },
+  "Dolor del ejercicio (NPRS)": {
+   "en": "Exercise pain (NPRS)",
+   "pt-BR": "Dor do exercício (NPRS)",
+   "fr": "Douleur de l'exercice (NPRS)"
+  },
+  "Esfuerzo del ejercicio (RPE)": {
+   "en": "Exercise effort (RPE)",
+   "pt-BR": "Esforço do exercício (RPE)",
+   "fr": "Effort de l'exercice (RPE)"
+  },
+  "dolor": {
+   "en": "pain",
+   "pt-BR": "dor",
+   "fr": "douleur"
+  },
+  "Te faltó": {
+   "en": "You missed",
+   "pt-BR": "Você perdeu",
+   "fr": "Tu as manqué"
+  },
+  "Tocaba el": {
+   "en": "It was scheduled for",
+   "pt-BR": "Era para",
+   "fr": "C'était prévu le"
+  },
+  "veces esta semana": {
+   "en": "times this week",
+   "pt-BR": "vezes nesta semana",
+   "fr": "fois cette semaine"
+  },
+  "Puedes hacerla hoy.": {
+   "en": "You can do it today.",
+   "pt-BR": "Você pode fazer hoje.",
+   "fr": "Tu peux la faire aujourd'hui."
+  },
+  "También quedó pendiente:": {
+   "en": "Also pending:",
+   "pt-BR": "Também ficou pendente:",
+   "fr": "Également en attente :"
+  },
+  "Hacerla hoy": {
+   "en": "Do it today",
+   "pt-BR": "Fazer hoje",
+   "fr": "La faire aujourd'hui"
+  },
+  "Omitir": {
+   "en": "Skip",
+   "pt-BR": "Pular",
+   "fr": "Ignorer"
+  },
+  "Este día ya tiene registrado": {
+   "en": "This day already has",
+   "pt-BR": "Este dia já tem registrado",
+   "fr": "Ce jour a déjà"
+  },
+  "otro entrenamiento": {
+   "en": "another workout",
+   "pt-BR": "outro treino",
+   "fr": "un autre entraînement"
+  },
+  "Solo se guarda un entrenamiento por día: si empiezas esta rutina, reemplaza ese registro.": {
+   "en": "Only one workout is saved per day: starting this routine replaces that log.",
+   "pt-BR": "Só um treino é salvo por dia: se você começar esta rotina, ela substitui esse registro.",
+   "fr": "Un seul entraînement est enregistré par jour : commencer cette routine remplace cet enregistrement."
+  },
+  "Sin hacer (7 días)": {
+   "en": "Missed (7 days)",
+   "pt-BR": "Não feitos (7 dias)",
+   "fr": "Manqués (7 jours)"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

@@ -1117,6 +1117,31 @@ function spRecordsHtml(D) {
     ${str}${spRows ? `${str ? '<div class="rec-sep"></div>' : ''}${spRows}` : ''}</div>`;
 }
 
+// Rutinas programadas (días fijos) que se quedaron sin hacer en los últimos `days` días.
+// No cuenta como falta si esa rutina se hizo ese día o después, si se omitió a propósito
+// (skip[fecha]), si la rutina no existía todavía o ya venció, ni antes de `since`.
+// Si la misma rutina faltó varias veces, devuelve solo la más reciente con `times`.
+function gymMissedFrom(sched, logs, routines, todayKey, opts) {
+  opts = opts || {}; sched = sched || {}; logs = logs || {};
+  // Por defecto: lo que va de la semana (desde el lunes), y al menos los últimos 2 días
+  const days = opts.days || Math.max(2, (new Date(todayKey + 'T00:00:00').getDay() + 6) % 7), since = opts.since || '', skip = opts.skip || {}, now = opts.now || Date.now();
+  const byId = {}; (routines || []).forEach(r => { if (r && r.id) byId[r.id] = r; });
+  const k = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const did = (dk, rid) => { const lg = logs[dk]; return !!(lg && lg.routineId === rid && (lg.done || Object.keys(lg.ex || {}).some(e => (lg.ex[e] || []).some(x => x && x.done)))); };
+  const keys = Object.keys(logs).sort(), out = {};
+  for (let n = days; n >= 1; n--) {
+    const d = new Date(todayKey + 'T00:00:00'); d.setDate(d.getDate() - n);
+    const dk = k(d), rid = sched[String(d.getDay())], r = byId[rid];
+    if (!r || dk < since || skip[dk]) continue;
+    if (r.createdAt && r.createdAt > d.getTime() + 864e5) continue;
+    if (r.assigned && r.assigned.until && Date.parse(r.assigned.until) <= now) continue;
+    if (keys.some(x => x >= dk && x <= todayKey && did(x, rid))) continue;
+    const prev = out[rid];
+    out[rid] = { date: dk, dow: d.getDay(), rid, name: r.name, times: prev ? prev.times + 1 : 1, dates: (prev ? prev.dates : []).concat(dk) };
+  }
+  return Object.values(out).sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
 // ============================================================
 // OBJETIVOS Y LOGROS: metas con avance calculado solo a partir de los registros.
 // ============================================================
@@ -2178,4 +2203,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { gymMissedFrom, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
