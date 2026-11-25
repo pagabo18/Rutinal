@@ -2857,6 +2857,14 @@
   #sp-report .rec-spark, .rec-spark { display: block; width: 92px; height: 24px; margin-top: 4px; color: var(--text-2); }
   .rec-row.fresh .rec-spark { color: #16A34A; }
   .rec-sep { height: 8px; }
+
+  /* ===== Entrenamiento en vivo: ventana flotante ===== */
+  .gym-pip-btn { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; width: 100%; margin: 0 0 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: transparent; color: var(--text); text-align: left; cursor: pointer; font: inherit; }
+  .gym-pip-btn svg { grid-row: span 2; color: var(--text-2); }
+  .gym-pip-btn span { font-size: 14px; font-weight: 600; } .gym-pip-btn small { font-size: 12px; color: var(--text-3); }
+  html.pip-on body > *:not(#gym-pip-view) { display: none !important; }
+  #gym-pip-view { position: fixed; inset: 0; z-index: 99999; }
+  #gym-pip-view .glp { height: 100%; }
 </style>
 </head>
 <body>
@@ -3536,6 +3544,14 @@ try {
         </div>
         <div id="habit-reminder-status" style="font-size:12px; color:var(--text-3); margin-top:6px;"></div>
       </div>
+      <div class="setting" id="gym-live-setting" style="display:none;">
+        <div class="setting-label">Entrenamiento fuera de la app</div>
+        <div style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;">Mientras entrenas, el ejercicio que sigue y el descanso aparecen en la pantalla de bloqueo, con botones para marcar la serie o saltar el descanso. También puedes agregar el widget «Entrenamiento» a tu pantalla de inicio.</div>
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+          <input type="checkbox" id="gym-live-toggle" style="width:18px; height:18px;">
+          <span style="font-size:14px; color:var(--text-2);">Mostrar en la pantalla de bloqueo</span>
+        </label>
+      </div>
       <div class="setting" id="meal-reminder-setting" style="display:none;">
         <div class="setting-label">Recordatorio de comida</div>
         <div style="font-size:13px; color:var(--text-3); margin-bottom:8px; line-height:1.4;">Si a la hora que elijas todavía no has registrado nada de comida, te lo recordamos con un aviso suave.</div>
@@ -3795,6 +3811,7 @@ const S = {
       __mem[k] = v;
     }
     if (__WIDGET_TRIGGERS.has(k)) __syncWidgets();
+    if (k === 'gym_logs' || k === 'gym_schedule' || k === 'gym_routines' || k === 'gym_unit') { try { gymLiveSoon(); } catch (e) {} }
     if (window.__syncTouch) window.__syncTouch(k, old, v);
   },
   del(k) {
@@ -6193,6 +6210,14 @@ function renderAjustes() {
     hst.textContent = cur ? `Activo a las ${cur} cada día.` : 'Sin recordatorio.';
   } else {
     hbox.style.display = 'none';
+  }
+  // Entrenamiento en la pantalla de bloqueo
+  const glBox = document.getElementById('gym-live-setting'), glT = document.getElementById('gym-live-toggle');
+  if (glBox && glT) {
+    const has = !!(window.Android && typeof window.Android.setGymLive === 'function');
+    glBox.style.display = has ? '' : 'none';
+    glT.checked = gymLiveOn();
+    if (!glT.dataset.bound) { glT.dataset.bound = '1'; glT.addEventListener('change', () => { S.set('gym_live_on', glT.checked); gymLiveSoon(); }); }
   }
   // Respaldo automático (solo con puente nativo)
   const abRow = document.getElementById('auto-backup-row');
@@ -11406,8 +11431,10 @@ function applyWidgetActions() {
     try { acts = JSON.parse(window.Android.consumeWidgetActions() || '[]'); } catch (e) { return; }
     if (!Array.isArray(acts) || !acts.length) return;
     let habitsChanged = false, pomoChanged = false;
+    const gymActs = [];
     acts.forEach(a => {
       if (!a || !a.t) return;
+      if (a.t === 'gym_set' || a.t === 'gym_rest') { gymActs.push(a); return; }
       if (a.t === 'habit_toggle' && a.id && a.date) {
         const log = habitLog();
         log[a.date] = log[a.date] || {};
@@ -11425,6 +11452,7 @@ function applyWidgetActions() {
     if (habitsChanged && active === 'habitos') renderHabitos();
     if (habitsChanged && active === 'hoy') renderHoy();
     if (pomoChanged && active === 'pomo' && typeof renderPomo === 'function') renderPomo();
+    if (gymActs.length && typeof gymLiveApply === 'function') gymLiveApply(gymActs);
   } catch (e) {}
 }
 setTimeout(applyWidgetActions, 1200);
@@ -14037,6 +14065,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
   if (!r) return;
   if (r.assigned && r.assigned.until && Date.parse(r.assigned.until) <= Date.now()) { alert(t('Esta rutina ya venció. Pídele a tu especialista una nueva.')); asgApplyRoutines(); try { renderGym(); } catch (e) {} return; }
   dateKey = dateKey || keyDate();
+  _gymWoOpen = { rid: r.id, date: dateKey };
   const logs = gymLogs();
   const lg = (logs[dateKey] && logs[dateKey].routineId === r.id) ? logs[dateKey] : { routineId: r.id, ex: {} };
   const m = r.meta || {};
@@ -14166,6 +14195,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
         ${sportR ? '' : '<button class="btn-secondary" id="gym-share">Compartir cargas</button>'}
         <button class="btn-secondary" id="gym-edit">Editar rutina</button>
       </div>
+      ${dateKey === keyDate() && !lg.end && gymPipAvailable() ? `<button class="gym-pip-btn" id="gym-pip"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="6" rx="1"/></svg><span>Ventana flotante</span><small>${lg.start ? 'Ve el ejercicio que sigue sobre otras apps' : 'Disponible al marcar tu primera serie'}</small></button>` : ''}
       <div class="gym-cta-wrap"><button class="btn-primary gym-cta" id="gym-finish">${lg.done ? '✓ Entrenamiento terminado · editar cómo me sentí' : 'Terminar entrenamiento'}</button></div>
     </div>`;
     sb.scrollTop = keepScroll;
@@ -14293,6 +14323,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
     }));
     sb.querySelector('#gym-edit').addEventListener('click', () => openGymEditor(r.id));
     const gsh = sb.querySelector('#gym-share'); if (gsh) gsh.addEventListener('click', () => gymShareLoads(r, dateKey));
+    const gpp = sb.querySelector('#gym-pip'); if (gpp) gpp.addEventListener('click', () => { if (!lg.start) { lg.start = Date.now(); persist(); } gymPipOpen(); });
     sb.querySelector('#gym-finish').addEventListener('click', () => {
       gymRestStop();
       openGymFinish(r, dateKey, lg, persist, () => { closeSheet(); renderGym(); });
@@ -14317,12 +14348,15 @@ function gymRestStart(sec) {
   _gymRest = { end: Date.now() + sec * 1000, total: sec };
   _gymRest.timer = setInterval(gymRestPaint, 250);
   gymRestPaint();
+  gymLiveSoon();
 }
 function gymRestStop() {
   if (_gymRest && _gymRest.timer) clearInterval(_gymRest.timer);
+  const had = !!_gymRest;
   _gymRest = null;
   const el = document.getElementById('gym-rest');
   if (el) el.style.display = 'none';
+  if (had) gymLiveSoon();
 }
 function gymRestPaint() {
   const el = document.getElementById('gym-rest');
@@ -14332,7 +14366,7 @@ function gymRestPaint() {
   if (left <= 0) {
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     el.innerHTML = `<span class="gym-rest-go">¡A la siguiente serie!</span><button class="gym-rest-btn" id="gym-rest-x">OK</button>`;
-    clearInterval(_gymRest.timer); _gymRest = null;
+    clearInterval(_gymRest.timer); _gymRest = null; gymLiveSoon();
     el.style.display = '';
     el.querySelector('#gym-rest-x').addEventListener('click', gymRestStop);
     return;
@@ -14345,10 +14379,207 @@ function gymRestPaint() {
     el.innerHTML = `<span><span>Descanso</span> <b class="gym-rest-t"></b></span>
       <span class="gym-rest-btns"><button class="gym-rest-btn" id="gym-rest-plus">+30 s</button><button class="gym-rest-btn" id="gym-rest-x">Saltar</button></span>`;
     el.querySelector('#gym-rest-x').addEventListener('click', gymRestStop);
-    el.querySelector('#gym-rest-plus').addEventListener('click', () => { if (_gymRest) { _gymRest.end += 30000; _gymRest.total += 30; gymRestPaint(); } });
+    el.querySelector('#gym-rest-plus').addEventListener('click', () => { if (_gymRest) { _gymRest.end += 30000; _gymRest.total += 30; gymRestPaint(); gymLiveSoon(); } });
   }
   el.querySelector('.gym-rest-t').textContent = `${mm}:${ss}`;
 }
+
+// ---------- Entrenamiento en vivo ----------
+// El entrenamiento empezado hoy (y sin terminar) se muestra fuera de la app:
+// notificación fija en la pantalla de bloqueo, widget "Entrenamiento" y ventana
+// flotante (picture-in-picture en Android, Document PiP en Chrome de escritorio).
+// Todo sale de gym_logs + el descanso en curso; los botones de fuera llegan como
+// acciones 'gym_set' / 'gym_rest' (ver applyWidgetActions).
+let _gymLiveT = null, _gymLiveBusy = false, _gymLivePoll = null, _gymWoOpen = null, _gymPipWin = null, _gymPipTick = null, _gymPipAndroid = false;
+const gymLiveOn = () => S.get('gym_live_on', true) !== false;
+const _tt = s => { const v = t(s); return v == null ? s : v; };
+function gymLiveLog() {
+  const dk = keyDate(), lg = gymLogs()[dk];
+  if (!lg || !lg.routineId || !lg.start || lg.end) return null;
+  const r = gymRoutineById(lg.routineId);
+  if (!r) return null;
+  const last = Math.max(lg.ts || 0, lg.start || 0);
+  if (Date.now() - last > 3 * 3600e3) return null; // abandonado
+  return { r, lg, dk, exp: last + 3 * 3600e3 };
+}
+// Valores con los que queda registrada una serie marcada desde fuera de la app:
+// lo que ya escribió, la carga recomendada o la de la última vez.
+function gymLiveFill(r, lg, ex, i, dk) {
+  const s = ((lg.ex || {})[ex.id] || [])[i] || {}, sw = lg.swap && lg.swap[ex.id];
+  const tr = gymSetRepsForIndex(ex, i), trN = parseInt(tr, 10);
+  if (gymIsSport(r)) return { reps: s.reps || String(tr).split(' ')[0] };
+  const last = gymLastLog(ex.id, dk, sw ? sw.name : null), prev = last && last.sets[i];
+  return { kg: s.kg || (!sw && gymRecLoad(ex, i)) || (prev && prev.kg) || '', reps: s.reps || (prev && prev.reps) || (trN ? String(trN) : '') };
+}
+// Series pendientes en el orden en que se hacen (circuitos: por vueltas).
+function gymLiveQueue(r, lg, dk) {
+  const groups = [];
+  r.exercises.forEach(ex => { const g = groups[groups.length - 1]; if (g && ex.circuit != null && g.circuit === ex.circuit) g.items.push(ex); else groups.push({ circuit: ex.circuit, items: [ex] }); });
+  const m = r.meta || {}, restDef = Math.min(GYM_REST_MAX, Math.max(GYM_REST_MIN, gymRestSeconds(m.descanso) || 150));
+  const sport = gymIsSport(r), U = gymUnit(), q = [], tot = ex => Math.max(1, gymTotalSets(ex), ((lg.ex || {})[ex.id] || []).length);
+  groups.forEach(g => {
+    const rounds = Math.max(...g.items.map(tot));
+    for (let k = 0; k < rounds; k++) g.items.forEach(ex => {
+      if (k >= tot(ex) || (((lg.ex || {})[ex.id] || [])[k] || {}).done) return;
+      const sw = lg.swap && lg.swap[ex.id], f = gymLiveFill(r, lg, ex, k, dk), tr = k < gymTotalSets(ex) ? gymSetRepsForIndex(ex, k) : '';
+      const tgt = sport ? [tr] : [f.kg ? `${gymDispW(f.kg)} ${U} × ${f.reps || tr || '?'}` : (tr ? `${tr} reps` : ''), ex.rir ? 'RIR ' + ex.rir : ''];
+      q.push({ ex: ex.id, i: k, n: sw ? sw.name : ex.name, s: `${_tt('Serie')} ${k + 1}/${tot(ex)}`, t: tgt.filter(Boolean).join(' · '), r: gymRestSeconds(ex.rest) || restDef });
+    });
+  });
+  return q;
+}
+function gymLiveSnap() {
+  const L = { done: _tt('Serie hecha'), skip: _tt('Saltar'), plus: '+30 s', rest: _tt('Descanso'), next: _tt('Sigue'), go: _tt('¡A la siguiente serie!'),
+    fin: _tt('¡Listo! Abre la app para terminar.'), start: _tt('Empezar'), today: _tt('Hoy toca'), none: _tt('Sin rutina para hoy'),
+    noneSub: _tt('Programa tus rutinas en la pestaña Gym.'), open: _tt('Abrir Gym') };
+  const week = {}, sch = gymSchedule(), lgT = gymLogs()[keyDate()];
+  Object.keys(sch).forEach(d => { const r = gymRoutineById(sch[d]); if (r) week[d] = { rid: r.id, name: r.name, info: `${r.exercises.length} ${_tt('ejercicios')}` }; });
+  const td = String(new Date().getDay());
+  if (week[td] && lgT && lgT.end && lgT.routineId === week[td].rid) week[td].info = _tt('Hecho hoy');
+  const a = gymLiveLog();
+  if (!a) return { v: 1, active: false, on: gymLiveOn(), week, L };
+  const q = gymLiveQueue(a.r, a.lg, a.dk);
+  const total = a.r.exercises.reduce((n, ex) => n + Math.max(1, gymTotalSets(ex), ((a.lg.ex || {})[ex.id] || []).length), 0);
+  const done = a.r.exercises.reduce((n, ex) => n + ((a.lg.ex || {})[ex.id] || []).filter(x => x && x.done).length, 0);
+  const rest = _gymRest && _gymRest.end > Date.now() ? { end: _gymRest.end, total: _gymRest.total } : null;
+  return { v: 1, active: true, on: gymLiveOn(), exp: a.exp, date: a.dk, rid: a.r.id, name: a.r.name, done, total, queue: q.slice(0, 60), rest, week, L };
+}
+function gymLivePush() {
+  clearTimeout(_gymLiveT); _gymLiveT = null;
+  if (_gymLiveBusy) return;
+  let snap;
+  try { applyWidgetActions(); snap = gymLiveSnap(); } catch (e) { return; }
+  const nat = window.Android && typeof window.Android.setGymLive === 'function';
+  if (nat) { try { window.Android.setGymLive(JSON.stringify(snap)); } catch (e) {} }
+  gymPipPaint(snap);
+  // Mientras hay entrenamiento, aplicar seguido lo que se toque en la notificación o el widget
+  if (nat && snap.active && !_gymLivePoll) _gymLivePoll = setInterval(applyWidgetActions, 1500);
+  if (!snap.active && _gymLivePoll) { clearInterval(_gymLivePoll); _gymLivePoll = null; }
+}
+function gymLiveSoon() { clearTimeout(_gymLiveT); _gymLiveT = setTimeout(gymLivePush, 250); }
+// Acciones que vienen de fuera (o de la ventana flotante de escritorio)
+function gymLiveApply(acts) {
+  let reopen = null, restEnd;
+  _gymLiveBusy = true;
+  try {
+    const all = gymLogs();
+    acts.forEach(a => {
+      if (a.t === 'gym_set') {
+        const lg = all[a.date], r = gymRoutineById(a.rid);
+        if (!lg || !r || lg.routineId !== r.id) return;
+        const ex = r.exercises.find(e => e.id === a.ex);
+        if (!ex) return;
+        lg.ex = lg.ex || {};
+        const arr = lg.ex[ex.id] || (lg.ex[ex.id] = []);
+        while (arr.length <= a.i) arr.push({});
+        Object.assign(arr[a.i], gymLiveFill(r, lg, ex, a.i, a.date), { done: true });
+        if (!lg.start) lg.start = Date.now();
+        lg.ts = Date.now();
+        reopen = { rid: r.id, date: a.date };
+        if (a.rest != null) restEnd = +a.rest;
+      } else if (a.t === 'gym_rest') restEnd = +a.end;
+    });
+    saveGymLogs(all);
+  } catch (e) {} finally { _gymLiveBusy = false; }
+  if (restEnd !== undefined) {
+    if (restEnd > Date.now() + 500) {
+      if (_gymRest && !reopen) { _gymRest.total += Math.round((restEnd - _gymRest.end) / 1000); _gymRest.end = restEnd; gymRestPaint(); }
+      else { gymRestStart(Math.round((restEnd - Date.now()) / 1000)); if (_gymRest) _gymRest.end = restEnd; }
+    } else gymRestStop();
+  }
+  if (reopen && _gymWoOpen && _gymWoOpen.rid === reopen.rid && document.querySelector('.gym-wo')) { try { openGymWorkout(reopen.rid, reopen.date); } catch (e) {} }
+  gymLiveSoon();
+}
+// Botones de la ventana flotante de escritorio (y pruebas): igual que los nativos
+function gymLiveDo(a) {
+  const snap = gymLiveSnap();
+  if (!snap.active) return;
+  if (a === 'done') {
+    const it = snap.queue[0]; if (!it) return;
+    gymLiveApply([{ t: 'gym_set', date: snap.date, rid: snap.rid, ex: it.ex, i: it.i, rest: snap.queue.length > 1 && it.r ? Date.now() + it.r * 1000 : 0 }]);
+    if (navigator.vibrate) navigator.vibrate(15);
+  } else if (a === 'plus' && _gymRest) { _gymRest.end += 30000; _gymRest.total += 30; gymRestPaint(); gymLiveSoon(); }
+  else if (a === 'skip') gymRestStop();
+}
+window.gymLiveOpen = function () {
+  try { window.openTab('gym'); } catch (e) {}
+  const a = gymLiveLog(), r = a ? a.r : gymTodayRoutine();
+  if (r) setTimeout(() => { try { openGymWorkout(r.id, keyDate()); } catch (e) {} }, 250);
+};
+
+// ----- Ventana flotante -----
+function gymPipAvailable() {
+  if (window.Android && typeof window.Android.canPip === 'function') { try { return !!window.Android.canPip(); } catch (e) { return false; } }
+  return 'documentPictureInPicture' in window;
+}
+function gymPipCardHtml(snap, buttons) {
+  if (!snap || !snap.active) return `<div class="glp"><div class="glp-ex">${escapeHtml(_tt('Sin entrenamiento en curso'))}</div></div>`;
+  const it = snap.queue[0], L = snap.L, rest = snap.rest && snap.rest.end > Date.now() ? snap.rest : null;
+  const pct = Math.round(snap.done / Math.max(1, snap.total) * 100);
+  let left = '';
+  if (rest) { const sec = Math.max(0, Math.ceil((rest.end - Date.now()) / 1000)); left = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); }
+  return `<div class="glp${rest ? ' resting' : ''}">
+    <div class="glp-top"><span class="glp-name" translate="no">${escapeHtml(snap.name)}</span><span class="glp-n" translate="no">${snap.done}/${snap.total}</span></div>
+    <div class="glp-bar"><i style="width:${pct}%"></i></div>
+    ${it ? `${rest ? `<div class="glp-rest"><span>${escapeHtml(L.rest)}</span><b class="glp-t" translate="no">${left}</b></div><div class="glp-k">${escapeHtml(L.next)}</div>` : ''}
+    <div class="glp-ex" translate="no">${escapeHtml(it.n)}</div>
+    <div class="glp-s" translate="no">${escapeHtml(it.s)}${it.t ? ' · ' + escapeHtml(it.t) : ''}</div>
+    ${buttons ? `<div class="glp-btns">${rest ? `<button data-glp="plus">+30 s</button><button data-glp="skip">${escapeHtml(L.skip)}</button>` : ''}<button class="main" data-glp="done">✓ ${escapeHtml(L.done)}</button></div>` : ''}`
+    : `<div class="glp-ex">${escapeHtml(L.fin)}</div>`}
+  </div>`;
+}
+const GYM_PIP_CSS = `.glp{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#18181B;background:#fff;padding:14px 16px;box-sizing:border-box;height:100%;display:flex;flex-direction:column;gap:4px}
+.glp-top{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#52525B}.glp-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.glp-bar{height:4px;border-radius:2px;background:#E4E4E7;overflow:hidden;margin:2px 0 6px}.glp-bar i{display:block;height:100%;background:#18181B}
+.glp-rest{display:flex;align-items:baseline;justify-content:space-between;font-size:13px;color:#52525B}.glp-t{font-size:30px;font-weight:800;color:#18181B;font-variant-numeric:tabular-nums}
+.glp-k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#71717A;margin-top:2px}
+.glp-ex{font-size:19px;font-weight:800;line-height:1.2}.glp-s{font-size:14px;color:#3F3F46;font-variant-numeric:tabular-nums}
+.glp-btns{display:flex;gap:6px;margin-top:auto;padding-top:10px}.glp-btns button{font:inherit;font-size:14px;border:0;border-radius:10px;padding:10px 12px;background:#F4F4F5;color:#18181B;cursor:pointer}
+.glp-btns button.main{flex:1;background:#18181B;color:#fff;font-weight:700}
+@media (prefers-color-scheme:dark){.glp{background:#18181B;color:#F4F4F5}.glp-top,.glp-rest,.glp-s{color:#A1A1AA}.glp-t{color:#F4F4F5}.glp-bar{background:#3F3F46}.glp-bar i{background:#F4F4F5}.glp-btns button{background:#27272A;color:#F4F4F5}.glp-btns button.main{background:#F4F4F5;color:#18181B}}`;
+function gymPipPaint(snap) {
+  snap = snap || gymLiveSnap();
+  if (_gymPipWin && !_gymPipWin.closed) {
+    const box = _gymPipWin.document.getElementById('glp-root');
+    if (box) box.innerHTML = gymPipCardHtml(snap, true);
+  }
+  const av = document.getElementById('gym-pip-view');
+  if (av && _gymPipAndroid) av.innerHTML = gymPipCardHtml(snap, false);
+}
+async function gymPipOpen() {
+  if (window.Android && typeof window.Android.enterPip === 'function') { gymLivePush(); try { window.Android.enterPip(); } catch (e) {} return; }
+  if (!('documentPictureInPicture' in window)) return;
+  try {
+    if (_gymPipWin && !_gymPipWin.closed) { _gymPipWin.focus(); return; }
+    const w = await window.documentPictureInPicture.requestWindow({ width: 340, height: 240 });
+    _gymPipWin = w;
+    const st = w.document.createElement('style'); st.textContent = GYM_PIP_CSS + 'html,body{margin:0;height:100%}#glp-root{height:100%}';
+    w.document.head.appendChild(st);
+    w.document.title = 'Rutinal';
+    const root = w.document.createElement('div'); root.id = 'glp-root'; w.document.body.appendChild(root);
+    root.addEventListener('click', ev => { const b = ev.target.closest('[data-glp]'); if (b) gymLiveDo(b.dataset.glp); });
+    gymPipPaint();
+    clearInterval(_gymPipTick); _gymPipTick = setInterval(() => gymPipPaint(), 1000);
+    w.addEventListener('pagehide', () => { clearInterval(_gymPipTick); _gymPipTick = null; _gymPipWin = null; });
+  } catch (e) {}
+}
+// Android avisa al entrar/salir de la ventana flotante: se muestra solo la tarjeta
+window.gymPip = function (on) {
+  _gymPipAndroid = !!on;
+  let v = document.getElementById('gym-pip-view');
+  if (on) {
+    if (!v) { v = document.createElement('div'); v.id = 'gym-pip-view'; document.body.appendChild(v); }
+    document.documentElement.classList.add('pip-on');
+    gymPipPaint();
+    clearInterval(_gymPipTick); _gymPipTick = setInterval(() => { applyWidgetActions(); gymPipPaint(); }, 1000);
+  } else {
+    document.documentElement.classList.remove('pip-on');
+    if (v) v.remove();
+    clearInterval(_gymPipTick); _gymPipTick = null;
+  }
+};
+(() => { try { const st = document.createElement('style'); st.textContent = GYM_PIP_CSS; document.head.appendChild(st); } catch (e) {} })();
+setTimeout(gymLiveSoon, 1500);
 
 function gymShareLoads(r, dateKey) {
   const lg = gymLogs()[dateKey];

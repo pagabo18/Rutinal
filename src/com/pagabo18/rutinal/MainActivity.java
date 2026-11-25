@@ -25,6 +25,8 @@ public class MainActivity extends Activity {
     private static final int REQ_CAMERA_WEB = 4301;
     private static final int REQ_FILE_CHOOSER = 4302;
     private WebView webView;
+    /** Actividad que está en ventana flotante (picture-in-picture), o null. */
+    private static volatile MainActivity PIP = null;
     private android.webkit.PermissionRequest pendingWebPermissionRequest;
     private ValueCallback<Uri[]> pendingFileChooserCallback;
 
@@ -163,14 +165,15 @@ public class MainActivity extends Activity {
         try { tab = intent.getStringExtra("open_tab"); } catch (Exception ignored) {}
         if (tab == null) return;
         if (!"comida".equals(tab) && !"pomo".equals(tab)
-                && !"habitos".equals(tab) && !"hoy".equals(tab)) return;
+                && !"habitos".equals(tab) && !"hoy".equals(tab) && !"gym_live".equals(tab)) return;
 
         final String t = tab;
         Runnable deliver = new Runnable() {
             @Override public void run() {
                 try {
-                    webView.evaluateJavascript(
-                            "window.openTab && window.openTab('" + t + "')", null);
+                    webView.evaluateJavascript("gym_live".equals(t)
+                            ? "window.gymLiveOpen && window.gymLiveOpen()"
+                            : "window.openTab && window.openTab('" + t + "')", null);
                 } catch (Exception ignored) {}
             }
         };
@@ -297,6 +300,47 @@ public class MainActivity extends Activity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    // ---------- Ventana flotante del entrenamiento ----------
+
+    /** Entra en picture-in-picture con los botones del entrenamiento. */
+    public void enterGymPip() {
+        if (Build.VERSION.SDK_INT < 26) return;
+        try {
+            android.app.PictureInPictureParams p = GymLive.pipParams(this);
+            if (p != null) enterPictureInPictureMode(p);
+        } catch (Exception ignored) {}
+    }
+
+    /** Actualiza los botones de la ventana flotante (p.ej. al empezar o terminar un descanso). */
+    public static void refreshPip(final boolean poke) {
+        final MainActivity a = PIP;
+        if (a == null || Build.VERSION.SDK_INT < 26) return;
+        a.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    android.app.PictureInPictureParams p = GymLive.pipParams(a);
+                    if (p != null) a.setPictureInPictureParams(p);
+                    if (poke && a.webView != null) a.webView.evaluateJavascript("window.applyWidgetActions && window.applyWidgetActions()", null);
+                } catch (Exception ignored) {}
+            }
+        });
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(boolean inPip, android.content.res.Configuration cfg) {
+        super.onPictureInPictureModeChanged(inPip, cfg);
+        PIP = inPip ? this : null;
+        try {
+            if (webView != null) webView.evaluateJavascript("window.gymPip && window.gymPip(" + inPip + ")", null);
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (PIP == this) PIP = null;
+        super.onDestroy();
     }
 
     @Override

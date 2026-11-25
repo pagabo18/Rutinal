@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pagabo18.rutinal"
-    android:versionCode="20"
-    android:versionName="1.9.7">
+    android:versionCode="21"
+    android:versionName="1.9.8">
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
 
@@ -35,6 +35,8 @@
             android:exported="true"
             android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden|density"
             android:launchMode="singleTop"
+            android:supportsPictureInPicture="true"
+            android:resizeableActivity="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -167,6 +169,26 @@
                 android:resource="@xml/widget_food_info" />
         </receiver>
 
+        <!-- Entrenamiento en vivo: botones de la notificación, widget y ventana flotante -->
+        <receiver
+            android:name=".GymLiveReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.pagabo18.rutinal.GYM_LIVE" />
+            </intent-filter>
+        </receiver>
+        <!-- Widget "Entrenamiento" -->
+        <receiver
+            android:name=".GymWidgetProvider"
+            android:label="Entrenamiento"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_gym_info" />
+        </receiver>
         <!-- Widget "Pomodoro" -->
         <receiver
             android:name=".PomoWidgetProvider"

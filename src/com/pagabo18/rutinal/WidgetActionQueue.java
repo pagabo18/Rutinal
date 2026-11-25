@@ -35,6 +35,23 @@ public class WidgetActionQueue {
         }
     }
 
+    /** ¿Hay acciones del entrenamiento sin aplicar por el JS? Nunca lanza. */
+    public static boolean hasGym(Context ctx) {
+        if (ctx == null) return false;
+        synchronized (WidgetActionQueue.class) {
+            try {
+                SharedPreferences sp = ctx.getSharedPreferences(
+                        WebAppInterface.PREFS, Context.MODE_PRIVATE);
+                JSONArray arr = new JSONArray(sp.getString(K_ACTIONS, "[]"));
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject a = arr.optJSONObject(i);
+                    if (a != null && a.optString("t").startsWith("gym_")) return true;
+                }
+            } catch (Exception ignored) {}
+            return false;
+        }
+    }
+
     /**
      * Devuelve el array JSON como string y borra la clave atómicamente.
      * Devuelve "[]" si está vacía o si algo falla.

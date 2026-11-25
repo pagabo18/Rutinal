@@ -32,6 +32,39 @@ public class WebAppInterface {
         try { WidgetRefresher.refreshAll(ctx); } catch (Exception ignored) {}
     }
 
+    /**
+     * Entrenamiento en vivo (notificación en pantalla de bloqueo, widget y
+     * ventana flotante). Si hay botones tocados que el JS aún no aplicó, se
+     * ignora esta foto: el JS volverá a mandarla ya con esos cambios.
+     */
+    @JavascriptInterface
+    public void setGymLive(String json) {
+        if (json == null) return;
+        try {
+            if (WidgetActionQueue.hasGym(ctx)) return;
+            GymLive.setFromJs(ctx, json);
+        } catch (Exception ignored) {}
+    }
+
+    /** ¿Se puede abrir la ventana flotante (picture-in-picture)? */
+    @JavascriptInterface
+    public boolean canPip() {
+        try {
+            return android.os.Build.VERSION.SDK_INT >= 26 && activity != null
+                    && ctx.getPackageManager().hasSystemFeature(android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE);
+        } catch (Exception e) { return false; }
+    }
+
+    @JavascriptInterface
+    public void enterPip() {
+        if (activity == null) return;
+        try {
+            activity.runOnUiThread(new Runnable() {
+                @Override public void run() { activity.enterGymPip(); }
+            });
+        } catch (Exception ignored) {}
+    }
+
     @JavascriptInterface
     public void refreshAllWidgets() {
         WidgetRefresher.refreshAll(ctx);

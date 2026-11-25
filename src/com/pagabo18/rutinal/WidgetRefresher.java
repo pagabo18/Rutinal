@@ -13,5 +13,6 @@ public class WidgetRefresher {
         try { HabitsWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
         try { FoodWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
         try { PomoWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
+        try { GymWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
     }
 }

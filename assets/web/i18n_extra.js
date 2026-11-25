@@ -5731,6 +5731,71 @@ window.__I18N_EXTRA = {
    "pt-BR": "tempo",
    "fr": "temps"
   },
+  "Serie hecha": {
+   "en": "Set done",
+   "pt-BR": "Série feita",
+   "fr": "Série faite"
+  },
+  "¡Listo! Abre la app para terminar.": {
+   "en": "Done! Open the app to finish.",
+   "pt-BR": "Pronto! Abra o app para terminar.",
+   "fr": "Terminé ! Ouvre l'app pour finir."
+  },
+  "Sin rutina para hoy": {
+   "en": "No routine for today",
+   "pt-BR": "Sem rotina para hoje",
+   "fr": "Pas de routine aujourd'hui"
+  },
+  "Programa tus rutinas en la pestaña Gym.": {
+   "en": "Schedule your routines in the Gym tab.",
+   "pt-BR": "Programe suas rotinas na aba Gym.",
+   "fr": "Planifie tes routines dans l'onglet Gym."
+  },
+  "Abrir Gym": {
+   "en": "Open Gym",
+   "pt-BR": "Abrir Gym",
+   "fr": "Ouvrir Gym"
+  },
+  "Hecho hoy": {
+   "en": "Done today",
+   "pt-BR": "Feito hoje",
+   "fr": "Fait aujourd'hui"
+  },
+  "Sin entrenamiento en curso": {
+   "en": "No workout in progress",
+   "pt-BR": "Nenhum treino em andamento",
+   "fr": "Aucun entraînement en cours"
+  },
+  "Ventana flotante": {
+   "en": "Floating window",
+   "pt-BR": "Janela flutuante",
+   "fr": "Fenêtre flottante"
+  },
+  "Ve el ejercicio que sigue sobre otras apps": {
+   "en": "See your next exercise on top of other apps",
+   "pt-BR": "Veja o próximo exercício sobre outros apps",
+   "fr": "Vois l'exercice suivant par-dessus les autres apps"
+  },
+  "Disponible al marcar tu primera serie": {
+   "en": "Available once you check off your first set",
+   "pt-BR": "Disponível ao marcar sua primeira série",
+   "fr": "Disponible dès ta première série cochée"
+  },
+  "Entrenamiento fuera de la app": {
+   "en": "Workout outside the app",
+   "pt-BR": "Treino fora do app",
+   "fr": "Entraînement hors de l'app"
+  },
+  "Mientras entrenas, el ejercicio que sigue y el descanso aparecen en la pantalla de bloqueo, con botones para marcar la serie o saltar el descanso. También puedes agregar el widget «Entrenamiento» a tu pantalla de inicio.": {
+   "en": "While you train, your next exercise and rest timer show on the lock screen, with buttons to check off the set or skip the rest. You can also add the “Workout” widget to your home screen.",
+   "pt-BR": "Enquanto você treina, o próximo exercício e o descanso aparecem na tela de bloqueio, com botões para marcar a série ou pular o descanso. Você também pode adicionar o widget «Treino» à tela inicial.",
+   "fr": "Pendant l'entraînement, l'exercice suivant et le repos s'affichent sur l'écran de verrouillage, avec des boutons pour valider la série ou passer le repos. Tu peux aussi ajouter le widget « Entraînement » à ton écran d'accueil."
+  },
+  "Mostrar en la pantalla de bloqueo": {
+   "en": "Show on the lock screen",
+   "pt-BR": "Mostrar na tela de bloqueio",
+   "fr": "Afficher sur l'écran de verrouillage"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

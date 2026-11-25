@@ -4,4 +4,8 @@
     <color name="widgetText1">#F4F4F5</color>
     <color name="widgetText2">#A1A1AA</color>
     <color name="widgetAccent">#3B82F6</color>
+    <color name="widgetBtnBg">#27272A</color>
+    <color name="widgetBar">#F4F4F5</color>
+    <color name="widgetBarBg">#3F3F46</color>
+    <color name="widgetOnMain">#18181B</color>
 </resources>
