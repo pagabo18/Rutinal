@@ -1204,10 +1204,16 @@ function cvFill(it, v) {
   });
   return out;
 }
-function cvItems(r, kind) { return Array.isArray(r && r[kind]) ? r[kind] : []; }
-function cvAll(r) { return cvItems(r, 'warmup').map(it => ['warmup', it]).concat(cvItems(r, 'cardio').map(it => ['cardio', it])); }
+// Con `lg` (registro del día) incluye lo que se agregó ese día desde el entrenamiento (lg.cvx),
+// además de lo que trae la rutina.
+function cvItems(r, kind, lg) {
+  const base = Array.isArray(r && r[kind]) ? r[kind] : [];
+  const extra = lg && Array.isArray(lg.cvx) ? lg.cvx.filter(x => x && x.kind === kind) : [];
+  return extra.length ? base.concat(extra) : base;
+}
+function cvAll(r, lg) { return cvItems(r, 'warmup', lg).map(it => ['warmup', it]).concat(cvItems(r, 'cardio', lg).map(it => ['cardio', it])); }
 function cvMinutes(r, lg) {
-  return cvAll(r).reduce((a, [, it]) => { const v = ((lg && lg.cv) || {})[it.id]; return a + (v && v.done ? (parseFloat(String(v.time || '').replace(',', '.')) || 0) : 0); }, 0);
+  return cvAll(r, lg).reduce((a, [, it]) => { const v = ((lg && lg.cv) || {})[it.id]; return a + (v && v.done ? (parseFloat(String(v.time || '').replace(',', '.')) || 0) : 0); }, 0);
 }
 // Editor de la rutina
 function cvEditorHtml(r, kind) {
@@ -1244,18 +1250,29 @@ function cvEditorSync(root, r) {
   });
 }
 // Entrenamiento
-function cvWorkoutHtml(r, lg, kind) {
-  const list = cvItems(r, kind); if (!list.length) return '';
-  const L = (lg && lg.cv) || {}, done = list.filter(it => (L[it.id] || {}).done).length;
+function cvPickerHtml(kind) {
+  return `<div class="cv-pick" data-cv-pickbox="${kind}"><div class="cv-pick-k">${kind === 'warmup' ? '¿Qué vas a usar para calentar?' : '¿Qué máquina o ejercicio de cardio?'}</div>
+    <div class="cv-pick-b">${CV_MACHINES.map(m => `<button class="chip" data-cv-new="${kind}:${m.id}">${_cvE(m.n)}</button>`).join('')}</div>
+    <button class="cv-pick-x" data-cv-pick="">Cancelar</button></div>`;
+}
+function cvWorkoutHtml(r, lg, kind, pick) {
+  const list = cvItems(r, kind, lg), L = (lg && lg.cv) || {}, picking = pick === kind;
+  const addLbl = kind === 'warmup' ? 'Calentamiento' : 'Cardio';
+  if (!list.length) return picking ? `<div class="cv-card">${cvPickerHtml(kind)}</div>`
+    : `<button class="cv-addrow" data-cv-pick="${kind}"><span class="cv-addrow-ic">+</span><span><b>${addLbl}</b><small>${kind === 'warmup' ? 'Caminadora, elíptica, bici, movilidad…' : 'Máquina, tiempo, velocidad, resistencia…'}</small></span></button>`;
+  const done = list.filter(it => (L[it.id] || {}).done).length;
   return `<div class="cv-card" data-cv-kind="${kind}"><div class="cv-card-h"><span>${CV_KIND[kind]}</span><span class="cv-n" translate="no">${done}/${list.length}</span></div>
     ${list.map(it => {
-      const v = L[it.id] || {}, m = cvM(it), tgt = cvText(it, it.t, true);
+      const v = L[it.id] || {}, m = cvM(it), tgt = cvText(it, it.t, true), extra = !!it.kind;
       return `<div class="cv-it${v.done ? ' done' : ''}" data-cv-it="${_cvE(it.id)}">
         <div class="cv-it-h"><div class="cv-it-b"><b translate="no">${_cvE(cvName(it))}</b>${tgt ? `<small translate="no">${tgt}</small>` : ''}${it.note ? `<small class="cv-note">${_cvE(it.note)}</small>` : ''}</div>
           <button class="gym-check cv-check" data-cv-done="${_cvE(it.id)}" aria-label="Hecho">✓</button></div>
+        ${extra && m.free ? `<input class="field-input cv-x-name" data-cv-name="${_cvE(it.id)}" value="${_cvE(it.name || '')}" placeholder="¿Qué ejercicio? Ej. movilidad de cadera">` : ''}
         <div class="cv-it-f">${m.f.map(f => `<label><span>${_cvE(cvLabel(it, f))}</span><span class="cv-inw"><input class="gym-in" data-cv-in="${_cvE(it.id)}" data-f="${f}" inputmode="decimal" value="${_cvE(v[f] || '')}" placeholder="${_cvE((it.t || {})[f] || '–')}">${cvUnit(it, f) ? `<i translate="no">${_cvE(cvUnit(it, f))}</i>` : ''}</span></label>`).join('')}</div>
+        ${extra ? `<div class="cv-x-row">${m.f.includes('speed') ? `<button class="cv-x-btn" data-cv-su="${_cvE(it.id)}">${it.su === 'mph' ? 'Cambiar a km/h' : 'Cambiar a mph'}</button>` : ''}<button class="cv-x-btn" data-cv-x="${_cvE(it.id)}">Quitar</button></div>` : ''}
       </div>`;
-    }).join('')}</div>`;
+    }).join('')}
+    ${picking ? cvPickerHtml(kind) : `<button class="cv-more" data-cv-pick="${kind}">+ Agregar ${kind === 'warmup' ? 'calentamiento' : 'cardio'}</button>`}</div>`;
 }
 
 // ============================================================

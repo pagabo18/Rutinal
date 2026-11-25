@@ -6071,6 +6071,41 @@ window.__I18N_EXTRA = {
    "pt-BR": "Ver a foto em tamanho grande",
    "fr": "Voir la photo en grand"
   },
+  "¿Qué vas a usar para calentar?": {
+   "en": "What will you use to warm up?",
+   "pt-BR": "O que você vai usar para aquecer?",
+   "fr": "Qu'utiliseras-tu pour t'échauffer ?"
+  },
+  "¿Qué máquina o ejercicio de cardio?": {
+   "en": "Which cardio machine or exercise?",
+   "pt-BR": "Qual máquina ou exercício de cardio?",
+   "fr": "Quelle machine ou exercice de cardio ?"
+  },
+  "Caminadora, elíptica, bici, movilidad…": {
+   "en": "Treadmill, elliptical, bike, mobility…",
+   "pt-BR": "Esteira, elíptico, bike, mobilidade…",
+   "fr": "Tapis, elliptique, vélo, mobilité…"
+  },
+  "Máquina, tiempo, velocidad, resistencia…": {
+   "en": "Machine, time, speed, resistance…",
+   "pt-BR": "Máquina, tempo, velocidade, resistência…",
+   "fr": "Machine, temps, vitesse, résistance…"
+  },
+  "Cambiar a mph": {
+   "en": "Switch to mph",
+   "pt-BR": "Mudar para mph",
+   "fr": "Passer en mph"
+  },
+  "Cambiar a km/h": {
+   "en": "Switch to km/h",
+   "pt-BR": "Mudar para km/h",
+   "fr": "Passer en km/h"
+  },
+  "¿Qué ejercicio? Ej. movilidad de cadera": {
+   "en": "Which exercise? E.g. hip mobility",
+   "pt-BR": "Qual exercício? Ex. mobilidade de quadril",
+   "fr": "Quel exercice ? Ex. mobilité de hanche"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

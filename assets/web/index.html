@@ -2932,6 +2932,16 @@
   .gym-ex-hero img { display: block; width: 100%; height: 210px; object-fit: contain; background: var(--surface-2); }
   .gym-hero-zoom { position: absolute; right: 8px; bottom: 8px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: rgba(9, 9, 11, .72); color: #fff; }
   @media (min-width: 700px) { .gym-ex-hero img { height: 260px; } }
+
+  .cv-addrow { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 12px; padding: 12px 14px; border: 1px dashed var(--border-strong); border-radius: 16px; background: transparent; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+  .cv-addrow-ic { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); font-size: 20px; font-weight: 600; flex: 0 0 32px; }
+  .cv-addrow > span:last-child { display: flex; flex-direction: column; } .cv-addrow b { font-size: 15px; } .cv-addrow small { font-size: 12px; color: var(--text-3); }
+  .cv-pick { padding: 4px 0; } .cv-pick-k { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .cv-pick-b { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cv-pick-x, .cv-x-btn { border: 0; background: none; color: var(--text-3); font: inherit; font-size: 12px; text-decoration: underline; padding: 8px 0 0; cursor: pointer; }
+  .cv-x-row { display: flex; gap: 14px; justify-content: flex-end; }
+  .cv-more { width: 100%; margin-top: 6px; padding: 10px; border: 1px dashed var(--border-strong); border-radius: 12px; background: transparent; color: var(--text-2); font: inherit; font-size: 14px; cursor: pointer; }
+  .cv-x-name { margin-top: 8px; padding: 8px 10px; font-size: 15px; }
 </style>
 </head>
 <body>
@@ -11004,7 +11014,7 @@ async function spOpenClient(l) {
         const ef = (lg.exFeel && lg.exFeel[exId]) || {};
         lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}`);
       });
-      cvAll(rt).forEach(([kind, it]) => { const v = (lg.cv || {})[it.id]; if (v && v.done) lines.push(`<b>${CV_KIND[kind]}</b>: <span translate="no">${escapeHtml(cvName(it))} · ${cvText(it, v, true)}</span>`); });
+      cvAll(rt, lg).forEach(([kind, it]) => { const v = (lg.cv || {})[it.id]; if (v && v.done) lines.push(`<b>${CV_KIND[kind]}</b>: <span translate="no">${escapeHtml(cvName(it))} · ${cvText(it, v, true)}</span>`); });
       if (!lines.length && !lg.done) return;
       const fl = lg.feel || {};
       if (d >= d7) { if (lg.done) n7++; if (fl.pain != null && (pmax == null || fl.pain > pmax)) pmax = fl.pain; }
@@ -14394,7 +14404,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
       <div class="gym-wo-bar">
         ${r.exercises.length ? `<div class="gym-wo-prog"><div class="gym-prog"><div style="width:${Math.min(100, Math.round(doneSets / Math.max(1, totalSets) * 100))}%"></div></div>
           <span><b>${doneSets}</b>/${totalSets} <span>series</span></span></div>` : ''}
-        ${cvAll(r).length ? `<div class="cv-prog" translate="no">${cvAll(r).filter(([, it]) => ((lg.cv || {})[it.id] || {}).done).length}/${cvAll(r).length} <span>calentamiento y cardio</span></div>` : ''}
+        ${cvAll(r, lg).length ? `<div class="cv-prog" translate="no">${cvAll(r, lg).filter(([, it]) => ((lg.cv || {})[it.id] || {}).done).length}/${cvAll(r, lg).length} <span>calentamiento y cardio</span></div>` : ''}
         <div class="gym-rest" id="gym-rest" style="display:none"></div>
       </div>
       <div class="gym-wo-top">
@@ -14403,9 +14413,9 @@ function openGymWorkout(routineId, dateKey, focusId) {
         <div class="gym-chips">${freq ? chip('Frecuencia', freq + '×/sem') : ''}${sportR || !r.exercises.length ? '' : chip('Descanso', '2–3 min')}${sportR ? '' : chip('Tempo', r.tempo)}</div>
         ${info ? `<details class="gym-info"><summary>Indicaciones del coach</summary>${info}</details>` : ''}
       </div>
-      ${cvWorkoutHtml(r, lg, 'warmup')}
+      ${dateKey === keyDate() || cvItems(r, 'warmup', lg).length ? cvWorkoutHtml(r, lg, 'warmup', cvPick) : ''}
       ${body}
-      ${cvWorkoutHtml(r, lg, 'cardio')}
+      ${dateKey === keyDate() || cvItems(r, 'cardio', lg).length ? cvWorkoutHtml(r, lg, 'cardio', cvPick) : ''}
       ${r.exercises.length ? `<button class="gym-resti" id="gym-rest-idle">
         <span class="gym-resti-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="7.5"/><path d="M12 10v4l2.5 2M9.5 2.5h5M12 2.5v4"/></svg></span>
         <span class="gym-resti-b"><b>Temporizador de descanso</b><small>Toca para iniciar el descanso</small></span>
@@ -14424,7 +14434,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
   };
 
   const persist = () => { const all = gymLogs(); lg.ts = Date.now(); all[dateKey] = lg; saveGymLogs(all); };
-  let tagOpen = null, painAsk = null, painNext;
+  let tagOpen = null, painAsk = null, painNext, cvPick = null;
   const setVal = (exId, i, f, v) => {
     const arr = lg.ex[exId] || (lg.ex[exId] = []);
     while (arr.length <= i) arr.push({});
@@ -14465,8 +14475,29 @@ function openGymWorkout(routineId, dateKey, focusId) {
       if (v) o[inp.dataset.f] = v; else delete o[inp.dataset.f];
       persist();
     }));
+    sb.querySelectorAll('[data-cv-pick]').forEach(b => b.addEventListener('click', () => { cvPick = b.dataset.cvPick || null; draw(); }));
+    sb.querySelectorAll('[data-cv-new]').forEach(b => b.addEventListener('click', () => {
+      const [kind, m] = b.dataset.cvNew.split(':');
+      lg.cvx = lg.cvx || [];
+      lg.cvx.push({ id: uid(), kind, m, t: {} });
+      cvPick = null; persist(); draw();
+    }));
+    sb.querySelectorAll('[data-cv-x]').forEach(b => b.addEventListener('click', () => {
+      lg.cvx = (lg.cvx || []).filter(x => x.id !== b.dataset.cvX);
+      if (lg.cv) delete lg.cv[b.dataset.cvX];
+      persist(); draw();
+    }));
+    sb.querySelectorAll('[data-cv-su]').forEach(b => b.addEventListener('click', () => {
+      const it = (lg.cvx || []).find(x => x.id === b.dataset.cvSu); if (!it) return;
+      if (it.su === 'mph') delete it.su; else it.su = 'mph';
+      persist(); draw();
+    }));
+    sb.querySelectorAll('[data-cv-name]').forEach(inp => inp.addEventListener('input', () => {
+      const it = (lg.cvx || []).find(x => x.id === inp.dataset.cvName); if (!it) return;
+      it.name = inp.value.trim(); persist();
+    }));
     sb.querySelectorAll('[data-cv-done]').forEach(b => b.addEventListener('click', () => {
-      const it = cvAll(r).map(x => x[1]).find(x => x.id === b.dataset.cvDone); if (!it) return;
+      const it = cvAll(r, lg).map(x => x[1]).find(x => x.id === b.dataset.cvDone); if (!it) return;
       lg.cv = lg.cv || {};
       const o = lg.cv[it.id] || {}, was = !!o.done;
       lg.cv[it.id] = was ? Object.assign(o, { done: false }) : Object.assign(cvFill(it, o), { done: true });
@@ -14673,7 +14704,7 @@ function gymLiveQueue(r, lg, dk) {
   r.exercises.forEach(ex => { const g = groups[groups.length - 1]; if (g && ex.circuit != null && g.circuit === ex.circuit) g.items.push(ex); else groups.push({ circuit: ex.circuit, items: [ex] }); });
   const m = r.meta || {}, restDef = Math.min(GYM_REST_MAX, Math.max(GYM_REST_MIN, gymRestSeconds(m.descanso) || 150));
   const sport = gymIsSport(r), U = gymUnit(), q = [], tot = ex => Math.max(1, gymTotalSets(ex), ((lg.ex || {})[ex.id] || []).length);
-  const cvq = kind => cvItems(r, kind).forEach(it => { if (!((lg.cv || {})[it.id] || {}).done) q.push({ ex: 'cv:' + it.id, i: 0, n: cvName(it), s: _tt(CV_KIND[kind]), t: cvText(it, it.t), r: 0 }); });
+  const cvq = kind => cvItems(r, kind, lg).forEach(it => { if (!((lg.cv || {})[it.id] || {}).done) q.push({ ex: 'cv:' + it.id, i: 0, n: cvName(it), s: _tt(CV_KIND[kind]), t: cvText(it, it.t), r: 0 }); });
   cvq('warmup');
   groups.forEach(g => {
     const rounds = Math.max(...g.items.map(tot));
@@ -14698,7 +14729,7 @@ function gymLiveSnap() {
   const a = gymLiveLog();
   if (!a) return { v: 1, active: false, on: gymLiveOn(), week, L };
   const q = gymLiveQueue(a.r, a.lg, a.dk);
-  const cvA = cvAll(a.r);
+  const cvA = cvAll(a.r, a.lg);
   const total = a.r.exercises.reduce((n, ex) => n + Math.max(1, gymTotalSets(ex), ((a.lg.ex || {})[ex.id] || []).length), 0) + cvA.length;
   const done = a.r.exercises.reduce((n, ex) => n + ((a.lg.ex || {})[ex.id] || []).filter(x => x && x.done).length, 0) + cvA.filter(([, it]) => ((a.lg.cv || {})[it.id] || {}).done).length;
   const rest = _gymRest && _gymRest.end > Date.now() ? { end: _gymRest.end, total: _gymRest.total } : null;
@@ -14728,7 +14759,7 @@ function gymLiveApply(acts) {
         const lg = all[a.date], r = gymRoutineById(a.rid);
         if (!lg || !r || lg.routineId !== r.id) return;
         if (String(a.ex).startsWith('cv:')) {
-          const it = cvAll(r).map(x => x[1]).find(x => 'cv:' + x.id === a.ex); if (!it) return;
+          const it = cvAll(r, lg).map(x => x[1]).find(x => 'cv:' + x.id === a.ex); if (!it) return;
           lg.cv = lg.cv || {}; lg.cv[it.id] = Object.assign(cvFill(it, lg.cv[it.id]), { done: true });
           if (!lg.start) lg.start = Date.now();
           lg.ts = Date.now(); reopen = { rid: r.id, date: a.date };
@@ -14863,7 +14894,7 @@ function gymShareLoads(r, dateKey) {
     const nm = sw ? `${sw.name} (${t('en lugar de')} ${ex.name})` : ex.name;
     lines.push(`${nm}: ${sets.map(s => `${gymDispW(s.kg) || '?'} ${gymUnit()} × ${s.reps || '?'}${s.pain > 0 ? ` (${t('dolor')} ${s.pain}/10)` : ''}`).join(', ')}`);
   });
-  cvAll(r).forEach(([kind, it]) => { const v = lg && lg.cv && lg.cv[it.id]; if (v && v.done) { any = true; lines.push(`${t(CV_KIND[kind])} · ${cvName(it)}: ${cvText(it, v)}`); } });
+  cvAll(r, lg).forEach(([kind, it]) => { const v = lg && lg.cv && lg.cv[it.id]; if (v && v.done) { any = true; lines.push(`${t(CV_KIND[kind])} · ${cvName(it)}: ${cvText(it, v)}`); } });
   if (!any) { alert(t('Todavía no registras cargas en este entrenamiento.')); return; }
   const fe = (lg && lg.feel) || {};
   r.exercises.forEach(ex => { const f = lg.exFeel && lg.exFeel[ex.id]; if (f && (f.pain != null || f.rpe != null)) lines.push(`  ${ex.name}: ${f.pain != null ? t('Dolor') + ' ' + f.pain + '/10' : ''}${f.pain != null && f.rpe != null ? ', ' : ''}${f.rpe != null ? 'RPE ' + f.rpe : ''}`); });
