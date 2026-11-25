@@ -297,4 +297,6 @@ Cada evaluación se compara con la anterior, hay gráficas de evolución y se pu
 
 **Tiempo real y vigencia.** La app abre un canal de Supabase Realtime (WebSocket, sin librería; `rtStart` en `pro.js`) para `notes` y `assignments`: mensajes y asignaciones llegan en segundos; la revisión periódica queda de respaldo. Al asignar se elige vigencia (permanente, horas, días o fecha); `assignments.expires_at` y la política RLS del atleta ocultan lo vencido, y la app retira la rutina vencida aunque esté sin conexión. SQL en `supabase/rutinal_realtime_expiry.sql`.
 
+**Plantillas de rutina y asistente.** En Gym → «Plantillas» (y en Plantillas del especialista): divisiones prehechas (cuerpo completo, AB torso/pierna, Push Pull Legs de 3 y 6 días, Arnold, Weider, PHUL, 5×5, glúteo, casa) y un asistente por reglas que arma la semana según objetivo, días, nivel, equipo, tiempo, enfoque y zonas a cuidar. Usa un catálogo de ejercicios por patrón de movimiento con su imagen (`RX_EX` en `pro.js`), prescribe series, reps, RIR y descanso por objetivo, permite cambiar cada ejercicio (⇄) y programa la semana. No usa IA: la versión con IA necesita una llave de API guardada como secreto en Supabase.
+
 **Personalizar.** En Ajustes se apagan las secciones que no se usan y se activa «Solo palomear ejercicios». Preferencias en `app_prefs`.

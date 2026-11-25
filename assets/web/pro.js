@@ -808,6 +808,239 @@ function openSportRoutines() {
 }
 
 // ============================================================
+// PLANTILLAS DE RUTINA Y ASISTENTE
+// Catálogo de ejercicios por patrón de movimiento (con su imagen de free-exercise-db), divisiones clásicas
+// (cuerpo completo, torso/pierna «AB», push/pull/legs, Arnold, Weider, PHUL, 5×5, glúteo) y un asistente
+// por reglas que arma la semana según objetivo, días, nivel, equipo, tiempo, enfoque y molestias.
+// Equipo: G gimnasio · D mancuernas y banco · B peso corporal · K bandas · P barra de dominadas o paralelas. Cuidar: hombro, rodilla, lumbar.
+// ============================================================
+const RX_EX = {
+  squat: [['Sentadilla con barra', 'Barbell_Squat', 'G', 'rodilla lumbar'], ['Prensa de pierna', 'Leg_Press', 'G', ''], ['Sentadilla hack', 'Hack_Squat', 'G', 'rodilla'], ['Sentadilla goblet', 'Goblet_Squat', 'D', ''], ['Sentadilla con mancuernas', 'Dumbbell_Squat', 'D', ''], ['Sentadilla libre', 'Bodyweight_Squat', 'B', '']],
+  hinge: [['Peso muerto rumano', 'Romanian_Deadlift', 'G', 'lumbar'], ['Peso muerto convencional', 'Barbell_Deadlift', 'G', 'lumbar'], ['Peso muerto rumano con mancuernas', 'Stiff-Legged_Dumbbell_Deadlift', 'D', 'lumbar'], ['Hiperextensiones', 'Hyperextensions_Back_Extensions', 'G', ''], ['Buenos días con banda', 'Band_Good_Morning', 'K', 'lumbar'], ['Puente de glúteo a una pierna', 'Single_Leg_Glute_Bridge', 'B', '']],
+  lunge: [['Sentadilla búlgara', 'Split_Squat_with_Dumbbells', 'D', 'rodilla'], ['Zancadas con mancuernas', 'Dumbbell_Lunges', 'D', 'rodilla'], ['Subidas al cajón', 'Dumbbell_Step_Ups', 'D', ''], ['Zancada caminando', 'Bodyweight_Walking_Lunge', 'B', 'rodilla'], ['Split squat', 'Split_Squats', 'B', 'rodilla']],
+  glute: [['Hip thrust con barra', 'Barbell_Hip_Thrust', 'G', ''], ['Puente de glúteo con barra', 'Barbell_Glute_Bridge', 'G', ''], ['Pull-through en polea', 'Pull_Through', 'G', 'lumbar'], ['Puente de glúteo', 'Butt_Lift_Bridge', 'B', '']],
+  abduct: [['Abducción en máquina', 'Thigh_Abductor', 'G', ''], ['Patada de glúteo en polea', 'One-Legged_Cable_Kickback', 'G', ''], ['Caminata lateral con banda', 'Monster_Walk', 'K', ''], ['Patada de glúteo', 'Glute_Kickback', 'B', '']],
+  quad: [['Extensión de cuádriceps', 'Leg_Extensions', 'G', 'rodilla'], ['Sentadilla en Smith', 'Smith_Machine_Squat', 'G', 'rodilla']],
+  ham: [['Curl femoral acostado', 'Lying_Leg_Curls', 'G', ''], ['Curl femoral sentado', 'Seated_Leg_Curl', 'G', ''], ['Curl nórdico', 'Natural_Glute_Ham_Raise', 'B', 'rodilla']],
+  calf: [['Pantorrilla de pie', 'Standing_Calf_Raises', 'G', ''], ['Pantorrilla sentado', 'Seated_Calf_Raise', 'G', ''], ['Pantorrilla con mancuerna', 'Calf_Raise_On_A_Dumbbell', 'D', ''], ['Pantorrilla con banda', 'Calf_Raises_-_With_Bands', 'K', '']],
+  hpush: [['Press banca con barra', 'Barbell_Bench_Press_-_Medium_Grip', 'G', 'hombro'], ['Press banca con mancuernas', 'Dumbbell_Bench_Press', 'D', ''], ['Press de pecho en máquina', 'Machine_Bench_Press', 'G', ''], ['Fondos para pecho', 'Dips_-_Chest_Version', 'P', 'hombro'], ['Lagartijas', 'Pushups', 'B', ''], ['Press de piso con mancuernas', 'Dumbbell_Floor_Press', 'D', ''], ['Lagartijas inclinadas', 'Incline_Push-Up', 'B', '']],
+  ipush: [['Press inclinado con mancuernas', 'Incline_Dumbbell_Press', 'D', ''], ['Press inclinado con barra', 'Barbell_Incline_Bench_Press_-_Medium_Grip', 'G', 'hombro'], ['Press inclinado en máquina', 'Leverage_Incline_Chest_Press', 'G', ''], ['Lagartijas declinadas', 'Decline_Push-Up', 'B', 'hombro']],
+  vpush: [['Press militar con barra', 'Standing_Military_Press', 'G', 'hombro lumbar'], ['Press de hombro con mancuernas', 'Dumbbell_Shoulder_Press', 'D', 'hombro'], ['Press de hombro en máquina', 'Machine_Shoulder_Military_Press', 'G', 'hombro'], ['Press Arnold', 'Arnold_Dumbbell_Press', 'D', 'hombro']],
+  fly: [['Cruce de poleas', 'Cable_Crossover', 'G', ''], ['Aperturas en máquina', 'Butterfly', 'G', ''], ['Aperturas con mancuernas', 'Dumbbell_Flyes', 'D', 'hombro'], ['Aperturas inclinadas', 'Incline_Dumbbell_Flyes', 'D', 'hombro']],
+  vpull: [['Jalón al pecho', 'Wide-Grip_Lat_Pulldown', 'G', ''], ['Dominadas', 'Pullups', 'P', 'hombro'], ['Jalón agarre cerrado', 'Close-Grip_Front_Lat_Pulldown', 'G', ''], ['Dominadas supinas', 'Chin-Up', 'P', 'hombro'], ['Dominadas asistidas con banda', 'Band_Assisted_Pull-Up', 'P', ''], ['Jalón con banda', '', 'K', '']],
+  hpull: [['Remo sentado en polea', 'Seated_Cable_Rows', 'G', ''], ['Remo con barra', 'Bent_Over_Barbell_Row', 'G', 'lumbar'], ['Remo con mancuerna a una mano', 'One-Arm_Dumbbell_Row', 'D', ''], ['Remo en máquina', 'Leverage_Iso_Row', 'G', ''], ['Remo en T', 'T-Bar_Row_with_Handle', 'G', 'lumbar'], ['Remo invertido', 'Inverted_Row', 'P', ''], ['Remo con banda', '', 'K', '']],
+  pullover: [['Pullover en polea', 'Straight-Arm_Pulldown', 'G', '']],
+  lat: [['Elevaciones laterales', 'Side_Lateral_Raise', 'D', ''], ['Elevaciones laterales en polea', 'Cable_Seated_Lateral_Raise', 'G', ''], ['Elevaciones laterales con banda', 'Lateral_Raise_-_With_Bands', 'K', '']],
+  rear: [['Face pull', 'Face_Pull', 'G', ''], ['Pájaros con mancuernas', 'Reverse_Flyes', 'D', ''], ['Pájaros en polea', 'Cable_Rear_Delt_Fly', 'G', ''], ['Separación con banda', 'Band_Pull_Apart', 'K', '']],
+  bi: [['Curl con barra', 'Barbell_Curl', 'G', ''], ['Curl con mancuernas', 'Dumbbell_Bicep_Curl', 'D', ''], ['Curl martillo', 'Hammer_Curls', 'D', ''], ['Curl predicador', 'Machine_Preacher_Curls', 'G', ''], ['Curl inclinado', 'Incline_Dumbbell_Curl', 'D', '']],
+  tri: [['Extensión de tríceps en polea', 'Triceps_Pushdown_-_Rope_Attachment', 'G', ''], ['Extensión sobre la cabeza en polea', 'Cable_Rope_Overhead_Triceps_Extension', 'G', 'hombro'], ['Rompecráneos', 'EZ-Bar_Skullcrusher', 'G', ''], ['Extensión de tríceps con mancuerna', 'Standing_Dumbbell_Triceps_Extension', 'D', 'hombro'], ['Patada de tríceps', 'Tricep_Dumbbell_Kickback', 'D', ''], ['Fondos en banco', 'Bench_Dips', 'B', 'hombro'], ['Lagartijas cerradas', 'Pushups_Close_and_Wide_Hand_Positions', 'B', '']],
+  core: [['Plancha', 'Plank', 'B', ''], ['Crunch en polea', 'Cable_Crunch', 'G', ''], ['Elevación de piernas colgado', 'Hanging_Leg_Raise', 'P', ''], ['Pallof press', 'Pallof_Press', 'G', ''], ['Dead bug', 'Dead_Bug', 'B', ''], ['Rueda abdominal', 'Ab_Roller', 'B', 'lumbar']],
+};
+const RX_COMPOUND = { squat: 1, hinge: 1, lunge: 1, glute: 1, hpush: 1, ipush: 1, vpush: 1, vpull: 1, hpull: 1 };
+// Días tipo: patrones en orden de prioridad (si falta tiempo se cortan los últimos). "pat:2" = otra opción del mismo patrón.
+const RX_DAYS = {
+  fullA: ['Cuerpo completo A', ['squat', 'hpush', 'hpull', 'hinge', 'vpush', 'core', 'bi', 'tri', 'calf']],
+  fullB: ['Cuerpo completo B', ['hinge', 'ipush', 'vpull', 'lunge', 'lat', 'core', 'tri', 'bi', 'calf']],
+  fullC: ['Cuerpo completo C', ['lunge', 'vpush', 'hpull:2', 'glute', 'hpush:2', 'rear', 'core:2']],
+  upperA: ['Torso A', ['hpush', 'hpull', 'vpush', 'vpull', 'lat', 'tri', 'bi', 'rear']],
+  upperB: ['Torso B', ['ipush', 'vpull:2', 'hpull:2', 'fly', 'lat', 'bi:2', 'tri:2', 'rear:2']],
+  lowerA: ['Pierna A', ['squat', 'hinge', 'lunge', 'ham', 'calf', 'core', 'quad']],
+  lowerB: ['Pierna B', ['hinge:2', 'glute', 'lunge:2', 'quad', 'ham:2', 'calf:2', 'core:2']],
+  push: ['Push (empuje)', ['hpush', 'ipush', 'vpush', 'lat', 'fly', 'tri', 'tri:2', 'core']],
+  pull: ['Pull (tracción)', ['vpull', 'hpull', 'hpull:2', 'rear', 'pullover', 'bi', 'bi:2', 'core:2']],
+  legs: ['Legs (pierna)', ['squat', 'hinge', 'lunge', 'quad', 'ham', 'calf', 'core']],
+  push2: ['Push B (empuje)', ['ipush:2', 'vpush:2', 'hpush:2', 'lat:2', 'fly:2', 'tri:3', 'tri:4']],
+  pull2: ['Pull B (tracción)', ['hpull:3', 'vpull:2', 'hpull:4', 'rear:2', 'pullover', 'bi:3', 'bi:4']],
+  legs2: ['Legs B (pierna)', ['hinge:2', 'squat:2', 'glute', 'lunge:2', 'ham:2', 'calf:2', 'core:2']],
+  chestBack: ['Pecho y espalda', ['hpush', 'hpull', 'ipush', 'vpull', 'fly', 'pullover', 'core']],
+  shArms: ['Hombro y brazo', ['vpush', 'lat', 'rear', 'bi', 'tri', 'bi:2', 'tri:2']],
+  chest: ['Pecho', ['hpush', 'ipush', 'fly', 'hpush:2', 'fly:2', 'core']],
+  back: ['Espalda', ['vpull', 'hpull', 'hpull:2', 'pullover', 'rear', 'core:2']],
+  shoulders: ['Hombro', ['vpush', 'lat', 'rear', 'lat:2', 'vpush:2', 'core']],
+  arms: ['Brazo', ['bi', 'tri', 'bi:2', 'tri:2', 'bi:3', 'tri:3', 'core:2']],
+  str5A: ['Fuerza A', ['squat', 'hpush', 'hpull:2', 'core']],
+  str5B: ['Fuerza B', ['squat', 'vpush', 'hinge:2', 'core:2']],
+  gluteA: ['Glúteo y pierna A', ['glute', 'squat', 'hinge', 'abduct', 'lunge', 'calf']],
+  gluteB: ['Glúteo y pierna B', ['hinge', 'glute:2', 'lunge:2', 'ham', 'abduct:2', 'core']],
+  upperG: ['Torso', ['hpush:2', 'vpull', 'hpull:2', 'vpush:2', 'lat', 'core']],
+};
+const RX_SPLITS = [
+  { id: 'full3', short: 'Full body', name: 'Cuerpo completo · 3 días', desc: 'Ideal para empezar o con poco tiempo. Cada sesión toca todo el cuerpo.', level: 'Principiante', days: ['fullA', 'fullB', 'fullC'], dows: [1, 3, 5], goal: 'hip' },
+  { id: 'ab', short: 'AB', name: 'AB · Torso / Pierna · 4 días', desc: 'Alterna torso y pierna. Cada músculo dos veces por semana.', level: 'Intermedio', days: ['upperA', 'lowerA', 'upperB', 'lowerB'], dows: [1, 2, 4, 5], goal: 'hip' },
+  { id: 'ppl3', short: 'PPL', name: 'Push Pull Legs · 3 días', desc: 'Empuje, tracción y pierna. Una vez por semana cada día.', level: 'Principiante a intermedio', days: ['push', 'pull', 'legs'], dows: [1, 3, 5], goal: 'hip' },
+  { id: 'ppl6', short: 'PPL', name: 'Push Pull Legs · 6 días', desc: 'La versión de alto volumen: cada grupo dos veces por semana con variantes.', level: 'Avanzado', days: ['push', 'pull', 'legs', 'push2', 'pull2', 'legs2'], dows: [1, 2, 3, 4, 5, 6], goal: 'hip' },
+  { id: 'arnold', short: 'Arnold', name: 'Arnold · 6 días', desc: 'Pecho y espalda, hombro y brazo, pierna. Dos vueltas por semana.', level: 'Avanzado', days: ['chestBack', 'shArms', 'legs', 'chestBack', 'shArms', 'legs2'], dows: [1, 2, 3, 4, 5, 6], goal: 'hip' },
+  { id: 'weider', short: 'Weider', name: 'Weider · 5 días', desc: 'Un grupo muscular por día. Clásico de culturismo.', level: 'Intermedio', days: ['chest', 'back', 'legs', 'shoulders', 'arms'], dows: [1, 2, 3, 4, 5], goal: 'hip' },
+  { id: 'phul', short: 'PHUL', name: 'PHUL · 4 días', desc: 'Dos días de fuerza y dos de hipertrofia, torso y pierna.', level: 'Intermedio', days: ['upperA', 'lowerA', 'upperB', 'lowerB'], dows: [1, 2, 4, 5], goal: 'phul' },
+  { id: 'str5', short: '5×5', name: 'Fuerza 5×5 · A/B', desc: 'Básicos pesados alternando A y B, tres días por semana.', level: 'Principiante a intermedio', days: ['str5A', 'str5B', 'str5A'], dows: [1, 3, 5], goal: 'str5' },
+  { id: 'glute', short: 'Glúteo', name: 'Glúteo y pierna · 3 días', desc: 'Dos días con énfasis en glúteo y uno de torso.', level: 'Principiante a intermedio', days: ['gluteA', 'upperG', 'gluteB'], dows: [1, 3, 5], goal: 'hip' },
+  { id: 'home', short: 'Casa', name: 'En casa sin equipo · 3 días', desc: 'Con tu peso corporal y, si tienes, bandas.', level: 'Principiante', days: ['fullA', 'fullB', 'fullC'], dows: [1, 3, 5], goal: 'grasa', equip: 'home' },
+];
+const RX_GOALS = [['hip', 'Ganar músculo'], ['fuerza', 'Fuerza'], ['grasa', 'Perder grasa'], ['salud', 'Salud y condición']];
+const RX_EQUIP = [['gym', 'Gimnasio completo', 'GDBKP'], ['db', 'Mancuernas y banco', 'DBK'], ['bar', 'Casa con barra de dominadas', 'BKP'], ['home', 'Casa sin equipo', 'BK']];
+const RX_FOCUS = [['', 'Equilibrado'], ['glute', 'Glúteo y pierna'], ['arms', 'Brazos'], ['shoulders', 'Hombro'], ['back', 'Espalda'], ['chest', 'Pecho']];
+const RX_CARE = [['hombro', 'Hombro'], ['rodilla', 'Rodilla'], ['lumbar', 'Espalda baja']];
+const RX_DOW_N = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+function rxOptions(pat, cfg) {
+  const eq = (RX_EQUIP.find(x => x[0] === cfg.equip) || RX_EQUIP[0])[2];
+  return (RX_EX[pat] || []).filter(o => eq.includes(o[2]) && !(cfg.care || []).some(c => (' ' + o[3] + ' ').includes(' ' + c + ' ')));
+}
+// Prescripción: series, reps, RIR y descanso según objetivo, nivel y si es el ejercicio principal.
+function rxDose(cfg, pat, rank, dayKey) {
+  const comp = !!RX_COMPOUND[pat], g = cfg.goal, lvl = cfg.level;
+  let d;
+  if (g === 'str5') d = rank < 3 && comp ? { sets: pat === 'hinge' ? 1 : 5, reps: '5', rir: '2', rest: '3 min' } : { sets: 3, reps: '8-12', rir: '2', rest: '90 s' };
+  else if (g === 'phul') { const power = /A$/.test(dayKey); d = power ? (comp ? { sets: 4, reps: '3-5', rir: '2', rest: '3 min' } : { sets: 3, reps: '6-10', rir: '2', rest: '2 min' }) : (comp ? { sets: 3, reps: '8-12', rir: '2', rest: '2 min' } : { sets: 3, reps: '12-15', rir: '1', rest: '90 s' }); }
+  else if (g === 'fuerza') d = comp && rank < 2 ? { sets: 5, reps: '3-5', rir: '2', rest: '3 min' } : comp ? { sets: 3, reps: '6-8', rir: '2', rest: '2 min' } : { sets: 2, reps: '10-12', rir: '2', rest: '90 s' };
+  else if (g === 'grasa') d = comp ? { sets: 3, reps: '8-12', rir: '2', rest: '90 s' } : { sets: 3, reps: '12-15', rir: '1', rest: '60 s' };
+  else if (g === 'salud') d = { sets: 2, reps: '10-15', rir: '3', rest: '60-90 s' };
+  else d = comp ? { sets: 3, reps: '6-10', rir: '2', rest: '2 min' } : { sets: 3, reps: '10-15', rir: '1', rest: '90 s' };
+  if (lvl === 'beg') { d.sets = Math.min(d.sets, 3); d.rir = String(Math.max(2, +d.rir || 2)); }
+  if (lvl === 'adv' && comp && rank < 2 && g !== 'str5') d.sets += 1;
+  return d;
+}
+const RX_FOCUS_ADD = { glute: { lower: ['glute', 'abduct'], full: ['glute'] }, arms: { upper: ['bi', 'tri'], full: ['bi'] }, shoulders: { upper: ['lat', 'rear'], full: ['lat'] }, back: { upper: ['hpull', 'vpull'], full: ['hpull'] }, chest: { upper: ['ipush', 'fly'], full: ['ipush'] } };
+function rxKind(dayKey) { return /^(lower|legs|glute)/.test(dayKey) ? 'lower' : /^full/.test(dayKey) ? 'full' : /^str/.test(dayKey) ? 'str' : 'upper'; }
+// Arma un día: elige ejercicios por patrón, sin repetir, con su prescripción.
+function rxBuildDay(dayKey, cfg, shift) {
+  const def = RX_DAYS[dayKey]; let pats = def[1].slice();
+  const fa = cfg.focus && RX_FOCUS_ADD[cfg.focus] && RX_FOCUS_ADD[cfg.focus][rxKind(dayKey)];
+  if (fa) pats.splice(2, 0, ...fa.map(p => p + ':2'));
+  const per = { 30: 4, 45: 5, 60: 6, 75: 7, 90: 8 }[cfg.mins] || 6, used = new Set(), items = [];
+  for (const raw of pats) {
+    if (items.length >= per) break;
+    const [pat, alt] = raw.split(':'), opts = rxOptions(pat, cfg).filter(o => !used.has(o[1]));
+    if (!opts.length) continue;
+    const o = opts[((+alt || 1) - 1 + (shift || 0)) % opts.length];
+    used.add(o[1]); items.push({ pat, opt: o });
+  }
+  let rank = 0;
+  items.forEach(it => { it.dose = rxDose(cfg, it.pat, RX_COMPOUND[it.pat] ? rank++ : 9, dayKey); });
+  return { key: dayKey, name: def[0], items };
+}
+function rxBuildPlan(cfg) {
+  const days = cfg.days, shift = cfg.shift || 0;
+  return days.map((k, i) => { const d = rxBuildDay(k, cfg, shift + (days.indexOf(k) !== i && cfg.goal !== 'str5' ? 1 : 0)); d.dow = (cfg.dows || [])[i]; return d; });
+}
+// El asistente elige la división según días y nivel.
+function rxSplitFor(cfg) {
+  const n = cfg.ndays;
+  if (cfg.focus === 'glute' && n === 3) return { days: ['gluteA', 'upperG', 'gluteB'], dows: [1, 3, 5] };
+  if (n <= 2) return { days: ['fullA', 'fullB'], dows: [1, 4] };
+  if (n === 3) return cfg.level === 'beg' ? { days: ['fullA', 'fullB', 'fullC'], dows: [1, 3, 5] } : { days: ['push', 'pull', 'legs'], dows: [1, 3, 5] };
+  if (n === 4) return { days: ['upperA', 'lowerA', 'upperB', 'lowerB'], dows: [1, 2, 4, 5] };
+  if (n === 5) return { days: ['upperA', 'lowerA', 'push', 'pull', 'legs'], dows: [1, 2, 3, 5, 6] };
+  return { days: ['push', 'pull', 'legs', 'push2', 'pull2', 'legs2'], dows: [1, 2, 3, 4, 5, 6] };
+}
+function rxGoalName(g) { return (RX_GOALS.find(x => x[0] === g) || [0, g === 'phul' ? 'Fuerza e hipertrofia' : g === 'str5' ? 'Fuerza' : 'Ganar músculo'])[1]; }
+function rxToRoutines(plan, cfg, title) {
+  const tag = title ? title + ' · ' : '';
+  return plan.map(d => {
+    // perder grasa: los aislados seguidos van en biseries para ahorrar tiempo
+    let circ = 0; const cs = d.items.map(() => null);
+    if (cfg.goal === 'grasa') for (let j = 0; j < d.items.length - 1; j++) { if (!RX_COMPOUND[d.items[j].pat] && !RX_COMPOUND[d.items[j + 1].pat] && cs[j] == null) { cs[j] = cs[j + 1] = ++circ; j++; } }
+    const exs = d.items.map((it, j) => {
+      const c = cs[j];
+      return { id: uid(), name: it.opt[0], dbId: !it.opt[1] || (typeof gymDbById === 'function' && window.GYM_DB && !gymDbById(it.opt[1])) ? null : it.opt[1], circuit: c,
+        sets: [{ count: it.dose.sets, reps: it.dose.reps, note: '' }], rir: it.dose.rir, rpe: '', tempo: '', rest: it.dose.rest, notes: '' };
+    });
+    return { id: uid(), name: tag + d.name, tempo: '', source: 'plan', createdAt: Date.now(), _dow: d.dow,
+      meta: { objetivo: rxGoalName(cfg.goal), descanso: '', notas: (cfg.goal === 'grasa' ? t('Suma 20–30 min de cardio moderado o 8–10 mil pasos al día.') + ' ' : '') + t('Ajusta el peso para terminar cada serie con el RIR indicado.') + ((cfg.care || []).length ? ' ' + t('Se evitaron ejercicios que suelen molestar en las zonas que marcaste; si hay dolor, consulta a tu fisioterapeuta.') : '') },
+      exercises: exs };
+  });
+}
+function rxPreviewHtml(plan) {
+  return plan.map((d, i) => `<div class="rx-day"><div class="rx-day-h"><b>${d.name}</b>${d.dow != null ? `<span>${RX_DOW_N[d.dow]}</span>` : ''}</div>
+    ${d.items.map((it, j) => `<div class="rx-ex"><div class="rx-ex-n">${escapeHtml(it.opt[0])}</div><div class="rx-ex-d" translate="no">${it.dose.sets}×${escapeHtml(it.dose.reps)} · RIR ${escapeHtml(it.dose.rir)} · ${escapeHtml(it.dose.rest)}</div>
+      <button class="rx-swap" data-rx-swap="${i}:${j}" aria-label="Cambiar ejercicio">⇄</button></div>`).join('')}</div>`).join('');
+}
+// Vista previa común (plantilla o asistente). ctx.spec: guardar como plantillas del especialista.
+function rxOpenPreview(title, cfg, ctx) {
+  let plan = rxBuildPlan(cfg);
+  const paint = () => {
+    openSheet(title, `<div class="fit-note" style="margin:0 0 10px;"><span>${rxGoalName(cfg.goal)}</span> · <span translate="no">${plan.length}</span> <span>${plan.length === 1 ? 'día' : 'días'}</span> · <span>${(RX_EQUIP.find(x => x[0] === cfg.equip) || RX_EQUIP[0])[1]}</span>. <span>Toca ⇄ para cambiar un ejercicio por otro del mismo tipo.</span></div>
+      ${rxPreviewHtml(plan)}
+      ${ctx && ctx.spec ? '' : `<label class="usr-check" style="margin-top:10px;"><input type="checkbox" id="rx-sched" checked><span>Programarla en mi semana</span></label>`}
+      <button class="btn-secondary" id="rx-shift" style="width:100%;margin-top:8px;">Otra variante</button>
+      <div class="auth-msg" id="rx-msg"></div>`, async () => {
+      const rs = rxToRoutines(plan, cfg, ctx && ctx.prefix);
+      if (ctx && ctx.spec) {
+        const sv = document.getElementById('sheet-save'); if (sv) sv.disabled = true;
+        try { await sbRest('templates', { method: 'POST', body: rs.map(r => { const c = Object.assign({}, r); delete c._dow; return { kind: 'routine', name: r.name, payload: c }; }), headers: { Prefer: 'return=minimal' } }); }
+        catch (e) { document.getElementById('rx-msg').textContent = authErr(e.code); if (sv) sv.disabled = false; return; }
+        if (typeof openTemplates === 'function') openTemplates(ctx.forClient); return;
+      }
+      const all = gymRoutines(), sch = gymSchedule(), doSched = document.getElementById('rx-sched').checked;
+      rs.forEach(r => { const dw = r._dow; delete r._dow; all.push(r); if (doSched && dw != null) sch[String(dw)] = r.id; });
+      saveGymRoutines(all); if (doSched) saveGymSchedule(sch);
+      closeSheet(); try { renderGym(); } catch (e) {} try { renderHoyDash(); } catch (e) {}
+    });
+    const sv = document.getElementById('sheet-save'); if (sv) sv.textContent = t(ctx && ctx.spec ? 'Guardar plantillas' : 'Agregar');
+    document.getElementById('rx-shift').addEventListener('click', () => { cfg.shift = (cfg.shift || 0) + 1; plan = rxBuildPlan(cfg); paint(); });
+    document.querySelectorAll('[data-rx-swap]').forEach(b => b.addEventListener('click', () => {
+      const [i, j] = b.dataset.rxSwap.split(':').map(Number), d = plan[i], it = d.items[j];
+      const taken = new Set(d.items.map(x => x.opt[1])), opts = rxOptions(it.pat, cfg);
+      const k = opts.findIndex(o => o[1] === it.opt[1]);
+      for (let n = 1; n <= opts.length; n++) { const o = opts[(k + n) % opts.length]; if (!taken.has(o[1])) { it.opt = o; break; } }
+      paint();
+    }));
+  };
+  if (!window.GYM_DB && typeof loadGymDb === 'function') loadGymDb().catch(() => {});
+  paint();
+}
+// Catálogo de plantillas prehechas.
+function openRoutinePlans(ctx) {
+  openSheet('Plantillas de rutina', `<div class="lk-d" style="margin:0 0 10px;">Divisiones clásicas listas para usar. Eliges tu equipo, revisas los ejercicios y quedan en ${ctx && ctx.spec ? 'tus plantillas para asignarlas' : 'Mis rutinas, programadas en tu semana'}. Después puedes editar todo.</div>
+    <label class="auth-field"><span>Equipo</span><select class="auth-in" id="rp-eq">${RX_EQUIP.map(([k, n]) => `<option value="${k}">${n}</option>`).join('')}</select></label>
+    ${RX_SPLITS.map((sp, i) => `<button class="rx-card" data-rp="${i}"><b>${sp.name}</b><span>${sp.desc}</span><small><span>${sp.level}</span> · <span translate="no">${sp.dows.map(d => t(RX_DOW_N[d])).join(' ')}</span></small></button>`).join('')}
+    ${ctx && ctx.spec ? '' : '<button class="btn-secondary" id="rp-sport" style="width:100%;margin-top:6px;">Rutinas por deporte</button>'}`);
+  document.querySelectorAll('[data-rp]').forEach(b => b.addEventListener('click', () => {
+    const sp = RX_SPLITS[+b.dataset.rp], eq = sp.equip || document.getElementById('rp-eq').value;
+    const goal = sp.goal === 'hip' && eq === 'home' ? 'grasa' : sp.goal;
+    rxOpenPreview(sp.name, { goal, level: /Avanzado/.test(sp.level) ? 'adv' : /^Principiante$/.test(sp.level) ? 'beg' : 'int', equip: eq, mins: 60, focus: '', care: [], days: sp.days, dows: sp.dows }, Object.assign({ prefix: sp.short }, ctx || {}));
+  }));
+  const sb2 = document.getElementById('rp-sport'); if (sb2) sb2.addEventListener('click', () => openSportRoutines());
+}
+// Asistente: preguntas cortas y arma la semana.
+function openRoutineAssistant(ctx) {
+  const st = { goal: 'hip', ndays: 4, level: 'int', equip: 'gym', mins: 60, focus: '', care: [] };
+  try { const prof = S.get('athlete_profile', null); if (prof && prof.level) st.level = prof.level === 'principiante' ? 'beg' : prof.level === 'avanzado' || prof.level === 'elite' ? 'adv' : 'int'; } catch (e) {}
+  const chips = (key, list, multi) => `<div class="chips small rx-chips" data-rxk="${key}"${multi ? ' data-multi="1"' : ''}>${list.map(([v, n]) => `<button type="button" class="chip${(multi ? st[key].includes(v) : String(st[key]) === String(v)) ? ' selected' : ''}" data-v="${v}">${n}</button>`).join('')}</div>`;
+  openSheet('Asistente de rutinas', `<div class="fit-note" style="margin:0 0 12px;">Responde y te armo la semana. Usa reglas de entrenamiento comunes (volumen, repeticiones y descansos según tu objetivo); revísala y ajústala, o pídele a tu coach que la revise.</div>
+    <div class="setting-label">Objetivo</div>${chips('goal', RX_GOALS)}
+    <div class="setting-label">Días por semana</div>${chips('ndays', [[2, '2'], [3, '3'], [4, '4'], [5, '5'], [6, '6']])}
+    <div class="setting-label">Nivel</div>${chips('level', [['beg', 'Principiante'], ['int', 'Intermedio'], ['adv', 'Avanzado']])}
+    <div class="setting-label">Equipo</div>${chips('equip', RX_EQUIP.map(x => [x[0], x[1]]))}
+    <div class="setting-label">Tiempo por sesión</div>${chips('mins', [[30, '30 min'], [45, '45 min'], [60, '60 min'], [75, '75 min'], [90, '90 min']])}
+    <div class="setting-label">Enfoque</div>${chips('focus', RX_FOCUS)}
+    <div class="setting-label">Cuidar (molestias o lesiones)</div>${chips('care', RX_CARE, true)}`, () => {
+    const sp = rxSplitFor(st);
+    rxOpenPreview(t('Tu rutina'), Object.assign({}, st, { days: sp.days, dows: sp.dows }), Object.assign({ prefix: '' }, ctx || {}));
+  });
+  const sv = document.getElementById('sheet-save'); if (sv) sv.textContent = t('Armar');
+  document.querySelectorAll('.rx-chips .chip').forEach(c => c.addEventListener('click', () => {
+    const box = c.parentElement, k = box.dataset.rxk, v = c.dataset.v, num = k === 'ndays' || k === 'mins';
+    if (box.dataset.multi) { const i = st[k].indexOf(v); if (i >= 0) st[k].splice(i, 1); else st[k].push(v); c.classList.toggle('selected'); return; }
+    st[k] = num ? +v : v; box.querySelectorAll('.chip').forEach(x => x.classList.toggle('selected', x === c));
+  }));
+}
+// Entrada única desde Gym: plantillas, asistente y por deporte.
+function openRoutineHub(ctx) {
+  openSheet(ctx && ctx.spec ? 'Plantillas de rutina' : 'Nueva rutina', `<div class="goal-types" style="grid-template-columns:1fr;">
+    <button data-hub="ai"><b>Asistente</b><span>Dime tu objetivo, días, equipo y tiempo, y te armo la semana con ejercicios, series, RIR y descansos.</span></button>
+    <button data-hub="tpl"><b>Plantillas prehechas</b><span>AB torso/pierna, Push Pull Legs, cuerpo completo, Arnold, Weider, PHUL, 5×5 y glúteo.</span></button>
+    ${ctx && ctx.spec ? '' : `<button data-hub="sport"><b>Por deporte</b><span>Box, Hyrox, running, natación, calistenia, escalada y más.</span></button>
+    <button data-hub="pdf"><b>Importar PDF</b><span>La rutina que te mandó tu coach en PDF.</span></button>
+    <button data-hub="new"><b>Desde cero</b><span>Tú eliges cada ejercicio.</span></button>`}
+  </div>`);
+  document.querySelectorAll('[data-hub]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.hub;
+    if (k === 'ai') openRoutineAssistant(ctx); else if (k === 'tpl') openRoutinePlans(ctx); else if (k === 'sport') openSportRoutines();
+    else { closeSheet(); const id = k === 'pdf' ? 'gym-import' : 'gym-new'; setTimeout(() => { const x = document.getElementById(id) || document.getElementById(id + '-big'); if (x) x.click(); }, 50); }
+  }));
+}
+
+// ============================================================
 // OBJETIVOS Y LOGROS: metas con avance calculado solo a partir de los registros.
 // ============================================================
 const GOAL_TYPES = [
@@ -1395,8 +1628,10 @@ async function rtStart() {
   };
   ws.onerror = () => { try { ws.close(); } catch (e) {} };
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && authLogged()) { if (!RT.ws) rtStart(); msgRefresh(true); asgRefresh(true); } });
-window.addEventListener('online', () => { if (authLogged()) rtStart(); });
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && authLogged()) { if (!RT.ws) rtStart(); msgRefresh(true); asgRefresh(true); } });
+  window.addEventListener('online', () => { if (authLogged()) rtStart(); });
+}
 
 // ============================================================
 // PESO CON TENDENCIA Y CHECK-IN SEMANAL
@@ -1866,4 +2101,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

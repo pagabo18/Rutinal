@@ -5221,6 +5221,361 @@ window.__I18N_EXTRA = {
    "pt-BR": "Esta rotina venceu. Peça uma nova ao seu especialista.",
    "fr": "Cette routine a expiré. Demandez-en une nouvelle à votre spécialiste."
   },
+  "Plantillas y asistente": {
+   "en": "Templates and assistant",
+   "pt-BR": "Modelos e assistente",
+   "fr": "Modèles et assistant"
+  },
+  "Asistente": {
+   "en": "Assistant",
+   "pt-BR": "Assistente",
+   "fr": "Assistant"
+  },
+  "Dime tu objetivo, días, equipo y tiempo, y te armo la semana con ejercicios, series, RIR y descansos.": {
+   "en": "Tell me your goal, days, equipment and time, and I'll build your week with exercises, sets, RIR and rest.",
+   "pt-BR": "Diga seu objetivo, dias, equipamento e tempo, e eu monto a semana com exercícios, séries, RIR e descansos.",
+   "fr": "Indiquez votre objectif, vos jours, votre matériel et votre temps, et je construis la semaine avec exercices, séries, RIR et repos."
+  },
+  "Plantillas prehechas": {
+   "en": "Ready-made templates",
+   "pt-BR": "Modelos prontos",
+   "fr": "Modèles prêts"
+  },
+  "AB torso/pierna, Push Pull Legs, cuerpo completo, Arnold, Weider, PHUL, 5×5 y glúteo.": {
+   "en": "Upper/lower, Push Pull Legs, full body, Arnold, bro split, PHUL, 5×5 and glutes.",
+   "pt-BR": "Superior/inferior, Push Pull Legs, corpo inteiro, Arnold, Weider, PHUL, 5×5 e glúteo.",
+   "fr": "Haut/bas, Push Pull Legs, full body, Arnold, Weider, PHUL, 5×5 et fessiers."
+  },
+  "Box, Hyrox, running, natación, calistenia, escalada y más.": {
+   "en": "Boxing, Hyrox, running, swimming, calisthenics, climbing and more.",
+   "pt-BR": "Boxe, Hyrox, corrida, natação, calistenia, escalada e mais.",
+   "fr": "Boxe, Hyrox, course, natation, callisthénie, escalade et plus."
+  },
+  "La rutina que te mandó tu coach en PDF.": {
+   "en": "The routine your coach sent you as a PDF.",
+   "pt-BR": "A rotina que seu coach mandou em PDF.",
+   "fr": "La routine que votre coach vous a envoyée en PDF."
+  },
+  "Desde cero": {
+   "en": "From scratch",
+   "pt-BR": "Do zero",
+   "fr": "De zéro"
+  },
+  "Tú eliges cada ejercicio.": {
+   "en": "You choose every exercise.",
+   "pt-BR": "Você escolhe cada exercício.",
+   "fr": "Vous choisissez chaque exercice."
+  },
+  "Plantillas de rutina": {
+   "en": "Routine templates",
+   "pt-BR": "Modelos de rotina",
+   "fr": "Modèles de routine"
+  },
+  "Gimnasio completo": {
+   "en": "Full gym",
+   "pt-BR": "Academia completa",
+   "fr": "Salle complète"
+  },
+  "Mancuernas y banco": {
+   "en": "Dumbbells and bench",
+   "pt-BR": "Halteres e banco",
+   "fr": "Haltères et banc"
+  },
+  "Casa con barra de dominadas": {
+   "en": "Home with pull-up bar",
+   "pt-BR": "Casa com barra fixa",
+   "fr": "Maison avec barre de traction"
+  },
+  "Casa sin equipo": {
+   "en": "Home, no equipment",
+   "pt-BR": "Casa sem equipamento",
+   "fr": "Maison sans matériel"
+  },
+  "Ideal para empezar o con poco tiempo. Cada sesión toca todo el cuerpo.": {
+   "en": "Ideal to start or with little time. Each session trains the whole body.",
+   "pt-BR": "Ideal para começar ou com pouco tempo. Cada sessão trabalha o corpo todo.",
+   "fr": "Idéal pour débuter ou avec peu de temps. Chaque séance travaille tout le corps."
+  },
+  "Alterna torso y pierna. Cada músculo dos veces por semana.": {
+   "en": "Alternates upper and lower body. Each muscle twice a week.",
+   "pt-BR": "Alterna superior e inferior. Cada músculo duas vezes por semana.",
+   "fr": "Alterne haut et bas du corps. Chaque muscle deux fois par semaine."
+  },
+  "Empuje, tracción y pierna. Una vez por semana cada día.": {
+   "en": "Push, pull and legs. Each day once a week.",
+   "pt-BR": "Empurrar, puxar e pernas. Cada dia uma vez por semana.",
+   "fr": "Poussée, tirage et jambes. Chaque jour une fois par semaine."
+  },
+  "La versión de alto volumen: cada grupo dos veces por semana con variantes.": {
+   "en": "The high-volume version: each group twice a week with variations.",
+   "pt-BR": "A versão de alto volume: cada grupo duas vezes por semana com variações.",
+   "fr": "La version à haut volume : chaque groupe deux fois par semaine avec variantes."
+  },
+  "Pecho y espalda, hombro y brazo, pierna. Dos vueltas por semana.": {
+   "en": "Chest and back, shoulders and arms, legs. Twice through per week.",
+   "pt-BR": "Peito e costas, ombro e braço, pernas. Duas voltas por semana.",
+   "fr": "Pectoraux et dos, épaules et bras, jambes. Deux tours par semaine."
+  },
+  "Un grupo muscular por día. Clásico de culturismo.": {
+   "en": "One muscle group per day. A bodybuilding classic.",
+   "pt-BR": "Um grupo muscular por dia. Clássico do fisiculturismo.",
+   "fr": "Un groupe musculaire par jour. Un classique du culturisme."
+  },
+  "Dos días de fuerza y dos de hipertrofia, torso y pierna.": {
+   "en": "Two strength days and two hypertrophy days, upper and lower.",
+   "pt-BR": "Dois dias de força e dois de hipertrofia, superior e inferior.",
+   "fr": "Deux jours de force et deux d'hypertrophie, haut et bas."
+  },
+  "Básicos pesados alternando A y B, tres días por semana.": {
+   "en": "Heavy basics alternating A and B, three days a week.",
+   "pt-BR": "Básicos pesados alternando A e B, três dias por semana.",
+   "fr": "Mouvements de base lourds en alternant A et B, trois jours par semaine."
+  },
+  "Dos días con énfasis en glúteo y uno de torso.": {
+   "en": "Two glute-focused days and one upper-body day.",
+   "pt-BR": "Dois dias com ênfase em glúteo e um de superior.",
+   "fr": "Deux jours axés fessiers et un jour haut du corps."
+  },
+  "Con tu peso corporal y, si tienes, bandas.": {
+   "en": "With your bodyweight and, if you have them, bands.",
+   "pt-BR": "Com seu peso corporal e, se tiver, elásticos.",
+   "fr": "Au poids du corps et, si vous en avez, avec des bandes."
+  },
+  "Principiante a intermedio": {
+   "en": "Beginner to intermediate",
+   "pt-BR": "Iniciante a intermediário",
+   "fr": "Débutant à intermédiaire"
+  },
+  "Perder grasa": {
+   "en": "Lose fat",
+   "pt-BR": "Perder gordura",
+   "fr": "Perdre du gras"
+  },
+  "Salud y condición": {
+   "en": "Health and fitness",
+   "pt-BR": "Saúde e condicionamento",
+   "fr": "Santé et forme"
+  },
+  "Fuerza e hipertrofia": {
+   "en": "Strength and hypertrophy",
+   "pt-BR": "Força e hipertrofia",
+   "fr": "Force et hypertrophie"
+  },
+  "Equilibrado": {
+   "en": "Balanced",
+   "pt-BR": "Equilibrado",
+   "fr": "Équilibré"
+  },
+  "Glúteo y pierna": {
+   "en": "Glutes and legs",
+   "pt-BR": "Glúteo e pernas",
+   "fr": "Fessiers et jambes"
+  },
+  "Brazos": {
+   "en": "Arms",
+   "pt-BR": "Braços",
+   "fr": "Bras"
+  },
+  "Rodilla": {
+   "en": "Knee",
+   "pt-BR": "Joelho",
+   "fr": "Genou"
+  },
+  "Asistente de rutinas": {
+   "en": "Routine assistant",
+   "pt-BR": "Assistente de rotinas",
+   "fr": "Assistant de routines"
+  },
+  "Responde y te armo la semana. Usa reglas de entrenamiento comunes (volumen, repeticiones y descansos según tu objetivo); revísala y ajústala, o pídele a tu coach que la revise.": {
+   "en": "Answer and I'll build your week. It uses common training rules (volume, reps and rest by goal); review and adjust it, or ask your coach to check it.",
+   "pt-BR": "Responda e eu monto a semana. Usa regras comuns de treino (volume, repetições e descansos conforme o objetivo); revise e ajuste, ou peça ao seu coach para revisar.",
+   "fr": "Répondez et je construis votre semaine. Elle suit des règles d'entraînement courantes (volume, répétitions et repos selon l'objectif) ; relisez-la et ajustez-la, ou demandez à votre coach de la vérifier."
+  },
+  "Días por semana": {
+   "en": "Days per week",
+   "pt-BR": "Dias por semana",
+   "fr": "Jours par semaine"
+  },
+  "Tiempo por sesión": {
+   "en": "Time per session",
+   "pt-BR": "Tempo por sessão",
+   "fr": "Durée par séance"
+  },
+  "Enfoque": {
+   "en": "Focus",
+   "pt-BR": "Foco",
+   "fr": "Priorité"
+  },
+  "Cuidar (molestias o lesiones)": {
+   "en": "Protect (pain or injuries)",
+   "pt-BR": "Cuidar (dores ou lesões)",
+   "fr": "Ménager (douleurs ou blessures)"
+  },
+  "Armar": {
+   "en": "Build",
+   "pt-BR": "Montar",
+   "fr": "Construire"
+  },
+  "Tu rutina": {
+   "en": "Your routine",
+   "pt-BR": "Sua rotina",
+   "fr": "Votre routine"
+  },
+  "Agregar": {
+   "en": "Add",
+   "pt-BR": "Adicionar",
+   "fr": "Ajouter"
+  },
+  "Guardar plantillas": {
+   "en": "Save templates",
+   "pt-BR": "Salvar modelos",
+   "fr": "Enregistrer les modèles"
+  },
+  "Otra variante": {
+   "en": "Another variation",
+   "pt-BR": "Outra variação",
+   "fr": "Autre variante"
+  },
+  "Programarla en mi semana": {
+   "en": "Schedule it in my week",
+   "pt-BR": "Programar na minha semana",
+   "fr": "La planifier dans ma semaine"
+  },
+  "Toca ⇄ para cambiar un ejercicio por otro del mismo tipo.": {
+   "en": "Tap ⇄ to swap an exercise for another of the same type.",
+   "pt-BR": "Toque ⇄ para trocar um exercício por outro do mesmo tipo.",
+   "fr": "Touchez ⇄ pour remplacer un exercice par un autre du même type."
+  },
+  "Cambiar ejercicio": {
+   "en": "Swap exercise",
+   "pt-BR": "Trocar exercício",
+   "fr": "Changer d'exercice"
+  },
+  "Divisiones clásicas listas para usar. Eliges tu equipo, revisas los ejercicios y quedan en": {
+   "en": "Classic splits ready to use. Pick your equipment, review the exercises and they go to",
+   "pt-BR": "Divisões clássicas prontas. Escolha o equipamento, revise os exercícios e eles vão para",
+   "fr": "Des répartitions classiques prêtes à l'emploi. Choisissez votre matériel, vérifiez les exercices et ils iront dans"
+  },
+  "Rutinas prehechas": {
+   "en": "Ready-made routines",
+   "pt-BR": "Rotinas prontas",
+   "fr": "Routines prêtes"
+  },
+  "Suma 20–30 min de cardio moderado o 8–10 mil pasos al día.": {
+   "en": "Add 20–30 min of moderate cardio or 8–10 thousand steps a day.",
+   "pt-BR": "Some 20–30 min de cardio moderado ou 8–10 mil passos por dia.",
+   "fr": "Ajoutez 20 à 30 min de cardio modéré ou 8 000 à 10 000 pas par jour."
+  },
+  "Ajusta el peso para terminar cada serie con el RIR indicado.": {
+   "en": "Adjust the weight to finish each set at the indicated RIR.",
+   "pt-BR": "Ajuste o peso para terminar cada série no RIR indicado.",
+   "fr": "Ajustez la charge pour finir chaque série au RIR indiqué."
+  },
+  "Se evitaron ejercicios que suelen molestar en las zonas que marcaste; si hay dolor, consulta a tu fisioterapeuta.": {
+   "en": "Exercises that often bother the areas you marked were avoided; if there's pain, see your physiotherapist.",
+   "pt-BR": "Foram evitados exercícios que costumam incomodar as regiões marcadas; se houver dor, consulte seu fisioterapeuta.",
+   "fr": "Les exercices qui gênent souvent les zones indiquées ont été évités ; en cas de douleur, consultez votre kiné."
+  },
+  "Cuerpo completo A": {
+   "en": "Full body A",
+   "pt-BR": "Corpo inteiro A",
+   "fr": "Full body A"
+  },
+  "Cuerpo completo B": {
+   "en": "Full body B",
+   "pt-BR": "Corpo inteiro B",
+   "fr": "Full body B"
+  },
+  "Cuerpo completo C": {
+   "en": "Full body C",
+   "pt-BR": "Corpo inteiro C",
+   "fr": "Full body C"
+  },
+  "Torso A": {
+   "en": "Upper A",
+   "pt-BR": "Superior A",
+   "fr": "Haut A"
+  },
+  "Torso B": {
+   "en": "Upper B",
+   "pt-BR": "Superior B",
+   "fr": "Haut B"
+  },
+  "Pierna A": {
+   "en": "Lower A",
+   "pt-BR": "Inferior A",
+   "fr": "Bas A"
+  },
+  "Pierna B": {
+   "en": "Lower B",
+   "pt-BR": "Inferior B",
+   "fr": "Bas B"
+  },
+  "Torso": {
+   "en": "Upper body",
+   "pt-BR": "Superior",
+   "fr": "Haut du corps"
+  },
+  "Push (empuje)": {
+   "en": "Push",
+   "pt-BR": "Push (empurrar)",
+   "fr": "Push (poussée)"
+  },
+  "Pull (tracción)": {
+   "en": "Pull",
+   "pt-BR": "Pull (puxar)",
+   "fr": "Pull (tirage)"
+  },
+  "Legs (pierna)": {
+   "en": "Legs",
+   "pt-BR": "Legs (pernas)",
+   "fr": "Legs (jambes)"
+  },
+  "Push B (empuje)": {
+   "en": "Push B",
+   "pt-BR": "Push B (empurrar)",
+   "fr": "Push B (poussée)"
+  },
+  "Pull B (tracción)": {
+   "en": "Pull B",
+   "pt-BR": "Pull B (puxar)",
+   "fr": "Pull B (tirage)"
+  },
+  "Legs B (pierna)": {
+   "en": "Legs B",
+   "pt-BR": "Legs B (pernas)",
+   "fr": "Legs B (jambes)"
+  },
+  "Pecho y espalda": {
+   "en": "Chest and back",
+   "pt-BR": "Peito e costas",
+   "fr": "Pectoraux et dos"
+  },
+  "Hombro y brazo": {
+   "en": "Shoulders and arms",
+   "pt-BR": "Ombro e braço",
+   "fr": "Épaules et bras"
+  },
+  "Fuerza A": {
+   "en": "Strength A",
+   "pt-BR": "Força A",
+   "fr": "Force A"
+  },
+  "Fuerza B": {
+   "en": "Strength B",
+   "pt-BR": "Força B",
+   "fr": "Force B"
+  },
+  "Glúteo y pierna A": {
+   "en": "Glutes and legs A",
+   "pt-BR": "Glúteo e pernas A",
+   "fr": "Fessiers et jambes A"
+  },
+  "Glúteo y pierna B": {
+   "en": "Glutes and legs B",
+   "pt-BR": "Glúteo e pernas B",
+   "fr": "Fessiers et jambes B"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

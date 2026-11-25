@@ -2836,6 +2836,16 @@
   .gym-circ { display: flex; align-items: center; gap: 5px; }
   .asg-until { font-weight: 700; color: #B45309; }
   .rir-n { font-size: 11px; color: var(--text-3); } .tech-mini { display: inline-flex; vertical-align: -1px; color: var(--text-2); }
+
+  /* ===== Plantillas de rutina y asistente ===== */
+  .rx-card { display: block; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; font: inherit; color: var(--text); cursor: pointer; box-shadow: var(--card-sh); }
+  .rx-card b { display: block; font-size: 15px; } .rx-card > span { display: block; font-size: 13px; color: var(--text-2); margin-top: 3px; line-height: 1.35; } .rx-card small { display: block; font-size: 11px; color: var(--text-3); margin-top: 6px; letter-spacing: .02em; }
+  .rx-day { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; box-shadow: var(--card-sh); }
+  .rx-day-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; } .rx-day-h b { font-size: 15px; } .rx-day-h span { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); }
+  .rx-ex { display: grid; grid-template-columns: 1fr auto; column-gap: 8px; align-items: center; padding: 7px 0; border-top: 1px solid var(--border); }
+  .rx-ex-n { font-size: 14px; font-weight: 600; } .rx-ex-d { grid-column: 1; font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .rx-swap { grid-row: 1 / span 2; grid-column: 2; width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-2); font-size: 15px; cursor: pointer; }
+  .rx-chips { margin: 4px 0 12px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
@@ -9943,10 +9953,13 @@ async function openTemplates(forClient) {
     ${rows || '<div class="lk-d" style="margin-bottom:10px;">Aún no tienes plantillas de este tipo.</div>'}
     <div class="lk-h">Nueva plantilla</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">${usable.map(k => `<button class="btn-secondary" data-tp-new="${k}" style="flex:1 1 45%;">${ASG_KINDS[k]}</button>`).join('')}</div>
+    ${usable.includes('routine') ? '<div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-secondary" id="tp-rx-plans" style="flex:1;">Rutinas prehechas</button><button class="btn-secondary" id="tp-rx-ai" style="flex:1;">Asistente</button></div>' : ''}
     <div class="auth-msg" id="tp-msg"></div>
     <button class="btn-secondary" id="tp-back" style="width:100%;margin-top:12px;">Volver</button>`);
   document.getElementById('tp-back').addEventListener('click', () => closeSheet());
   document.querySelectorAll('[data-tp-new]').forEach(b => b.addEventListener('click', () => openTemplateEditor(b.dataset.tpNew, forClient)));
+  const rxp = document.getElementById('tp-rx-plans'); if (rxp) rxp.addEventListener('click', () => openRoutinePlans({ spec: true, forClient }));
+  const rxa = document.getElementById('tp-rx-ai'); if (rxa) rxa.addEventListener('click', () => openRoutineAssistant({ spec: true, forClient }));
   document.querySelectorAll('[data-tp-del]').forEach(b => b.addEventListener('click', async () => {
     if (!confirm('¿Eliminar esta plantilla? Lo que ya asignaste no cambia.')) return;
     try { await sbRest('templates?id=eq.' + b.dataset.tpDel, { method: 'DELETE', headers: { Prefer: 'return=minimal' } }); } catch (e) {}
@@ -13885,7 +13898,7 @@ function renderGym() {
       <div class="gym-today-meta">${routines.length ? 'No tienes rutina asignada para hoy.' : 'Importa el PDF de tu coach o arma tu rutina.'}</div>
       ${routines.length
         ? '<button class="btn-secondary" id="gym-pick-today" style="margin-top:14px;">Entrenar otra rutina hoy</button>'
-        : '<div class="gym-actions" style="margin-top:14px;"><button class="btn-primary" id="gym-import-big" style="flex:1">Importar PDF</button><button class="btn-secondary" id="gym-new-big" style="flex:1">+ Nueva rutina</button></div><button class="btn-secondary" id="gym-sport-big" style="width:100%;margin-top:8px;">Rutinas por deporte</button>'}
+        : '<div class="gym-actions" style="margin-top:14px;"><button class="btn-primary" id="gym-import-big" style="flex:1">Importar PDF</button><button class="btn-secondary" id="gym-new-big" style="flex:1">+ Nueva rutina</button></div><button class="btn-secondary" id="gym-sport-big" style="width:100%;margin-top:8px;">Plantillas y asistente</button>'}
     </div>`;
   }
 
@@ -13918,7 +13931,7 @@ function renderGym() {
     <h2>Semana <span class="gym-h2-hint">toca un día para cambiarlo</span></h2>
     <div class="gym-week">${week}</div>
     <h2>Mis rutinas
-      <span class="gym-h2-btns"><button class="h2-btn" id="gym-sport">Por deporte</button><button class="h2-btn" id="gym-import">Importar PDF</button><button class="h2-btn" id="gym-new">+ Nueva</button></span>
+      <span class="gym-h2-btns"><button class="h2-btn" id="gym-sport">Plantillas</button><button class="h2-btn" id="gym-import">Importar PDF</button><button class="h2-btn" id="gym-new">+ Nueva</button></span>
     </h2>
     ${list}
     <h2>Historial <span class="gym-h2-btns"><button class="h2-btn" id="gym-progress">Progreso</button></span></h2>
@@ -13929,8 +13942,8 @@ function renderGym() {
 
   const on = (id, fn) => { const b = document.getElementById(id); if (b) b.addEventListener('click', fn); };
   try { if (typeof actMountGym === 'function') actMountGym(); } catch (e) {}
-  on('gym-sport', () => openSportRoutines());
-  on('gym-sport-big', () => openSportRoutines());
+  on('gym-sport', () => openRoutineHub());
+  on('gym-sport-big', () => openRoutineHub());
   on('gym-start', () => openGymWorkout(today.id, todayKey));
   on('gym-pick-today', () => gymPickRoutine('Elige la rutina de hoy', id => openGymWorkout(id, todayKey)));
   const inp = document.getElementById('gym-pdf-input');
