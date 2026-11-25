@@ -3057,19 +3057,7 @@ try {
   <section id="tab-hoy" class="active">
     <div class="split-col split-col-a">
       <div id="hoy-dash"></div>
-      <div id="now-wrap"></div>
       <div id="asg-card"></div>
-      <button class="impr-btn" id="impr-btn">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-        <div>
-          <div>Reportar imprevisto</div>
-          <div class="sub">Algo cambió mi día</div>
-        </div>
-      </button>
-    </div>
-    <div class="split-col split-col-b">
-      <h2>Hoy <span class="h2-btn" id="add-block">+ Nuevo</span></h2>
-      <div id="today-list"></div>
     </div>
   </section>
 
@@ -3078,6 +3066,8 @@ try {
   <section id="tab-habitos">
     <h1 class="h-title" style="margin-bottom:12px;">Hábitos</h1>
     <div class="split-col split-col-a">
+    <!-- Tu día: bloque en curso, imprevistos y bloques (antes en Hoy) -->
+    <div id="now-wrap"></div>
     <div id="hydration-card" class="mc water hyd-card">
       <div class="mc-head">
         <div class="mc-ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg></div>
@@ -3116,6 +3106,15 @@ try {
     <h2 style="margin-top:4px;"><span id="habit-day-title">Hoy</span> <span class="h2-btn" id="add-habit">+ Nuevo</span></h2>
     <div id="habit-day-nav"></div>
     <div id="habits-list"></div>
+    <h2 style="margin-top:18px;">Tu día <span class="h2-btn" id="add-block">+ Nuevo</span></h2>
+    <div id="today-list"></div>
+    <button class="impr-btn" id="impr-btn" style="margin-top:10px;">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+      <div>
+        <div>Reportar imprevisto</div>
+        <div class="sub">Algo cambió mi día</div>
+      </div>
+    </button>
     </div>
     <div class="split-full">
     <h2>Estadísticas</h2>
@@ -4269,6 +4268,11 @@ function renderClock() {
 tabRenderers.hoy = renderHoy;
 function renderHoy() {
   try { if (typeof renderHoyDash === 'function') renderHoyDash(); } catch (e) {}
+  renderDayBlocks();
+}
+// Bloques del día, bloque en curso e imprevistos (viven en la pestaña Hábitos)
+function renderDayBlocks() {
+  if (!document.getElementById('now-wrap') || !document.getElementById('today-list')) return;
   const kind = scheduleKindForDate();
   // scheduleForDate respeta los días elegidos por bloque (L, Mi, V…)
   const list = scheduleForDate();
@@ -5540,6 +5544,7 @@ function loadHabitsWithVirtual() {
 }
 
 function renderHabitos() {
+  try { renderDayBlocks(); } catch (e) {}
   renderHydration();
   bindHydrationOnce();
   const habits = loadHabitsWithVirtual();
@@ -11511,7 +11516,6 @@ function renderHoyDash() {
     if (wo || mt.length || hd || wd != null) week = `<div class="hd-card"><div class="hd-k"><span>Tu semana</span><span class="hd-badge">Últimos 7 días</span></div><div class="hd-week">
       ${cell(planned ? `${wo}/${planned}` : wo, 'Entrenamientos')}
       ${cell(`${mt.length}/7`, 'Días con comidas', avgK ? `<span translate="no">${avgK.toLocaleString(_loc())} kcal</span>${goalK ? ` · <span translate="no">${Math.round(avgK / goalK * 100)}%</span> <span>de la meta</span>` : ''}` : '')}
-      ${habits.length ? cell(`${hp ? Math.round(hd / hp * 100) : 0}%`, 'Hábitos') : ''}
       ${wd != null ? cell(`${bwDiff(wd)} ${bwUnit()}`, 'Peso') : ''}</div></div>`;
   } catch (e) {}
   // --- mensajes con sus especialistas ---

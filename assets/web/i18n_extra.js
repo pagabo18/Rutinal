@@ -6121,6 +6121,11 @@ window.__I18N_EXTRA = {
    "pt-BR": "Atribuir a mim",
    "fr": "M'assigner"
   },
+  "Tu día": {
+   "en": "Your day",
+   "pt-BR": "Seu dia",
+   "fr": "Ta journée"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
