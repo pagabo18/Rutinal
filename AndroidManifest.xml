@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pagabo18.rutinal"
-    android:versionCode="22"
-    android:versionName="1.9.9">
+    android:versionCode="23"
+    android:versionName="2.0.0">
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
 
@@ -169,6 +169,12 @@
                 android:resource="@xml/widget_food_info" />
         </receiver>
 
+        <!-- Imágenes que se comparten con otras apps (resumen del día) -->
+        <provider
+            android:name=".ShareFileProvider"
+            android:authorities="com.pagabo18.rutinal.share"
+            android:exported="false"
+            android:grantUriPermissions="true" />
         <!-- Entrenamiento en vivo: botones de la notificación, widget y ventana flotante -->
         <receiver
             android:name=".GymLiveReceiver"

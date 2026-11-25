@@ -2945,6 +2945,41 @@
 
   .sp-row.sp-self { border-color: var(--border-strong); }
   .sp-self-note { font-size: 13px; color: var(--text-3); line-height: 1.4; text-align: center; margin: 10px 0; }
+
+  /* ===== Resumen del día ===== */
+  .ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .ds-date { font-size: 15px; font-weight: 700; flex: 1; text-align: center; }
+  .ds-date::first-letter { text-transform: uppercase; }
+  .ds-arrow { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 18px; cursor: pointer; }
+  .ds-arrow:disabled { opacity: .3; }
+  .ds-mode { margin-bottom: 12px; justify-content: center; }
+  .ds-btn { width: 100%; margin-top: 8px; }
+  .ds-msg { font-size: 13px; color: var(--text-2); text-align: center; margin-top: 8px; min-height: 16px; }
+  .ds-pick { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; }
+  .hd-sum { display: flex; align-items: center; gap: 10px; width: 100%; margin: 4px 0 12px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+  .hd-sum > span:first-child { flex: 1; display: flex; flex-direction: column; } .hd-sum b { font-size: 15px; } .hd-sum small { font-size: 12px; color: var(--text-3); }
+  .dr-empty { text-align: center; color: var(--text-3); padding: 30px 0; }
+  .dr-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .dr-kpi { background: var(--surface-2); border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; } .dr-kpi b { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; } .dr-kpi span { font-size: 11px; color: var(--text-3); }
+  .dr-sec { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 12px 14px; margin-bottom: 10px; }
+  .dr-h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; margin-bottom: 8px; } .dr-h > span { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); } .dr-h b { font-size: 14px; text-align: right; }
+  .dr-sub { font-size: 12px; font-weight: 600; color: var(--text-2); margin: 8px 0 6px; }
+  .dr-bars { display: flex; flex-direction: column; gap: 5px; margin-bottom: 6px; }
+  .dr-bar { display: grid; grid-template-columns: 38% 1fr auto; gap: 8px; align-items: center; font-size: 12px; } .dr-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dr-bar i { display: block; height: 10px; border-radius: 5px; background: var(--text); } .dr-bar b { font-variant-numeric: tabular-nums; font-size: 12px; }
+  .dr-ex { padding: 8px 0; border-top: 1px solid var(--border); }
+  .dr-ex-h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; } .dr-ex-h > b { font-size: 14px; }
+  .dr-e1 { font-size: 12px; color: var(--text-3); white-space: nowrap; } .dr-e1 b.up { color: #16A34A; } .dr-e1 b.dn { color: #DC2626; }
+  .dr-sets { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+  .dr-set { font-size: 12px; background: var(--surface-2); border-radius: 999px; padding: 3px 9px; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 4px; }
+  .dr-set small { color: var(--text-3); } .dr-set i { font-style: normal; color: #fff; font-size: 10px; font-weight: 800; border-radius: 999px; padding: 0 5px; }
+  .dr-li { font-size: 13px; padding: 5px 0; } .dr-li .dr-track { margin-top: 5px; }
+  .dr-feel { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--text-2); margin-top: 8px; }
+  .dr-note { font-size: 13px; font-style: italic; color: var(--text-2); margin-top: 6px; }
+  .dr-track { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; } .dr-track.big { height: 12px; border-radius: 6px; margin-bottom: 10px; } .dr-track i { display: block; height: 100%; border-radius: inherit; }
+  .dr-macs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
+  .dr-mac-h { display: flex; flex-direction: column; font-size: 11px; color: var(--text-3); margin-bottom: 4px; } .dr-mac-h b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .dr-meal { padding: 6px 0; border-top: 1px solid var(--border); } .dr-meal-h { display: flex; justify-content: space-between; font-size: 13px; } .dr-meal-h span { color: var(--text-3); } .dr-meal-i { font-size: 12px; color: var(--text-3); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -10367,7 +10402,7 @@ async function msgRefresh(force) {
   try { antHoyRefresh(force); } catch (e) {}
   try { ckRefresh(force); } catch (e) {}
 }
-function ntRefLabel(ref) { return ref && ref.t === 'asg' ? `${t(ASG_KINDS[ref.kind] || 'Plan')} · ${ref.name || ''}` : ''; }
+function ntRefLabel(ref) { return ref && ref.t === 'asg' ? `${t(ASG_KINDS[ref.kind] || 'Plan')} · ${ref.name || ''}` : ref && ref.t === 'day' ? `${t('Resumen del día')} · ${ref.date || ''}` : ''; }
 // Enviar un mensaje (con referencia opcional). Si el servidor aún no acepta `ref`, se manda como texto.
 async function ntPost(linkId, body, ref) {
   body = String(body || '').trim().slice(0, 1000);
@@ -10420,11 +10455,12 @@ async function openNotes(linkId, name, back, opts) {
       const dk = keyDate(new Date(n.created_at)); let sep = '';
       if (dk !== prevDay) { prevDay = dk; sep = `<div class="chat-day"><span>${escapeHtml(dayLabel(n.created_at))}</span></div>`; }
       const mine = n.author_id === me;
-      const refc = n.ref && n.ref.t === 'asg' ? `<div class="nt-refc" data-nt-ref="${i}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span><b>${ASG_KINDS[n.ref.kind] || 'Plan'}</b> · <span translate="no">${escapeHtml(n.ref.name || '')}</span></span></div>` : '';
+      const refc = n.ref && n.ref.t === 'day' ? `<div class="nt-refc" data-nt-ref="${i}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span><b>Resumen del día</b> · <span translate="no">${escapeHtml(new Intl.DateTimeFormat(_loc(), { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(n.ref.date + 'T00:00:00')))}</span></span><span class="sp-chev">›</span></div>` : n.ref && n.ref.t === 'asg' ? `<div class="nt-refc" data-nt-ref="${i}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span><b>${ASG_KINDS[n.ref.kind] || 'Plan'}</b> · <span translate="no">${escapeHtml(n.ref.name || '')}</span></span></div>` : '';
       return `${sep}<div class="nt-w ${mine ? 'me' : ''}"><div class="nt ${mine ? 'me' : ''}">${refc}<span translate="no">${escapeHtml(n.body)}</span></div><div class="nt-t" translate="no">${escapeHtml(hm(n.created_at))}</div></div>`;
     }).join('') || '<div class="chat-empty">Aún no hay mensajes. Escribe el primero.</div>';
     list.querySelectorAll('[data-nt-ref]').forEach(c => c.addEventListener('click', () => {
       const ref = rows[+c.dataset.ntRef].ref;
+      if (ref && ref.t === 'day') { if (opts.spec) spDaySummary(Object.assign({ name: name }, opts.link || {}), ref.date, ref.mode); else openDaySummary(ref.date, { mode: ref.mode || 'day' }); return; }
       if (opts.spec) return;
       const a = asgList().find(x => x.kind === ref.kind && x.name === ref.name);
       if (a) openAssignmentView(a);
@@ -11528,7 +11564,7 @@ function renderHoyDash() {
   } catch (e) {}
   try { if (typeof modApply === 'function') modApply(); } catch (e) {}
   const M = k => typeof modOn !== 'function' || modOn(k);
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${typeof phaseHoyCard === 'function' ? phaseHoyCard() : ''}${typeof goalsHoyCard === 'function' ? goalsHoyCard() : ''}${week}`;
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${typeof phaseHoyCard === 'function' ? phaseHoyCard() : ''}${typeof goalsHoyCard === 'function' ? goalsHoyCard() : ''}${week}<button class="hd-sum" id="hd-daysum"><span><b>Resumen del día</b><small>Compártelo o mándaselo a tu especialista</small></span><span class="sp-chev">›</span></button>`;
   el.querySelectorAll('[data-hd-phase]').forEach(c => c.addEventListener('click', () => openPhases()));
   el.querySelectorAll('[data-hd-goals]').forEach(c => c.addEventListener('click', () => openGoals()));
   if (typeof ckWireHoy === 'function') ckWireHoy(el);
@@ -11537,6 +11573,7 @@ function renderHoyDash() {
   el.querySelectorAll('[data-hd-chat]').forEach(b => b.addEventListener('click', () => { const l = msgCache().links[+b.dataset.hdChat]; if (l) openNotes(l.id, l.name, null, { spec: false, role: l.role, roles: linkRoles(l), ids: linkIds(l) }); }));
   el.querySelectorAll('[data-hd]').forEach(b => b.addEventListener('click', (ev) => { ev.stopPropagation(); const n = document.querySelector(`nav button[data-tab="${b.dataset.hd}"]`); if (n) n.click(); }));
   el.querySelectorAll('[data-hd-start]').forEach(b => b.addEventListener('click', () => openGymWorkout(b.dataset.hdStart, keyDate())));
+  const hds = document.getElementById('hd-daysum'); if (hds) hds.addEventListener('click', () => openDaySummary(keyDate(), { mode: 'day' }));
   gymMissedBind(el, renderHoy);
   el.querySelectorAll('[data-hd-weight]').forEach(c => c.addEventListener('click', openWeightQuick));
 }
@@ -14449,7 +14486,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
         <span class="gym-resti-t">${restTxt}</span>
       </button>` : ''}
       <div class="gym-wo-btns">
-        ${sportR ? '' : `<button class="btn-secondary" id="gym-share">${r.exercises.length ? 'Compartir cargas' : 'Compartir'}</button>`}
+        <button class="btn-secondary" id="gym-share">Compartir resumen</button>
         <button class="btn-secondary" id="gym-edit">Editar rutina</button>
       </div>
       ${dateKey === keyDate() && !lg.end && gymPipAvailable() ? `<button class="gym-pip-btn" id="gym-pip"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="6" rx="1"/></svg><span>Ventana flotante</span><small>${lg.start ? 'Ve el ejercicio que sigue sobre otras apps' : 'Disponible al marcar tu primera serie'}</small></button>` : ''}
@@ -14636,7 +14673,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
       persist(); draw();
     }));
     sb.querySelector('#gym-edit').addEventListener('click', () => openGymEditor(r.id));
-    const gsh = sb.querySelector('#gym-share'); if (gsh) gsh.addEventListener('click', () => gymShareLoads(r, dateKey));
+    const gsh = sb.querySelector('#gym-share'); if (gsh) gsh.addEventListener('click', () => openDaySummary(dateKey, { mode: 'gym', back: () => openGymWorkout(r.id, dateKey) }));
     const gpp = sb.querySelector('#gym-pip'); if (gpp) gpp.addEventListener('click', () => { if (!lg.start) { lg.start = Date.now(); persist(); } gymPipOpen(); });
     sb.querySelector('#gym-finish').addEventListener('click', () => {
       gymRestStop();
@@ -14906,6 +14943,99 @@ window.gymPip = function (on) {
 };
 (() => { try { const st = document.createElement('style'); st.textContent = GYM_PIP_CSS; document.head.appendChild(st); } catch (e) {} })();
 setTimeout(gymLiveSoon, 1500);
+
+// ---------- Resumen del día: ver, compartir como imagen y enviar al especialista ----------
+function localDayD() {
+  const D = {};
+  ['gym_logs', 'gym_routines', 'meal_log', 'act_log', 'hydration_log', 'hydration_settings', 'weight_log', 'habits', 'habitLog', 'nutri_profile', 'food_goal_kcal'].forEach(k => { const v = S.get(k, null); if (v != null) D[k] = v; });
+  return D;
+}
+function localDayGoal() {
+  try { if (typeof hasNutriProfile === 'function' && hasNutriProfile()) { const tg = calcNutriTargets(nutriProfile()); return { kcal: tg.kcal, p: tg.protein, c: tg.carbs, f: tg.fat }; } } catch (e) {}
+  const k = parseInt(S.get('food_goal_kcal', 0)); return k ? { kcal: k } : null;
+}
+async function shareCanvas(cv, name, text) {
+  const t2 = s => { const v = t(s); return v == null ? s : v; };
+  const dataUrl = cv.toDataURL('image/png');
+  if (window.Android && typeof window.Android.shareImage === 'function') {
+    try { if (window.Android.shareImage(dataUrl.split(',')[1], name, text || '')) return; } catch (e) {}
+  }
+  try {
+    const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+    const file = new File([blob], name, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Rutinal', text: text || '' }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = dataUrl; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  alert(t2('La imagen se descargó. Compártela desde tus descargas.'));
+}
+let _dsMode = 'day';
+function openDaySummary(dk, opts) {
+  opts = opts || {};
+  dk = dk || keyDate();
+  if (opts.mode) _dsMode = opts.mode;
+  const dd = dayData(localDayD(), dk, { goal: localDayGoal() });
+  if (_dsMode === 'gym' && !dd.gym) _dsMode = 'day';
+  const f = new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' });
+  const prev = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() - 864e5)), next = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() + 864e5)), isToday = dk === keyDate();
+  const body = `<div class="ds-nav"><button class="ds-arrow" data-ds-go="${prev}" aria-label="Día anterior">‹</button><div class="ds-date" translate="no">${escapeHtml(f.format(new Date(dk + 'T00:00:00')))}</div><button class="ds-arrow" data-ds-go="${next}" ${isToday ? 'disabled' : ''} aria-label="Día siguiente">›</button></div>
+    ${dd.gym ? `<div class="chips ds-mode"><div class="chip ${_dsMode === 'day' ? 'selected' : ''}" data-ds-mode="day">Todo el día</div><div class="chip ${_dsMode === 'gym' ? 'selected' : ''}" data-ds-mode="gym">Solo entrenamiento</div></div>` : ''}
+    <div class="dr">${dayReportHtml(_dsMode === 'gym' ? Object.assign({}, dd, { acts: [], food: null, water: null, weight: null, habits: null }) : dd)}</div>
+    ${dayIsEmpty(dd) ? '' : `<button class="btn-primary ds-btn" id="ds-share">Compartir imagen</button>
+    <button class="btn-secondary ds-btn" id="ds-send">Enviar a mi especialista</button>
+    <button class="btn-secondary ds-btn" id="ds-copy">Copiar como texto</button>`}
+    <div class="ds-msg" id="ds-msg"></div>
+    ${opts.back ? '<button class="btn-secondary ds-btn" id="ds-back">‹ Volver</button>' : ''}`;
+  openSheet(_dsMode === 'gym' ? 'Resumen del entrenamiento' : 'Resumen del día', body);
+  const sb = document.getElementById('sheet-body');
+  sb.querySelectorAll('[data-ds-go]').forEach(b => b.addEventListener('click', () => openDaySummary(b.dataset.dsGo, opts)));
+  sb.querySelectorAll('[data-ds-mode]').forEach(b => b.addEventListener('click', () => { _dsMode = b.dataset.dsMode; openDaySummary(dk, Object.assign({}, opts, { mode: _dsMode })); }));
+  const bk = document.getElementById('ds-back'); if (bk) bk.addEventListener('click', opts.back);
+  const msg = m => { const e = document.getElementById('ds-msg'); if (e) e.textContent = t(m) || m; };
+  const sh = document.getElementById('ds-share');
+  if (sh) sh.addEventListener('click', async () => {
+    const s0 = authGet() || {};
+    const cv = dayImageCanvas(dd, _dsMode, s0.name || s0.user || '');
+    await shareCanvas(cv, `rutinal-${dk}${_dsMode === 'gym' ? '-entrenamiento' : ''}.png`, _dsMode === 'gym' && dd.gym ? dd.gym.name : t('Resumen del día'));
+  });
+  const cp = document.getElementById('ds-copy');
+  if (cp) cp.addEventListener('click', () => {
+    const txt = dayReportText(_dsMode === 'gym' ? Object.assign({}, dd, { acts: [], food: null, water: null, weight: null }) : dd);
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(() => msg('Copiado al portapapeles.')).catch(() => prompt(t('Copia el texto:'), txt));
+    else prompt(t('Copia el texto:'), txt);
+  });
+  const sd = document.getElementById('ds-send');
+  if (sd) sd.addEventListener('click', async () => {
+    msg('Enviando…');
+    let mine = [];
+    try { const r = await linkRpc('rutinal_my_links'); if (r.ok) mine = mySpecialists(r); } catch (e) {}
+    if (!mine.length) { msg('Aún no tienes especialista. Agrégalo en Más > Especialistas.'); return; }
+    const send = async l => {
+      const lbl = new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' }).format(new Date(dk + 'T00:00:00'));
+      try { await ntPost(l.id, `${t('Te comparto mi resumen del')} ${lbl}.`, { t: 'day', date: dk, mode: _dsMode }); msg(`${t('Enviado a')} ${l.name || ''}.`); } catch (e) { msg(authErr(e.code)); }
+    };
+    if (mine.length === 1) { await send(mine[0]); return; }
+    const e = document.getElementById('ds-msg');
+    e.innerHTML = `<div class="ds-pick"><span>¿A quién se lo mandas?</span>${mine.map((l, i) => `<button class="chip" data-ds-to="${i}" translate="no">${escapeHtml(l.name || l.username || '')}</button>`).join('')}</div>`;
+    e.querySelectorAll('[data-ds-to]').forEach(b => b.addEventListener('click', () => send(mine[+b.dataset.dsTo])));
+  });
+}
+// El especialista abre el resumen que le mandó el atleta (lee los datos del atleta)
+async function spDaySummary(l, dk, mode) {
+  const clientId = l && (l.client_id || (l.link && l.link.client_id));
+  if (!clientId) return;
+  openSheet('Resumen del día', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>');
+  const from = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() - 60 * 864e5));
+  let rows = [];
+  try { const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(clientId) + '&or=(sub.eq.,and(sub.gte.' + from + ',sub.lte.' + dk + '))&limit=2000'); rows = r.ok ? await r.json() : []; } catch (e) {}
+  const D = {}; rows.forEach(x => { if (x.value === null) return; if (x.sub) (D[x.key] = D[x.key] || {})[x.sub] = x.value; else D[x.key] = x.value; });
+  const dd = dayData(D, dk);
+  const view = mode === 'gym' && dd.gym ? Object.assign({}, dd, { acts: [], food: null, water: null, weight: null, habits: null }) : dd;
+  const f = new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' });
+  openSheet('Resumen del día', `<div class="ds-nav"><div class="ds-date"><span translate="no">${escapeHtml(l.name || '')}</span> · <span translate="no">${escapeHtml(f.format(new Date(dk + 'T00:00:00')))}</span></div></div>
+    <div class="dr">${dayReportHtml(view)}</div>${dayIsEmpty(dd) ? '' : '<button class="btn-secondary ds-btn" id="ds-share">Guardar como imagen</button>'}`);
+  const sh = document.getElementById('ds-share');
+  if (sh) sh.addEventListener('click', () => shareCanvas(dayImageCanvas(dd, mode === 'gym' ? 'gym' : 'day', l.name || ''), `rutinal-${dk}.png`, ''));
+}
 
 function gymShareLoads(r, dateKey) {
   const lg = gymLogs()[dateKey];

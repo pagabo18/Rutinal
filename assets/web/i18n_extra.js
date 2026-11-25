@@ -6126,6 +6126,131 @@ window.__I18N_EXTRA = {
    "pt-BR": "Seu dia",
    "fr": "Ta journée"
   },
+  "Resumen del día": {
+   "en": "Daily summary",
+   "pt-BR": "Resumo do dia",
+   "fr": "Résumé du jour"
+  },
+  "Resumen del entrenamiento": {
+   "en": "Workout summary",
+   "pt-BR": "Resumo do treino",
+   "fr": "Résumé de l'entraînement"
+  },
+  "Compártelo o mándaselo a tu especialista": {
+   "en": "Share it or send it to your specialist",
+   "pt-BR": "Compartilhe ou envie ao seu especialista",
+   "fr": "Partage-le ou envoie-le à ton spécialiste"
+  },
+  "Todo el día": {
+   "en": "Whole day",
+   "pt-BR": "Dia inteiro",
+   "fr": "Toute la journée"
+  },
+  "Solo entrenamiento": {
+   "en": "Workout only",
+   "pt-BR": "Só treino",
+   "fr": "Entraînement seulement"
+  },
+  "Compartir imagen": {
+   "en": "Share image",
+   "pt-BR": "Compartilhar imagem",
+   "fr": "Partager l'image"
+  },
+  "Enviar a mi especialista": {
+   "en": "Send to my specialist",
+   "pt-BR": "Enviar ao meu especialista",
+   "fr": "Envoyer à mon spécialiste"
+  },
+  "Copiar como texto": {
+   "en": "Copy as text",
+   "pt-BR": "Copiar como texto",
+   "fr": "Copier en texte"
+  },
+  "Compartir resumen": {
+   "en": "Share summary",
+   "pt-BR": "Compartilhar resumo",
+   "fr": "Partager le résumé"
+  },
+  "Guardar como imagen": {
+   "en": "Save as image",
+   "pt-BR": "Salvar como imagem",
+   "fr": "Enregistrer en image"
+  },
+  "Nada registrado este día.": {
+   "en": "Nothing logged this day.",
+   "pt-BR": "Nada registrado neste dia.",
+   "fr": "Rien d'enregistré ce jour-là."
+  },
+  "Volumen por ejercicio": {
+   "en": "Volume per exercise",
+   "pt-BR": "Volume por exercício",
+   "fr": "Volume par exercice"
+  },
+  "Calentamiento y cardio": {
+   "en": "Warm-up and cardio",
+   "pt-BR": "Aquecimento e cardio",
+   "fr": "Échauffement et cardio"
+  },
+  "Actividades": {
+   "en": "Activities",
+   "pt-BR": "Atividades",
+   "fr": "Activités"
+  },
+  "Además": {
+   "en": "Also",
+   "pt-BR": "Além disso",
+   "fr": "En plus"
+  },
+  "Ánimo": {
+   "en": "Mood",
+   "pt-BR": "Ânimo",
+   "fr": "Humeur"
+  },
+  "min de entrenamiento": {
+   "en": "min of training",
+   "pt-BR": "min de treino",
+   "fr": "min d'entraînement"
+  },
+  "min de cardio": {
+   "en": "min of cardio",
+   "pt-BR": "min de cardio",
+   "fr": "min de cardio"
+  },
+  "vasos de agua": {
+   "en": "glasses of water",
+   "pt-BR": "copos de água",
+   "fr": "verres d'eau"
+  },
+  "Te comparto mi resumen del": {
+   "en": "Here's my summary for",
+   "pt-BR": "Compartilho meu resumo de",
+   "fr": "Voici mon résumé du"
+  },
+  "Enviado a": {
+   "en": "Sent to",
+   "pt-BR": "Enviado para",
+   "fr": "Envoyé à"
+  },
+  "Enviando…": {
+   "en": "Sending…",
+   "pt-BR": "Enviando…",
+   "fr": "Envoi…"
+  },
+  "Aún no tienes especialista. Agrégalo en Más > Especialistas.": {
+   "en": "You don't have a specialist yet. Add one in More > Specialists.",
+   "pt-BR": "Você ainda não tem especialista. Adicione em Mais > Especialistas.",
+   "fr": "Tu n'as pas encore de spécialiste. Ajoute-le dans Plus > Spécialistes."
+  },
+  "¿A quién se lo mandas?": {
+   "en": "Who do you want to send it to?",
+   "pt-BR": "Para quem você envia?",
+   "fr": "À qui l'envoies-tu ?"
+  },
+  "La imagen se descargó. Compártela desde tus descargas.": {
+   "en": "The image was downloaded. Share it from your downloads.",
+   "pt-BR": "A imagem foi baixada. Compartilhe pelos seus downloads.",
+   "fr": "L'image a été téléchargée. Partage-la depuis tes téléchargements."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

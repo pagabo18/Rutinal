@@ -46,6 +46,38 @@ public class WebAppInterface {
         } catch (Exception ignored) {}
     }
 
+    /** Compartir una imagen PNG (base64) con otras apps. Devuelve false si no se pudo. */
+    @JavascriptInterface
+    public boolean shareImage(String b64, String name, String text) {
+        if (b64 == null || activity == null) return false;
+        try {
+            String safe = (name == null ? "rutinal.png" : name).replaceAll("[^A-Za-z0-9._-]", "_");
+            if (!safe.endsWith(".png")) safe += ".png";
+            java.io.File dir = ShareFileProvider.dir(ctx);
+            java.io.File[] old = dir.listFiles();
+            if (old != null) for (java.io.File o : old) { try { o.delete(); } catch (Exception ignored) {} }
+            java.io.File f = new java.io.File(dir, safe);
+            byte[] bytes = android.util.Base64.decode(b64, android.util.Base64.DEFAULT);
+            java.io.FileOutputStream out = new java.io.FileOutputStream(f);
+            out.write(bytes); out.close();
+            final android.net.Uri uri = android.net.Uri.parse("content://" + ShareFileProvider.AUTHORITY + "/" + safe);
+            final android.content.Intent send = new android.content.Intent(android.content.Intent.ACTION_SEND);
+            send.setType("image/png");
+            send.putExtra(android.content.Intent.EXTRA_STREAM, uri);
+            if (text != null && !text.isEmpty()) send.putExtra(android.content.Intent.EXTRA_TEXT, text);
+            send.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            send.setClipData(android.content.ClipData.newRawUri("", uri));
+            activity.runOnUiThread(new Runnable() {
+                @Override public void run() {
+                    try { activity.startActivity(android.content.Intent.createChooser(send, "Compartir")); } catch (Exception ignored) {}
+                }
+            });
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /** Colores de la barra de estado y de navegación según el tema de la app. */
     @JavascriptInterface
     public void setSystemBars(final String color, final boolean dark) {

@@ -1276,6 +1276,248 @@ function cvWorkoutHtml(r, lg, kind, pick) {
 }
 
 // ============================================================
+// RESUMEN DEL DÍA (compartir como imagen o enviarlo al especialista)
+// ============================================================
+// D = datos del atleta con la misma forma que en la nube: gym_logs, gym_routines,
+// meal_log, act_log, hydration_log, hydration_settings, weight_log, habits, habitLog,
+// nutri_profile, food_goal_kcal. Sirve igual para el atleta (local) y el especialista.
+const DAY_MEALS = [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['dinner', 'Cena'], ['snack', 'Snack']];
+function dayData(D, dk, opts) {
+  opts = opts || {}; D = D || {};
+  const out = { date: dk, gym: null, acts: [], food: null, water: null, weight: null, habits: null };
+  const N = x => (typeof gymNum === 'function' ? gymNum(x) : parseFloat(x));
+  const E1 = (kg, reps) => (typeof gymE1RM === 'function' ? gymE1RM(kg, reps) : 0);
+  // --- Entrenamiento ---
+  const logs = D.gym_logs || {}, lg = logs[dk], routines = Array.isArray(D.gym_routines) ? D.gym_routines : [];
+  if (lg && lg.routineId) {
+    const r = routines.find(x => x.id === lg.routineId) || { name: '', exercises: [] };
+    const prevKeys = Object.keys(logs).filter(k => k < dk).sort().reverse();
+    const ex = [];
+    (r.exercises || []).forEach(e => {
+      const sets = ((lg.ex || {})[e.id] || []).filter(x => x && x.done);
+      if (!sets.length) return;
+      const sw = lg.swap && lg.swap[e.id], name = (sw && sw.name) || e.name;
+      const vol = sets.reduce((a, x) => a + (N(x.kg) || 0) * (N(x.reps) || 0), 0);
+      const e1 = Math.max(0, ...sets.map(x => (N(x.kg) > 0 && N(x.reps) > 0 ? E1(x.kg, x.reps) : 0)));
+      let prev = 0;
+      for (const k of prevKeys) {
+        const pl = logs[k]; if (!pl || pl.routineId == null) continue;
+        const psw = pl.swap && pl.swap[e.id]; if (((psw && psw.name) || null) !== ((sw && sw.name) || null)) continue;
+        const ps = ((pl.ex || {})[e.id] || []).filter(x => x && x.done && N(x.kg) > 0 && N(x.reps) > 0);
+        if (ps.length) { prev = Math.max(...ps.map(x => E1(x.kg, x.reps))); break; }
+      }
+      const f = (lg.exFeel || {})[e.id] || {};
+      ex.push({ id: e.id, name, sets: sets.map(x => ({ kg: x.kg, reps: x.reps, rir: x.rir, pain: x.pain, time: x.time, rpe: x.rpe })), vol, e1rm: e1, prev, pain: f.pain, rpe: f.rpe,
+        maxPain: Math.max(-1, ...sets.map(x => (x.pain == null ? -1 : +x.pain))) });
+    });
+    const cv = (typeof cvAll === 'function' ? cvAll(r, lg) : []).map(([kind, it]) => { const v = (lg.cv || {})[it.id]; return v && v.done ? { kind, name: cvName(it), text: cvText(it, v), min: parseFloat(v.time) || 0 } : null; }).filter(Boolean);
+    const mins = lg.start && lg.end && lg.end > lg.start ? Math.round((lg.end - lg.start) / 60000) : 0;
+    if (ex.length || cv.length || lg.done) out.gym = { name: r.name || '', sport: !!(r.meta && r.meta.sport), done: !!lg.done, mins, ex, cv,
+      sets: ex.reduce((a, x) => a + x.sets.length, 0), vol: ex.reduce((a, x) => a + x.vol, 0), cvMin: cv.reduce((a, x) => a + x.min, 0), feel: lg.feel || {} };
+  }
+  // --- Actividades (running, natación…) ---
+  ((D.act_log || {})[dk] || []).forEach(a => {
+    const sp = (typeof SPORT_BY !== 'undefined' && SPORT_BY[a.sport]) || { name: a.sport };
+    const km = (+a.dist_km || 0) + (+a.dist_m || 0) / 1000, bits = [];
+    if (km) bits.push(a.dist_m ? Math.round(km * 1000) + ' m' : (Math.round(km * 100) / 100) + ' km');
+    if (+a.time) bits.push(actFmtTime(a.time));
+    if (km && +a.time && !a.dist_m) bits.push(actFmtTime(Math.round(a.time / km)) + ' /km');
+    if (a.hr) bits.push(a.hr + ' lpm');
+    if (a.rpe != null) bits.push('RPE ' + a.rpe);
+    out.acts.push({ name: sp.name + (a.type ? ' · ' + a.type : ''), text: bits.join(' · '), min: Math.round((+a.time || 0) / 60) });
+  });
+  // --- Comida ---
+  const day = (D.meal_log || {})[dk];
+  if (day) {
+    const tot = { kcal: 0, p: 0, c: 0, f: 0 }, meals = [];
+    DAY_MEALS.forEach(([id, nm]) => {
+      const items = (day[id] || []).map(it => { const m = calcItemMacros(it); tot.kcal += m.kcal; tot.p += m.protein; tot.c += m.carbs; tot.f += m.fat; return { name: it.name || '', g: it.grams || 0, kcal: m.kcal }; });
+      if (items.length) meals.push({ name: nm, kcal: items.reduce((a, x) => a + x.kcal, 0), items });
+    });
+    if (meals.length) {
+      let goal = opts.goal || null;
+      if (!goal) { try { if (D.nutri_profile && D.nutri_profile.heightCm) { const tg = calcNutriTargets(D.nutri_profile, true); goal = { kcal: tg.kcal, p: tg.protein, c: tg.carbs, f: tg.fat }; } } catch (e) {} }
+      if (!goal && D.food_goal_kcal) goal = { kcal: +D.food_goal_kcal };
+      out.food = { kcal: Math.round(tot.kcal), p: Math.round(tot.p), c: Math.round(tot.c), f: Math.round(tot.f), goal, meals };
+    }
+  }
+  // --- Agua, peso, hábitos ---
+  const w = (D.hydration_log || {})[dk];
+  if (w) out.water = { n: +w, goal: +((D.hydration_settings || {}).goal || 8) };
+  const kg = (D.weight_log || {})[dk];
+  if (kg != null && kg !== '') out.weight = +kg;
+  const hb = Array.isArray(D.habits) ? D.habits : [], hl = (D.habitLog || {})[dk] || {};
+  if (hb.length && Object.keys(hl).length) out.habits = { done: hb.filter(h => hl[h.id]).length, total: hb.length };
+  return out;
+}
+function dayIsEmpty(dd) { return !dd.gym && !dd.acts.length && !dd.food && !dd.water && dd.weight == null && !dd.habits; }
+function dayKpis(dd) {
+  const k = [];
+  if (dd.gym && !dd.gym.sport && dd.gym.sets) k.push([String(dd.gym.sets), 'series']);
+  if (dd.gym && dd.gym.vol) k.push([Math.round(typeof gymVolU === 'function' ? gymVolU(dd.gym.vol) : dd.gym.vol).toLocaleString(_loc()), (typeof gymUnit === 'function' ? gymUnit() : 'kg') + ' de volumen']);
+  if (dd.gym && dd.gym.mins) k.push([String(dd.gym.mins), 'min de entrenamiento']);
+  const cvMin = (dd.gym ? dd.gym.cvMin : 0) + dd.acts.reduce((a, x) => a + x.min, 0);
+  if (cvMin) k.push([String(Math.round(cvMin)), 'min de cardio']);
+  if (dd.food) k.push([dd.food.kcal.toLocaleString(_loc()), dd.food.goal && dd.food.goal.kcal ? `de ${Math.round(dd.food.goal.kcal).toLocaleString(_loc())} kcal` : 'kcal']);
+  if (dd.water) k.push([`${dd.water.n}/${dd.water.goal}`, 'vasos de agua']);
+  return k;
+}
+const DAY_COL = { p: '#E5484D', c: '#F2A20C', f: '#6BA31A', w: '#0EA5E9', ink: '#0A0A0A', up: '#16A34A', dn: '#DC2626', warn: '#D97706' };
+function dayPainCol(v) { return v >= 7 ? DAY_COL.dn : v >= 4 ? DAY_COL.warn : '#84CC16'; }
+// Vista en la app (con gráficas en SVG)
+function dayReportHtml(dd) {
+  const E = x => (typeof escapeHtml === 'function' ? escapeHtml(String(x)) : String(x)), U = typeof gymUnit === 'function' ? gymUnit() : 'kg';
+  const W = kg => (typeof gymDispW === 'function' ? gymDispW(kg) : kg);
+  if (dayIsEmpty(dd)) return '<div class="dr-empty">Nada registrado este día.</div>';
+  let h = `<div class="dr-kpis">${dayKpis(dd).map(([v, l]) => `<div class="dr-kpi"><b translate="no">${E(v)}</b><span>${E(l)}</span></div>`).join('')}</div>`;
+  const g = dd.gym;
+  if (g) {
+    const maxV = Math.max(1, ...g.ex.map(x => x.vol));
+    h += `<div class="dr-sec"><div class="dr-h"><span>Entrenamiento</span><b translate="no">${E(g.name)}</b></div>`;
+    if (!g.sport && g.ex.some(x => x.vol)) h += `<div class="dr-sub">Volumen por ejercicio</div><div class="dr-bars">${g.ex.filter(x => x.vol).map(x => `<div class="dr-bar"><span translate="no">${E(x.name)}</span><i style="width:${Math.max(4, Math.round(x.vol / maxV * 100))}%"></i><b translate="no">${Math.round(typeof gymVolU === 'function' ? gymVolU(x.vol) : x.vol).toLocaleString(_loc())}</b></div>`).join('')}</div>`;
+    h += g.ex.map(x => {
+      const ch = x.prev && x.e1rm ? Math.round((x.e1rm - x.prev) / x.prev * 100) : null;
+      return `<div class="dr-ex"><div class="dr-ex-h"><b translate="no">${E(x.name)}</b>${x.e1rm ? `<span class="dr-e1"><span>1RM est.</span> <span translate="no">${typeof gymFmtKg === 'function' ? gymFmtKg(x.e1rm) : Math.round(x.e1rm)} ${U}</span>${ch ? ` <b class="${ch > 0 ? 'up' : 'dn'}" translate="no">${ch > 0 ? '+' : ''}${ch}%</b>` : ''}</span>` : ''}</div>
+        <div class="dr-sets" translate="no">${x.sets.map((s, i) => `<span class="dr-set">${i + 1}. ${s.time ? E(s.time) + (s.reps ? ' · ' + E(s.reps) : '') : `${E(W(s.kg) || 0)}×${E(s.reps || 0)}`}${s.rir !== undefined && s.rir !== '' && s.rir != null ? ` <small>RIR ${E(s.rir)}</small>` : ''}${s.pain > 0 ? ` <i style="background:${dayPainCol(+s.pain)}">${E(s.pain)}</i>` : ''}</span>`).join('')}</div></div>`;
+    }).join('');
+    if (g.cv.length) h += `<div class="dr-sub">Calentamiento y cardio</div>${g.cv.map(c => `<div class="dr-li"><b>${E(CV_KIND[c.kind])}</b> · <span translate="no">${E(c.name)} · ${E(c.text)}</span></div>`).join('')}`;
+    const fe = g.feel || {};
+    if (fe.pain != null || fe.rpe != null || fe.mood) h += `<div class="dr-feel">${fe.mood ? `<span><span>Ánimo</span> <b translate="no">${fe.mood}/5</b></span>` : ''}${fe.rpe != null ? `<span>RPE <b translate="no">${fe.rpe}/10</b></span>` : ''}${fe.pain != null ? `<span><span>Dolor</span> <b translate="no" style="color:${fe.pain >= 4 ? dayPainCol(fe.pain) : 'inherit'}">${fe.pain}/10</b></span>` : ''}</div>`;
+    if (fe.note) h += `<div class="dr-note">“${E(fe.note)}”</div>`;
+    h += '</div>';
+  }
+  if (dd.acts.length) h += `<div class="dr-sec"><div class="dr-h"><span>Actividades</span></div>${dd.acts.map(a => `<div class="dr-li"><b>${E(a.name)}</b>${a.text ? ` · <span translate="no">${E(a.text)}</span>` : ''}</div>`).join('')}</div>`;
+  const f = dd.food;
+  if (f) {
+    const gl = f.goal || {}, bar = (v, goal, col, lbl) => `<div class="dr-mac"><div class="dr-mac-h"><span>${lbl}</span><b translate="no">${v}${goal ? ' / ' + Math.round(goal) : ''} g</b></div><div class="dr-track"><i style="width:${goal ? Math.min(100, Math.round(v / goal * 100)) : 100}%;background:${col}"></i></div></div>`;
+    h += `<div class="dr-sec"><div class="dr-h"><span>Comida</span><b translate="no">${f.kcal.toLocaleString(_loc())} kcal${gl.kcal ? ' / ' + Math.round(gl.kcal).toLocaleString(_loc()) : ''}</b></div>
+      ${gl.kcal ? `<div class="dr-track big"><i style="width:${Math.min(100, Math.round(f.kcal / gl.kcal * 100))}%;background:${f.kcal > gl.kcal * 1.1 ? DAY_COL.dn : DAY_COL.ink}"></i></div>` : ''}
+      <div class="dr-macs">${bar(f.p, gl.p, DAY_COL.p, 'Proteína')}${bar(f.c, gl.c, DAY_COL.c, 'Carbos')}${bar(f.f, gl.f, DAY_COL.f, 'Grasa')}</div>
+      ${f.meals.map(m => `<div class="dr-meal"><div class="dr-meal-h"><b>${E(m.name)}</b><span translate="no">${m.kcal} kcal</span></div><div class="dr-meal-i" translate="no">${m.items.map(i => `${E(i.name)}${i.g ? ' ' + Math.round(i.g) + ' g' : ''}`).join(' · ')}</div></div>`).join('')}</div>`;
+  }
+  const extra = [];
+  if (dd.water) extra.push(`<div class="dr-li"><b>Agua</b> · <span translate="no">${dd.water.n}/${dd.water.goal}</span> <span>vasos</span><div class="dr-track"><i style="width:${Math.min(100, Math.round(dd.water.n / Math.max(1, dd.water.goal) * 100))}%;background:${DAY_COL.w}"></i></div></div>`);
+  if (dd.weight != null) extra.push(`<div class="dr-li"><b>Peso</b> · <span translate="no">${typeof bwDisp === 'function' ? bwDisp(dd.weight) + ' ' + bwUnit() : dd.weight + ' kg'}</span></div>`);
+  if (dd.habits) extra.push(`<div class="dr-li"><b>Hábitos</b> · <span translate="no">${dd.habits.done}/${dd.habits.total}</span></div>`);
+  if (extra.length) h += `<div class="dr-sec"><div class="dr-h"><span>Además</span></div>${extra.join('')}</div>`;
+  return h;
+}
+// Texto plano (para copiar o como respaldo)
+function dayReportText(dd) {
+  const U = typeof gymUnit === 'function' ? gymUnit() : 'kg', L = [];
+  let d = dd.date; try { d = new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(dd.date + 'T00:00:00')); } catch (e) {}
+  L.push(`Rutinal · ${d}`);
+  if (dd.gym) {
+    L.push('', `${t('Entrenamiento')}: ${dd.gym.name}`);
+    dd.gym.ex.forEach(x => L.push(`${x.name}: ${x.sets.map(s => s.time ? s.time + (s.reps ? ' · ' + s.reps : '') : `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg} ${U} × ${s.reps}${s.pain > 0 ? ` (${t('dolor')} ${s.pain})` : ''}`).join(', ')}`));
+    dd.gym.cv.forEach(c => L.push(`${t(CV_KIND[c.kind])} · ${c.name}: ${c.text}`));
+  }
+  dd.acts.forEach(a => L.push(`${a.name}: ${a.text}`));
+  if (dd.food) L.push('', `${t('Comida')}: ${dd.food.kcal} kcal · P ${dd.food.p} g · C ${dd.food.c} g · G ${dd.food.f} g`);
+  if (dd.water) L.push(`${t('Agua')}: ${dd.water.n}/${dd.water.goal}`);
+  if (dd.weight != null) L.push(`${t('Peso')}: ${dd.weight} kg`);
+  return L.join('\n');
+}
+// Imagen para compartir (canvas 1080 px de ancho). mode: 'gym' solo el entrenamiento, 'day' todo el día.
+function dayImageCanvas(dd, mode, who) {
+  const W = 1080, P = 64, FF = "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif";
+  const U = typeof gymUnit === 'function' ? gymUnit() : 'kg', tt = s => { const v = t(s); return v == null ? s : v; };
+  const cmds = []; let y = 0;
+  const font = (w, sz) => `${w} ${sz}px ${FF}`;
+  const cv = document.createElement('canvas'), x0 = cv.getContext('2d');
+  const wrap = (txt, w, sz, wt) => { x0.font = font(wt || 400, sz); const words = String(txt).split(' '), out = []; let cur = ''; words.forEach(wd => { const tst = cur ? cur + ' ' + wd : wd; if (x0.measureText(tst).width > w && cur) { out.push(cur); cur = wd; } else cur = tst; }); if (cur) out.push(cur); return out; };
+  // helpers con posición absoluta
+  const T = (txt, x, yy, sz, wt, col, align) => cmds.push(c => { c.font = font(wt, sz); c.fillStyle = col; c.textAlign = align || 'left'; c.fillText(txt, x, yy); });
+  const R = (x, yy, w, h, col, r) => cmds.push(c => { c.fillStyle = col; c.beginPath(); if (c.roundRect) c.roundRect(x, yy, w, h, r || 0); else c.rect(x, yy, w, h); c.fill(); });
+  let d = dd.date; try { d = new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(dd.date + 'T00:00:00')); d = d.charAt(0).toUpperCase() + d.slice(1); } catch (e) {}
+  // Encabezado
+  y = 0; R(0, 0, W, 250, '#0A0A0A', 0);
+  T('RUTINAL', P, 82, 26, 700, '#A1A1AA');
+  T(d, W - P, 82, 26, 400, '#A1A1AA', 'right');
+  const title = mode === 'gym' && dd.gym ? dd.gym.name : tt('Resumen del día');
+  wrap(title, W - 2 * P, 64, 800).slice(0, 2).forEach((l, i) => T(l, P, 160 + i * 70, 64, 800, '#FFFFFF'));
+  if (who) T(who, P, 228, 26, 400, '#A1A1AA');
+  y = 250 + 40;
+  // KPIs
+  const k = dayKpis(mode === 'gym' ? Object.assign({}, dd, { food: null, water: null, acts: [] }) : dd).slice(0, 4);
+  if (k.length) {
+    const kw = (W - 2 * P - (k.length - 1) * 16) / k.length;
+    k.forEach(([v, l], i) => { const x = P + i * (kw + 16); R(x, y, kw, 150, '#F4F4F5', 24); T(v, x + 24, y + 70, 48, 800, '#0A0A0A'); wrap(tt(l), kw - 48, 22, 500).slice(0, 2).forEach((ln, j) => T(ln, x + 24, y + 104 + j * 26, 22, 500, '#52525B')); });
+    y += 150 + 44;
+  }
+  const H = (lbl, right) => { T(tt(lbl).toUpperCase(), P, y + 24, 24, 700, '#71717A'); if (right) T(right, W - P, y + 24, 26, 700, '#0A0A0A', 'right'); y += 50; };
+  const g = dd.gym;
+  if (g) {
+    H('Entrenamiento', mode === 'gym' ? '' : g.name);
+    const maxV = Math.max(1, ...g.ex.map(x => x.vol));
+    if (!g.sport && g.ex.some(x => x.vol)) {
+      g.ex.filter(x => x.vol).slice(0, 8).forEach(x => {
+        T(wrap(x.name, 330, 24, 600)[0], P, y + 28, 24, 600, '#0A0A0A');
+        const bw = W - 2 * P - 340 - 130;
+        R(P + 340, y + 8, bw, 26, '#F4F4F5', 13); R(P + 340, y + 8, Math.max(26, bw * x.vol / maxV), 26, '#0A0A0A', 13);
+        T(Math.round(typeof gymVolU === 'function' ? gymVolU(x.vol) : x.vol).toLocaleString(_loc()) + ' ' + U, W - P, y + 30, 22, 600, '#3F3F46', 'right');
+        y += 48;
+      });
+      y += 18;
+    }
+    g.ex.slice(0, mode === 'gym' ? 12 : 6).forEach(x => {
+      R(P, y, W - 2 * P, 2, '#E4E4E7', 0); y += 22;
+      T(wrap(x.name, W - 2 * P - 330, 30, 700)[0], P, y + 30, 30, 700, '#0A0A0A');
+      if (x.e1rm) {
+        const ch = x.prev ? Math.round((x.e1rm - x.prev) / x.prev * 100) : 0;
+        T(`1RM ${typeof gymFmtKg === 'function' ? gymFmtKg(x.e1rm) : Math.round(x.e1rm)} ${U}`, W - P - (ch ? 110 : 0), y + 30, 24, 600, '#52525B', 'right');
+        if (ch) T(`${ch > 0 ? '+' : ''}${ch}%`, W - P, y + 30, 24, 800, ch > 0 ? DAY_COL.up : DAY_COL.dn, 'right');
+      }
+      y += 50;
+      // series como pastillas
+      let px = P;
+      x.sets.forEach((s, i) => {
+        const lbl = s.time ? `${s.time}${s.reps ? ' · ' + s.reps : ''}` : `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg}×${s.reps}`;
+        x0.font = font(600, 24); const tw = x0.measureText(lbl).width + 36 + (s.pain > 0 ? 40 : 0);
+        if (px + tw > W - P) { px = P; y += 58; }
+        R(px, y, tw, 46, '#F4F4F5', 23); T(lbl, px + 18, y + 32, 24, 600, '#0A0A0A');
+        if (s.pain > 0) { R(px + tw - 46, y + 8, 30, 30, dayPainCol(+s.pain), 15); T(String(s.pain), px + tw - 31, y + 31, 18, 800, '#FFFFFF', 'center'); }
+        px += tw + 12;
+      });
+      y += 70;
+    });
+    if (g.cv.length) { R(P, y, W - 2 * P, 2, '#E4E4E7', 0); y += 22; g.cv.forEach(c => { wrap(`${tt(CV_KIND[c.kind])} · ${c.name} · ${c.text}`, W - 2 * P, 26, 500).forEach(l => { T(l, P, y + 30, 26, 500, '#27272A'); y += 38; }); }); y += 10; }
+    const fe = g.feel || {}, fb = [];
+    if (fe.mood) fb.push(`${tt('Ánimo')} ${fe.mood}/5`); if (fe.rpe != null) fb.push(`RPE ${fe.rpe}/10`); if (fe.pain != null) fb.push(`${tt('Dolor')} ${fe.pain}/10`);
+    if (fb.length) { T(fb.join('   ·   '), P, y + 30, 26, 600, '#3F3F46'); y += 54; }
+    y += 20;
+  }
+  if (mode !== 'gym') {
+    if (dd.acts.length) { H('Actividades'); dd.acts.forEach(a => { wrap(`${a.name}${a.text ? ' · ' + a.text : ''}`, W - 2 * P, 26, 500).forEach(l => { T(l, P, y + 30, 26, 500, '#27272A'); y += 38; }); }); y += 26; }
+    const f = dd.food;
+    if (f) {
+      const gl = f.goal || {};
+      H('Comida', `${f.kcal.toLocaleString(_loc())}${gl.kcal ? ' / ' + Math.round(gl.kcal).toLocaleString(_loc()) : ''} kcal`);
+      if (gl.kcal) { R(P, y, W - 2 * P, 22, '#F4F4F5', 11); R(P, y, Math.max(22, (W - 2 * P) * Math.min(1, f.kcal / gl.kcal)), 22, f.kcal > gl.kcal * 1.1 ? DAY_COL.dn : '#0A0A0A', 11); y += 50; }
+      const cw = (W - 2 * P - 32) / 3;
+      [['Proteína', f.p, gl.p, DAY_COL.p], ['Carbos', f.c, gl.c, DAY_COL.c], ['Grasa', f.f, gl.f, DAY_COL.f]].forEach(([l, v, go, col], i) => {
+        const x = P + i * (cw + 16);
+        T(tt(l), x, y + 24, 22, 600, '#52525B'); T(`${v}${go ? '/' + Math.round(go) : ''} g`, x + cw, y + 24, 22, 700, '#0A0A0A', 'right');
+        R(x, y + 40, cw, 14, '#F4F4F5', 7); R(x, y + 40, Math.max(14, cw * (go ? Math.min(1, v / go) : 1)), 14, col, 7);
+      });
+      y += 86;
+      f.meals.forEach(m => { T(tt(m.name), P, y + 28, 26, 700, '#0A0A0A'); T(`${m.kcal} kcal`, W - P, y + 28, 24, 600, '#52525B', 'right'); y += 38; wrap(m.items.map(i => i.name).join(' · '), W - 2 * P, 22, 400).slice(0, 2).forEach(l => { T(l, P, y + 24, 22, 400, '#71717A'); y += 30; }); y += 12; });
+      y += 14;
+    }
+    const ex = [];
+    if (dd.water) ex.push(`${tt('Agua')} ${dd.water.n}/${dd.water.goal}`);
+    if (dd.weight != null) ex.push(`${tt('Peso')} ${typeof bwDisp === 'function' ? bwDisp(dd.weight) + ' ' + bwUnit() : dd.weight + ' kg'}`);
+    if (dd.habits) ex.push(`${tt('Hábitos')} ${dd.habits.done}/${dd.habits.total}`);
+    if (ex.length) { H('Además'); T(ex.join('   ·   '), P, y + 30, 28, 600, '#27272A'); y += 60; }
+  }
+  y += 30; R(0, y, W, 2, '#E4E4E7', 0); T('Rutinal · pagabo18.github.io/Rutinal', W / 2, y + 52, 22, 500, '#A1A1AA', 'center'); y += 90;
+  cv.width = W; cv.height = Math.ceil(y);
+  const c = cv.getContext('2d'); c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, W, cv.height); c.textBaseline = 'alphabetic';
+  cmds.forEach(fn => fn(c));
+  return cv;
+}
+
+// ============================================================
 // OBJETIVOS Y LOGROS: metas con avance calculado solo a partir de los registros.
 // ============================================================
 const GOAL_TYPES = [
