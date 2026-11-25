@@ -2942,6 +2942,9 @@
   .cv-x-row { display: flex; gap: 14px; justify-content: flex-end; }
   .cv-more { width: 100%; margin-top: 6px; padding: 10px; border: 1px dashed var(--border-strong); border-radius: 12px; background: transparent; color: var(--text-2); font: inherit; font-size: 14px; cursor: pointer; }
   .cv-x-name { margin-top: 8px; padding: 8px 10px; font-size: 15px; }
+
+  .sp-row.sp-self { border-color: var(--border-strong); }
+  .sp-self-note { font-size: 13px; color: var(--text-3); line-height: 1.4; text-align: center; margin: 10px 0; }
 </style>
 </head>
 <body>
@@ -10093,7 +10096,7 @@ async function openTemplates(forClient) {
   try { _tpls = await sbRest('templates?select=id,kind,name,payload,updated_at&order=updated_at.desc') || []; }
   catch (e) { openSheet(title, `<p class="auth-msg">${escapeHtml(authErr(e.code))}</p>`); return; }
   const specs = (authGet() || {}).specs || [];
-  const kinds = Object.keys(ASG_KINDS).filter(k => specs.some(sp => (ASG_ROLE_KINDS[sp] || []).includes(k)));
+  const kinds = Object.keys(ASG_KINDS).filter(k => (forClient && forClient.self) || specs.some(sp => (ASG_ROLE_KINDS[sp] || []).includes(k)));
   const usable = forClient ? asgKindsFor(forClient).filter(k => kinds.includes(k)) : kinds;
   const rows = _tpls.filter(tp => usable.includes(tp.kind)).map(tp => `<div class="lk-row"><div class="lk-top"><div class="lk-n">${escapeHtml(tp.name)}</div><span class="usr-badge">${ASG_KINDS[tp.kind]}</span></div>
       <div class="lk-d">${asgSummary(tp.kind, tp.payload || {})}</div>
@@ -10345,7 +10348,8 @@ async function msgRefresh(force) {
     r = await linkRpc('rutinal_my_links'); if (!r.ok) return;
     notes = await sbRest('notes?select=link_id,author_id,body,created_at&order=created_at.desc&limit=200') || [];
   } catch (e) { return; }
-  const mine = mySpecialists(r), cls = spClients(r), prim = {}, last = {};
+  selfLinksNote(r);
+  const mine = mySpecialists(r), cls = spOthers(spClients(r)), prim = {}, last = {};
   mine.concat(cls).forEach(g => g.ids.forEach(id => { prim[id] = g.id; }));
   notes.forEach(n => { const k = prim[n.link_id] || n.link_id; if (!last[k]) last[k] = { author_id: n.author_id, body: String(n.body || '').slice(0, 120), created_at: n.created_at }; });
   const c = { links: mine.map(l => ({ id: l.id, ids: l.ids, name: l.name, role: l.role, roles: l.roles })), spec: cls.map(l => l.id), last, specNames: {}, prim, names: {} };
@@ -10362,7 +10366,7 @@ function ntRefLabel(ref) { return ref && ref.t === 'asg' ? `${t(ASG_KINDS[ref.ki
 // Enviar un mensaje (con referencia opcional). Si el servidor aún no acepta `ref`, se manda como texto.
 async function ntPost(linkId, body, ref) {
   body = String(body || '').trim().slice(0, 1000);
-  if (!body) return;
+  if (!body || _selfLinkIds.has(linkId)) return;
   if (ref && _ntRefCol) {
     try { await sbRest('notes', { method: 'POST', body: { link_id: linkId, body, ref }, headers: { Prefer: 'return=minimal' } }); return; }
     catch (e) { if (e && e.code === 'session') throw e; }
@@ -10652,10 +10656,20 @@ function openModeChooser() {
     <div class="who-card" data-who=""><b>Atleta</b><span>Registra tus comidas, entrenamientos y hábitos, y revisa lo que te dejaron.</span></div>`);
   document.querySelectorAll('[data-who]').forEach(c => c.addEventListener('click', () => { closeSheet(); spSetMode(c.dataset.who === 'spec'); }));
 }
+// El especialista también es su propio atleta (vínculo consigo mismo para los tres servicios,
+// no ocupa lugar en su límite): así puede ponerse rutinas, dietas, objetivos y fases.
+let _selfLinkTried = false, _selfLinkIds = new Set();
+function linkIsSelf(l) { const me = (authGet() || {}).uid; return !!(l && me && l.client_id === me); }
+function selfLinksNote(r) { _selfLinkIds = new Set(((r && r.as_specialist) || []).filter(linkIsSelf).map(l => l.id)); }
 async function spLoad(force) {
   if (!force && _sp.links && Date.now() - _sp.at < 60000) return _sp.links;
-  const r = await linkRpc('rutinal_my_links');
-  if (r.ok) { _sp.links = r; _sp.at = Date.now(); }
+  let r = await linkRpc('rutinal_my_links');
+  const s0 = authGet() || {};
+  if (r.ok && !_selfLinkTried && (s0.specs || []).length && ['coach', 'nutriologo', 'fisioterapeuta'].some(role => !(r.as_specialist || []).some(l => linkIsSelf(l) && l.role === role && l.status === 'active'))) {
+    _selfLinkTried = true;
+    try { const x = await linkRpc('rutinal_self_link'); if (x && x.ok && x.created) r = await linkRpc('rutinal_my_links'); } catch (e) {}
+  }
+  if (r.ok) { selfLinksNote(r); _sp.links = r; _sp.at = Date.now(); }
   return r.ok ? r : (_sp.links || { ok: false, error: r.error, as_specialist: [], as_client: [] });
 }
 // Varios servicios con la misma persona = una sola relación. El grupo es el vínculo más antiguo
@@ -10697,8 +10711,13 @@ const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log', 'act_l
 // El servicio (rol) con el que se puede dejar un tipo de plantilla a esta persona
 function asgRoleFor(l, kind) { return linkRoles(l).find(r => (ASG_ROLE_KINDS[r] || []).includes(kind)) || null; }
 function asgKindsFor(l) { const out = []; linkRoles(l).forEach(r => (ASG_ROLE_KINDS[r] || []).forEach(k => { if (!out.includes(k)) out.push(k); })); return out; }
-function spClients(r) { return linkGroup((r.as_specialist || []).filter(l => l.status === 'active'), l => l.client_id); }
-function mySpecialists(r) { return linkGroup(r.as_client || [], l => l.username || l.name || l.id); }
+function spClients(r) {
+  const g = linkGroup((r.as_specialist || []).filter(l => l.status === 'active'), l => l.client_id);
+  g.forEach(l => { l.self = linkIsSelf(l); });
+  return g.filter(l => l.self).concat(g.filter(l => !l.self));
+}
+function spOthers(cs) { return cs.filter(l => !l.self); }
+function mySpecialists(r) { const me = (authGet() || {}).user; return linkGroup((r.as_client || []).filter(l => !(me && l.username === me)), l => l.username || l.name || l.id); }
 function spStatusLine(l) {
   const ago = linkAgo(l.last_activity), bits = [];
   bits.push(ago == null ? '<span class="warn">Sin registros todavía</span>' : ago >= 3 ? `<span class="warn">Sin registros desde hace ${ago} días</span>` : ago === 0 ? '<span>Registró hoy</span>' : `<span>Último registro hace ${ago} días</span>`);
@@ -10706,6 +10725,9 @@ function spStatusLine(l) {
   return bits.join(' · ');
 }
 function spRowHtml(l, i) {
+  if (l.self) return `<div class="sp-row sp-self" data-sp-open="${i}"><div class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</div>
+    <div class="sp-row-b"><div class="sp-row-n"><span translate="no">${escapeHtml(l.name || '')}</span> · <span>Tú</span></div><div class="sp-row-d"><span>Tu propio atleta: ponte rutinas, dietas, objetivos y fases</span></div></div>
+    <span class="sp-roles"><span class="usr-badge on">Tú</span></span><span class="sp-chev">›</span></div>`;
   return `<div class="sp-row" data-sp-open="${i}"><div class="sp-av">${escapeHtml((l.name || '?').slice(0, 1))}</div>
     <div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(l.name || '')}</div><div class="sp-row-d">${spStatusLine(l)}</div></div>
     <span class="sp-roles">${rolesBadges(l)}</span><span class="sp-chev">›</span></div>`;
@@ -10786,20 +10808,20 @@ async function spInviteCode() {
 tabRenderers['sp-home'] = async function () {
   const el = document.getElementById('tab-sp-home'), s = authGet() || {};
   if (!el.innerHTML) el.innerHTML = '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>';
-  const r = await spLoad(false), cs = spClients(r), pend = (r.as_specialist || []).filter(l => l.status === 'pending');
-  const quiet = cs.filter(l => { const a = linkAgo(l.last_activity); return a == null || a >= 3; });
-  const pain = cs.filter(l => l.pain7 != null && l.pain7 >= 6);
+  const r = await spLoad(false), cs = spClients(r), others = spOthers(cs), pend = (r.as_specialist || []).filter(l => l.status === 'pending');
+  const quiet = others.filter(l => { const a = linkAgo(l.last_activity); return a == null || a >= 3; });
+  const pain = others.filter(l => l.pain7 != null && l.pain7 >= 6);
   if (!_sp.ckPend || Date.now() - (_sp.ckPendAt || 0) > 15000) { _sp.ckPend = await ckPendingForSpecialist(); _sp.ckPendAt = Date.now(); }
   const ckp = (_sp.ckPend || []).map(c => ({ c, l: cs.find(x => x.client_id === c.client_id) })).filter(x => x.l);
   const recent = cs.filter(l => l.last_activity).sort((a, b) => Date.parse(b.last_activity) - Date.parse(a.last_activity)).slice(0, 5);
   el.innerHTML = `<div class="sp-hello"><span>Hola</span>, <span translate="no">${escapeHtml(s.name || s.user || '')}</span></div><div class="sp-sub">Tu resumen de hoy</div>
-    <div class="sp-stats"><div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Atletas activos</div><div class="sp-stat-v">${cs.length}</div></div>
+    <div class="sp-stats"><div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Atletas activos</div><div class="sp-stat-v">${others.length}</div></div>
       <div class="sp-stat" data-sp-tab="sp-clients"><div class="sp-stat-k">Invitaciones pendientes</div><div class="sp-stat-v">${pend.length}</div></div></div>
     ${ckp.length ? `<div class="sp-h">Check-ins por revisar <small>${ckp.length}</small></div>${ckp.slice(0, 6).map(x => `<div class="sp-row" data-sp-ck="${cs.indexOf(x.l)}"><span class="sp-av">${escapeHtml((x.l.name || '?').slice(0, 1))}</span><div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(x.l.name || '')}</div><div class="sp-row-d"><span>Semana del</span> <span translate="no">${escapeHtml(ckWeekLabel(x.c.week_of))}</span></div></div><span class="mas-chev">›</span></div>`).join('')}` : ''}
     <div class="sp-h">Avisos</div>
     ${quiet.length ? `<div class="sp-alert"><div class="sp-alert-t"><span>Sin registrar:</span> ${quiet.length}</div><div class="sp-alert-d" translate="no">${quiet.map(l => escapeHtml(l.name || '')).join(', ')}</div></div>` : ''}
     ${pain.length ? `<div class="sp-alert"><div class="sp-alert-t"><span>Dolor alto esta semana:</span> ${pain.length}</div><div class="sp-alert-d" translate="no">${pain.map(l => escapeHtml(l.name || '') + ' (' + l.pain7 + '/10)').join(', ')}</div></div>` : ''}
-    ${!quiet.length && !pain.length ? `<div class="sp-alert ok"><div class="sp-alert-t">${cs.length ? 'Todo en orden' : 'Aún no tienes atletas'}</div><div class="sp-alert-d">${cs.length ? 'Nadie lleva más de 2 días sin registrar ni reportó dolor alto.' : 'Invita a tu primer atleta con un código.'}</div></div>` : ''}
+    ${!quiet.length && !pain.length ? `<div class="sp-alert ok"><div class="sp-alert-t">${others.length ? 'Todo en orden' : 'Aún no tienes atletas'}</div><div class="sp-alert-d">${cs.length ? 'Nadie lleva más de 2 días sin registrar ni reportó dolor alto.' : 'Invita a tu primer atleta con un código.'}</div></div>` : ''}
     <div class="sp-h">Próximas citas</div>
     ${apptUpcoming().slice(0, 4).map(a => `<div class="sp-row" data-sp-agenda="1"><div class="sp-row-b"><div class="sp-row-n" translate="no">${escapeHtml(a.title || '')}</div><div class="sp-row-d" translate="no">${escapeHtml(apptName(a.link_id))} · ${escapeHtml(apptWhen(a.starts_at))}</div></div><span class="sp-chev">›</span></div>`).join('') || '<div class="sp-alert ok"><div class="sp-alert-d">No tienes citas próximas.</div></div>'}
     <button class="sp-act" data-sp-agenda="1" style="width:100%;margin-bottom:6px;">Abrir agenda</button>
@@ -10822,7 +10844,7 @@ tabRenderers['sp-clients'] = async function () {
   const shown = cs.filter(l => !q || normalizeFoodQuery((l.name || '') + ' ' + (l.username || '')).includes(q));
   el.innerHTML = `<div class="sp-hello">Atletas</div><div class="sp-sub">Las personas que acompañas</div>
     <input class="sp-search" id="sp-q" type="search" placeholder="Buscar por nombre…" value="${escapeHtml(_sp.q || '')}">
-    <div class="sp-h" style="margin-top:0;"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Atletas</span><small id="sp-slots"><span>${cs.length}</span> <span>${cs.length === 1 ? 'activo' : 'activos'}</span></small></div>
+    <div class="sp-h" style="margin-top:0;"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Atletas</span><small id="sp-slots"><span>${spOthers(cs).length}</span> <span>${spOthers(cs).length === 1 ? 'activo' : 'activos'}</span></small></div>
     <div id="sp-list">${shown.map(l => spRowHtml(l, cs.indexOf(l))).join('') || `<div class="sp-empty">${cs.length ? 'Nadie coincide con la búsqueda.' : 'Aún no tienes atletas. Invita al primero con un código.'}</div>`}</div>
     ${pend.length ? `<div class="sp-h"><span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);">Invitaciones sin usar</span></div>${pend.map(l => `<div class="sp-row" style="cursor:default;"><div class="sp-row-b"><div class="sp-row-n" translate="no"${l.client_id ? '' : ' style="letter-spacing:.08em;"'}>${escapeHtml(l.client_id ? (l.name || l.username || '') : (l.code || ''))}</div>${l.client_id ? '<div class="sp-row-d"><span>Cuenta creada · esperando que acepte</span></div>' : ''}<div class="sp-row-d">${linkRoles(l).map(x => `<span>${escapeHtml(AUTH_SPECS[x] || x)}</span>`).join(' · ')}</div></div><button class="btn-secondary" data-sp-cancel="${linkIds(l).join(',')}" style="padding:8px 12px;width:auto;">Cancelar</button></div>`).join('')}` : ''}
     <div class="sp-actions" style="grid-template-columns:1fr;"><button class="sp-act primary" id="sp-invite2">Agregar atleta</button></div>`;
@@ -11053,11 +11075,12 @@ async function spOpenClient(l) {
   if (!tabs[_sp.tab]) _sp.tab = 'plans';
   el.innerHTML = `<button class="sp-back" id="sp-back">‹ <span>Atletas</span></button>
     <div class="sp-center"><div class="sp-av big">${escapeHtml((l.name || '?').slice(0, 1))}</div><div class="sp-name" translate="no">${escapeHtml(l.name || '')}</div>
-      <div class="sp-sub" style="margin-bottom:0;">${rolesBadges(l)} · ${spStatusLine(l)}</div></div>
-    <div class="sp-actions"><button class="sp-act" id="sp-c-notes">Mensajes</button><button class="sp-act" id="sp-c-appt">Cita</button><button class="sp-act" id="sp-c-assign">Asignar</button></div>
+      <div class="sp-sub" style="margin-bottom:0;">${l.self ? '<span class="usr-badge on">Tú</span>' : rolesBadges(l)} · ${spStatusLine(l)}</div></div>
+    ${l.self ? `<div class="sp-self-note">Eres tu propio atleta: lo que te asignes aquí te aparece en tu modo Atleta. No ocupa lugar en tu límite.</div><div class="sp-actions" style="grid-template-columns:1fr;"><button class="sp-act" id="sp-c-assign">Asignarme</button></div>`
+      : `<div class="sp-actions"><button class="sp-act" id="sp-c-notes">Mensajes</button><button class="sp-act" id="sp-c-appt">Cita</button><button class="sp-act" id="sp-c-assign">Asignar</button></div>`}
     <div class="sp-tabs"><button data-sp-t="plans" class="${_sp.tab === 'plans' ? 'on' : ''}">Planes</button><button data-sp-t="progress" class="${_sp.tab === 'progress' ? 'on' : ''}">Progreso</button><button data-sp-t="checkins" class="${_sp.tab === 'checkins' ? 'on' : ''}">Check-ins</button><button data-sp-t="assess" class="${_sp.tab === 'assess' ? 'on' : ''}">Evaluación</button><button data-sp-t="logs" class="${_sp.tab === 'logs' ? 'on' : ''}">Registros</button></div>
     <div id="sp-tabbody">${tabs[_sp.tab]}</div>
-    <button class="btn-secondary" id="sp-c-end" style="width:100%;margin-top:22px;">Terminar vínculo</button>`;
+    ${l.self ? '' : '<button class="btn-secondary" id="sp-c-end" style="width:100%;margin-top:22px;">Terminar vínculo</button>'}`;
   const wire = () => {
     const as = document.getElementById('sp-assign'); if (as) as.addEventListener('click', () => openTemplates(l));
     if (typeof proWireClient === 'function') proWireClient(l, asg, D);
@@ -11112,10 +11135,10 @@ async function spOpenClient(l) {
   wire();
   document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); });
   el.querySelectorAll('[data-sp-t]').forEach(b => b.addEventListener('click', () => { _sp.tab = b.dataset.spT; el.querySelectorAll('[data-sp-t]').forEach(x => x.classList.toggle('on', x === b)); document.getElementById('sp-tabbody').innerHTML = tabs[_sp.tab]; wire(); }));
-  document.getElementById('sp-c-notes').addEventListener('click', () => openNotes(l.id, l.name, null, { spec: true, link: l, ids: linkIds(l), roles: linkRoles(l) }));
+  if (!l.self) document.getElementById('sp-c-notes').addEventListener('click', () => openNotes(l.id, l.name, null, { spec: true, link: l, ids: linkIds(l), roles: linkRoles(l) }));
   document.getElementById('sp-c-assign').addEventListener('click', () => openTemplates(l));
-  document.getElementById('sp-c-appt').addEventListener('click', async () => { await msgRefresh(false); openApptEditor(null, l); });
-  document.getElementById('sp-c-end').addEventListener('click', () => openEndServices(l, false, async () => {
+  if (!l.self) document.getElementById('sp-c-appt').addEventListener('click', async () => { await msgRefresh(false); openApptEditor(null, l); });
+  if (!l.self) document.getElementById('sp-c-end').addEventListener('click', () => openEndServices(l, false, async () => {
     _sp.at = 0; const r = await spLoad(true), g = spClients(r).find(x => x.client_id === l.client_id);
     _sp.client = null; if (g) spOpenClient(g); else tabRenderers['sp-clients']();
     try { msgRefresh(true); } catch (e) {}
@@ -11156,7 +11179,7 @@ tabRenderers['sp-templates'] = async function () {
 tabRenderers['sp-notes'] = async function () {
   const el = document.getElementById('tab-sp-notes');
   if (!el.innerHTML) el.innerHTML = '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>';
-  const r = await spLoad(false), cs = spClients(r), me = (authGet() || {}).uid;
+  const r = await spLoad(false), cs = spOthers(spClients(r)), me = (authGet() || {}).uid;
   let notes = [];
   try { notes = await sbRest('notes?select=link_id,author_id,body,created_at&order=created_at.desc&limit=300') || []; } catch (e) {}
   const last = {};

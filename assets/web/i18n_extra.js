@@ -6106,6 +6106,21 @@ window.__I18N_EXTRA = {
    "pt-BR": "Qual exercício? Ex. mobilidade de quadril",
    "fr": "Quel exercice ? Ex. mobilité de hanche"
   },
+  "Tu propio atleta: ponte rutinas, dietas, objetivos y fases": {
+   "en": "Your own athlete: give yourself routines, diets, goals and phases",
+   "pt-BR": "Seu próprio atleta: coloque rotinas, dietas, objetivos e fases",
+   "fr": "Ton propre athlète : donne-toi routines, régimes, objectifs et phases"
+  },
+  "Eres tu propio atleta: lo que te asignes aquí te aparece en tu modo Atleta. No ocupa lugar en tu límite.": {
+   "en": "You are your own athlete: what you assign yourself here shows up in Athlete mode. It doesn't use a spot in your limit.",
+   "pt-BR": "Você é seu próprio atleta: o que atribuir aqui aparece no modo Atleta. Não ocupa vaga no seu limite.",
+   "fr": "Tu es ton propre athlète : ce que tu t'assignes ici apparaît en mode Athlète. Ça n'occupe pas de place dans ta limite."
+  },
+  "Asignarme": {
+   "en": "Assign to me",
+   "pt-BR": "Atribuir a mim",
+   "fr": "M'assigner"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
