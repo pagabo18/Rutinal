@@ -6066,6 +6066,11 @@ window.__I18N_EXTRA = {
    "pt-BR": "Moderado: respira rápido mas consegue falar.",
    "fr": "Modéré : respiration rapide mais tu peux parler."
   },
+  "Ver la foto en grande": {
+   "en": "View the photo full size",
+   "pt-BR": "Ver a foto em tamanho grande",
+   "fr": "Voir la photo en grand"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

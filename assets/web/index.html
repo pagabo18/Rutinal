@@ -2925,6 +2925,12 @@
   .cv-inw { display: flex; align-items: center; gap: 4px; } .cv-inw .gym-in { min-width: 0; flex: 1; } .cv-inw i { font-style: normal; font-size: 11px; color: var(--text-3); white-space: nowrap; }
   .cv-it.done .cv-it-f .gym-in { background: transparent; }
   .cv-prog { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+  /* ===== Foto grande del ejercicio abierto ===== */
+  .gym-ex-hero { position: relative; display: block; width: 100%; padding: 0; margin: 2px 0 12px; border: 0; border-radius: 14px; overflow: hidden; background: var(--surface-2); cursor: zoom-in; }
+  .gym-ex-hero img { display: block; width: 100%; height: 210px; object-fit: contain; background: var(--surface-2); }
+  .gym-hero-zoom { position: absolute; right: 8px; bottom: 8px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: rgba(9, 9, 11, .72); color: #fff; }
+  @media (min-width: 700px) { .gym-ex-hero img { height: 260px; } }
 </style>
 </head>
 <body>
@@ -14296,8 +14302,13 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const U = gymUnit();
     const last = gymLastLog(ex.id, dateKey, sw ? sw.name : null);
     const rec = i => (sw ? null : gymRecLoad(exOrig, i));
-    const head = `<div class="gym-ex-head" data-gym-toggle="${ex.id}">
-        <div class="gym-ex-media"${sw ? '' : ` data-gym-info="${ex.id}"`}>${gymMediaHtml(ex, isOpen ? 64 : 44, sportR)}</div>
+    // Abierto y con foto: la imagen va grande debajo del nombre (tocarla la abre a pantalla completa)
+    const heroFr = isOpen && !ex.photo && ex.dbId ? gymDbFrames(ex.dbId) : [];
+    const hero = isOpen && (ex.photo || heroFr.length) ? `<button class="gym-ex-hero" ${sw ? `data-gym-zoom="${ex.id}"` : `data-gym-info="${ex.id}"`} aria-label="Ver la foto en grande">
+        ${ex.photo ? `<img src="${ex.photo}" alt="">` : `<img class="gym-anim" src="${heroFr[0]}" data-frames="${heroFr.join('|')}" alt="" onerror="this.closest('.gym-ex-hero').style.display='none'">`}
+        <span class="gym-hero-zoom" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5M10.5 8v5M8 10.5h5"/></svg></span></button>` : '';
+    const head = `<div class="gym-ex-head${hero ? ' has-hero' : ''}" data-gym-toggle="${ex.id}">
+        ${hero ? '' : `<div class="gym-ex-media"${sw ? '' : ` data-gym-info="${ex.id}"`}>${gymMediaHtml(ex, isOpen ? 64 : 56, sportR)}</div>`}
         <div class="gym-ex-body">
           <div class="gym-ex-name">${escapeHtml(ex.name)}</div>
           ${sw ? `<div class="gym-ex-swapped">⇄ <span>en lugar de</span> ${escapeHtml(exOrig.name)}</div>` : ''}
@@ -14307,7 +14318,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
         <div class="gym-ex-state${complete ? ' ok' : ''}">${complete ? '✓' : `${done}/${n}`}</div>
       </div>`;
     if (typeof modOn === 'function' && modOn('gymSimple')) return `<div class="gym-ex simple${complete ? ' complete' : ''}" data-g="${gymExGroup(ex)}" data-ex-card="${ex.id}"><div class="gym-ex-head">
-        <div class="gym-ex-media" data-gym-info="${ex.id}">${gymMediaHtml(ex, 44)}</div>
+        <div class="gym-ex-media" data-gym-info="${ex.id}">${gymMediaHtml(ex, 56)}</div>
         <div class="gym-ex-body"><div class="gym-ex-name">${escapeHtml(ex.name)}</div><div class="gym-ex-sets">${escapeHtml(gymSetsText(ex.sets))}</div></div>
         <button class="gym-quick${complete ? ' on' : ''}" data-gym-quick="${ex.id}" aria-label="Hecho">✓</button></div></div>`;
     if (!isOpen) return `<div class="gym-ex${complete ? ' complete' : ''}" data-ex-card="${ex.id}">${head}</div>`;
@@ -14343,7 +14354,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
       ? `<button class="gym-swap-btn" data-gym-unswap="${ex.id}">↺ Volver al original</button>`
       : `<button class="gym-swap-btn" data-gym-swap="${ex.id}">⇄ Reemplazar ejercicio</button>`;
     const lastTxt = last && sportR ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.time || s.reps).map(s => [s.reps, s.time].filter(Boolean).join(' en ')).join('  '))}</div>` : last ? `<div class="gym-last"><span>Última vez</span> · ${escapeHtml(fmtD.format(new Date(last.date + 'T00:00:00')))}: ${escapeHtml(last.sets.filter(s => s.kg || s.reps).map(s => `${gymDispW(s.kg) || '?'}×${s.reps || '?'}${s.rir !== undefined && s.rir !== '' ? ' @' + s.rir : ''}`).join('  '))}</div>` : '';
-    return `<div class="gym-ex open${complete ? ' complete' : ''}" data-g="${gymExGroup(ex)}" data-ex-card="${ex.id}">${head}
+    return `<div class="gym-ex open${complete ? ' complete' : ''}" data-g="${gymExGroup(ex)}" data-ex-card="${ex.id}">${head}${hero}
       ${extra ? `<div class="gym-chips">${extra}</div>` : ''}
       ${ex.notes ? `<div class="gym-ex-notes">${escapeHtml(ex.notes)}</div>` : ''}
       ${!sw && exOrig.loads && exOrig.loads.length ? `<div class="gym-rec"><b>Carga recomendada</b>${r.assigned && r.assigned.by ? ` <span translate="no">· ${escapeHtml(r.assigned.by)}</span>` : ''}<span class="gym-rec-v" translate="no">${Array.from({ length: n }, (_, i) => escapeHtml(gymDispW(rec(i)))).join(' · ')} ${U}</span></div>` : ''}
@@ -14440,7 +14451,12 @@ function openGymWorkout(routineId, dateKey, focusId) {
       const card = sb.querySelector(`[data-ex-card="${h.dataset.gymToggle}"]`);
       if (card && openId) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }));
-    sb.querySelectorAll('.gym-ex.open [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => zoomOrInfo(m2)));
+    sb.querySelectorAll('.gym-ex.open [data-gym-info]').forEach(m2 => m2.addEventListener('click', ev => { ev.stopPropagation(); zoomOrInfo(m2); }));
+    sb.querySelectorAll('[data-gym-zoom]').forEach(m2 => m2.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const sw = lg.swap && lg.swap[m2.dataset.gymZoom];
+      openImgViewer(gymImgSrcs(m2), { title: sw ? sw.name : '' });
+    }));
     sb.querySelectorAll('[data-cv-in]').forEach(inp => inp.addEventListener('input', () => {
       lg.cv = lg.cv || {};
       const o = lg.cv[inp.dataset.cvIn] || (lg.cv[inp.dataset.cvIn] = {});
