@@ -2973,6 +2973,7 @@
   .dr-leg-i span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dr-leg-i b { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-2); } .dr-leg-i b.up { color: #16A34A; } .dr-leg-i b.dn { color: #DC2626; }
   .dr-hint { font-size: 11px; color: var(--text-3); margin: 2px 0 10px; }
+  .vgc { color: var(--text-3); } .dr-leg-i small { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; } .dr-leg-i b { min-width: 42px; text-align: right; }
   .exl-sp { display: inline-flex; flex: none; }
   .exl-grp { display: flex; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
   .dr-ex { padding: 8px 0; border-top: 1px solid var(--border); }
@@ -10984,6 +10985,7 @@ function spClientReport(D, l, asg) {
   }
   if (gymR) {
     const WN = 8, ses = Array(WN).fill(0), vol = Array(WN).fill(0), lab = [], feel = [], e1 = {};
+    const volG = Array.from({ length: WN }, () => ({}));
     for (let i = 0; i < WN; i++) lab.push(dm.format(new Date(today - ((WN - i) * 7 - 1) * 864e5)));
     const routines = Array.isArray(D.gym_routines) ? D.gym_routines : [];
     let pmax0 = null; const rpe0 = [];
@@ -11001,6 +11003,7 @@ function spClientReport(D, l, asg) {
       });
       if (!any && !lg.done) return;
       ses[WN - 1 - w]++; vol[WN - 1 - w] += gymVolU(v);
+      { const vg = volByGroup(lg, routines), o = volG[WN - 1 - w]; Object.keys(vg).forEach(g => { o[g] = (o[g] || 0) + gymVolU(vg[g]); }); }
       const fl = lg.feel || {};
       if (fl.pain != null || fl.rpe != null) feel.push({ a, pain: fl.pain, rpe: fl.rpe });
       if (w === 0) { if (fl.pain != null && (pmax0 == null || fl.pain > pmax0)) pmax0 = fl.pain; if (fl.rpe != null) rpe0.push(fl.rpe); }
@@ -11012,7 +11015,7 @@ function spClientReport(D, l, asg) {
     if (rpe0.length) sum.push(line(`<span>RPE promedio</span>: <b>${(rpe0.reduce((x, y) => x + y, 0) / rpe0.length).toFixed(1)}</b>`));
     if (ses.some(x => x)) {
       charts.push(card('<span>Entrenamientos por semana</span>', spBars(ses, lab, { color: '#52525B', h: 100 })));
-      if (vol.some(x => x)) charts.push(card(`<span>Volumen por semana</span> (${U})`, spBars(vol, lab, { color: '#3B82F6' })));
+      if (vol.some(x => x)) charts.push(card(`<span>Volumen por semana</span> (${U})`, volGroupChartHtml(volG.map((groups, i) => ({ lab: lab[i], groups })), { h: 140 }) || spBars(vol, lab, { color: '#3B82F6' })));
     }
     if (feel.length >= 2) {
       const span = Math.max(1, feel[0].a - feel[feel.length - 1].a), X = f => (feel[0].a - f.a) / span;
@@ -15460,6 +15463,7 @@ function openGymProgress(selExId) {
     const weeks = Array.from({ length: 8 }, (_, i) => { const d = new Date(ws); d.setDate(d.getDate() - (7 - i) * 7); return d; });
     const wVals = weeks.map(w => keys.filter(k => wkKey(k) === keyDate(w)).reduce((a, k) => a + gymVolU(gymSessionStats(logs[k]).vol), 0));
     const wLbl = weeks.map(w => fmt.format(w));
+    const wGrp = weeks.map((w, i) => { const groups = {}; keys.filter(k => wkKey(k) === keyDate(w)).forEach(k => { const vg = volByGroup(logs[k], gymRoutines()); Object.keys(vg).forEach(g => { groups[g] = (groups[g] || 0) + gymVolU(vg[g]); }); }); return { lab: wLbl[i], groups }; });
 
     // Series por músculo esta semana
     const mus = {};
@@ -15503,7 +15507,7 @@ function openGymProgress(selExId) {
       <h2>Dolor, fatiga y cómo te sentiste</h2>
       ${feelChart}
       <h2>Volumen por semana (${gymUnit()})</h2>
-      ${gymBarsSvg(wVals, wLbl, '#3B82F6', 120)}
+      ${volGroupChartHtml(wGrp) || gymBarsSvg(wVals, wLbl, '#3B82F6', 120)}
       <h2>Series por músculo esta semana</h2>
       ${musRows}
       <h2>Progreso por ejercicio</h2>

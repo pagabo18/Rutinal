@@ -6386,6 +6386,11 @@ window.__I18N_EXTRA = {
    "pt-BR": "Sessões anteriores de cada exercício até hoje. Cor = grupo muscular.",
    "fr": "Séances précédentes de chaque exercice jusqu'à aujourd'hui. Couleur = groupe musculaire."
   },
+  "Esta semana y cambio contra la anterior.": {
+   "en": "This week and change vs. the previous one.",
+   "pt-BR": "Esta semana e variação em relação à anterior.",
+   "fr": "Cette semaine et variation par rapport à la précédente."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

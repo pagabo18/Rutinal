@@ -1624,6 +1624,38 @@ function exLineSvg(dates, series, o) {
   });
   return `<svg class="exc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">${g}</svg>`;
 }
+// Volumen de una sesión repartido por grupo muscular { pierna: kg·reps, ... }
+function volByGroup(lg, routines) {
+  const out = {}, N = typeof gymNum === 'function' ? gymNum : (v => parseFloat(String(v).replace(',', '.')));
+  if (!lg || !lg.ex) return out;
+  const rt = (routines || []).find(r => r.id === lg.routineId) || { exercises: [] };
+  Object.keys(lg.ex).forEach(exId => {
+    const v = (lg.ex[exId] || []).filter(x => x && x.done).reduce((a, x) => a + (N(x.kg) || 0) * (N(x.reps) || 0), 0);
+    if (!v) return;
+    // si el ejercicio ya no está en la rutina (se editó), se busca en las demás
+    const ex = (rt.exercises || []).find(e => e.id === exId) || (routines || []).flatMap(r => r.exercises || []).find(e => e.id === exId) || {}, sw = lg.swap && lg.swap[exId];
+    const g = exGrp((sw && sw.dbId) || ex.dbId, (sw && sw.name) || ex.name || '');
+    out[g] = (out[g] || 0) + v;
+  });
+  return out;
+}
+// Gráfica de líneas del volumen semanal: una línea por grupo muscular (su color) y el total punteado.
+// weeks: [{ lab, groups: {g: vol} }] ya en la unidad que se muestra
+function volGroupChartHtml(weeks, o) {
+  o = o || {};
+  const order = ['pierna', 'pecho', 'espalda', 'hombro', 'brazo', 'core', 'otro'];
+  const gs = order.filter(g => weeks.some(w => (w.groups[g] || 0) > 0));
+  if (!gs.length) return '';
+  const tot = weeks.map(w => Object.values(w.groups).reduce((a, b) => a + b, 0));
+  const series = gs.map(g => ({ vals: weeks.map(w => Math.round(w.groups[g] || 0)), col: exGrpCol(g), w: 2.4 }));
+  if (o.total !== false && gs.length > 1) series.unshift({ vals: tot.map(Math.round), col: 'currentColor', dash: '4 4', w: 1.6, noPts: true });
+  const hi = Math.max(1, ...series.flatMap(sr => sr.vals)), k = v => (v >= 1000 ? (Math.round(v / 100) / 10) + 'k' : String(Math.round(v)));
+  const last = weeks.length - 1, chg = g => { const a = weeks[last - 1] ? weeks[last - 1].groups[g] || 0 : 0, b = weeks[last].groups[g] || 0; return a ? Math.round((b - a) / a * 100) : null; };
+  return `<div class="vgc">${exLineSvg(null, series, { labels: weeks.map(w => w.lab), min: 0, max: Math.ceil(hi * 1.1), ticks: [0, Math.round(hi / 2), Math.ceil(hi * 1.1)], fmt: k, h: o.h || 150 })}</div>
+    <div class="dr-leg vgc-leg">${gs.map(g => { const c = chg(g), v = weeks[last].groups[g] || 0; return `<div class="dr-leg-i"><svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="${exGrpCol(g)}" stroke-width="3" stroke-linecap="round"/></svg><span>${EX_GRP_ES[g]}</span><small translate="no">${k(v)}</small><b class="${c > 0 ? 'up' : c < 0 ? 'dn' : ''}" translate="no">${c == null ? '' : (c > 0 ? '+' : '') + c + '%'}</b></div>`; }).join('')}
+    ${o.total !== false && gs.length > 1 ? `<div class="dr-leg-i"><svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4"/></svg><span>Total</span><small translate="no">${k(tot[last])}</small><b></b></div>` : ''}</div>
+    <div class="dr-hint">Esta semana y cambio contra la anterior.</div>`;
+}
 // Barras por sesión; cada sesión es un grupo de barras (una por serie)
 function exGroupBarsSvg(groups, o) {
   o = o || {}; const W = 320, H = o.h || 150, L = 26, R = 6, T = 10, B = 24;
@@ -2765,4 +2797,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { exLogIndex, gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { exLogIndex, volByGroup, gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
