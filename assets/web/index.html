@@ -2980,6 +2980,24 @@
   .dr-macs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
   .dr-mac-h { display: flex; flex-direction: column; font-size: 11px; color: var(--text-3); margin-bottom: 4px; } .dr-mac-h b { color: var(--text); font-variant-numeric: tabular-nums; }
   .dr-meal { padding: 6px 0; border-top: 1px solid var(--border); } .dr-meal-h { display: flex; justify-content: space-between; font-size: 13px; } .dr-meal-h span { color: var(--text-3); } .dr-meal-i { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+  /* ===== Progreso por ejercicio ===== */
+  .exl-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .exl-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+  .exl-b { flex: 1; min-width: 0; display: flex; flex-direction: column; } .exl-b b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .exl-b small { font-size: 12px; color: var(--text-3); }
+  .exl-spark { width: 70px; height: 24px; color: var(--text-2); flex: 0 0 70px; }
+  .exl-v { display: flex; flex-direction: column; align-items: flex-end; min-width: 58px; } .exl-v b { font-size: 16px; font-variant-numeric: tabular-nums; } .exl-v small { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .exl-v i { font-style: normal; font-weight: 700; } .exl-v i.up { color: #16A34A; } .exl-v i.dn { color: #DC2626; }
+  .exl-range { justify-content: center; margin-bottom: 10px; }
+  .exl-who { text-align: center; font-size: 13px; color: var(--text-3); margin: -4px 0 10px; }
+  .exc { width: 100%; height: auto; display: block; }
+  .exc-grid { stroke: var(--border); stroke-width: 1; } .exc-ax { font-size: 9px; fill: var(--text-3); font-family: inherit; }
+  .exc-leg { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--text-3); margin-top: 6px; }
+  .exc-leg > span { display: inline-flex; align-items: center; gap: 5px; } .exc-leg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .exc-leg i.dash { height: 0; width: 14px; border-top: 2px dashed #A1A1AA; border-radius: 0; }
+  .exl-log { padding: 8px 0; border-top: 1px solid var(--border); } .dr-h + .exl-log { border-top: 0; }
+  .exl-log-h { display: flex; justify-content: space-between; font-size: 13px; } .exl-log-h span { color: var(--text-3); font-size: 12px; }
+  .rec-row[data-rec-key] { cursor: pointer; }
 </style>
 </head>
 <body>
@@ -11109,7 +11127,7 @@ async function spOpenClient(l) {
   const rep = spClientReport(D, l, asg);
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button><div class="sp-actions" style="margin-top:8px;"><button class="sp-act" id="sp-goal-new">Poner objetivo</button>' + (linkRoles(l).some(r => r !== 'fisioterapeuta') ? '<button class="sp-act" id="sp-phase-edit">Fases del plan</button>' : '') + '</div>',
     progress: `<div class="sp-rep-btns"><button class="sp-act" id="sp-rep-copy">Copiar resumen</button><button class="sp-act" id="sp-rep-pdf">Guardar PDF</button></div>
-      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${typeof phaseClientHtml === 'function' ? phaseClientHtml(D) : ''}${typeof goalsClientHtml === 'function' ? goalsClientHtml(D) : ''}${rep}${typeof spRecordsHtml === 'function' ? spRecordsHtml(D) : ''}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
+      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${typeof phaseClientHtml === 'function' ? phaseClientHtml(D) : ''}${typeof goalsClientHtml === 'function' ? goalsClientHtml(D) : ''}${rep}${typeof spRecordsHtml === 'function' ? spRecordsHtml(D) : ''}${gymR && typeof exLogIndex === 'function' && exLogIndex(D).length ? '<button class="sp-act exl-open" id="sp-exlog" style="width:100%;margin:2px 0 12px;">Progreso por ejercicio · gráficas de peso, reps y RIR</button>' : ''}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
     checkins: '<div id="sp-ck"></div>',
     assess: '<div id="sp-assess"></div>',
     logs: logs.join('') + (nutri ? '<div id="sp-mp"></div>' : '') };
@@ -11175,6 +11193,13 @@ async function spOpenClient(l) {
   };
   wire();
   document.getElementById('sp-back').addEventListener('click', () => { _sp.client = null; tabRenderers['sp-clients'](); });
+  // Registro de cada ejercicio (desde Récords o el botón de Progreso)
+  const tbEl = document.getElementById('sp-tabbody');
+  if (tbEl) tbEl.addEventListener('click', ev => {
+    const rk = ev.target.closest('[data-rec-key]'), ob = ev.target.closest('#sp-exlog');
+    if (rk) openExLog(D, rk.dataset.recKey, { who: l.name });
+    else if (ob) openExLogList(D, { who: l.name });
+  });
   el.querySelectorAll('[data-sp-t]').forEach(b => b.addEventListener('click', () => { _sp.tab = b.dataset.spT; el.querySelectorAll('[data-sp-t]').forEach(x => x.classList.toggle('on', x === b)); document.getElementById('sp-tabbody').innerHTML = tabs[_sp.tab]; wire(); }));
   if (!l.self) document.getElementById('sp-c-notes').addEventListener('click', () => openNotes(l.id, l.name, null, { spec: true, link: l, ids: linkIds(l), roles: linkRoles(l) }));
   document.getElementById('sp-c-assign').addEventListener('click', () => openTemplates(l));
@@ -15108,6 +15133,7 @@ function openGymExerciseInfo(routineId, exId, back) {
         ${db ? `<div class="gym-db-name">${escapeHtml(db.n)}</div>
           <div class="gym-chips">${mus ? `<span class="gym-chip"><b>Músculo</b> ${escapeHtml(mus)}</span>` : ''}${sec ? `<span class="gym-chip"><b>Secundarios</b> ${escapeHtml(sec)}</span>` : ''}${db.e ? `<span class="gym-chip"><b>Equipo</b> ${escapeHtml(GYM_EQUIP_ES[db.e] || db.e)}</span>` : ''}</div>
           ${db.t && db.t.length ? `<div id="gym-steps-box">${gymStepsHtml(db)}</div>` : ''}` : '<div class="fe-lbl">Este ejercicio no está vinculado a la base. Vincúlalo para ver su animación y músculos.</div>'}
+        ${typeof exLogIndex === 'function' && exLogIndex(localDayD()).some(x => x.key === goalNorm(ex.name)) ? '<button class="btn-primary" id="gym-prog">Ver mi progreso en este ejercicio</button>' : ''}
         <button class="btn-secondary" id="gym-link">${db ? 'Cambiar ejercicio vinculado' : 'Vincular con la base'}</button>
         <label class="btn-secondary gym-photo-btn">${ex.photo ? 'Cambiar foto' : 'Agregar foto'}<input type="file" accept="image/*" id="gym-photo" style="display:none"></label>
         ${ex.photo ? '<button class="btn-secondary" id="gym-photo-del">Quitar foto</button>' : ''}
@@ -15122,6 +15148,7 @@ function openGymExerciseInfo(routineId, exId, back) {
       if (ee) { fn(ee); saveGymRoutines(all); }
       openGymExerciseInfo(routineId, exId, back);
     };
+    const gp = document.getElementById('gym-prog'); if (gp) gp.addEventListener('click', () => openExLog(localDayD(), ex.name, { back: () => openGymExerciseInfo(routineId, exId, back) }));
     document.getElementById('gym-link').addEventListener('click', () => openGymExercisePicker(ex.name, (dbEx) => update(ee => { ee.dbId = dbEx.i; }), () => openGymExerciseInfo(routineId, exId, back)));
     document.getElementById('gym-photo').addEventListener('change', (e) => {
       const f = e.target.files && e.target.files[0];
@@ -15439,6 +15466,8 @@ function openGymProgress(selExId) {
       return `<div class="gym-mus" data-g="${GYM_GROUP_OF[m] || 'otro'}"><span>${escapeHtml(GYM_MUSCLE_ES[m] || m)}</span><div class="gym-mus-bar"><div style="width:${c / max * 100}%"></div></div><b>${c}</b></div>`;
     }).join('') || '<div class="empty">Sin series esta semana.</div>';
 
+    // Progreso por ejercicio (registro con gráficas)
+    const exIdx = typeof exLogIndex === 'function' ? exLogIndex(localDayD()) : [];
     // 1RM estimado por ejercicio
     const exOpts = [];
     gymRoutines().forEach(r => r.exercises.forEach(ex => { if (gymExHistory(ex.id).length) exOpts.push({ id: ex.id, name: ex.name, r }); }));
@@ -15464,9 +15493,9 @@ function openGymProgress(selExId) {
       ${gymBarsSvg(wVals, wLbl, '#3B82F6', 120)}
       <h2>Series por músculo esta semana</h2>
       ${musRows}
-      <h2>1RM estimado</h2>
-      ${exSelect}
-      ${e1Chart}
+      <h2>Progreso por ejercicio</h2>
+      <div class="exl-list">${exLogListHtml(exIdx, 6)}</div>
+      ${exIdx.length > 6 ? '<button class="btn-secondary ds-btn" id="gym-exl-all">Ver todos los ejercicios</button>' : ''}
       <h2>Criterios</h2>
       <div class="gym-criteria">
         <div><b>Progresión</b><span>Cada 2–3 semanas, modificando solo 1 variable (carga, reps, series o tempo) para no aumentar el riesgo de lesión.</span></div>
@@ -15476,8 +15505,8 @@ function openGymProgress(selExId) {
       </div>
     </div>`);
     document.getElementById('sheet-body').scrollTop = 0;
-    const s = document.getElementById('gym-e1-sel');
-    if (s) s.addEventListener('change', () => openGymProgress(s.value));
+    document.querySelectorAll('#sheet-body [data-exl]').forEach(b => b.addEventListener('click', () => openExLog(localDayD(), exIdx[+b.dataset.exl].key, { back: () => openGymProgress() })));
+    const ea = document.getElementById('gym-exl-all'); if (ea) ea.addEventListener('click', () => openExLogList(localDayD(), { back: () => openGymProgress() }));
   });
 }
 

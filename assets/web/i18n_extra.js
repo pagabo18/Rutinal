@@ -6251,6 +6251,126 @@ window.__I18N_EXTRA = {
    "pt-BR": "A imagem foi baixada. Compartilhe pelos seus downloads.",
    "fr": "L'image a été téléchargée. Partage-la depuis tes téléchargements."
   },
+  "Progreso por ejercicio": {
+   "en": "Progress by exercise",
+   "pt-BR": "Progresso por exercício",
+   "fr": "Progrès par exercice"
+  },
+  "Ver todos los ejercicios": {
+   "en": "See all exercises",
+   "pt-BR": "Ver todos os exercícios",
+   "fr": "Voir tous les exercices"
+  },
+  "Ver mi progreso en este ejercicio": {
+   "en": "See my progress on this exercise",
+   "pt-BR": "Ver meu progresso neste exercício",
+   "fr": "Voir mes progrès sur cet exercice"
+  },
+  "Progreso por ejercicio · gráficas de peso, reps y RIR": {
+   "en": "Progress by exercise · weight, reps and RIR charts",
+   "pt-BR": "Progresso por exercício · gráficos de peso, reps e RIR",
+   "fr": "Progrès par exercice · graphiques de charge, reps et RIR"
+  },
+  "Peso y 1RM estimado": {
+   "en": "Weight and estimated 1RM",
+   "pt-BR": "Peso e 1RM estimado",
+   "fr": "Charge et 1RM estimé"
+  },
+  "Peso más alto": {
+   "en": "Top weight",
+   "pt-BR": "Peso mais alto",
+   "fr": "Charge la plus haute"
+  },
+  "Repeticiones por serie": {
+   "en": "Reps per set",
+   "pt-BR": "Repetições por série",
+   "fr": "Répétitions par série"
+  },
+  "Color = RIR": {
+   "en": "Color = RIR",
+   "pt-BR": "Cor = RIR",
+   "fr": "Couleur = RIR"
+  },
+  "RIR 0 · al fallo": {
+   "en": "RIR 0 · to failure",
+   "pt-BR": "RIR 0 · até a falha",
+   "fr": "RIR 0 · à l'échec"
+  },
+  "RIR 3 o más": {
+   "en": "RIR 3 or more",
+   "pt-BR": "RIR 3 ou mais",
+   "fr": "RIR 3 ou plus"
+  },
+  "Sin RIR": {
+   "en": "No RIR",
+   "pt-BR": "Sem RIR",
+   "fr": "Sans RIR"
+  },
+  "Esfuerzo · RIR promedio": {
+   "en": "Effort · average RIR",
+   "pt-BR": "Esforço · RIR médio",
+   "fr": "Effort · RIR moyen"
+  },
+  "Más abajo = más esfuerzo": {
+   "en": "Lower = more effort",
+   "pt-BR": "Mais baixo = mais esforço",
+   "fr": "Plus bas = plus d'effort"
+  },
+  "Volumen por sesión": {
+   "en": "Volume per session",
+   "pt-BR": "Volume por sessão",
+   "fr": "Volume par séance"
+  },
+  "Registro": {
+   "en": "Log",
+   "pt-BR": "Registro",
+   "fr": "Journal"
+  },
+  "Mejor 1RM": {
+   "en": "Best 1RM",
+   "pt-BR": "Melhor 1RM",
+   "fr": "Meilleur 1RM"
+  },
+  "Cambio en el periodo": {
+   "en": "Change in period",
+   "pt-BR": "Mudança no período",
+   "fr": "Évolution sur la période"
+  },
+  "Últimas 8": {
+   "en": "Last 8",
+   "pt-BR": "Últimas 8",
+   "fr": "8 dernières"
+  },
+  "Últimas 20": {
+   "en": "Last 20",
+   "pt-BR": "Últimas 20",
+   "fr": "20 dernières"
+  },
+  "Todo": {
+   "en": "All",
+   "pt-BR": "Tudo",
+   "fr": "Tout"
+  },
+  "Sesión": {
+   "en": "Session",
+   "pt-BR": "Sessão",
+   "fr": "Séance"
+  },
+  "Sesiones": {
+   "en": "Sessions",
+   "pt-BR": "Sessões",
+   "fr": "Séances"
+  },
+  "Registra pesos y repeticiones en tus entrenamientos para ver el progreso de cada ejercicio.": {
+   "en": "Log weights and reps in your workouts to see each exercise's progress.",
+   "pt-BR": "Registre pesos e repetições nos treinos para ver o progresso de cada exercício.",
+   "fr": "Note charges et répétitions pour voir les progrès de chaque exercice."
+  },
+  "Aún no hay registros de este ejercicio.": {
+   "en": "No logs for this exercise yet.",
+   "pt-BR": "Ainda não há registros deste exercício.",
+   "fr": "Pas encore de données pour cet exercice."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

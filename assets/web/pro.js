@@ -1101,7 +1101,7 @@ function spRecordsHtml(D) {
     return `<svg class="rec-spark" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${p.map((x, i) => `${(i / (p.length - 1) * 100).toFixed(1)},${(26 - (x.v - mn) / r * 24).toFixed(1)}`).join(' ')}"/></svg>`; };
   const fmtD = d => { try { return new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' }).format(parseKey(d)); } catch (e) { return d; } };
   const str = list.map(R => { const first = R.pts[0].v, ch = first ? Math.round((R.best.v - first) / first * 100) : 0, fresh = R.prDay >= d7;
-    return `<div class="rec-row${fresh ? ' fresh' : ''}"><div class="rec-l"><div class="rec-n" translate="no">${escapeHtml(R.name)}</div>
+    return `<div class="rec-row${fresh ? ' fresh' : ''}" data-rec-key="${escapeHtml(goalNorm(R.name))}" role="button"><div class="rec-l"><div class="rec-n" translate="no">${escapeHtml(R.name)}</div>
       <div class="rec-d"><span>Mejor serie</span> <span translate="no">${gymFmtKg(R.best.kg)} ${U} × ${escapeHtml(String(R.best.reps))}</span> · <span translate="no">${escapeHtml(fmtD(R.best.d))}</span></div>
       ${fresh ? '<span class="hd-badge ok rec-new">Nuevo récord</span>' : ''}</div>
       <div class="rec-r"><div class="rec-v" translate="no">${gymFmtKg(R.best.v)}<small> ${U}</small></div><div class="rec-k">1RM est.${R.pts.length > 1 && ch ? ` · <b class="${ch < 0 ? 'dn' : 'up'}" translate="no">${ch > 0 ? '+' : ''}${ch}%</b>` : ''}</div>${spark(R.pts)}</div></div>`; }).join('');
@@ -1515,6 +1515,131 @@ function dayImageCanvas(dd, mode, who) {
   const c = cv.getContext('2d'); c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, W, cv.height); c.textBaseline = 'alphabetic';
   cmds.forEach(fn => fn(c));
   return cv;
+}
+
+// ============================================================
+// REGISTRO DE CADA EJERCICIO: gráficas de peso, 1RM, reps, RIR y volumen
+// ============================================================
+// Agrupa por nombre (el mismo ejercicio en distintas rutinas o reemplazos cuenta junto).
+function exLogIndex(D) {
+  D = D || {};
+  const logs = D.gym_logs || {}, routines = Array.isArray(D.gym_routines) ? D.gym_routines : [], by = {};
+  const N = x => (typeof gymNum === 'function' ? gymNum(x) : parseFloat(x));
+  Object.keys(logs).sort().forEach(d => {
+    const lg = logs[d] || {}, rt = routines.find(x => x.id === lg.routineId);
+    if (!rt || (rt.meta && rt.meta.sport)) return;
+    Object.keys(lg.ex || {}).forEach(exId => {
+      const ex = (rt.exercises || []).find(x => x.id === exId); if (!ex) return;
+      const sw = lg.swap && lg.swap[exId], name = (sw && sw.name) || ex.name; if (!name) return;
+      const sets = (lg.ex[exId] || []).filter(x => x && x.done && (N(x.reps) > 0 || N(x.kg) > 0));
+      if (!sets.length) return;
+      const k = goalNorm(name), it = by[k] || (by[k] = { key: k, name, dbId: (sw && sw.dbId) || ex.dbId, sessions: [] });
+      const ss = sets.map(x => ({ kg: N(x.kg) || 0, reps: N(x.reps) || 0, rir: x.rir === '' || x.rir == null ? null : N(x.rir), pain: x.pain == null ? null : +x.pain, tags: x.tags || [] }));
+      const rirs = ss.filter(x => x.rir != null && !isNaN(x.rir));
+      const e1s = ss.filter(x => x.kg > 0 && x.reps > 0).map(x => (typeof gymE1RM === 'function' ? gymE1RM(x.kg, x.reps) : x.kg * (1 + x.reps / 30)));
+      it.sessions.push({ d, sets: ss, e1: e1s.length ? Math.max(...e1s) : 0, top: Math.max(0, ...ss.map(x => x.kg)), reps: ss.reduce((a, x) => a + x.reps, 0),
+        vol: ss.reduce((a, x) => a + x.kg * x.reps, 0), rir: rirs.length ? rirs.reduce((a, x) => a + x.rir, 0) / rirs.length : null,
+        pain: ss.some(x => x.pain != null) ? Math.max(...ss.filter(x => x.pain != null).map(x => x.pain)) : null, rpe: ((lg.exFeel || {})[exId] || {}).rpe });
+    });
+  });
+  return Object.values(by).sort((a, b) => (b.sessions[b.sessions.length - 1].d > a.sessions[a.sessions.length - 1].d ? 1 : -1));
+}
+// Color por RIR: 0 al fallo (rojo), 1–2 cerca del fallo (ámbar), 3+ con margen (verde), sin dato (gris)
+function exRirCol(r) { return r == null || isNaN(r) ? '#A1A1AA' : r <= 0 ? '#DC2626' : r <= 2 ? '#D97706' : '#16A34A'; }
+function exFmtD(d, long) { try { return new Intl.DateTimeFormat(_loc(), long ? { weekday: 'short', day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short' }).format(new Date(d + 'T00:00:00')); } catch (e) { return d; } }
+// Línea con varias series. pts: [{y, label?}] alineados a las fechas
+function exLineSvg(dates, series, o) {
+  o = o || {}; const W = 320, H = o.h || 150, L = 34, R = 10, T = 12, B = 24;
+  const all = series.flatMap(s => s.vals.filter(v => v != null));
+  if (!all.length) return '';
+  let lo = o.min != null ? o.min : Math.min(...all), hi = o.max != null ? o.max : Math.max(...all);
+  if (o.min == null) lo = lo - (hi - lo || hi || 1) * 0.12; if (o.max == null) hi = hi + (hi - lo || 1) * 0.12;
+  if (hi === lo) hi = lo + 1;
+  const n = dates.length, X = i => L + (n === 1 ? (W - L - R) / 2 : i * (W - L - R) / (n - 1)), Y = v => o.invert ? T + (v - lo) / (hi - lo) * (H - T - B) : H - B - (v - lo) / (hi - lo) * (H - T - B);
+  const ticks = o.ticks || [lo, (lo + hi) / 2, hi], fmt = o.fmt || (v => String(Math.round(v)));
+  let g = ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" class="exc-grid"/><text x="${L - 5}" y="${(Y(t) + 3.5).toFixed(1)}" class="exc-ax" text-anchor="end">${fmt(t)}</text>`).join('');
+  const li = [0, Math.floor((n - 1) / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i);
+  g += li.map(i => `<text x="${X(i).toFixed(1)}" y="${H - 6}" class="exc-ax" text-anchor="${n === 1 ? 'middle' : i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${exFmtD(dates[i])}</text>`).join('');
+  series.forEach(s => {
+    const p = s.vals.map((v, i) => (v == null ? null : [X(i), Y(v)])).filter(Boolean);
+    if (p.length > 1) g += `<polyline fill="none" stroke="${s.col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"${s.dash ? ' stroke-dasharray="5 4"' : ''} points="${p.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ')}"/>`;
+    g += s.vals.map((v, i) => (v == null ? '' : `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${s.dash ? 2.2 : 3}" fill="${s.ptCol ? s.ptCol(v, i) : s.col}"/>`)).join('');
+  });
+  return `<svg class="exc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">${g}</svg>`;
+}
+// Barras por sesión; cada sesión es un grupo de barras (una por serie)
+function exGroupBarsSvg(groups, o) {
+  o = o || {}; const W = 320, H = o.h || 150, L = 26, R = 6, T = 10, B = 24;
+  const max = Math.max(1, ...groups.flatMap(g => g.bars.map(b => b.v)));
+  const n = groups.length, gw = (W - L - R) / Math.max(1, n), pad = Math.min(6, gw * 0.18);
+  const ticks = [0, Math.round(max / 2), Math.round(max)];
+  let g = ticks.map(t => { const y = H - B - t / max * (H - T - B); return `<line x1="${L}" x2="${W - R}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" class="exc-grid"/><text x="${L - 4}" y="${(y + 3.5).toFixed(1)}" class="exc-ax" text-anchor="end">${t}</text>`; }).join('');
+  groups.forEach((gr, i) => {
+    const x0 = L + i * gw + pad / 2, bw = Math.max(2, (gw - pad) / Math.max(1, gr.bars.length) - 1);
+    gr.bars.forEach((b, j) => { const h = b.v / max * (H - T - B); g += `<rect x="${(x0 + j * (bw + 1)).toFixed(1)}" y="${(H - B - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, h).toFixed(1)}" rx="1.5" fill="${b.col}"/>`; });
+  });
+  const li = [0, Math.floor((n - 1) / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i);
+  g += li.map(i => `<text x="${(L + i * gw + gw / 2).toFixed(1)}" y="${H - 6}" class="exc-ax" text-anchor="middle">${exFmtD(groups[i].d)}</text>`).join('');
+  return `<svg class="exc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">${g}</svg>`;
+}
+function exSpark(vals) {
+  const v = vals.filter(x => x).slice(-10); if (v.length < 2) return '';
+  const lo = Math.min(...v), hi = Math.max(...v), r = hi - lo || 1;
+  return `<svg class="exl-spark" viewBox="0 0 80 24" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${v.map((x, i) => `${(i / (v.length - 1) * 80).toFixed(1)},${(22 - (x - lo) / r * 20).toFixed(1)}`).join(' ')}"/></svg>`;
+}
+function exLogListHtml(idx, limit) {
+  const E = x => escapeHtml(String(x)), U = typeof gymUnit === 'function' ? gymUnit() : 'kg', V = kg => (typeof gymVolU === 'function' ? gymVolU(kg) : kg);
+  if (!idx.length) return '<div class="empty">Registra pesos y repeticiones en tus entrenamientos para ver el progreso de cada ejercicio.</div>';
+  return idx.slice(0, limit || idx.length).map((it, i) => {
+    const ss = it.sessions, last = ss[ss.length - 1], first = ss[0], ch = first.e1 && last.e1 && ss.length > 1 ? Math.round((last.e1 - first.e1) / first.e1 * 100) : null;
+    return `<button class="exl-row" data-exl="${i}"><span class="exl-b"><b translate="no">${E(it.name)}</b><small><span translate="no">${ss.length}</span> <span>${ss.length === 1 ? 'sesión' : 'sesiones'}</span> · <span translate="no">${E(exFmtD(last.d))}</span></small></span>
+      ${exSpark(ss.map(x => x.e1))}<span class="exl-v">${last.e1 ? `<b translate="no">${Math.round(V(last.e1) * 10) / 10}</b><small translate="no">${U}${ch ? ` · <i class="${ch > 0 ? 'up' : 'dn'}">${ch > 0 ? '+' : ''}${ch}%</i>` : ''}</small>` : `<b translate="no">${last.reps}</b><small>reps</small>`}</span><span class="sp-chev">›</span></button>`;
+  }).join('');
+}
+function exLogDetailHtml(it, range) {
+  const E = x => escapeHtml(String(x)), U = typeof gymUnit === 'function' ? gymUnit() : 'kg', V = kg => (typeof gymVolU === 'function' ? gymVolU(kg) : kg);
+  const W = kg => (typeof gymDispW === 'function' ? gymDispW(kg) : kg), r1 = v => Math.round(V(v) * 10) / 10;
+  const all = it.sessions, ss = range && range !== 'all' ? all.slice(-range) : all, dates = ss.map(x => x.d);
+  const hasKg = ss.some(x => x.top > 0), best = all.reduce((a, x) => (x.e1 > a.e1 ? x : a), all[0]), last = all[all.length - 1], first = ss[0];
+  const ch = first.e1 && last.e1 && ss.length > 1 ? Math.round((last.e1 - first.e1) / first.e1 * 100) : null;
+  const k = (v, l) => `<div class="dr-kpi"><b translate="no">${v}</b><span>${l}</span></div>`;
+  let h = `<div class="chips exl-range">${[[8, 'Últimas 8'], [20, 'Últimas 20'], ['all', 'Todo']].map(([v, l]) => `<div class="chip ${String(range || 'all') === String(v) ? 'selected' : ''}" data-exl-range="${v}">${l}</div>`).join('')}</div>
+    <div class="dr-kpis">${hasKg ? k(`${r1(last.e1)} ${U}`, '1RM estimado') + k(`${r1(best.e1)} ${U}`, 'Mejor 1RM') : ''}${ch != null ? k(`${ch > 0 ? '+' : ''}${ch}%`, 'Cambio en el periodo') : ''}${k(all.length, all.length === 1 ? 'Sesión' : 'Sesiones')}</div>`;
+  if (hasKg) h += `<div class="dr-sec"><div class="dr-h"><span>Peso y 1RM estimado</span><b translate="no">${U}</b></div>
+    ${exLineSvg(dates, [{ vals: ss.map(x => (x.e1 ? r1(x.e1) : null)), col: '#0A0A0A' }, { vals: ss.map(x => (x.top ? r1(x.top) : null)), col: '#A1A1AA', dash: true }], { fmt: v => String(Math.round(v)) })}
+    <div class="exc-leg"><span><i style="background:#0A0A0A"></i><span>1RM estimado</span></span><span><i class="dash"></i><span>Peso más alto</span></span></div></div>`;
+  h += `<div class="dr-sec"><div class="dr-h"><span>Repeticiones por serie</span><b>Color = RIR</b></div>
+    ${exGroupBarsSvg(ss.map(x => ({ d: x.d, bars: x.sets.map(st => ({ v: st.reps, col: exRirCol(st.rir) })) })))}
+    <div class="exc-leg"><span><i style="background:#DC2626"></i><span>RIR 0 · al fallo</span></span><span><i style="background:#D97706"></i><span>RIR 1–2</span></span><span><i style="background:#16A34A"></i><span>RIR 3 o más</span></span><span><i style="background:#A1A1AA"></i><span>Sin RIR</span></span></div></div>`;
+  if (ss.some(x => x.rir != null)) h += `<div class="dr-sec"><div class="dr-h"><span>Esfuerzo · RIR promedio</span><b>Más abajo = más esfuerzo</b></div>
+    ${exLineSvg(dates, [{ vals: ss.map(x => (x.rir == null ? null : Math.round(x.rir * 10) / 10)), col: '#52525B', ptCol: v => exRirCol(Math.round(v)) }], { min: 0, max: Math.max(4, ...ss.map(x => x.rir || 0)), ticks: [0, 2, 4], h: 120 })}</div>`;
+  if (hasKg) h += `<div class="dr-sec"><div class="dr-h"><span>Volumen por sesión</span><b translate="no">${U}</b></div>
+    ${exGroupBarsSvg(ss.map(x => ({ d: x.d, bars: [{ v: Math.round(V(x.vol)), col: '#0A0A0A' }] })), { h: 120 })}</div>`;
+  h += `<div class="dr-sec"><div class="dr-h"><span>Registro</span></div>${all.slice().reverse().map(x => `<div class="exl-log"><div class="exl-log-h"><b translate="no">${E(exFmtD(x.d, true))}</b>${x.e1 ? `<span translate="no">1RM ${r1(x.e1)} ${U}</span>` : ''}</div>
+    <div class="dr-sets" translate="no">${x.sets.map((st, i) => `<span class="dr-set">${i + 1}. ${st.kg ? E(W(st.kg)) + '×' : ''}${E(st.reps)}${st.rir != null && !isNaN(st.rir) ? ` <small style="color:${exRirCol(st.rir)}">RIR ${E(st.rir)}</small>` : ''}${st.pain > 0 ? ` <i style="background:${dayPainCol(st.pain)}">${E(st.pain)}</i>` : ''}</span>`).join('')}</div></div>`).join('')}</div>`;
+  return h;
+}
+// Abre el registro de un ejercicio. D: datos del atleta (local o del atleta que acompaña el especialista)
+function openExLog(D, key, opts) {
+  opts = opts || {};
+  const idx = exLogIndex(D), it = idx.find(x => x.key === goalNorm(key));
+  const draw = range => {
+    openSheet(it ? it.name : 'Progreso', it ? `${opts.who ? `<div class="exl-who" translate="no">${escapeHtml(opts.who)}</div>` : ''}<div class="dr">${exLogDetailHtml(it, range)}</div>${opts.back ? '<button class="btn-secondary ds-btn" id="exl-back">‹ Volver</button>' : ''}`
+      : `<div class="empty">Aún no hay registros de este ejercicio.</div>${opts.back ? '<button class="btn-secondary ds-btn" id="exl-back">‹ Volver</button>' : ''}`);
+    const sb = document.getElementById('sheet-body');
+    sb.querySelectorAll('[data-exl-range]').forEach(b => b.addEventListener('click', () => draw(b.dataset.exlRange === 'all' ? 'all' : +b.dataset.exlRange)));
+    const bk = document.getElementById('exl-back'); if (bk) bk.addEventListener('click', opts.back);
+  };
+  draw(it && it.sessions.length > 20 ? 20 : 'all');
+}
+// Lista de todos los ejercicios con su progreso
+function openExLogList(D, opts) {
+  opts = opts || {};
+  const idx = exLogIndex(D);
+  openSheet('Progreso por ejercicio', `${opts.who ? `<div class="exl-who" translate="no">${escapeHtml(opts.who)}</div>` : ''}<div class="exl-list">${exLogListHtml(idx)}</div>${opts.back ? '<button class="btn-secondary ds-btn" id="exl-back">‹ Volver</button>' : ''}`);
+  const sb = document.getElementById('sheet-body');
+  sb.querySelectorAll('[data-exl]').forEach(b => b.addEventListener('click', () => openExLog(D, idx[+b.dataset.exl].key, { who: opts.who, back: () => openExLogList(D, opts) })));
+  const bk = document.getElementById('exl-back'); if (bk) bk.addEventListener('click', opts.back);
 }
 
 // ============================================================
@@ -2578,4 +2703,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { exLogIndex, gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
