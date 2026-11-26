@@ -14621,7 +14621,10 @@ function openGymWorkout(routineId, dateKey, focusId) {
     sb.querySelectorAll('.gym-set[data-ex] .gym-in').forEach(inp => inp.addEventListener('input', () => {
       const row = inp.closest('.gym-set');
       const v = inp.value.replace(',', '.').trim();
-      setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.dataset.f === 'kg' ? gymStoreW(v) : inp.dataset.f === 'rir' || inp.dataset.f === 'rpe' ? v.replace(/[^0-9]/g, '').slice(0, 2) : inp.dataset.f === 'time' ? inp.value.replace(/[^0-9:.]/g, '').slice(0, 8) : v);
+      // RIR y RPE van de 0 a 10: un 12 se corrige a 10 al momento
+      let ef = null;
+      if (inp.dataset.f === 'rir' || inp.dataset.f === 'rpe') { ef = v.replace(/[^0-9]/g, '').slice(0, 2); if (ef !== '' && +ef > 10) ef = '10'; if (inp.value !== ef) inp.value = ef; }
+      setVal(row.dataset.ex, +row.dataset.i, inp.dataset.f, inp.dataset.f === 'kg' ? gymStoreW(v) : ef != null ? ef : inp.dataset.f === 'time' ? inp.value.replace(/[^0-9:.]/g, '').slice(0, 8) : v);
     }));
     sb.querySelectorAll('[data-gym-unit]').forEach(b => b.addEventListener('click', () => { S.set('gym_unit', b.dataset.gymUnit); draw(); }));
     sb.querySelectorAll('[data-gym-addset]').forEach(b => b.addEventListener('click', () => {
