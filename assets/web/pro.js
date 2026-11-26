@@ -1281,6 +1281,18 @@ function cvWorkoutHtml(r, lg, kind, pick) {
 // D = datos del atleta con la misma forma que en la nube: gym_logs, gym_routines,
 // meal_log, act_log, hydration_log, hydration_settings, weight_log, habits, habitLog,
 // nutri_profile, food_goal_kcal. Sirve igual para el atleta (local) y el especialista.
+// Color del grupo muscular (mismo que en Gym): pierna, pecho, espalda, hombro, brazo, core
+const EX_GRP_HEX = { pierna: '#EA580C', pecho: '#2563EB', espalda: '#0D9488', hombro: '#CA8A04', brazo: '#DB2777', core: '#64748B', otro: '#8E8E93' };
+const EX_GRP_ES = { pierna: 'Pierna', pecho: 'Pecho', espalda: 'Espalda', hombro: 'Hombro', brazo: 'Brazo', core: 'Core', otro: 'Otro' };
+function exGrp(dbId, name) { try { return typeof gymExGroup === 'function' ? gymExGroup({ dbId, name }) : 'otro'; } catch (e) { return 'otro'; } }
+function exGrpCol(g) { return (typeof GYM_GROUP_HEX !== 'undefined' && GYM_GROUP_HEX[g]) || EX_GRP_HEX[g] || EX_GRP_HEX.otro; }
+// Series válidas: se descartan las vacías (0×0) y el RIR fuera de 0–10
+function exCleanSets(sets, N) {
+  return sets.filter(x => x && x.done && ((N(x.kg) || 0) > 0 || (N(x.reps) || 0) > 0 || x.time)).map(x => {
+    const r = x.rir === '' || x.rir == null ? null : N(x.rir);
+    return Object.assign({}, x, { rir: r != null && !isNaN(r) && r >= 0 && r <= 10 ? r : null });
+  });
+}
 const DAY_MEALS = [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['dinner', 'Cena'], ['snack', 'Snack']];
 function dayData(D, dk, opts) {
   opts = opts || {}; D = D || {};
@@ -1294,20 +1306,21 @@ function dayData(D, dk, opts) {
     const prevKeys = Object.keys(logs).filter(k => k < dk).sort().reverse();
     const ex = [];
     (r.exercises || []).forEach(e => {
-      const sets = ((lg.ex || {})[e.id] || []).filter(x => x && x.done);
+      const sets = exCleanSets((lg.ex || {})[e.id] || [], N);
       if (!sets.length) return;
       const sw = lg.swap && lg.swap[e.id], name = (sw && sw.name) || e.name;
       const vol = sets.reduce((a, x) => a + (N(x.kg) || 0) * (N(x.reps) || 0), 0);
       const e1 = Math.max(0, ...sets.map(x => (N(x.kg) > 0 && N(x.reps) > 0 ? E1(x.kg, x.reps) : 0)));
-      let prev = 0;
+      let prev = 0; const hist = [];
       for (const k of prevKeys) {
         const pl = logs[k]; if (!pl || pl.routineId == null) continue;
         const psw = pl.swap && pl.swap[e.id]; if (((psw && psw.name) || null) !== ((sw && sw.name) || null)) continue;
         const ps = ((pl.ex || {})[e.id] || []).filter(x => x && x.done && N(x.kg) > 0 && N(x.reps) > 0);
-        if (ps.length) { prev = Math.max(...ps.map(x => E1(x.kg, x.reps))); break; }
+        if (ps.length) { const v = Math.max(...ps.map(x => E1(x.kg, x.reps))); if (!prev) prev = v; hist.unshift({ d: k, v }); if (hist.length >= 7) break; }
       }
+      if (e1 > 0) hist.push({ d: dk, v: e1 });
       const f = (lg.exFeel || {})[e.id] || {};
-      ex.push({ id: e.id, name, sets: sets.map(x => ({ kg: x.kg, reps: x.reps, rir: x.rir, pain: x.pain, time: x.time, rpe: x.rpe })), vol, e1rm: e1, prev, pain: f.pain, rpe: f.rpe,
+      ex.push({ id: e.id, name, grp: exGrp((sw && sw.dbId) || e.dbId, name), hist, sets: sets.map(x => ({ kg: x.kg, reps: x.reps, rir: x.rir, pain: x.pain, time: x.time, rpe: x.rpe })), vol, e1rm: e1, prev, pain: f.pain, rpe: f.rpe,
         maxPain: Math.max(-1, ...sets.map(x => (x.pain == null ? -1 : +x.pain))) });
     });
     const cv = (typeof cvAll === 'function' ? cvAll(r, lg) : []).map(([kind, it]) => { const v = (lg.cv || {})[it.id]; return v && v.done ? { kind, name: cvName(it), text: cvText(it, v), min: parseFloat(v.time) || 0 } : null; }).filter(Boolean);
@@ -1350,6 +1363,29 @@ function dayData(D, dk, opts) {
   if (hb.length && Object.keys(hl).length) out.habits = { done: hb.filter(h => hl[h.id]).length, total: hb.length };
   return out;
 }
+// Series para la gráfica de progreso de los ejercicios del día: cambio % del 1RM estimado
+// contra la primera de sus últimas sesiones; alineadas a la derecha (la última es hoy).
+function dayProgSeries(exs) {
+  const list = exs.filter(x => x.hist && x.hist.length > 1);
+  if (!list.length) return null;
+  const n = Math.max(...list.map(x => x.hist.length)), dashes = [null, '6 4', '2 3', '10 3 2 3'], used = {};
+  const series = list.map(x => {
+    const base = x.hist[0].v, vals = Array(n - x.hist.length).fill(null).concat(x.hist.map(h => Math.round((h.v - base) / base * 1000) / 10));
+    const k = used[x.grp] = (used[x.grp] || 0) + 1;
+    return { name: x.name, grp: x.grp, col: exGrpCol(x.grp), dash: dashes[(k - 1) % dashes.length], vals, ch: vals[vals.length - 1] };
+  });
+  const labels = Array.from({ length: n }, (_, i) => (i === n - 1 ? 'Hoy' : `-${n - 1 - i}`));
+  return { n, series, labels };
+}
+function dayProgHtml(exs) {
+  const P = dayProgSeries(exs); if (!P) return '';
+  const all = P.series.flatMap(s => s.vals.filter(v => v != null)), lo = Math.min(0, ...all), hi = Math.max(0, ...all);
+  const pad = Math.max(2, (hi - lo) * 0.15);
+  return `<div class="dr-sub">Progreso de tus ejercicios · 1RM estimado</div>
+    ${exLineSvg(null, P.series.map(s => ({ vals: s.vals, col: s.col, dash: s.dash, w: 2.4 })), { labels: P.labels, min: Math.floor(lo - pad), max: Math.ceil(hi + pad), ticks: [Math.floor(lo - pad), 0, Math.ceil(hi + pad)], fmt: v => (v > 0 ? '+' : '') + Math.round(v) + '%', h: 160, zero: true })}
+    <div class="dr-leg">${P.series.map(s => `<div class="dr-leg-i"><svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="${s.col}" stroke-width="3" stroke-linecap="round"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''}/></svg><span translate="no">${escapeHtml(s.name)}</span><b class="${s.ch > 0 ? 'up' : s.ch < 0 ? 'dn' : ''}" translate="no">${s.ch > 0 ? '+' : ''}${s.ch}%</b></div>`).join('')}</div>
+    <div class="dr-hint">Sesiones anteriores de cada ejercicio hasta hoy. Color = grupo muscular.</div>`;
+}
 function dayIsEmpty(dd) { return !dd.gym && !dd.acts.length && !dd.food && !dd.water && dd.weight == null && !dd.habits; }
 function dayKpis(dd) {
   const k = [];
@@ -1372,13 +1408,12 @@ function dayReportHtml(dd) {
   let h = `<div class="dr-kpis">${dayKpis(dd).map(([v, l]) => `<div class="dr-kpi"><b translate="no">${E(v)}</b><span>${E(l)}</span></div>`).join('')}</div>`;
   const g = dd.gym;
   if (g) {
-    const maxV = Math.max(1, ...g.ex.map(x => x.vol));
     h += `<div class="dr-sec"><div class="dr-h"><span>Entrenamiento</span><b translate="no">${E(g.name)}</b></div>`;
-    if (!g.sport && g.ex.some(x => x.vol)) h += `<div class="dr-sub">Volumen por ejercicio</div><div class="dr-bars">${g.ex.filter(x => x.vol).map(x => `<div class="dr-bar"><span translate="no">${E(x.name)}</span><i style="width:${Math.max(4, Math.round(x.vol / maxV * 100))}%"></i><b translate="no">${Math.round(typeof gymVolU === 'function' ? gymVolU(x.vol) : x.vol).toLocaleString(_loc())}</b></div>`).join('')}</div>`;
+    if (!g.sport) h += dayProgHtml(g.ex);
     h += g.ex.map(x => {
       const ch = x.prev && x.e1rm ? Math.round((x.e1rm - x.prev) / x.prev * 100) : null;
-      return `<div class="dr-ex"><div class="dr-ex-h"><b translate="no">${E(x.name)}</b>${x.e1rm ? `<span class="dr-e1"><span>1RM est.</span> <span translate="no">${typeof gymFmtKg === 'function' ? gymFmtKg(x.e1rm) : Math.round(x.e1rm)} ${U}</span>${ch ? ` <b class="${ch > 0 ? 'up' : 'dn'}" translate="no">${ch > 0 ? '+' : ''}${ch}%</b>` : ''}</span>` : ''}</div>
-        <div class="dr-sets" translate="no">${x.sets.map((s, i) => `<span class="dr-set">${i + 1}. ${s.time ? E(s.time) + (s.reps ? ' · ' + E(s.reps) : '') : `${E(W(s.kg) || 0)}×${E(s.reps || 0)}`}${s.rir !== undefined && s.rir !== '' && s.rir != null ? ` <small>RIR ${E(s.rir)}</small>` : ''}${s.pain > 0 ? ` <i style="background:${dayPainCol(+s.pain)}">${E(s.pain)}</i>` : ''}</span>`).join('')}</div></div>`;
+      return `<div class="dr-ex" style="--gc:${exGrpCol(x.grp)}"><div class="dr-ex-h"><b translate="no"><i class="dr-dot" title="${E(EX_GRP_ES[x.grp] || '')}"></i>${E(x.name)}</b>${x.e1rm ? `<span class="dr-e1"><span>1RM est.</span> <span translate="no">${typeof gymFmtKg === 'function' ? gymFmtKg(x.e1rm) : Math.round(x.e1rm)} ${U}</span>${ch ? ` <b class="${ch > 0 ? 'up' : 'dn'}" translate="no">${ch > 0 ? '+' : ''}${ch}%</b>` : ''}</span>` : ''}</div>
+        <div class="dr-sets" translate="no">${x.sets.map((s, i) => `<span class="dr-set">${i + 1}. ${s.time ? E(s.time) + (s.reps ? ' · ' + E(s.reps) : '') : (+s.kg ? `${E(W(s.kg))}×${E(s.reps || 0)}` : `${E(s.reps || 0)} reps`)}${s.rir !== undefined && s.rir !== '' && s.rir != null ? ` <small>RIR ${E(s.rir)}</small>` : ''}${s.pain > 0 ? ` <i style="background:${dayPainCol(+s.pain)}">${E(s.pain)}</i>` : ''}</span>`).join('')}</div></div>`;
     }).join('');
     if (g.cv.length) h += `<div class="dr-sub">Calentamiento y cardio</div>${g.cv.map(c => `<div class="dr-li"><b>${E(CV_KIND[c.kind])}</b> · <span translate="no">${E(c.name)} · ${E(c.text)}</span></div>`).join('')}`;
     const fe = g.feel || {};
@@ -1449,20 +1484,39 @@ function dayImageCanvas(dd, mode, who) {
   const g = dd.gym;
   if (g) {
     H('Entrenamiento', mode === 'gym' ? '' : g.name);
-    const maxV = Math.max(1, ...g.ex.map(x => x.vol));
-    if (!g.sport && g.ex.some(x => x.vol)) {
-      g.ex.filter(x => x.vol).slice(0, 8).forEach(x => {
-        T(wrap(x.name, 330, 24, 600)[0], P, y + 28, 24, 600, '#0A0A0A');
-        const bw = W - 2 * P - 340 - 130;
-        R(P + 340, y + 8, bw, 26, '#F4F4F5', 13); R(P + 340, y + 8, Math.max(26, bw * x.vol / maxV), 26, '#0A0A0A', 13);
-        T(Math.round(typeof gymVolU === 'function' ? gymVolU(x.vol) : x.vol).toLocaleString(_loc()) + ' ' + U, W - P, y + 30, 22, 600, '#3F3F46', 'right');
-        y += 48;
+    const PS = !g.sport && dayProgSeries(g.ex);
+    if (PS) {
+      // Gráfica de líneas: cambio % del 1RM estimado por ejercicio, color = grupo muscular
+      T(tt('Progreso de tus ejercicios · 1RM estimado'), P, y + 26, 24, 600, '#3F3F46'); y += 46;
+      const all = PS.series.flatMap(s => s.vals.filter(v => v != null)), pad = Math.max(2, (Math.max(0, ...all) - Math.min(0, ...all)) * 0.15);
+      const lo = Math.floor(Math.min(0, ...all) - pad), hi = Math.ceil(Math.max(0, ...all) + pad);
+      const cx = P + 90, cw = W - P - cx, ch = 320, cy = y + 10, n = PS.n;
+      const X = i => cx + (n === 1 ? cw / 2 : i * cw / (n - 1)), Y = v => cy + ch - (v - lo) / (hi - lo || 1) * ch;
+      const fmt = v => (v > 0 ? '+' : '') + Math.round(v) + '%';
+      [lo, 0, hi].forEach(v => { T(fmt(v), cx - 16, Y(v) + 8, 22, 500, '#71717A', 'right'); cmds.push(c => { c.strokeStyle = v === 0 ? '#A1A1AA' : '#E4E4E7'; c.lineWidth = 2; c.setLineDash(v === 0 ? [8, 8] : []); c.beginPath(); c.moveTo(cx, Y(v)); c.lineTo(cx + cw, Y(v)); c.stroke(); c.setLineDash([]); }); });
+      PS.labels.forEach((l, i) => { if (n <= 8 || i === 0 || i === n - 1 || i % 2 === 0) T(tt(l), X(i), cy + ch + 36, 22, 500, '#71717A', i === 0 ? 'left' : i === n - 1 ? 'right' : 'center'); });
+      PS.series.forEach(sr => {
+        const pts = sr.vals.map((v, i) => (v == null ? null : [X(i), Y(v)])).filter(Boolean);
+        cmds.push(c => {
+          c.strokeStyle = sr.col; c.lineWidth = 5; c.lineJoin = 'round'; c.lineCap = 'round';
+          c.setLineDash(sr.dash ? sr.dash.split(' ').map(z => +z * 2.2) : []);
+          c.beginPath(); pts.forEach(([px, py], j) => (j ? c.lineTo(px, py) : c.moveTo(px, py))); c.stroke(); c.setLineDash([]);
+          c.fillStyle = sr.col; pts.forEach(([px, py]) => { c.beginPath(); c.arc(px, py, 7, 0, Math.PI * 2); c.fill(); });
+        });
       });
-      y += 18;
+      y = cy + ch + 64;
+      PS.series.slice(0, 10).forEach(sr => {
+        cmds.push(c => { c.strokeStyle = sr.col; c.lineWidth = 6; c.lineCap = 'round'; c.setLineDash(sr.dash ? sr.dash.split(' ').map(z => +z * 1.6) : []); c.beginPath(); c.moveTo(P + 4, y + 18); c.lineTo(P + 52, y + 18); c.stroke(); c.setLineDash([]); });
+        T(wrap(sr.name, W - 2 * P - 200, 24, 500)[0], P + 72, y + 27, 24, 500, '#27272A');
+        T(`${sr.ch > 0 ? '+' : ''}${sr.ch}%`, W - P, y + 27, 24, 800, sr.ch > 0 ? DAY_COL.up : sr.ch < 0 ? DAY_COL.dn : '#71717A', 'right');
+        y += 42;
+      });
+      y += 24;
     }
     g.ex.slice(0, mode === 'gym' ? 12 : 6).forEach(x => {
       R(P, y, W - 2 * P, 2, '#E4E4E7', 0); y += 22;
-      T(wrap(x.name, W - 2 * P - 330, 30, 700)[0], P, y + 30, 30, 700, '#0A0A0A');
+      R(P, y + 12, 18, 18, exGrpCol(x.grp), 9);
+      T(wrap(x.name, W - 2 * P - 360, 30, 700)[0], P + 30, y + 30, 30, 700, '#0A0A0A');
       if (x.e1rm) {
         const ch = x.prev ? Math.round((x.e1rm - x.prev) / x.prev * 100) : 0;
         T(`1RM ${typeof gymFmtKg === 'function' ? gymFmtKg(x.e1rm) : Math.round(x.e1rm)} ${U}`, W - P - (ch ? 110 : 0), y + 30, 24, 600, '#52525B', 'right');
@@ -1472,7 +1526,7 @@ function dayImageCanvas(dd, mode, who) {
       // series como pastillas
       let px = P;
       x.sets.forEach((s, i) => {
-        const lbl = s.time ? `${s.time}${s.reps ? ' · ' + s.reps : ''}` : `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg}×${s.reps}`;
+        const lbl = s.time ? `${s.time}${s.reps ? ' · ' + s.reps : ''}` : (+s.kg ? `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg}×${s.reps}` : `${s.reps} reps`);
         x0.font = font(600, 24); const tw = x0.measureText(lbl).width + 36 + (s.pain > 0 ? 40 : 0);
         if (px + tw > W - P) { px = P; y += 58; }
         R(px, y, tw, 46, '#F4F4F5', 23); T(lbl, px + 18, y + 32, 24, 600, '#0A0A0A');
@@ -1533,8 +1587,9 @@ function exLogIndex(D) {
       const sw = lg.swap && lg.swap[exId], name = (sw && sw.name) || ex.name; if (!name) return;
       const sets = (lg.ex[exId] || []).filter(x => x && x.done && (N(x.reps) > 0 || N(x.kg) > 0));
       if (!sets.length) return;
-      const k = goalNorm(name), it = by[k] || (by[k] = { key: k, name, dbId: (sw && sw.dbId) || ex.dbId, sessions: [] });
-      const ss = sets.map(x => ({ kg: N(x.kg) || 0, reps: N(x.reps) || 0, rir: x.rir === '' || x.rir == null ? null : N(x.rir), pain: x.pain == null ? null : +x.pain, tags: x.tags || [] }));
+      const k = goalNorm(name), it = by[k] || (by[k] = { key: k, name, dbId: (sw && sw.dbId) || ex.dbId, grp: exGrp((sw && sw.dbId) || ex.dbId, name), sessions: [] });
+      const ss = exCleanSets(lg.ex[exId] || [], N).map(x => ({ kg: N(x.kg) || 0, reps: N(x.reps) || 0, rir: x.rir, pain: x.pain == null ? null : +x.pain, tags: x.tags || [] }));
+      if (!ss.length) return;
       const rirs = ss.filter(x => x.rir != null && !isNaN(x.rir));
       const e1s = ss.filter(x => x.kg > 0 && x.reps > 0).map(x => (typeof gymE1RM === 'function' ? gymE1RM(x.kg, x.reps) : x.kg * (1 + x.reps / 30)));
       it.sessions.push({ d, sets: ss, e1: e1s.length ? Math.max(...e1s) : 0, top: Math.max(0, ...ss.map(x => x.kg)), reps: ss.reduce((a, x) => a + x.reps, 0),
@@ -1549,7 +1604,8 @@ function exRirCol(r) { return r == null || isNaN(r) ? '#A1A1AA' : r <= 0 ? '#DC2
 function exFmtD(d, long) { try { return new Intl.DateTimeFormat(_loc(), long ? { weekday: 'short', day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short' }).format(new Date(d + 'T00:00:00')); } catch (e) { return d; } }
 // Línea con varias series. pts: [{y, label?}] alineados a las fechas
 function exLineSvg(dates, series, o) {
-  o = o || {}; const W = 320, H = o.h || 150, L = 34, R = 10, T = 12, B = 24;
+  o = o || {}; const W = 320, H = o.h || 150, L = 38, R = 10, T = 12, B = 24;
+  const labs = o.labels || (dates || []).map(d => exFmtD(d)); dates = labs;
   const all = series.flatMap(s => s.vals.filter(v => v != null));
   if (!all.length) return '';
   let lo = o.min != null ? o.min : Math.min(...all), hi = o.max != null ? o.max : Math.max(...all);
@@ -1559,11 +1615,12 @@ function exLineSvg(dates, series, o) {
   const ticks = o.ticks || [lo, (lo + hi) / 2, hi], fmt = o.fmt || (v => String(Math.round(v)));
   let g = ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" class="exc-grid"/><text x="${L - 5}" y="${(Y(t) + 3.5).toFixed(1)}" class="exc-ax" text-anchor="end">${fmt(t)}</text>`).join('');
   const li = [0, Math.floor((n - 1) / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i);
-  g += li.map(i => `<text x="${X(i).toFixed(1)}" y="${H - 6}" class="exc-ax" text-anchor="${n === 1 ? 'middle' : i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${exFmtD(dates[i])}</text>`).join('');
+  g += li.map(i => `<text x="${X(i).toFixed(1)}" y="${H - 6}" class="exc-ax" text-anchor="${n === 1 ? 'middle' : i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'}">${escapeHtml(String(labs[i]))}</text>`).join('');
+  if (o.zero && lo < 0 && hi > 0) g += `<line x1="${L}" x2="${W - R}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" class="exc-zero"/>`;
   series.forEach(s => {
     const p = s.vals.map((v, i) => (v == null ? null : [X(i), Y(v)])).filter(Boolean);
-    if (p.length > 1) g += `<polyline fill="none" stroke="${s.col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"${s.dash ? ' stroke-dasharray="5 4"' : ''} points="${p.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ')}"/>`;
-    g += s.vals.map((v, i) => (v == null ? '' : `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${s.dash ? 2.2 : 3}" fill="${s.ptCol ? s.ptCol(v, i) : s.col}"/>`)).join('');
+    if (p.length > 1) g += `<polyline fill="none" stroke="${s.col}" stroke-width="${s.w || 2.2}" stroke-linejoin="round" stroke-linecap="round"${s.dash ? ` stroke-dasharray="${s.dash === true ? '5 4' : s.dash}"` : ''} points="${p.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ')}"/>`;
+    if (!s.noPts) g += s.vals.map((v, i) => (v == null ? '' : `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${s.dash ? 2.4 : 3}" fill="${s.ptCol ? s.ptCol(v, i) : s.col}"/>`)).join('');
   });
   return `<svg class="exc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">${g}</svg>`;
 }
@@ -1592,8 +1649,8 @@ function exLogListHtml(idx, limit) {
   if (!idx.length) return '<div class="empty">Registra pesos y repeticiones en tus entrenamientos para ver el progreso de cada ejercicio.</div>';
   return idx.slice(0, limit || idx.length).map((it, i) => {
     const ss = it.sessions, last = ss[ss.length - 1], first = ss[0], ch = first.e1 && last.e1 && ss.length > 1 ? Math.round((last.e1 - first.e1) / first.e1 * 100) : null;
-    return `<button class="exl-row" data-exl="${i}"><span class="exl-b"><b translate="no">${E(it.name)}</b><small><span translate="no">${ss.length}</span> <span>${ss.length === 1 ? 'sesión' : 'sesiones'}</span> · <span translate="no">${E(exFmtD(last.d))}</span></small></span>
-      ${exSpark(ss.map(x => x.e1))}<span class="exl-v">${last.e1 ? `<b translate="no">${Math.round(V(last.e1) * 10) / 10}</b><small translate="no">${U}${ch ? ` · <i class="${ch > 0 ? 'up' : 'dn'}">${ch > 0 ? '+' : ''}${ch}%</i>` : ''}</small>` : `<b translate="no">${last.reps}</b><small>reps</small>`}</span><span class="sp-chev">›</span></button>`;
+    return `<button class="exl-row" data-exl="${i}" style="--gc:${exGrpCol(it.grp)}"><span class="exl-b"><b translate="no"><i class="dr-dot"></i>${E(it.name)}</b><small><span translate="no">${ss.length}</span> <span>${ss.length === 1 ? 'sesión' : 'sesiones'}</span> · <span translate="no">${E(exFmtD(last.d))}</span></small></span>
+      <span class="exl-sp" style="color:${exGrpCol(it.grp)}">${exSpark(ss.map(x => x.e1 || x.reps))}</span><span class="exl-v">${last.e1 ? `<b translate="no">${Math.round(V(last.e1) * 10) / 10}</b><small translate="no">${U}${ch ? ` · <i class="${ch > 0 ? 'up' : 'dn'}">${ch > 0 ? '+' : ''}${ch}%</i>` : ''}</small>` : `<b translate="no">${last.reps}</b><small>reps</small>`}</span><span class="sp-chev">›</span></button>`;
   }).join('');
 }
 function exLogDetailHtml(it, range) {
@@ -1603,26 +1660,30 @@ function exLogDetailHtml(it, range) {
   const hasKg = ss.some(x => x.top > 0), best = all.reduce((a, x) => (x.e1 > a.e1 ? x : a), all[0]), last = all[all.length - 1], first = ss[0];
   const ch = first.e1 && last.e1 && ss.length > 1 ? Math.round((last.e1 - first.e1) / first.e1 * 100) : null;
   const k = (v, l) => `<div class="dr-kpi"><b translate="no">${v}</b><span>${l}</span></div>`;
-  let h = `<div class="chips exl-range">${[[8, 'Últimas 8'], [20, 'Últimas 20'], ['all', 'Todo']].map(([v, l]) => `<div class="chip ${String(range || 'all') === String(v) ? 'selected' : ''}" data-exl-range="${v}">${l}</div>`).join('')}</div>
+  const gc = exGrpCol(it.grp), rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };
+  let h = `<div class="exl-grp" style="--gc:${gc}"><i class="dr-dot"></i><span>${EX_GRP_ES[it.grp] || ''}</span></div><div class="chips exl-range">${[[8, 'Últimas 8'], [20, 'Últimas 20'], ['all', 'Todo']].map(([v, l]) => `<div class="chip ${String(range || 'all') === String(v) ? 'selected' : ''}" data-exl-range="${v}">${l}</div>`).join('')}</div>
     <div class="dr-kpis">${hasKg ? k(`${r1(last.e1)} ${U}`, '1RM estimado') + k(`${r1(best.e1)} ${U}`, 'Mejor 1RM') : ''}${ch != null ? k(`${ch > 0 ? '+' : ''}${ch}%`, 'Cambio en el periodo') : ''}${k(all.length, all.length === 1 ? 'Sesión' : 'Sesiones')}</div>`;
   if (hasKg) h += `<div class="dr-sec"><div class="dr-h"><span>Peso y 1RM estimado</span><b translate="no">${U}</b></div>
-    ${exLineSvg(dates, [{ vals: ss.map(x => (x.e1 ? r1(x.e1) : null)), col: '#0A0A0A' }, { vals: ss.map(x => (x.top ? r1(x.top) : null)), col: '#A1A1AA', dash: true }], { fmt: v => String(Math.round(v)) })}
-    <div class="exc-leg"><span><i style="background:#0A0A0A"></i><span>1RM estimado</span></span><span><i class="dash"></i><span>Peso más alto</span></span></div></div>`;
-  h += `<div class="dr-sec"><div class="dr-h"><span>Repeticiones por serie</span><b>Color = RIR</b></div>
-    ${exGroupBarsSvg(ss.map(x => ({ d: x.d, bars: x.sets.map(st => ({ v: st.reps, col: exRirCol(st.rir) })) })))}
-    <div class="exc-leg"><span><i style="background:#DC2626"></i><span>RIR 0 · al fallo</span></span><span><i style="background:#D97706"></i><span>RIR 1–2</span></span><span><i style="background:#16A34A"></i><span>RIR 3 o más</span></span><span><i style="background:#A1A1AA"></i><span>Sin RIR</span></span></div></div>`;
+    ${exLineSvg(dates, [{ vals: ss.map(x => (x.e1 ? r1(x.e1) : null)), col: gc, w: 2.6 }, { vals: ss.map(x => (x.top ? r1(x.top) : null)), col: rgba(gc, .55), dash: true }], { fmt: v => String(Math.round(v)) })}
+    <div class="exc-leg"><span><i style="background:${gc}"></i><span>1RM estimado</span></span><span><i class="dash" style="border-top-color:${rgba(gc, .55)}"></i><span>Peso más alto</span></span></div></div>`;
+  const nSets = Math.min(5, Math.max(...ss.map(x => x.sets.length))), alphas = [1, .72, .5, .35, .25];
+  h += `<div class="dr-sec"><div class="dr-h"><span>Repeticiones por serie</span></div>
+    ${exLineSvg(dates, Array.from({ length: nSets }, (_, j) => ({ vals: ss.map(x => (x.sets[j] ? x.sets[j].reps : null)), col: rgba(gc, alphas[j]), w: j ? 1.8 : 2.6 })), { min: 0, fmt: v => String(Math.round(v)) })}
+    <div class="exc-leg">${Array.from({ length: nSets }, (_, j) => `<span><i style="background:${rgba(gc, alphas[j])}"></i><span>Serie</span> <span translate="no">${j + 1}</span></span>`).join('')}</div></div>`;
   if (ss.some(x => x.rir != null)) h += `<div class="dr-sec"><div class="dr-h"><span>Esfuerzo · RIR promedio</span><b>Más abajo = más esfuerzo</b></div>
-    ${exLineSvg(dates, [{ vals: ss.map(x => (x.rir == null ? null : Math.round(x.rir * 10) / 10)), col: '#52525B', ptCol: v => exRirCol(Math.round(v)) }], { min: 0, max: Math.max(4, ...ss.map(x => x.rir || 0)), ticks: [0, 2, 4], h: 120 })}</div>`;
+    ${exLineSvg(dates, [{ vals: ss.map(x => (x.rir == null ? null : Math.round(x.rir * 10) / 10)), col: gc, w: 2.4, ptCol: v => exRirCol(Math.round(v)) }], { min: 0, max: Math.max(4, ...ss.map(x => x.rir || 0)), ticks: [0, 2, 4], h: 120 })}
+    <div class="exc-leg"><span><i style="background:#DC2626"></i><span>RIR 0 · al fallo</span></span><span><i style="background:#D97706"></i><span>RIR 1–2</span></span><span><i style="background:#16A34A"></i><span>RIR 3 o más</span></span></div></div>`;
   if (hasKg) h += `<div class="dr-sec"><div class="dr-h"><span>Volumen por sesión</span><b translate="no">${U}</b></div>
-    ${exGroupBarsSvg(ss.map(x => ({ d: x.d, bars: [{ v: Math.round(V(x.vol)), col: '#0A0A0A' }] })), { h: 120 })}</div>`;
+    ${exLineSvg(dates, [{ vals: ss.map(x => Math.round(V(x.vol))), col: gc, w: 2.4 }], { min: 0, h: 120, fmt: v => (v >= 1000 ? (Math.round(v / 100) / 10) + 'k' : String(Math.round(v))) })}</div>`;
   h += `<div class="dr-sec"><div class="dr-h"><span>Registro</span></div>${all.slice().reverse().map(x => `<div class="exl-log"><div class="exl-log-h"><b translate="no">${E(exFmtD(x.d, true))}</b>${x.e1 ? `<span translate="no">1RM ${r1(x.e1)} ${U}</span>` : ''}</div>
-    <div class="dr-sets" translate="no">${x.sets.map((st, i) => `<span class="dr-set">${i + 1}. ${st.kg ? E(W(st.kg)) + '×' : ''}${E(st.reps)}${st.rir != null && !isNaN(st.rir) ? ` <small style="color:${exRirCol(st.rir)}">RIR ${E(st.rir)}</small>` : ''}${st.pain > 0 ? ` <i style="background:${dayPainCol(st.pain)}">${E(st.pain)}</i>` : ''}</span>`).join('')}</div></div>`).join('')}</div>`;
+    <div class="dr-sets" translate="no">${x.sets.map((st, i) => `<span class="dr-set">${i + 1}. ${st.kg ? E(W(st.kg)) + '×' + E(st.reps) : E(st.reps) + ' reps'}${st.rir != null && !isNaN(st.rir) ? ` <small style="color:${exRirCol(st.rir)}">RIR ${E(st.rir)}</small>` : ''}${st.pain > 0 ? ` <i style="background:${dayPainCol(st.pain)}">${E(st.pain)}</i>` : ''}</span>`).join('')}</div></div>`).join('')}</div>`;
   return h;
 }
 // Abre el registro de un ejercicio. D: datos del atleta (local o del atleta que acompaña el especialista)
 function openExLog(D, key, opts) {
   opts = opts || {};
   const idx = exLogIndex(D), it = idx.find(x => x.key === goalNorm(key));
+  if (!window.GYM_DB && typeof loadGymDb === 'function') loadGymDb().then(() => { if (document.querySelector('#sheet-body .exl-range')) openExLog(D, key, opts); }).catch(() => {});
   const draw = range => {
     openSheet(it ? it.name : 'Progreso', it ? `${opts.who ? `<div class="exl-who" translate="no">${escapeHtml(opts.who)}</div>` : ''}<div class="dr">${exLogDetailHtml(it, range)}</div>${opts.back ? '<button class="btn-secondary ds-btn" id="exl-back">‹ Volver</button>' : ''}`
       : `<div class="empty">Aún no hay registros de este ejercicio.</div>${opts.back ? '<button class="btn-secondary ds-btn" id="exl-back">‹ Volver</button>' : ''}`);
@@ -1636,6 +1697,7 @@ function openExLog(D, key, opts) {
 function openExLogList(D, opts) {
   opts = opts || {};
   const idx = exLogIndex(D);
+  if (!window.GYM_DB && typeof loadGymDb === 'function') loadGymDb().then(() => { if (document.querySelector('#sheet-body .exl-list')) openExLogList(D, opts); }).catch(() => {});
   openSheet('Progreso por ejercicio', `${opts.who ? `<div class="exl-who" translate="no">${escapeHtml(opts.who)}</div>` : ''}<div class="exl-list">${exLogListHtml(idx)}</div>${opts.back ? '<button class="btn-secondary ds-btn" id="exl-back">‹ Volver</button>' : ''}`);
   const sb = document.getElementById('sheet-body');
   sb.querySelectorAll('[data-exl]').forEach(b => b.addEventListener('click', () => openExLog(D, idx[+b.dataset.exl].key, { who: opts.who, back: () => openExLogList(D, opts) })));

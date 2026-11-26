@@ -2967,6 +2967,14 @@
   .dr-bars { display: flex; flex-direction: column; gap: 5px; margin-bottom: 6px; }
   .dr-bar { display: grid; grid-template-columns: 38% 1fr auto; gap: 8px; align-items: center; font-size: 12px; } .dr-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dr-bar i { display: block; height: 10px; border-radius: 5px; background: var(--text); } .dr-bar b { font-variant-numeric: tabular-nums; font-size: 12px; }
+  .dr-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--gc, var(--text-3)); margin-right: 6px; vertical-align: middle; flex: none; position: relative; top: -1px; }
+  .dr-leg { display: flex; flex-direction: column; gap: 4px; margin: 6px 0 2px; }
+  .dr-leg-i { display: flex; align-items: center; gap: 8px; font-size: 12px; } .dr-leg-i svg { flex: none; }
+  .dr-leg-i span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dr-leg-i b { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-2); } .dr-leg-i b.up { color: #16A34A; } .dr-leg-i b.dn { color: #DC2626; }
+  .dr-hint { font-size: 11px; color: var(--text-3); margin: 2px 0 10px; }
+  .exl-sp { display: inline-flex; flex: none; }
+  .exl-grp { display: flex; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
   .dr-ex { padding: 8px 0; border-top: 1px solid var(--border); }
   .dr-ex-h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; } .dr-ex-h > b { font-size: 14px; }
   .dr-e1 { font-size: 12px; color: var(--text-3); white-space: nowrap; } .dr-e1 b.up { color: #16A34A; } .dr-e1 b.dn { color: #DC2626; }
@@ -2991,7 +2999,7 @@
   .exl-range { justify-content: center; margin-bottom: 10px; }
   .exl-who { text-align: center; font-size: 13px; color: var(--text-3); margin: -4px 0 10px; }
   .exc { width: 100%; height: auto; display: block; }
-  .exc-grid { stroke: var(--border); stroke-width: 1; } .exc-ax { font-size: 9px; fill: var(--text-3); font-family: inherit; }
+  .exc-grid { stroke: var(--border); stroke-width: 1; } .exc-zero { stroke: var(--text-3); stroke-width: 1; stroke-dasharray: 3 3; } .exc-ax { font-size: 9px; fill: var(--text-3); font-family: inherit; }
   .exc-leg { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--text-3); margin-top: 6px; }
   .exc-leg > span { display: inline-flex; align-items: center; gap: 5px; } .exc-leg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
   .exc-leg i.dash { height: 0; width: 14px; border-top: 2px dashed #A1A1AA; border-radius: 0; }
@@ -15000,6 +15008,8 @@ function openDaySummary(dk, opts) {
   if (opts.mode) _dsMode = opts.mode;
   const dd = dayData(localDayD(), dk, { goal: localDayGoal() });
   if (_dsMode === 'gym' && !dd.gym) _dsMode = 'day';
+  // El grupo muscular (color) sale de la base de ejercicios: se carga y se vuelve a dibujar
+  if (!window.GYM_DB && dd.gym) loadGymDb().then(() => { if (document.querySelector('#sheet-body .ds-nav')) openDaySummary(dk, opts); }).catch(() => {});
   const f = new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' });
   const prev = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() - 864e5)), next = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() + 864e5)), isToday = dk === keyDate();
   const body = `<div class="ds-nav"><button class="ds-arrow" data-ds-go="${prev}" aria-label="Día anterior">‹</button><div class="ds-date" translate="no">${escapeHtml(f.format(new Date(dk + 'T00:00:00')))}</div><button class="ds-arrow" data-ds-go="${next}" ${isToday ? 'disabled' : ''} aria-label="Día siguiente">›</button></div>

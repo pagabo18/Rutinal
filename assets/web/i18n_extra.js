@@ -6371,6 +6371,21 @@ window.__I18N_EXTRA = {
    "pt-BR": "Ainda não há registros deste exercício.",
    "fr": "Pas encore de données pour cet exercice."
   },
+  "Hoy": {
+   "en": "Today",
+   "pt-BR": "Hoje",
+   "fr": "Aujourd'hui"
+  },
+  "Progreso de tus ejercicios · 1RM estimado": {
+   "en": "Your exercise progress · estimated 1RM",
+   "pt-BR": "Progresso dos seus exercícios · 1RM estimado",
+   "fr": "Progression de vos exercices · 1RM estimé"
+  },
+  "Sesiones anteriores de cada ejercicio hasta hoy. Color = grupo muscular.": {
+   "en": "Previous sessions of each exercise up to today. Color = muscle group.",
+   "pt-BR": "Sessões anteriores de cada exercício até hoje. Cor = grupo muscular.",
+   "fr": "Séances précédentes de chaque exercice jusqu'à aujourd'hui. Couleur = groupe musculaire."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
