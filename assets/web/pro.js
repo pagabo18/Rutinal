@@ -1460,13 +1460,14 @@ function dayData(D, dk, opts) {
       const plan = (e.sets || []).reduce((a, x) => a + (+x.count || 0), 0); planned += plan;
       const sets = exCleanSets((lg.ex || {})[e.id] || [], N);
       if (!sets.length) { if (plan) skipped.push(e.name); return; }
-      const sw = lg.swap && lg.swap[e.id], name = (sw && sw.name) || e.name;
+      const swK = x => (typeof gymSwKey === 'function' ? gymSwKey(x) : (x && x.name) || null), swN = x => (typeof gymSwName === 'function' ? gymSwName(x) : (x && x.name) || '');
+      const sw = lg.swap && lg.swap[e.id], name = (sw && swN(sw)) || e.name;
       const me = sum(sets), vol = me.vol, e1 = me.e1;
       // Historial del mismo ejercicio: la vez anterior (para comparar), hasta 7 sesiones (gráfica) y el mejor de siempre (récords)
       let prev = 0, last = null, bestE1 = 0, bestTop = 0; const hist = [];
       for (const k of prevKeys) {
         const pl = logs[k]; if (!pl || pl.routineId == null) continue;
-        const psw = pl.swap && pl.swap[e.id]; if (((psw && psw.name) || null) !== ((sw && sw.name) || null)) continue;
+        const psw = pl.swap && pl.swap[e.id]; if (swK(psw) !== swK(sw)) continue;
         const pa = exCleanSets((pl.ex || {})[e.id] || [], N); if (!pa.length) continue;
         const ps = sum(pa);
         if (!last) last = Object.assign({ d: k, sets: pa.map(x => ({ kg: x.kg, reps: x.reps, time: x.time })) }, ps);
@@ -1483,8 +1484,8 @@ function dayData(D, dk, opts) {
         trend = d1 != null && Math.abs(d1) > 0.01 ? (d1 > 0 ? 'up' : 'dn') : Math.abs(dv) > 0.02 ? (dv > 0 ? 'up' : 'dn') : 'eq';
       }
       const f = feelNum((lg.exFeel || {})[e.id]);
-      ex.push({ id: e.id, name, grp: exGrp((sw && sw.dbId) || e.dbId, name), hist, sets: sets.map(x => ({ kg: x.kg, reps: x.reps, rir: x.rir, pain: x.pain, time: x.time, rpe: x.rpe })), vol, e1rm: e1, prev, pain: f.pain, rpe: f.rpe,
-        plan, top: me.top, reps: me.reps, last, trend, dTop, dReps, pr: e1 > 0 && bestE1 > 0 && e1 > bestE1 * 1.001, prTop: me.top > 0 && bestTop > 0 && me.top > bestTop,
+      ex.push({ id: e.id, name, grp: exGrp((sw && sw.dbId) || e.dbId, name), hist, sets: sets.map(x => ({ kg: x.kg, reps: x.reps, rir: x.rir, pain: x.pain, time: x.time, rpe: x.rpe, note: x.note ? String(x.note).trim().slice(0, 200) : '' })), vol, e1rm: e1, prev, pain: f.pain, rpe: f.rpe,
+        note: String((lg.exNote || {})[e.id] || '').trim().slice(0, 300), plan, top: me.top, reps: me.reps, last, trend, dTop, dReps, pr: e1 > 0 && bestE1 > 0 && e1 > bestE1 * 1.001, prTop: me.top > 0 && bestTop > 0 && me.top > bestTop,
         maxPain: Math.max(-1, ...sets.map(x => (x.pain == null ? -1 : +x.pain))) });
     });
     const cv = (typeof cvAll === 'function' ? cvAll(r, lg) : []).map(([kind, it]) => { const v = (lg.cv || {})[it.id]; return v && v.done ? { kind, name: cvName(it), text: cvText(it, v), min: parseFloat(v.time) || 0 } : null; }).filter(Boolean);
@@ -1635,6 +1636,7 @@ function dayReportHtml(dd) {
       const lastTxt = dl && x.last ? x.last.sets.map(s => (s.time ? E(s.time) + (s.reps ? ' · ' + E(s.reps) : '') : +s.kg ? `${E(W(s.kg))}×${E(s.reps || 0)}` : `${E(s.reps || 0)} reps`)).join(' · ') : '';
       return `<div class="dr-ex" data-dr-ex="${E(x.name)}" style="--gc:${exGrpCol(x.grp)}"><div class="dr-ex-h"><b translate="no"><i class="dr-dot" title="${E(EX_GRP_ES[x.grp] || '')}"></i>${E(x.name)}${x.pr || x.prTop ? ' <span class="dr-badge" translate="yes">Récord</span>' : ''}</b>${x.e1rm ? `<span class="dr-e1"><span>1RM est.</span> <span translate="no">${typeof gymFmtKg === 'function' ? gymFmtKg(x.e1rm) : Math.round(x.e1rm)} ${U}</span>${ch ? ` <b class="${ch > 0 ? 'up' : 'dn'}" translate="no">${ch > 0 ? '+' : ''}${ch}%</b>` : ''}</span>` : ''}</div>
         <div class="dr-sets" translate="no">${x.sets.map((s, i) => `<span class="dr-set">${i + 1}. ${s.time ? E(s.time) + (s.reps ? ' · ' + E(s.reps) : '') : (+s.kg ? `${E(W(s.kg))}×${E(s.reps || 0)}` : `${E(s.reps || 0)} reps`)}${s.rir !== undefined && s.rir !== '' && s.rir != null ? ` <small>RIR ${E(s.rir)}</small>` : ''}${s.pain > 0 ? ` <i style="background:${dayPainCol(+s.pain)}">${E(s.pain)}</i>` : ''}</span>`).join('')}</div>
+        ${x.sets.map((s, i) => (s.note ? `<div class="dr-cm"><span>Serie</span><span translate="no">${i + 1}: “${E(s.note)}”</span></div>` : '')).join('')}${x.note ? `<div class="dr-cm"><span>Comentario</span><span translate="no">“${E(x.note)}”</span></div>` : ''}
         ${dl ? `<div class="dr-vs"><span class="dr-chg ${dl.cls}" translate="no">${dl.arrow} ${E(dl.txt)}</span><span class="dr-last"><span>Vez anterior</span> · <span translate="no">${E(dayFmtD(x.last.d))}: ${lastTxt}</span></span></div>` : ''}</div>`;
     }).join('');
     if (g.cv.length) h += `<div class="dr-sub">Calentamiento y cardio</div>${g.cv.map(c => `<div class="dr-li"><b>${E(CV_KIND[c.kind])}</b> · <span translate="no">${E(c.name)} · ${E(c.text)}</span></div>`).join('')}`;
@@ -1670,7 +1672,7 @@ function dayReportText(dd) {
     const cl = dd.gym.sport ? '' : dayCmpLine(dd.gym, tx);
     if (cl) L.push(`${tx('Comparado con la vez anterior')}${dd.gym.cmp.d ? ' (' + dayFmtD(dd.gym.cmp.d) + ')' : ''}: ${cl}`);
     if (!dd.gym.sport && dd.gym.planned) L.push(`${tx('Series hechas de las planeadas')}: ${dd.gym.sets}/${dd.gym.planned}${dd.gym.skipped.length ? ` · ${tx('Sin hacer:')} ${dd.gym.skipped.join(', ')}` : ''}`);
-    dd.gym.ex.forEach(x => L.push(`${x.name}: ${x.sets.map(s => (s.time ? s.time + (s.reps ? ' · ' + s.reps : '') : +s.kg ? `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg} ${U} × ${s.reps || 0}` : `${s.reps || 0} reps`) + (s.pain > 0 ? ` (${tx('dolor')} ${s.pain})` : '')).join(', ')}${(d => (d ? ` [${d.arrow} ${d.txt}]` : ''))(dd.gym.sport ? null : dayExDelta(x, tx))}${x.pr || x.prTop ? ` · ${tx('Récord')}` : ''}`));
+    dd.gym.ex.forEach(x => L.push(`${x.name}: ${x.sets.map(s => (s.time ? s.time + (s.reps ? ' · ' + s.reps : '') : +s.kg ? `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg} ${U} × ${s.reps || 0}` : `${s.reps || 0} reps`) + (s.pain > 0 ? ` (${tx('dolor')} ${s.pain})` : '')).join(', ')}${(d => (d ? ` [${d.arrow} ${d.txt}]` : ''))(dd.gym.sport ? null : dayExDelta(x, tx))}${x.pr || x.prTop ? ` · ${tx('Récord')}` : ''}${x.sets.map((s, i) => (s.note ? `\n   · ${tx('Serie')} ${i + 1}: “${s.note}”` : '')).join('')}${x.note ? `\n   · ${tx('Comentario')}: “${x.note}”` : ''}`));
     dd.gym.cv.forEach(c => L.push(`${tx(CV_KIND[c.kind])} · ${c.name}: ${c.text}`));
   }
   dd.acts.forEach(a => L.push(`${a.name}: ${a.text}`));
@@ -1790,6 +1792,9 @@ function dayImageCanvas(dd, mode, who) {
         R(px, y, tw, 46, dl.cls === 'up' ? '#DCFCE7' : dl.cls === 'dn' ? '#FEE2E2' : '#F4F4F5', 23); T(lbl, px + 16, y + 31, 22, 700, col);
       }
       y += 70;
+      // comentarios de las series y del ejercicio
+      const cms = x.sets.map((s, i) => (s.note ? `${tt('Serie')} ${i + 1}: “${s.note}”` : '')).filter(Boolean).concat(x.note ? [`“${x.note}”`] : []);
+      if (cms.length) { y -= 14; cms.slice(0, 4).forEach(cm => wrap(cm, W - 2 * P, 23, 400).slice(0, 2).forEach(l => { T(l, P, y + 24, 23, 400, '#52525B'); y += 32; })); y += 18; }
     });
     if (g.cv.length) { R(P, y, W - 2 * P, 2, '#E4E4E7', 0); y += 22; g.cv.forEach(c => { wrap(`${tt(CV_KIND[c.kind])} · ${c.name} · ${c.text}`, W - 2 * P, 26, 500).forEach(l => { T(l, P, y + 30, 26, 500, '#27272A'); y += 38; }); }); y += 10; }
     const fe = g.feel || {}, fb = [];
@@ -1840,17 +1845,18 @@ function exLogIndex(D) {
     if (!rt || (rt.meta && rt.meta.sport)) return;
     Object.keys(lg.ex || {}).forEach(exId => {
       const ex = (rt.exercises || []).find(x => x.id === exId); if (!ex) return;
-      const sw = lg.swap && lg.swap[exId], name = (sw && sw.name) || ex.name; if (!name) return;
+      const sw = lg.swap && lg.swap[exId], name = (sw && (typeof gymSwName === 'function' ? gymSwName(sw) : sw.name)) || ex.name; if (!name) return;
       const sets = (lg.ex[exId] || []).filter(x => x && x.done && (N(x.reps) > 0 || N(x.kg) > 0));
       if (!sets.length) return;
       const k = goalNorm(name), it = by[k] || (by[k] = { key: k, name, dbId: (sw && sw.dbId) || ex.dbId, grp: exGrp((sw && sw.dbId) || ex.dbId, name), sessions: [] });
-      const ss = exCleanSets(lg.ex[exId] || [], N).map(x => ({ kg: N(x.kg) || 0, reps: N(x.reps) || 0, rir: x.rir, pain: x.pain == null ? null : +x.pain, tags: x.tags || [] }));
+      const ss = exCleanSets(lg.ex[exId] || [], N).map(x => ({ kg: N(x.kg) || 0, reps: N(x.reps) || 0, rir: x.rir, pain: x.pain == null ? null : +x.pain, tags: x.tags || [], note: x.note ? String(x.note).trim().slice(0, 200) : '' }));
       if (!ss.length) return;
       const rirs = ss.filter(x => x.rir != null && !isNaN(x.rir));
       const e1s = ss.filter(x => x.kg > 0 && x.reps > 0).map(x => (typeof gymE1RM === 'function' ? gymE1RM(x.kg, x.reps) : x.kg * (1 + x.reps / 30)));
       it.sessions.push({ d, sets: ss, e1: e1s.length ? Math.max(...e1s) : 0, top: Math.max(0, ...ss.map(x => x.kg)), reps: ss.reduce((a, x) => a + x.reps, 0),
         vol: ss.reduce((a, x) => a + x.kg * x.reps, 0), rir: rirs.length ? rirs.reduce((a, x) => a + x.rir, 0) / rirs.length : null,
-        pain: ss.some(x => x.pain != null) ? Math.max(...ss.filter(x => x.pain != null).map(x => x.pain)) : null, rpe: ((lg.exFeel || {})[exId] || {}).rpe });
+        pain: ss.some(x => x.pain != null) ? Math.max(...ss.filter(x => x.pain != null).map(x => x.pain)) : null, rpe: ((lg.exFeel || {})[exId] || {}).rpe,
+        note: String((lg.exNote || {})[exId] || '').trim().slice(0, 300) });
     });
   });
   return Object.values(by).sort((a, b) => (b.sessions[b.sessions.length - 1].d > a.sessions[a.sessions.length - 1].d ? 1 : -1));
@@ -1949,7 +1955,8 @@ function exLogDetailHtml(it, range) {
   if (hasKg) h += `<div class="dr-sec"><div class="dr-h"><span>Volumen por sesión</span><b translate="no">${U}</b></div>
     ${exLineSvg(dates, [{ vals: ss.map(x => Math.round(V(x.vol))), col: gc, w: 2.4 }], { min: 0, h: 120, fmt: v => (v >= 1000 ? (Math.round(v / 100) / 10) + 'k' : String(Math.round(v))) })}</div>`;
   h += `<div class="dr-sec"><div class="dr-h"><span>Registro</span></div>${all.slice().reverse().map(x => `<div class="exl-log"><div class="exl-log-h"><b translate="no">${E(exFmtD(x.d, true))}</b>${x.e1 ? `<span translate="no">1RM ${r1(x.e1)} ${U}</span>` : ''}</div>
-    <div class="dr-sets" translate="no">${x.sets.map((st, i) => `<span class="dr-set">${i + 1}. ${st.kg ? E(W(st.kg)) + '×' + E(st.reps) : E(st.reps) + ' reps'}${st.rir != null && !isNaN(st.rir) ? ` <small style="color:${exRirCol(st.rir)}">RIR ${E(st.rir)}</small>` : ''}${st.pain > 0 ? ` <i style="background:${dayPainCol(st.pain)}">${E(st.pain)}</i>` : ''}</span>`).join('')}</div></div>`).join('')}</div>`;
+    <div class="dr-sets" translate="no">${x.sets.map((st, i) => `<span class="dr-set">${i + 1}. ${st.kg ? E(W(st.kg)) + '×' + E(st.reps) : E(st.reps) + ' reps'}${st.rir != null && !isNaN(st.rir) ? ` <small style="color:${exRirCol(st.rir)}">RIR ${E(st.rir)}</small>` : ''}${st.pain > 0 ? ` <i style="background:${dayPainCol(st.pain)}">${E(st.pain)}</i>` : ''}</span>`).join('')}</div>
+    ${x.sets.map((st, i) => (st.note ? `<div class="dr-cm"><span>Serie</span><span translate="no">${i + 1}: “${E(st.note)}”</span></div>` : '')).join('')}${x.note ? `<div class="dr-cm"><span>Comentario</span><span translate="no">“${E(x.note)}”</span></div>` : ''}</div>`).join('')}</div>`;
   return h;
 }
 // Abre el registro de un ejercicio. D: datos del atleta (local o del atleta que acompaña el especialista)

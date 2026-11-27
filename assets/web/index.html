@@ -2940,6 +2940,13 @@
   .cv-pick-b { display: flex; flex-wrap: wrap; gap: 6px; }
   .cv-pick-x, .cv-x-btn { border: 0; background: none; color: var(--text-3); font: inherit; font-size: 12px; text-decoration: underline; padding: 8px 0 0; cursor: pointer; }
   .cv-x-row { display: flex; gap: 14px; justify-content: flex-end; }
+  .set-note-ed { padding: 6px 0 2px; } .set-note-ed input { width: 100%; font-size: 14px; }
+  .set-note { display: block; width: 100%; text-align: left; border: 0; background: none; font: inherit; font-size: 12px; color: var(--text-2); padding: 2px 4px 6px; cursor: pointer; line-height: 1.35; }
+  .set-note > span:first-child, .dr-cm > span:first-child { font-weight: 700; color: var(--text-3); font-size: 10px; letter-spacing: .05em; text-transform: uppercase; margin-right: 4px; }
+  .gym-set-hint { font-size: 11px; color: var(--text-3); margin: 8px 0 6px; line-height: 1.35; }
+  .gym-ex-note { width: 100%; font-size: 14px; margin-bottom: 8px; resize: vertical; }
+  .dr-cm { font-size: 12px; color: var(--text-2); margin-top: 5px; line-height: 1.4; } .cd-note { font-style: italic; color: var(--text-2); }
+  .gym-res-en { font-size: 11px; color: var(--text-3); margin-top: 1px; } .gym-db-name small { font-weight: 400; color: var(--text-3); }
   .cv-ed-list .cv-add + .cv-add { margin-top: 0; }
   .cv-pick-tpl { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; margin-top: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
   .cv-pick-tpl b { display: block; font-size: 14px; } .cv-pick-tpl small { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; }
@@ -11128,10 +11135,10 @@ async function spOpenClient(l) {
       Object.keys(lg.ex || {}).forEach(exId => {
         const ex = (rt.exercises || []).find(x => x.id === exId) || {}, sw = lg.swap && lg.swap[exId];
         (lg.ex[exId] || []).forEach(x => { const pv = x && x.done && x.pain != null ? +x.pain : NaN; if (pv >= 0 && pv <= 10 && d >= d7 && (pmax == null || pv > pmax)) pmax = pv; });
-        const sets = (lg.ex[exId] || []).filter(x => x && x.done).map(x => `${x.pain > 0 ? `<span class="pain-n p${gymPainLvl(+x.pain)}" title="Dolor">${+x.pain}</span> ` : ''}${escapeHtml(String(gymDispW(x.kg) || 0))}×${escapeHtml(String(x.reps || 0))}${x.rir !== undefined && x.rir !== '' ? ` <span class="rir-n">RIR ${escapeHtml(String(x.rir))}</span>` : ''}${(x.tags || []).length ? ` ${(x.tags || []).filter(id => GYM_TECH_BY[id]).map(id => `<span class="tech-mini" title="${escapeHtml(t(GYM_TECH_BY[id][1]))}">${gymTechIcon(id, 11)}</span>`).join('')}` : ''}`);
+        const sets = (lg.ex[exId] || []).filter(x => x && x.done).map(x => `${x.pain > 0 ? `<span class="pain-n p${gymPainLvl(+x.pain)}" title="Dolor">${+x.pain}</span> ` : ''}${escapeHtml(String(gymDispW(x.kg) || 0))}×${escapeHtml(String(x.reps || 0))}${x.rir !== undefined && x.rir !== '' ? ` <span class="rir-n">RIR ${escapeHtml(String(x.rir))}</span>` : ''}${(x.tags || []).length ? ` ${(x.tags || []).filter(id => GYM_TECH_BY[id]).map(id => `<span class="tech-mini" title="${escapeHtml(t(GYM_TECH_BY[id][1]))}">${gymTechIcon(id, 11)}</span>`).join('')}` : ''}${x.note && String(x.note).trim() ? ` <span class="cd-note">“${escapeHtml(String(x.note).trim().slice(0, 200))}”</span>` : ''}`);
         if (!sets.length) return;
-        const ef = feelNum(lg.exFeel && lg.exFeel[exId]);
-        lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}`);
+        const ef = feelNum(lg.exFeel && lg.exFeel[exId]), exNote = String((lg.exNote && lg.exNote[exId]) || '').trim().slice(0, 300);
+        lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}${exNote ? `<div class="cd-note">“${escapeHtml(exNote)}”</div>` : ''}`);
       });
       cvAll(rt, lg).forEach(([kind, it]) => { const v = (lg.cv || {})[it.id]; if (v && v.done) lines.push(`<b>${CV_KIND[kind]}</b>: <span translate="no">${escapeHtml(cvName(it))} · ${cvText(it, v, true)}</span>`); });
       if (!lines.length && !lg.done) return;
@@ -13971,7 +13978,12 @@ function loadGymDb() {
     _gymDbPromise = new Promise((resolve, reject) => {
       const s = document.createElement('script');
       s.src = 'gym_db.js';
-      s.onload = () => { try { if (gymRelinkImported()) { try { renderGym(); } catch (e) {} } } catch (e) {} resolve(window.GYM_DB || []); if (!window.GYM_STEPS_ES) { const s2 = document.createElement('script'); s2.src = 'gym_steps.js'; document.head.appendChild(s2); } };
+      s.onload = () => {
+        // nombres en español (si no carga, se muestran en inglés)
+        const done = () => { _gymSearchIdx = null; try { if (gymRelinkImported()) { try { renderGym(); } catch (e) {} } } catch (e) {} resolve(window.GYM_DB || []); };
+        if (window.GYM_NAMES_ES) done(); else { const sn = document.createElement('script'); sn.src = 'gym_names_es.js'; sn.onload = done; sn.onerror = done; document.head.appendChild(sn); }
+        if (!window.GYM_STEPS_ES) { const s2 = document.createElement('script'); s2.src = 'gym_steps.js'; document.head.appendChild(s2); }
+      };
       s.onerror = () => { _gymDbPromise = null; reject(new Error('gym_db')); };
       document.head.appendChild(s);
     });
@@ -13979,6 +13991,16 @@ function loadGymDb() {
   return _gymDbPromise;
 }
 function gymDbById(id) { return (window.GYM_DB || []).find(e => e.i === id) || null; }
+// Nombre del ejercicio de la base en el idioma de la app: en español sale de gym_names_es.js; si no hay, el original en inglés.
+function gymDbName(e) {
+  if (typeof e === 'string') e = gymDbById(e);
+  if (!e) return '';
+  const es = window.GYM_NAMES_ES && window.GYM_NAMES_ES[e.i];
+  return es && gymLang() === 'es' ? es : e.n;
+}
+// Un reemplazo se reconoce por el ejercicio de la base (su nombre guardado puede estar en inglés o en español)
+function gymSwKey(sw) { return sw ? (sw.dbId || sw.name || null) : null; }
+function gymSwName(sw) { return sw ? ((sw.dbId && window.GYM_DB && gymDbName(sw.dbId)) || sw.name || '') : ''; }
 function gymDbFrames(id) {
   const e = gymDbById(id);
   if (!e || !e.im) return [];
@@ -14161,14 +14183,45 @@ function gymQueryTokens(q, oldDict) {
 // Palabras que dicen con qué o en qué postura se hace, o la zona del cuerpo, pero no qué movimiento es.
 // Solas no bastan para vincular un ejercicio (p. ej. «máquina» o «smith» coinciden con cientos).
 const GYM_NOT_MOVE = /^(smith|cable|dumbbell|dumbbells|barbell|kettlebell|kettlebells|band|bands|machine|leverage|seated|standing|lying|incline|decline|one|arm|single|close|wide|neutral|grip|ez|bar|v-bar|leg|legs|chest|back|shoulder|shoulders|glute|glutes|biceps|triceps|quadriceps|hamstring|hamstrings|thigh)$/;
+// --- Búsqueda en español: sobre el nombre en español, los músculos y el equipo ---
+const GYM_ES_STOP = { con: 1, de: 1, del: 1, en: 1, el: 1, la: 1, los: 1, las: 1, al: 1, un: 1, una: 1, para: 1, por: 1, y: 1, o: 1, a: 1 };
+const GYM_ES_SYN = { zancada: 'desplante', zancadas: 'desplante', estocada: 'desplante', estocadas: 'desplante', flexion: 'lagartija', flexiones: 'lagartija', liga: 'banda', ligas: 'banda', elastico: 'banda',
+  gemelo: 'pantorrilla', gemelos: 'pantorrilla', abdominales: 'crunch', abdominal: 'crunch', pectoral: 'pecho', pectorales: 'pecho', dorsales: 'dorsal', femorales: 'femoral', isquios: 'isquiotibiales',
+  cinta: 'caminadora', bici: 'bicicleta', pesa: 'kettlebell', rusa: 'kettlebell', peck: 'pec' };
+function gymEsStem(w) { if (w.length > 4) { if (w.endsWith('es')) w = w.slice(0, -2); else if (w.endsWith('s')) w = w.slice(0, -1); if (w.length > 4 && w.endsWith('e')) w = w.slice(0, -1); } return w; }
+function gymEsWords(txt) { return gymFold(txt).replace(/-/g, ' ').split(' ').filter(w => w && !GYM_ES_STOP[w]).map(w => gymEsStem(GYM_ES_SYN[w] || w)); }
+let _gymSearchIdx = null;
+// Índice: por ejercicio, las palabras de su nombre en español y las de sus músculos y equipo
+function gymSearchIdx() {
+  if (_gymSearchIdx) return _gymSearchIdx;
+  const N = window.GYM_NAMES_ES || {};
+  _gymSearchIdx = (window.GYM_DB || []).map(e => ({ nm: N[e.i] ? gymEsWords(N[e.i]) : null, ex: gymEsWords([...(e.p || []), ...(e.s || [])].map(x => GYM_MUSCLE_ES[x] || '').concat(GYM_EQUIP_ES[e.e] || '').join(' ')) }));
+  return _gymSearchIdx;
+}
+function gymEsScore(qw, ix) {
+  if (!ix.nm || !qw.length) return 0;
+  let sc = 0, hits = 0;
+  qw.forEach((w, k) => {
+    if (ix.nm.includes(w)) { sc += 3; hits++; }
+    else if (w.length >= 3 && ix.nm.some(x => x.startsWith(w))) { sc += k === qw.length - 1 ? 2.2 : 1.5; hits++; } // palabra a medio escribir
+    else if (ix.ex.includes(w) || (w.length >= 4 && ix.ex.some(x => x.startsWith(w)))) sc += 1;
+  });
+  if (!hits) return 0;
+  sc -= ix.nm.filter(x => !qw.some(w => x === w || x.startsWith(w))).length * 0.3; // prefiere el nombre más exacto
+  // todas las palabras de la búsqueda están en el nombre: es lo que la persona escribió
+  return sc + hits / qw.length * 2 + (hits === qw.length ? 6 : 0);
+}
 // opt.group: grupo muscular esperado (el de la rutina), para desempatar; opt.scored: devuelve [puntos, ejercicio, aciertos de movimiento]
+// (la vinculación automática usa solo la parte en inglés, opt.scored u opt.oldDict, para que no cambie)
 function gymSearch(q, limit, opt) {
   opt = opt || {};
   const db = window.GYM_DB || [];
   const toks = gymQueryTokens(q, opt.oldDict);
-  if (!toks.length) return [];
+  const useEs = !opt.scored && !opt.oldDict && window.GYM_NAMES_ES, qEs = useEs ? gymEsWords(q) : [], idx = useEs ? gymSearchIdx() : null;
+  if (!toks.length && !qEs.length) return [];
   const scored = [];
-  db.forEach(e => {
+  db.forEach((e, di) => {
+    const esSc = useEs ? gymEsScore(qEs, idx[di]) : 0;
     const name = ' ' + gymFold(e.n).replace(/-/g, ' ') + ' ';
     const extra = ' ' + gymFold([e.e, ...(e.p || [])].join(' ')) + ' ';
     let sc = 0, hits = 0, moves = 0;
@@ -14178,13 +14231,17 @@ function gymSearch(q, limit, opt) {
       else if (name.includes(tt)) { sc += 1.5; hits++; }
       else if (extra.includes(tt)) { sc += 1; }
     });
-    if (!hits) return;
+    if (!hits && !esSc) return;
+    if (!hits) sc = 0;
+    else {
     // Penalizar palabras del nombre que no pidió la búsqueda (prefiere el nombre más exacto)
     const qs = ' ' + toks.join(' ').replace(/-/g, ' ') + ' ';
     const extraWords = name.trim().split(' ').filter(w => w.length > 2 && !qs.includes(' ' + w.replace(/s$/, '')) && !qs.includes(' ' + w + ' '));
     const VARIANT = /^(reverse|rear|lying|incline|decline|kneeling|one|single|alternating|alternate|seated|standing|bent|close|wide|reverse-grip|side|jm)$/;
     extraWords.forEach(w => { sc -= VARIANT.test(w) ? 0.9 : 0.35; });
     sc += hits / toks.length * 2;
+    }
+    if (esSc) sc = Math.max(sc, esSc) + ({ barbell: 0.5, dumbbell: 0.4, machine: 0.2, cable: 0.2, bands: -0.3 }[e.e] || 0); // a igualdad, primero lo más común
     if (e.c === 'strength') sc += 0.3;
     if (opt.group) { const g = GYM_GROUP_OF[(e.p || [])[0]] || 'otro'; sc += g === opt.group ? 1.5 : -1; }
     scored.push([sc, e, moves]);
@@ -14278,13 +14335,13 @@ function gymSetRepsForIndex(ex, idx) {
   for (const s of ex.sets || []) { if (i < s.count) return s.reps + (s.note ? ' ' + s.note : ''); i -= s.count; }
   return '';
 }
-function gymLastLog(exId, beforeKey, swapName) {
+function gymLastLog(exId, beforeKey, swapName, swapDb) {
   const logs = gymLogs();
   const keys = Object.keys(logs).filter(k => k < beforeKey).sort().reverse();
   for (const k of keys) {
     // Solo comparar con días en que se hizo el mismo ejercicio (original o el mismo reemplazo)
     const sw = logs[k].swap && logs[k].swap[exId];
-    if ((sw ? sw.name : null) !== (swapName || null)) continue;
+    if (gymSwKey(sw) !== (swapDb || swapName || null)) continue;
     const sets = logs[k].ex && logs[k].ex[exId];
     if (sets && sets.some(s => s.kg || s.reps)) return { date: k, sets };
   }
@@ -14497,7 +14554,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const complete = done >= base;
     const isOpen = ex.id === openId;
     const U = gymUnit();
-    const last = gymLastLog(ex.id, dateKey, sw ? sw.name : null);
+    const last = gymLastLog(ex.id, dateKey, sw ? sw.name : null, sw ? sw.dbId : null);
     const rec = i => (sw ? null : gymRecLoad(exOrig, i));
     // Abierto y con foto: la imagen va grande debajo del nombre (tocarla la abre a pantalla completa)
     const heroFr = isOpen && !ex.photo && ex.dbId ? gymDbFrames(ex.dbId) : [];
@@ -14522,21 +14579,24 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const rows = Array.from({ length: n }, (_, i) => {
       const s = cur[i] || {};
       const prev = last && last.sets[i];
+      // Comentario de la serie: se escribe al tocar el número de la serie; si hay, se ve debajo
+      const noteIn = `<div class="set-note-ed"><input class="field-input" data-set-note="${ex.id}:${i}" maxlength="200" value="${escapeHtml(s.note || '')}" placeholder="Comentario de esta serie (opcional)"></div>`;
+      const noteView = s.note && String(s.note).trim() ? `<button class="set-note" data-set-tags="${ex.id}:${i}"><span>Nota</span> <span translate="no">${escapeHtml(String(s.note).trim())}</span></button>` : '';
       if (sportR) return `<div class="gym-set${s.done ? ' done' : ''}" data-ex="${ex.id}" data-i="${i}">
-        <div class="gym-set-target"><b>${i + 1}</b><small translate="no">${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small></div>
+        <button class="gym-set-target" data-set-tags="${ex.id}:${i}" aria-label="Comentario de la serie"><b>${i + 1}</b><small translate="no">${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small></button>
         <input class="gym-in" inputmode="text" data-f="time" value="${escapeHtml(s.time || '')}" placeholder="${prev && prev.time ? escapeHtml(prev.time) : 'mm:ss'}">
         <input class="gym-in" inputmode="decimal" data-f="reps" value="${escapeHtml(s.reps || '')}" placeholder="${escapeHtml(i < base ? String(gymSetRepsForIndex(ex, i)).split(' ')[0] : '')}">
         <input class="gym-in rir" inputmode="numeric" data-f="rpe" maxlength="2" value="${escapeHtml(s.rpe == null ? '' : s.rpe)}" placeholder="–">
         <button class="gym-check" aria-label="Hecho">✓</button>
-      </div>${gymSetPainHtml(ex.id, i, s, painAsk === ex.id + ':' + i)}`;
+      </div>${tagOpen === ex.id + ':' + i ? noteIn + gymSetPainHtml(ex.id, i, s, true) : noteView + gymSetPainHtml(ex.id, i, s, painAsk === ex.id + ':' + i)}`;
       const tg = (s.tags || []).filter(id => GYM_TECH_BY[id]), tOpen = tagOpen === ex.id + ':' + i;
       return `<div class="gym-set${s.done ? ' done' : ''}${tOpen ? ' tagging' : ''}" data-ex="${ex.id}" data-i="${i}">
-        <button class="gym-set-target" data-set-tags="${ex.id}:${i}" aria-label="Técnica de la serie"><b>${i + 1}</b><small>${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small>${tg.length ? `<span class="set-tech">${tg.map(id => gymTechIcon(id, 11)).join('')}</span>` : '<span class="set-tech add">+ técnica</span>'}${s.pain > 0 ? `<span class="set-pain-v p${gymPainLvl(s.pain)}"><span>Dolor</span> ${s.pain}</span>` : ''}</button>
+        <button class="gym-set-target" data-set-tags="${ex.id}:${i}" aria-label="Técnica de la serie"><b>${i + 1}</b><small>${i < base ? escapeHtml(gymSetRepsForIndex(ex, i)) : '+'}</small>${tg.length ? `<span class="set-tech">${tg.map(id => gymTechIcon(id, 11)).join('')}</span>` : '<span class="set-tech add">+ técnica</span>'}${s.note && String(s.note).trim() ? '' : '<span class="set-tech add">+ nota</span>'}${s.pain > 0 ? `<span class="set-pain-v p${gymPainLvl(s.pain)}"><span>Dolor</span> ${s.pain}</span>` : ''}</button>
         <input class="gym-in" inputmode="decimal" data-f="kg" value="${escapeHtml(gymDispW(s.kg))}" placeholder="${rec(i) ? escapeHtml(gymDispW(rec(i))) : prev && prev.kg ? escapeHtml(gymDispW(prev.kg)) : U}">
         <input class="gym-in" inputmode="numeric" data-f="reps" value="${escapeHtml(s.reps || '')}" placeholder="${prev && prev.reps ? escapeHtml(prev.reps) : 'reps'}">
         <input class="gym-in rir" inputmode="numeric" data-f="rir" maxlength="3" value="${escapeHtml(s.rir == null ? '' : s.rir)}" placeholder="${escapeHtml(String(ex.rir || '').split(/[-–]/)[0] || '–')}">
         <button class="gym-check" aria-label="Hecho">✓</button>
-      </div>${tOpen ? `<div class="set-tags-pick" data-ex="${ex.id}" data-i="${i}">${GYM_TECH.map(([id, n]) => `<button class="tech-chip${tg.includes(id) ? ' on' : ''}" data-tech="${id}">${gymTechIcon(id, 13)}<span>${n}</span></button>`).join('')}</div>${gymSetPainHtml(ex.id, i, s, true)}` : gymSetPainHtml(ex.id, i, s, painAsk === ex.id + ':' + i)}`;
+      </div>${tOpen ? `${noteIn}<div class="set-tags-pick" data-ex="${ex.id}" data-i="${i}">${GYM_TECH.map(([id, n]) => `<button class="tech-chip${tg.includes(id) ? ' on' : ''}" data-tech="${id}">${gymTechIcon(id, 13)}<span>${n}</span></button>`).join('')}</div>${gymSetPainHtml(ex.id, i, s, true)}` : noteView + gymSetPainHtml(ex.id, i, s, painAsk === ex.id + ':' + i)}`;
     }).join('');
     const tempo = ex.tempo || r.tempo;
     const best1rm = gymBestE1RM(ex.id, dateKey);
@@ -14559,6 +14619,8 @@ function openGymWorkout(routineId, dateKey, focusId) {
       ${lastTxt}
       <div class="gym-sets"><div class="gym-set gym-set-h">${sportR ? '<div>Serie</div><div>Tiempo</div><div>Dist./reps</div><div translate="no">RPE</div><div>Hecho</div>' : `<div>Serie</div><div translate="no">${U}</div><div>Reps</div><div translate="no">RIR</div><div>Hecho</div>`}</div>${rows}</div>
       <div class="gym-setbtns"><button class="gym-addset" data-gym-addset="${ex.id}">+ Agregar serie</button>${cur.length > base ? `<button class="gym-addset rm" data-gym-rmset="${ex.id}">Quitar serie</button>` : ''}</div>
+      <div class="gym-set-hint">${sportR ? 'Toca el número de una serie para dejarle un comentario.' : 'Toca el número de una serie para marcar la técnica, el dolor o dejarle un comentario.'}</div>
+      <textarea class="field-input gym-ex-note" data-ex-note="${ex.id}" rows="2" maxlength="300" placeholder="Comentario del ejercicio (opcional): algo que haga falta explicar">${escapeHtml((lg.exNote || {})[ex.id] || '')}</textarea>
       ${feelHtml}
       ${swapBtn}
     </div>`;
@@ -14711,6 +14773,20 @@ function openGymWorkout(routineId, dateKey, focusId) {
     }));
     sb.querySelectorAll('[data-set-pain-x]').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); painAsk = null; if (painNext !== undefined) { openId = painNext; painNext = undefined; } draw(); }));
     sb.querySelectorAll('[data-set-tags]').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); tagOpen = tagOpen === b.dataset.setTags ? null : b.dataset.setTags; draw(); }));
+    // Comentarios: se guardan al escribir, sin volver a dibujar (para no perder el cursor)
+    sb.querySelectorAll('[data-set-note]').forEach(inp => {
+      inp.addEventListener('click', ev => ev.stopPropagation());
+      inp.addEventListener('input', () => {
+        const [exId, i] = inp.dataset.setNote.split(':'), arr = lg.ex[exId] || (lg.ex[exId] = []);
+        while (arr.length <= +i) arr.push({});
+        const v = inp.value.slice(0, 200); if (v.trim()) arr[+i].note = v; else delete arr[+i].note;
+        persist();
+      });
+    });
+    sb.querySelectorAll('[data-ex-note]').forEach(tx => {
+      tx.addEventListener('click', ev => ev.stopPropagation());
+      tx.addEventListener('input', () => { lg.exNote = lg.exNote || {}; const v = tx.value.slice(0, 300); if (v.trim()) lg.exNote[tx.dataset.exNote] = v; else delete lg.exNote[tx.dataset.exNote]; persist(); });
+    });
     sb.querySelectorAll('.set-tags-pick [data-tech]').forEach(b => b.addEventListener('click', () => {
       const box = b.closest('.set-tags-pick'), exId = box.dataset.ex, i = +box.dataset.i, arr = lg.ex[exId] || [], cur = ((arr[i] || {}).tags || []).slice(), id = b.dataset.tech, k = cur.indexOf(id);
       if (k >= 0) cur.splice(k, 1); else cur.push(id);
@@ -14791,12 +14867,12 @@ function openGymWorkout(routineId, dateKey, focusId) {
           const all = gymRoutines();
           const rr = all.find(x => x.id === r.id);
           const ee = rr && rr.exercises.find(e => e.id === ex.id);
-          if (ee) { ee.name = dbEx.n; ee.dbId = dbEx.i; delete ee.photo; saveGymRoutines(all); }
+          if (ee) { ee.name = gymDbName(dbEx); ee.dbId = dbEx.i; delete ee.photo; saveGymRoutines(all); }
           if (lg.swap) delete lg.swap[ex.id];
           persist();
         } else {
           lg.swap = lg.swap || {};
-          lg.swap[ex.id] = { name: dbEx.n, dbId: dbEx.i };
+          lg.swap[ex.id] = { name: gymDbName(dbEx), dbId: dbEx.i };
           persist();
         }
         openGymWorkout(r.id, dateKey, ex.id);
@@ -14893,7 +14969,7 @@ function gymLiveFill(r, lg, ex, i, dk) {
   const s = ((lg.ex || {})[ex.id] || [])[i] || {}, sw = lg.swap && lg.swap[ex.id];
   const tr = gymSetRepsForIndex(ex, i), trN = parseInt(tr, 10);
   if (gymIsSport(r)) return { reps: s.reps || String(tr).split(' ')[0] };
-  const last = gymLastLog(ex.id, dk, sw ? sw.name : null), prev = last && last.sets[i];
+  const last = gymLastLog(ex.id, dk, sw ? sw.name : null, sw ? sw.dbId : null), prev = last && last.sets[i];
   return { kg: s.kg || (!sw && gymRecLoad(ex, i)) || (prev && prev.kg) || '', reps: s.reps || (prev && prev.reps) || (trN ? String(trN) : '') };
 }
 // Series pendientes en el orden en que se hacen (circuitos: por vueltas).
@@ -15283,7 +15359,7 @@ function openGymExerciseInfo(routineId, exId, back) {
           ${fr.length ? `<img class="gym-anim" src="${fr[0]}" data-frames="${fr.join('|')}" alt="">` : ''}
           ${!ex.photo && !fr.length ? '<div class="empty">Sin imagen</div>' : ''}
         </div>
-        ${db ? `<div class="gym-db-name">${escapeHtml(db.n)}</div>
+        ${db ? `<div class="gym-db-name" translate="no">${escapeHtml(gymDbName(db))}${gymDbName(db) !== db.n ? ` <small lang="en">· ${escapeHtml(db.n)}</small>` : ''}</div>
           <div class="gym-chips">${mus ? `<span class="gym-chip"><b>Músculo</b> ${escapeHtml(mus)}</span>` : ''}${sec ? `<span class="gym-chip"><b>Secundarios</b> ${escapeHtml(sec)}</span>` : ''}${db.e ? `<span class="gym-chip"><b>Equipo</b> ${escapeHtml(GYM_EQUIP_ES[db.e] || db.e)}</span>` : ''}</div>
           ${db.t && db.t.length ? `<div id="gym-steps-box">${gymStepsHtml(db)}</div>` : ''}` : '<div class="fe-lbl">Este ejercicio no está vinculado a la base. Vincúlalo para ver su animación y músculos.</div>'}
         ${typeof exLogIndex === 'function' && exLogIndex(localDayD()).some(x => x.key === goalNorm(ex.name)) ? '<button class="btn-primary" id="gym-prog">Ver mi progreso en este ejercicio</button>' : ''}
@@ -15678,8 +15754,8 @@ function openGymSwapPicker(ex, onPick, onBack) {
   let scope = 'today';
   const row = e => `<div class="gym-res" data-id="${escapeHtml(e.i)}">
       ${gymMediaHtml({ dbId: e.i }, 56)}
-      <div class="gym-res-body"><div class="gym-res-name">${escapeHtml(e.n)}</div>
-      <div class="gym-res-meta">${escapeHtml([...(e.p || []).map(x => GYM_MUSCLE_ES[x] || x), GYM_EQUIP_ES[e.e] || e.e].filter(Boolean).join(' · '))}</div></div>
+      <div class="gym-res-body"><div class="gym-res-name" translate="no">${escapeHtml(gymDbName(e))}</div>
+      <div class="gym-res-meta">${escapeHtml([...(e.p || []).map(x => GYM_MUSCLE_ES[x] || x), GYM_EQUIP_ES[e.e] || e.e].filter(Boolean).join(' · '))}</div>${gymDbName(e) !== e.n ? `<div class="gym-res-en" translate="no" lang="en">${escapeHtml(e.n)}</div>` : ''}</div>
     </div>`;
   openSheet('Reemplazar ejercicio', `<div class="gym-search">
     <div class="gym-swap-from"><span>Reemplazar</span> <b>${escapeHtml(ex.name)}</b> <span>por:</span></div>
@@ -15687,7 +15763,7 @@ function openGymSwapPicker(ex, onPick, onBack) {
       <div class="chip selected" data-scope="today">Solo hoy</div>
       <div class="chip" data-scope="routine">Cambiar en la rutina</div>
     </div>
-    <input type="search" class="field-input" id="gym-q" placeholder="Busca en español o inglés (ej. press inclinado, remo)" style="margin-top:10px;">
+    <input type="search" class="field-input" id="gym-q" placeholder="Busca en español o inglés (ej. press inclinado, remo, glúteo)" style="margin-top:10px;">
     <div id="gym-results" class="gym-results"><div class="skel list" aria-busy="true"><i></i><i></i><i></i><i></i><i></i></div></div>
     <button class="btn-secondary" id="gym-q-back" style="margin-top:10px;">‹ Volver</button>
   </div>`);
@@ -15717,7 +15793,7 @@ function openGymSwapPicker(ex, onPick, onBack) {
 // ---------- Buscador de ejercicios ----------
 function openGymExercisePicker(initialQuery, onPick, onBack) {
   const body = `<div class="gym-search">
-    <input type="search" class="field-input" id="gym-q" placeholder="Busca en español o inglés (ej. press inclinado, remo)" value="${escapeHtml(initialQuery || '')}">
+    <input type="search" class="field-input" id="gym-q" placeholder="Busca en español o inglés (ej. press inclinado, remo, glúteo)" value="${escapeHtml(initialQuery || '')}">
     <div id="gym-results" class="gym-results"><div class="skel list" aria-busy="true"><i></i><i></i><i></i><i></i><i></i></div></div>
     ${onBack ? '<button class="btn-secondary" id="gym-q-back" style="margin-top:10px;">‹ Volver</button>' : ''}
   </div>`;
@@ -15733,8 +15809,8 @@ function openGymExercisePicker(initialQuery, onPick, onBack) {
     if (!list.length) { res.innerHTML = '<div class="empty">Sin resultados</div>'; return; }
     res.innerHTML = list.map(e => `<div class="gym-res" data-id="${escapeHtml(e.i)}">
       ${gymMediaHtml({ dbId: e.i }, 56)}
-      <div class="gym-res-body"><div class="gym-res-name">${escapeHtml(e.n)}</div>
-      <div class="gym-res-meta">${escapeHtml([...(e.p || []).map(x => GYM_MUSCLE_ES[x] || x), GYM_EQUIP_ES[e.e] || e.e].filter(Boolean).join(' · '))}</div></div>
+      <div class="gym-res-body"><div class="gym-res-name" translate="no">${escapeHtml(gymDbName(e))}</div>
+      <div class="gym-res-meta">${escapeHtml([...(e.p || []).map(x => GYM_MUSCLE_ES[x] || x), GYM_EQUIP_ES[e.e] || e.e].filter(Boolean).join(' · '))}</div>${gymDbName(e) !== e.n ? `<div class="gym-res-en" translate="no" lang="en">${escapeHtml(e.n)}</div>` : ''}</div>
     </div>`).join('');
     res.querySelectorAll('.gym-res').forEach(it => it.addEventListener('click', () => {
       const e = gymDbById(it.dataset.id);
@@ -15958,7 +16034,7 @@ function gymDrawEditor(isNew) {
     openGymExercisePicker('', (dbEx) => {
       const last = _gymEdit.exercises[_gymEdit.exercises.length - 1];
       const nid = uid(); _gymEdit._open = nid;
-      _gymEdit.exercises.push({ id: nid, name: dbEx.n, dbId: dbEx.i, circuit: last && last.circuit != null ? last.circuit + 1 : null,
+      _gymEdit.exercises.push({ id: nid, name: gymDbName(dbEx), dbId: dbEx.i, circuit: last && last.circuit != null ? last.circuit + 1 : null,
         sets: [{ count: 3, reps: '10-12', note: '' }], rir: '', rpe: '', tempo: '', rest: '', notes: '' });
       gymDrawEditor(isNew);
     }, () => gymDrawEditor(isNew));

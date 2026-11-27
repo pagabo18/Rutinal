@@ -6956,6 +6956,51 @@ window.__I18N_EXTRA = {
    "pt-BR": "Responder",
    "fr": "Répondre"
   },
+  "Comentario de esta serie (opcional)": {
+   "en": "Comment on this set (optional)",
+   "pt-BR": "Comentário desta série (opcional)",
+   "fr": "Commentaire sur cette série (facultatif)"
+  },
+  "Nota": {
+   "en": "Note",
+   "pt-BR": "Nota",
+   "fr": "Note"
+  },
+  "Comentario de la serie": {
+   "en": "Set comment",
+   "pt-BR": "Comentário da série",
+   "fr": "Commentaire de la série"
+  },
+  "Toca el número de una serie para dejarle un comentario.": {
+   "en": "Tap a set number to leave a comment on it.",
+   "pt-BR": "Toque no número de uma série para deixar um comentário.",
+   "fr": "Touchez le numéro d'une série pour y laisser un commentaire."
+  },
+  "Toca el número de una serie para marcar la técnica, el dolor o dejarle un comentario.": {
+   "en": "Tap a set number to mark technique, pain or leave a comment.",
+   "pt-BR": "Toque no número de uma série para marcar a técnica, a dor ou deixar um comentário.",
+   "fr": "Touchez le numéro d'une série pour indiquer la technique, la douleur ou laisser un commentaire."
+  },
+  "Comentario del ejercicio (opcional): algo que haga falta explicar": {
+   "en": "Exercise comment (optional): anything that needs explaining",
+   "pt-BR": "Comentário do exercício (opcional): algo que precise explicar",
+   "fr": "Commentaire sur l'exercice (facultatif) : ce qu'il faut expliquer"
+  },
+  "Comentario": {
+   "en": "Comment",
+   "pt-BR": "Comentário",
+   "fr": "Commentaire"
+  },
+  "Busca en español o inglés (ej. press inclinado, remo, glúteo)": {
+   "en": "Search in Spanish or English (e.g. incline press, row, glute)",
+   "pt-BR": "Busque em espanhol ou inglês (ex.: press inclinado, remada, glúteo)",
+   "fr": "Cherchez en espagnol ou en anglais (ex. : développé incliné, rowing, fessier)"
+  },
+  "+ nota": {
+   "en": "+ note",
+   "pt-BR": "+ nota",
+   "fr": "+ note"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
