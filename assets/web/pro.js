@@ -951,9 +951,8 @@ function rxToRoutines(plan, cfg, title) {
     return { id: uid(), name: tag + d.name, tempo: '', source: 'plan', createdAt: Date.now(), _dow: d.dow,
       meta: { objetivo: rxGoalName(cfg.goal), descanso: '', notas: (cfg.goal === 'grasa' ? t('Suma 20–30 min de cardio moderado o 8–10 mil pasos al día.') + ' ' : '') + t('Ajusta el peso para terminar cada serie con el RIR indicado.') + ((cfg.care || []).length ? ' ' + t('Se evitaron ejercicios que suelen molestar en las zonas que marcaste; si hay dolor, consulta a tu fisioterapeuta.') : '') },
       exercises: exs,
-      // Calentamiento general antes de empezar; con objetivo de perder grasa, cardio al final
-      warmup: [cfg.equip === 'gym' ? { id: uid(), m: 'cinta', t: { time: '5-10' }, note: t('Ritmo cómodo, que puedas platicar.') }
-        : { id: uid(), m: 'libre', name: t('Movilidad y saltos suaves'), t: { time: '5-10' } }],
+      // Calentamiento según el día (plantillas de calentamiento); con objetivo de perder grasa, cardio al final
+      warmup: cvWarmupItems(rxWarmupFor(d.key, cfg.equip)),
       ...(cfg.goal === 'grasa' ? { cardio: [{ id: uid(), m: cfg.equip === 'gym' ? 'eliptica' : 'caminata', t: { time: '20' }, note: t('Moderado: respiras rápido pero puedes hablar.') }] } : {}) };
   });
 }
@@ -1228,7 +1227,7 @@ function cvEditorHtml(r, kind) {
         ${m.f.includes('speed') ? `<label><span>Unidad</span><select class="field-input" data-cvf="su"><option value="kmh">km/h</option><option value="mph"${it.su === 'mph' ? ' selected' : ''}>mph</option></select></label>` : ''}</div>
       <input class="field-input cv-ed-note" data-cvf="note" value="${_cvE(it.note || '')}" placeholder="Nota (opcional): intervalos, zona 2, ritmo cómodo…">
     </div>`;
-  }).join('')}<button type="button" class="btn-secondary cv-add" data-cv-add="${kind}">+ ${kind === 'warmup' ? 'Agregar calentamiento' : 'Agregar cardio'}</button></div>`;
+  }).join('')}<button type="button" class="btn-secondary cv-add" data-cv-add="${kind}">+ ${kind === 'warmup' ? 'Agregar calentamiento' : 'Agregar cardio'}</button>${kind === 'warmup' ? '<button type="button" class="btn-secondary cv-add" data-cv-tpl="1">Plantillas de calentamiento</button>' : ''}</div>`;
 }
 function cvEditorSync(root, r) {
   ['warmup', 'cardio'].forEach(kind => {
@@ -1253,6 +1252,7 @@ function cvEditorSync(root, r) {
 function cvPickerHtml(kind) {
   return `<div class="cv-pick" data-cv-pickbox="${kind}"><div class="cv-pick-k">${kind === 'warmup' ? '¿Qué vas a usar para calentar?' : '¿Qué máquina o ejercicio de cardio?'}</div>
     <div class="cv-pick-b">${CV_MACHINES.map(m => `<button class="chip" data-cv-new="${kind}:${m.id}">${_cvE(m.n)}</button>`).join('')}</div>
+    ${kind === 'warmup' ? '<button class="cv-pick-tpl" data-cv-tpl="1"><span><b>Plantillas de calentamiento</b><small>Torso, pierna, glúteo, hombro, rápido…</small></span><span class="sp-chev">›</span></button>' : ''}
     <button class="cv-pick-x" data-cv-pick="">Cancelar</button></div>`;
 }
 function cvWorkoutHtml(r, lg, kind, pick) {
@@ -1267,12 +1267,153 @@ function cvWorkoutHtml(r, lg, kind, pick) {
       return `<div class="cv-it${v.done ? ' done' : ''}" data-cv-it="${_cvE(it.id)}">
         <div class="cv-it-h"><div class="cv-it-b"><b translate="no">${_cvE(cvName(it))}</b>${tgt ? `<small translate="no">${tgt}</small>` : ''}${it.note ? `<small class="cv-note">${_cvE(it.note)}</small>` : ''}</div>
           <button class="gym-check cv-check" data-cv-done="${_cvE(it.id)}" aria-label="Hecho">✓</button></div>
-        ${extra && m.free ? `<input class="field-input cv-x-name" data-cv-name="${_cvE(it.id)}" value="${_cvE(it.name || '')}" placeholder="¿Qué ejercicio? Ej. movilidad de cadera">` : ''}
+        ${extra && m.free && !it.tpl ? `<input class="field-input cv-x-name" data-cv-name="${_cvE(it.id)}" value="${_cvE(it.name || '')}" placeholder="¿Qué ejercicio? Ej. movilidad de cadera">` : ''}
         <div class="cv-it-f">${m.f.map(f => `<label><span>${_cvE(cvLabel(it, f))}</span><span class="cv-inw"><input class="gym-in" data-cv-in="${_cvE(it.id)}" data-f="${f}" inputmode="decimal" value="${_cvE(v[f] || '')}" placeholder="${_cvE((it.t || {})[f] || '–')}">${cvUnit(it, f) ? `<i translate="no">${_cvE(cvUnit(it, f))}</i>` : ''}</span></label>`).join('')}</div>
         ${extra ? `<div class="cv-x-row">${m.f.includes('speed') ? `<button class="cv-x-btn" data-cv-su="${_cvE(it.id)}">${it.su === 'mph' ? 'Cambiar a km/h' : 'Cambiar a mph'}</button>` : ''}<button class="cv-x-btn" data-cv-x="${_cvE(it.id)}">Quitar</button></div>` : ''}
       </div>`;
     }).join('')}
     ${picking ? cvPickerHtml(kind) : `<button class="cv-more" data-cv-pick="${kind}">+ Agregar ${kind === 'warmup' ? 'calentamiento' : 'cardio'}</button>`}</div>`;
+}
+
+// ---------- Plantillas de calentamiento ----------
+// Calentamientos prehechos (subir el pulso, movilidad, activación y preparar el movimiento).
+// Cada elemento: [máquina, nombre si es ejercicio libre, objetivo, nota]. Se copian a la rutina
+// (r.warmup) o al día (lg.cvx) como cualquier otro calentamiento, así que se pueden editar o quitar.
+const CV_SIDE = 'Por lado.';
+const CV_WARMUPS = [
+  { id: 'general', n: 'General', d: 'Para cualquier día: sube el pulso y suelta las articulaciones.', it: [
+    ['cinta', '', { time: '5' }, 'Ritmo cómodo, que puedas platicar.'],
+    ['libre', 'Círculos de brazos', { reps: '10' }, 'Hacia adelante y hacia atrás.'],
+    ['libre', 'Rotaciones de tronco', { reps: '10' }, CV_SIDE],
+    ['libre', 'Balanceos de pierna', { reps: '10' }, CV_SIDE],
+    ['libre', 'Sentadilla sin peso', { reps: '10' }, 'Lenta y controlada.']] },
+  { id: 'upper', n: 'Torso: pecho, hombro y espalda', d: 'Antes de un día de torso o de cuerpo superior.', it: [
+    ['eliptica', '', { time: '5' }, 'Usa también los brazos.'],
+    ['libre', 'Círculos de brazos', { reps: '10' }, 'Hacia adelante y hacia atrás.'],
+    ['libre', 'Rotación torácica en cuatro puntos', { reps: '8' }, CV_SIDE],
+    ['libre', 'Aperturas con banda', { reps: '15' }, 'Junta las escápulas al abrir.'],
+    ['libre', 'Rotación externa de hombro con banda', { reps: '12' }, CV_SIDE],
+    ['libre', 'Lagartijas escapulares', { reps: '10' }, 'Brazos rectos: solo se mueven las escápulas.']] },
+  { id: 'push', n: 'Empuje: pecho, hombro y tríceps', d: 'Antes de press de banca, press militar o fondos.', it: [
+    ['bici', '', { time: '5' }, 'Ritmo cómodo, que puedas platicar.'],
+    ['libre', 'Círculos de brazos', { reps: '10' }, 'Hacia adelante y hacia atrás.'],
+    ['libre', 'Aperturas con banda', { reps: '15' }, 'Junta las escápulas al abrir.'],
+    ['libre', 'Rotación externa de hombro con banda', { reps: '12' }, CV_SIDE],
+    ['libre', 'Lagartijas inclinadas', { reps: '10' }, 'Manos sobre un banco.'],
+    ['libre', 'Series de aproximación del primer ejercicio', { reps: '2' }, 'Con la barra sola o poco peso, 8 a 10 repeticiones.']] },
+  { id: 'pull', n: 'Jalón: espalda y bíceps', d: 'Antes de dominadas, remos o peso muerto.', it: [
+    ['remo', '', { time: '5' }, 'Ritmo cómodo, que puedas platicar.'],
+    ['libre', 'Gato-camello', { reps: '10' }, 'Arquea y redondea la espalda despacio.'],
+    ['libre', 'Rotación torácica en cuatro puntos', { reps: '8' }, CV_SIDE],
+    ['libre', 'Colgarse de la barra', { reps: '2' }, '20 a 30 segundos cada vez.'],
+    ['libre', 'Retracción escapular colgado', { reps: '8' }, 'Brazos rectos: sube solo con las escápulas.'],
+    ['libre', 'Jalón con banda', { reps: '15' }, 'Codos hacia las costillas.']] },
+  { id: 'lower', n: 'Pierna y glúteo', d: 'Antes de sentadilla, peso muerto o prensa.', it: [
+    ['bici', '', { time: '5' }, 'Ritmo cómodo, que puedas platicar.'],
+    ['libre', 'Balanceos de pierna', { reps: '10' }, CV_SIDE],
+    ['libre', 'Movilidad de cadera 90/90', { reps: '6' }, CV_SIDE],
+    ['libre', 'Movilidad de tobillo contra la pared', { reps: '10' }, CV_SIDE],
+    ['libre', 'Puente de glúteo', { reps: '15' }, 'Aprieta el glúteo un segundo arriba.'],
+    ['libre', 'Sentadilla sin peso', { reps: '10' }, 'Lenta y controlada.'],
+    ['libre', 'Zancada con giro', { reps: '6' }, CV_SIDE]] },
+  { id: 'glute', n: 'Activación de glúteo', d: 'Para sentir el glúteo antes de hip thrust, sentadilla o peso muerto.', it: [
+    ['bici', '', { time: '5' }, 'Ritmo cómodo, que puedas platicar.'],
+    ['libre', 'Puente de glúteo', { reps: '15' }, 'Aprieta el glúteo un segundo arriba.'],
+    ['libre', 'Almeja con banda', { reps: '15' }, CV_SIDE],
+    ['libre', 'Caminata lateral con banda', { reps: '12' }, 'Pasos por lado, rodillas un poco flexionadas.'],
+    ['libre', 'Patada de glúteo en cuatro puntos', { reps: '12' }, CV_SIDE],
+    ['libre', 'Hip thrust sin peso', { reps: '12' }, 'Aprieta el glúteo un segundo arriba.']] },
+  { id: 'full', n: 'Cuerpo completo', d: 'Antes de una rutina de cuerpo completo o de fuerza.', it: [
+    ['cinta', '', { time: '4' }, 'Ritmo cómodo, que puedas platicar.'],
+    ['libre', 'Zancada con giro', { reps: '5' }, CV_SIDE],
+    ['libre', 'Gusano (caminar con las manos)', { reps: '6' }, 'Baja a tabla y regresa.'],
+    ['libre', 'Sentadilla sin peso', { reps: '10' }, 'Lenta y controlada.'],
+    ['libre', 'Lagartijas', { reps: '8' }, 'Con rodillas apoyadas si hace falta.'],
+    ['libre', 'Puente de glúteo', { reps: '12' }, 'Aprieta el glúteo un segundo arriba.']] },
+  { id: 'shoulder', n: 'Cuidado de hombro', d: 'Si el hombro te molesta o vas a hacer press pesado.', it: [
+    ['libre', 'Círculos de brazos', { reps: '10' }, 'Hacia adelante y hacia atrás.'],
+    ['libre', 'Deslizamientos en la pared', { reps: '10' }, 'Espalda y brazos pegados a la pared.'],
+    ['libre', 'Rotación externa de hombro con banda', { reps: '15' }, CV_SIDE],
+    ['libre', 'Face pull con banda', { reps: '15' }, 'Codos altos, jala hacia la cara.'],
+    ['libre', 'Y-T-W boca abajo', { reps: '8' }, 'Sin peso, 8 de cada letra.'],
+    ['libre', 'Lagartijas escapulares', { reps: '10' }, 'Brazos rectos: solo se mueven las escápulas.']] },
+  { id: 'core', n: 'Espalda baja y core', d: 'Para preparar la espalda baja antes de cargar peso.', it: [
+    ['libre', 'Gato-camello', { reps: '10' }, 'Arquea y redondea la espalda despacio.'],
+    ['libre', 'Perro de caza (bird dog)', { reps: '8' }, CV_SIDE],
+    ['libre', 'Bicho muerto (dead bug)', { reps: '8' }, CV_SIDE],
+    ['libre', 'Plancha lateral', { reps: '2' }, '20 segundos por lado.'],
+    ['libre', 'Puente de glúteo', { reps: '12' }, 'Aprieta el glúteo un segundo arriba.']] },
+  { id: 'run', n: 'Antes de correr o de cardio', d: 'Para correr, hacer intervalos o un deporte de cancha.', it: [
+    ['caminata', '', { time: '5' }, 'Trote muy suave.'],
+    ['libre', 'Balanceos de pierna', { reps: '10' }, CV_SIDE],
+    ['libre', 'Zancadas caminando', { reps: '10' }, CV_SIDE],
+    ['libre', 'Rodillas arriba (skipping)', { reps: '2' }, 'Tramos de 20 metros.'],
+    ['libre', 'Talones al glúteo', { reps: '2' }, 'Tramos de 20 metros.'],
+    ['libre', 'Aceleraciones progresivas', { reps: '3' }, 'De 60 a 80 metros, sin llegar al máximo.']] },
+  { id: 'home', n: 'En casa, sin equipo', d: 'No necesitas máquinas ni bandas.', it: [
+    ['libre', 'Trote en tu lugar o saltos suaves', { time: '3' }, 'Ritmo cómodo, que puedas platicar.'],
+    ['libre', 'Círculos de brazos', { reps: '10' }, 'Hacia adelante y hacia atrás.'],
+    ['libre', 'Gusano (caminar con las manos)', { reps: '6' }, 'Baja a tabla y regresa.'],
+    ['libre', 'Sentadilla sin peso', { reps: '10' }, 'Lenta y controlada.'],
+    ['libre', 'Zancada con giro', { reps: '6' }, CV_SIDE],
+    ['libre', 'Lagartijas inclinadas', { reps: '8' }, 'Manos sobre una silla firme o la cama.']] },
+  { id: 'quick', n: 'Rápido', d: 'Cuando traes poco tiempo: lo mínimo para no empezar en frío.', it: [
+    ['libre', 'Trote en tu lugar o saltos suaves', { time: '1' }, ''],
+    ['libre', 'Círculos de brazos', { reps: '10' }, 'Hacia adelante y hacia atrás.'],
+    ['libre', 'Sentadilla sin peso', { reps: '10' }, 'Lenta y controlada.'],
+    ['libre', 'Zancada con giro', { reps: '4' }, CV_SIDE]] }
+];
+const CV_WARMUP_BY = {}; CV_WARMUPS.forEach(w => { CV_WARMUP_BY[w.id] = w; });
+// Minutos aproximados: el tiempo de las máquinas y cerca de un minuto por ejercicio de movilidad
+function cvWarmupMin(w) { return Math.round(w.it.reduce((a, x) => a + (parseFloat(x[2].time) || 1), 0)); }
+// Copia de la plantilla lista para guardarse. Los nombres y notas se guardan ya en el idioma de la app.
+// o.kind: 'warmup' cuando va al registro del día (lg.cvx).
+function cvWarmupItems(id, o) {
+  const w = CV_WARMUP_BY[id]; if (!w) return [];
+  const tr = x => { if (!x) return x; try { const v = typeof t === 'function' ? t(x) : x; return v == null || v === '' ? x : v; } catch (e) { return x; } };
+  const mk = typeof uid === 'function' ? uid : () => 'w' + Math.random().toString(36).slice(2, 10);
+  return w.it.map(([m, name, tg, note]) => {
+    const it = { id: mk(), m, t: Object.assign({}, tg) };
+    if (name) it.name = tr(name);
+    if (note) it.note = tr(note);
+    if (o && o.kind) { it.kind = o.kind; it.tpl = 1; }
+    return it;
+  });
+}
+// Qué calentamiento le toca a un día armado por las plantillas o el asistente de rutinas
+function rxWarmupFor(dayKey, equip) {
+  if (equip && equip !== 'gym') return 'home';
+  if (/^glute/.test(dayKey)) return 'glute';
+  if (/^(lower|legs)/.test(dayKey)) return 'lower';
+  if (/^(push|chest$|shoulders|shArms)/.test(dayKey)) return 'push';
+  if (/^(pull|back)/.test(dayKey)) return 'pull';
+  if (/^(full|str)/.test(dayKey)) return 'full';
+  return 'upper';
+}
+// Catálogo: lista → detalle con sus ejercicios → usar. o: { has, onPick(id, replace), back }
+function openWarmupTemplates(o) {
+  o = o || {};
+  const E = _cvE, backBtn = '<button class="btn-secondary ds-btn" id="cvw-back">‹ Volver</button>';
+  const detail = i => {
+    const w = CV_WARMUPS[i];
+    openSheet(w.n, `<div class="lk-d" style="margin:0 0 10px;">${E(w.d)}</div>
+      <div class="cvw-list">${w.it.map(([m, name, tg, note], j) => `<div class="cvw-it"><b class="cvw-n" translate="no">${j + 1}</b><div class="cvw-b"><div class="cvw-t">${E(name || CV_BY[m].n)}</div>
+        <small><span translate="no">${cvText({ m }, tg, true)}</span>${note ? ` · <span>${E(note)}</span>` : ''}</small></div></div>`).join('')}</div>
+      <button class="btn-primary ds-btn" id="cvw-use">${o.has ? 'Reemplazar mi calentamiento' : 'Usar este calentamiento'}</button>
+      ${o.has ? '<button class="btn-secondary ds-btn" id="cvw-add">Agregar al que ya tengo</button>' : ''}
+      ${backBtn}`);
+    document.getElementById('cvw-use').addEventListener('click', () => o.onPick && o.onPick(w.id, true));
+    const ad = document.getElementById('cvw-add'); if (ad) ad.addEventListener('click', () => o.onPick && o.onPick(w.id, false));
+    document.getElementById('cvw-back').addEventListener('click', list);
+  };
+  const list = () => {
+    openSheet('Plantillas de calentamiento', `<div class="lk-d" style="margin:0 0 10px;">Calentamientos listos según lo que vas a entrenar. Después puedes cambiar, quitar o agregar lo que quieras.</div>
+      ${CV_WARMUPS.map((w, i) => `<button class="rx-card" data-cvw="${i}"><b>${E(w.n)}</b><span>${E(w.d)}</span><small><span translate="no">≈ ${cvWarmupMin(w)} min · ${w.it.length}</span> <span>ejercicios</span></small></button>`).join('')}
+      ${o.back ? backBtn : ''}`);
+    document.querySelectorAll('#sheet-body [data-cvw]').forEach(b => b.addEventListener('click', () => detail(+b.dataset.cvw)));
+    const bk = document.getElementById('cvw-back'); if (bk) bk.addEventListener('click', o.back);
+  };
+  list();
 }
 
 // ============================================================
@@ -1292,6 +1433,14 @@ function exCleanSets(sets, N) {
     const r = x.rir === '' || x.rir == null ? null : N(x.rir);
     return Object.assign({}, x, { rir: r != null && !isNaN(r) && r >= 0 && r <= 10 ? r : null });
   });
+}
+// Sensaciones (ánimo 1–5, dolor y RPE 0–10) como números. En la vista del especialista estos datos
+// vienen de la cuenta del atleta: no se confía en su tipo y nunca se insertan tal cual en el HTML.
+function feelNum(f) {
+  f = f || {};
+  const n = (v, lo, hi) => { const x = v == null || v === '' ? NaN : +v; return isNaN(x) || x < lo || x > hi ? null : x; };
+  const m = n(f.mood, 1, 5);
+  return { mood: m == null ? null : Math.round(m), pain: n(f.pain, 0, 10), rpe: n(f.rpe, 0, 10), note: f.note == null ? '' : String(f.note) };
 }
 const DAY_MEALS = [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['dinner', 'Cena'], ['snack', 'Snack']];
 function dayData(D, dk, opts) {
@@ -1319,14 +1468,14 @@ function dayData(D, dk, opts) {
         if (ps.length) { const v = Math.max(...ps.map(x => E1(x.kg, x.reps))); if (!prev) prev = v; hist.unshift({ d: k, v }); if (hist.length >= 7) break; }
       }
       if (e1 > 0) hist.push({ d: dk, v: e1 });
-      const f = (lg.exFeel || {})[e.id] || {};
+      const f = feelNum((lg.exFeel || {})[e.id]);
       ex.push({ id: e.id, name, grp: exGrp((sw && sw.dbId) || e.dbId, name), hist, sets: sets.map(x => ({ kg: x.kg, reps: x.reps, rir: x.rir, pain: x.pain, time: x.time, rpe: x.rpe })), vol, e1rm: e1, prev, pain: f.pain, rpe: f.rpe,
         maxPain: Math.max(-1, ...sets.map(x => (x.pain == null ? -1 : +x.pain))) });
     });
     const cv = (typeof cvAll === 'function' ? cvAll(r, lg) : []).map(([kind, it]) => { const v = (lg.cv || {})[it.id]; return v && v.done ? { kind, name: cvName(it), text: cvText(it, v), min: parseFloat(v.time) || 0 } : null; }).filter(Boolean);
     const mins = lg.start && lg.end && lg.end > lg.start ? Math.round((lg.end - lg.start) / 60000) : 0;
     if (ex.length || cv.length || lg.done) out.gym = { name: r.name || '', sport: !!(r.meta && r.meta.sport), done: !!lg.done, mins, ex, cv,
-      sets: ex.reduce((a, x) => a + x.sets.length, 0), vol: ex.reduce((a, x) => a + x.vol, 0), cvMin: cv.reduce((a, x) => a + x.min, 0), feel: lg.feel || {} };
+      sets: ex.reduce((a, x) => a + x.sets.length, 0), vol: ex.reduce((a, x) => a + x.vol, 0), cvMin: cv.reduce((a, x) => a + x.min, 0), feel: feelNum(lg.feel) };
   }
   // --- Actividades (running, natación…) ---
   ((D.act_log || {})[dk] || []).forEach(a => {
@@ -1366,7 +1515,7 @@ function dayData(D, dk, opts) {
 // Series para la gráfica de progreso de los ejercicios del día: cambio % del 1RM estimado
 // contra la primera de sus últimas sesiones; alineadas a la derecha (la última es hoy).
 function dayProgSeries(exs) {
-  const list = exs.filter(x => x.hist && x.hist.length > 1);
+  const list = exs.filter(x => x.e1rm > 0 && x.hist && x.hist.length > 1);
   if (!list.length) return null;
   const n = Math.max(...list.map(x => x.hist.length)), dashes = [null, '6 4', '2 3', '10 3 2 3'], used = {};
   const series = list.map(x => {
@@ -1444,13 +1593,13 @@ function dayReportText(dd) {
   L.push(`Rutinal · ${d}`);
   if (dd.gym) {
     L.push('', `${t('Entrenamiento')}: ${dd.gym.name}`);
-    dd.gym.ex.forEach(x => L.push(`${x.name}: ${x.sets.map(s => s.time ? s.time + (s.reps ? ' · ' + s.reps : '') : `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg} ${U} × ${s.reps}${s.pain > 0 ? ` (${t('dolor')} ${s.pain})` : ''}`).join(', ')}`));
+    dd.gym.ex.forEach(x => L.push(`${x.name}: ${x.sets.map(s => (s.time ? s.time + (s.reps ? ' · ' + s.reps : '') : +s.kg ? `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg} ${U} × ${s.reps || 0}` : `${s.reps || 0} reps`) + (s.pain > 0 ? ` (${t('dolor')} ${s.pain})` : '')).join(', ')}`));
     dd.gym.cv.forEach(c => L.push(`${t(CV_KIND[c.kind])} · ${c.name}: ${c.text}`));
   }
   dd.acts.forEach(a => L.push(`${a.name}: ${a.text}`));
   if (dd.food) L.push('', `${t('Comida')}: ${dd.food.kcal} kcal · P ${dd.food.p} g · C ${dd.food.c} g · G ${dd.food.f} g`);
   if (dd.water) L.push(`${t('Agua')}: ${dd.water.n}/${dd.water.goal}`);
-  if (dd.weight != null) L.push(`${t('Peso')}: ${dd.weight} kg`);
+  if (dd.weight != null) L.push(`${t('Peso')}: ${typeof bwDisp === 'function' ? bwDisp(dd.weight) + ' ' + bwUnit() : dd.weight + ' kg'}`);
   return L.join('\n');
 }
 // Imagen para compartir (canvas 1080 px de ancho). mode: 'gym' solo el entrenamiento, 'day' todo el día.
@@ -1655,21 +1804,6 @@ function volGroupChartHtml(weeks, o) {
     <div class="dr-leg vgc-leg">${gs.map(g => { const c = chg(g), v = weeks[last].groups[g] || 0; return `<div class="dr-leg-i"><svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="${exGrpCol(g)}" stroke-width="3" stroke-linecap="round"/></svg><span>${EX_GRP_ES[g]}</span><small translate="no">${k(v)}</small><b class="${c > 0 ? 'up' : c < 0 ? 'dn' : ''}" translate="no">${c == null ? '' : (c > 0 ? '+' : '') + c + '%'}</b></div>`; }).join('')}
     ${o.total !== false && gs.length > 1 ? `<div class="dr-leg-i"><svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="currentColor" stroke-width="2" stroke-dasharray="4 4"/></svg><span>Total</span><small translate="no">${k(tot[last])}</small><b></b></div>` : ''}</div>
     <div class="dr-hint">Esta semana y cambio contra la anterior.</div>`;
-}
-// Barras por sesión; cada sesión es un grupo de barras (una por serie)
-function exGroupBarsSvg(groups, o) {
-  o = o || {}; const W = 320, H = o.h || 150, L = 26, R = 6, T = 10, B = 24;
-  const max = Math.max(1, ...groups.flatMap(g => g.bars.map(b => b.v)));
-  const n = groups.length, gw = (W - L - R) / Math.max(1, n), pad = Math.min(6, gw * 0.18);
-  const ticks = [0, Math.round(max / 2), Math.round(max)];
-  let g = ticks.map(t => { const y = H - B - t / max * (H - T - B); return `<line x1="${L}" x2="${W - R}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" class="exc-grid"/><text x="${L - 4}" y="${(y + 3.5).toFixed(1)}" class="exc-ax" text-anchor="end">${t}</text>`; }).join('');
-  groups.forEach((gr, i) => {
-    const x0 = L + i * gw + pad / 2, bw = Math.max(2, (gw - pad) / Math.max(1, gr.bars.length) - 1);
-    gr.bars.forEach((b, j) => { const h = b.v / max * (H - T - B); g += `<rect x="${(x0 + j * (bw + 1)).toFixed(1)}" y="${(H - B - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, h).toFixed(1)}" rx="1.5" fill="${b.col}"/>`; });
-  });
-  const li = [0, Math.floor((n - 1) / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i);
-  g += li.map(i => `<text x="${(L + i * gw + gw / 2).toFixed(1)}" y="${H - 6}" class="exc-ax" text-anchor="middle">${exFmtD(groups[i].d)}</text>`).join('');
-  return `<svg class="exc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img">${g}</svg>`;
 }
 function exSpark(vals) {
   const v = vals.filter(x => x).slice(-10); if (v.length < 2) return '';
@@ -2797,4 +2931,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { exLogIndex, volByGroup, gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { exLogIndex, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

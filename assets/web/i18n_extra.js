@@ -6391,6 +6391,451 @@ window.__I18N_EXTRA = {
    "pt-BR": "Esta semana e variação em relação à anterior.",
    "fr": "Cette semaine et variation par rapport à la précédente."
   },
+  "General": {
+   "en": "General",
+   "pt-BR": "Geral",
+   "fr": "Général"
+  },
+  "Para cualquier día: sube el pulso y suelta las articulaciones.": {
+   "en": "For any day: raise your heart rate and loosen your joints.",
+   "pt-BR": "Para qualquer dia: eleve o pulso e solte as articulações.",
+   "fr": "Pour n'importe quel jour : faites monter le pouls et déliez les articulations."
+  },
+  "Círculos de brazos": {
+   "en": "Arm circles",
+   "pt-BR": "Círculos de braços",
+   "fr": "Cercles de bras"
+  },
+  "Hacia adelante y hacia atrás.": {
+   "en": "Forward and backward.",
+   "pt-BR": "Para a frente e para trás.",
+   "fr": "Vers l'avant et vers l'arrière."
+  },
+  "Rotaciones de tronco": {
+   "en": "Trunk rotations",
+   "pt-BR": "Rotações de tronco",
+   "fr": "Rotations du tronc"
+  },
+  "Por lado.": {
+   "en": "Per side.",
+   "pt-BR": "Por lado.",
+   "fr": "De chaque côté."
+  },
+  "Balanceos de pierna": {
+   "en": "Leg swings",
+   "pt-BR": "Balanços de perna",
+   "fr": "Balancements de jambe"
+  },
+  "Sentadilla sin peso": {
+   "en": "Bodyweight squat",
+   "pt-BR": "Agachamento sem peso",
+   "fr": "Squat sans charge"
+  },
+  "Lenta y controlada.": {
+   "en": "Slow and controlled.",
+   "pt-BR": "Lento e controlado.",
+   "fr": "Lent et contrôlé."
+  },
+  "Torso: pecho, hombro y espalda": {
+   "en": "Upper body: chest, shoulders and back",
+   "pt-BR": "Tronco: peito, ombro e costas",
+   "fr": "Haut du corps : pectoraux, épaules et dos"
+  },
+  "Antes de un día de torso o de cuerpo superior.": {
+   "en": "Before an upper-body day.",
+   "pt-BR": "Antes de um dia de tronco ou de membros superiores.",
+   "fr": "Avant une séance du haut du corps."
+  },
+  "Usa también los brazos.": {
+   "en": "Use your arms too.",
+   "pt-BR": "Use também os braços.",
+   "fr": "Utilisez aussi les bras."
+  },
+  "Rotación torácica en cuatro puntos": {
+   "en": "Quadruped thoracic rotation",
+   "pt-BR": "Rotação torácica em quatro apoios",
+   "fr": "Rotation thoracique à quatre pattes"
+  },
+  "Aperturas con banda": {
+   "en": "Band pull-aparts",
+   "pt-BR": "Aberturas com elástico",
+   "fr": "Écartés avec élastique"
+  },
+  "Junta las escápulas al abrir.": {
+   "en": "Squeeze your shoulder blades together as you open.",
+   "pt-BR": "Junte as escápulas ao abrir.",
+   "fr": "Serrez les omoplates en ouvrant."
+  },
+  "Rotación externa de hombro con banda": {
+   "en": "Banded shoulder external rotation",
+   "pt-BR": "Rotação externa de ombro com elástico",
+   "fr": "Rotation externe d'épaule avec élastique"
+  },
+  "Lagartijas escapulares": {
+   "en": "Scapular push-ups",
+   "pt-BR": "Flexões escapulares",
+   "fr": "Pompes scapulaires"
+  },
+  "Brazos rectos: solo se mueven las escápulas.": {
+   "en": "Arms straight: only the shoulder blades move.",
+   "pt-BR": "Braços retos: só as escápulas se movem.",
+   "fr": "Bras tendus : seules les omoplates bougent."
+  },
+  "Empuje: pecho, hombro y tríceps": {
+   "en": "Push: chest, shoulders and triceps",
+   "pt-BR": "Empurrar: peito, ombro e tríceps",
+   "fr": "Poussée : pectoraux, épaules et triceps"
+  },
+  "Antes de press de banca, press militar o fondos.": {
+   "en": "Before bench press, overhead press or dips.",
+   "pt-BR": "Antes de supino, desenvolvimento ou paralelas.",
+   "fr": "Avant le développé couché, le développé militaire ou les dips."
+  },
+  "Lagartijas inclinadas": {
+   "en": "Incline push-ups",
+   "pt-BR": "Flexões inclinadas",
+   "fr": "Pompes inclinées"
+  },
+  "Manos sobre un banco.": {
+   "en": "Hands on a bench.",
+   "pt-BR": "Mãos sobre um banco.",
+   "fr": "Mains sur un banc."
+  },
+  "Series de aproximación del primer ejercicio": {
+   "en": "Ramp-up sets of your first exercise",
+   "pt-BR": "Séries de aproximação do primeiro exercício",
+   "fr": "Séries d'approche du premier exercice"
+  },
+  "Con la barra sola o poco peso, 8 a 10 repeticiones.": {
+   "en": "With the empty bar or light weight, 8 to 10 reps.",
+   "pt-BR": "Com a barra vazia ou pouco peso, 8 a 10 repetições.",
+   "fr": "Avec la barre à vide ou une charge légère, 8 à 10 répétitions."
+  },
+  "Jalón: espalda y bíceps": {
+   "en": "Pull: back and biceps",
+   "pt-BR": "Puxar: costas e bíceps",
+   "fr": "Tirage : dos et biceps"
+  },
+  "Antes de dominadas, remos o peso muerto.": {
+   "en": "Before pull-ups, rows or deadlifts.",
+   "pt-BR": "Antes de barras, remadas ou levantamento terra.",
+   "fr": "Avant les tractions, les rowings ou le soulevé de terre."
+  },
+  "Gato-camello": {
+   "en": "Cat-camel",
+   "pt-BR": "Gato-camelo",
+   "fr": "Chat-chameau"
+  },
+  "Arquea y redondea la espalda despacio.": {
+   "en": "Slowly arch and round your back.",
+   "pt-BR": "Arqueie e arredonde as costas devagar.",
+   "fr": "Creusez et arrondissez le dos lentement."
+  },
+  "Colgarse de la barra": {
+   "en": "Dead hang",
+   "pt-BR": "Pendurar-se na barra",
+   "fr": "Suspension à la barre"
+  },
+  "20 a 30 segundos cada vez.": {
+   "en": "20 to 30 seconds each time.",
+   "pt-BR": "20 a 30 segundos de cada vez.",
+   "fr": "20 à 30 secondes à chaque fois."
+  },
+  "Retracción escapular colgado": {
+   "en": "Scapular pull-ups",
+   "pt-BR": "Retração escapular pendurado",
+   "fr": "Rétraction scapulaire en suspension"
+  },
+  "Brazos rectos: sube solo con las escápulas.": {
+   "en": "Arms straight: lift using only your shoulder blades.",
+   "pt-BR": "Braços retos: suba só com as escápulas.",
+   "fr": "Bras tendus : montez uniquement avec les omoplates."
+  },
+  "Jalón con banda": {
+   "en": "Band pulldown",
+   "pt-BR": "Puxada com elástico",
+   "fr": "Tirage avec élastique"
+  },
+  "Codos hacia las costillas.": {
+   "en": "Elbows toward your ribs.",
+   "pt-BR": "Cotovelos em direção às costelas.",
+   "fr": "Coudes vers les côtes."
+  },
+  "Pierna y glúteo": {
+   "en": "Legs and glutes",
+   "pt-BR": "Perna e glúteo",
+   "fr": "Jambes et fessiers"
+  },
+  "Antes de sentadilla, peso muerto o prensa.": {
+   "en": "Before squats, deadlifts or leg press.",
+   "pt-BR": "Antes de agachamento, levantamento terra ou leg press.",
+   "fr": "Avant le squat, le soulevé de terre ou la presse."
+  },
+  "Movilidad de cadera 90/90": {
+   "en": "90/90 hip mobility",
+   "pt-BR": "Mobilidade de quadril 90/90",
+   "fr": "Mobilité de hanche 90/90"
+  },
+  "Movilidad de tobillo contra la pared": {
+   "en": "Wall ankle mobility",
+   "pt-BR": "Mobilidade de tornozelo contra a parede",
+   "fr": "Mobilité de cheville contre le mur"
+  },
+  "Puente de glúteo": {
+   "en": "Glute bridge",
+   "pt-BR": "Ponte de glúteo",
+   "fr": "Pont fessier"
+  },
+  "Aprieta el glúteo un segundo arriba.": {
+   "en": "Squeeze your glutes for a second at the top.",
+   "pt-BR": "Contraia o glúteo um segundo no alto.",
+   "fr": "Contractez les fessiers une seconde en haut."
+  },
+  "Zancada con giro": {
+   "en": "Lunge with rotation",
+   "pt-BR": "Avanço com rotação",
+   "fr": "Fente avec rotation"
+  },
+  "Activación de glúteo": {
+   "en": "Glute activation",
+   "pt-BR": "Ativação de glúteo",
+   "fr": "Activation des fessiers"
+  },
+  "Para sentir el glúteo antes de hip thrust, sentadilla o peso muerto.": {
+   "en": "To feel your glutes before hip thrusts, squats or deadlifts.",
+   "pt-BR": "Para sentir o glúteo antes de hip thrust, agachamento ou levantamento terra.",
+   "fr": "Pour sentir les fessiers avant le hip thrust, le squat ou le soulevé de terre."
+  },
+  "Almeja con banda": {
+   "en": "Banded clamshell",
+   "pt-BR": "Concha com elástico",
+   "fr": "Clamshell avec élastique"
+  },
+  "Caminata lateral con banda": {
+   "en": "Banded lateral walk",
+   "pt-BR": "Caminhada lateral com elástico",
+   "fr": "Marche latérale avec élastique"
+  },
+  "Pasos por lado, rodillas un poco flexionadas.": {
+   "en": "Steps per side, knees slightly bent.",
+   "pt-BR": "Passos por lado, joelhos um pouco flexionados.",
+   "fr": "Pas de chaque côté, genoux légèrement fléchis."
+  },
+  "Patada de glúteo en cuatro puntos": {
+   "en": "Quadruped glute kickback",
+   "pt-BR": "Coice de glúteo em quatro apoios",
+   "fr": "Extension de hanche à quatre pattes"
+  },
+  "Hip thrust sin peso": {
+   "en": "Bodyweight hip thrust",
+   "pt-BR": "Hip thrust sem peso",
+   "fr": "Hip thrust sans charge"
+  },
+  "Cuerpo completo": {
+   "en": "Full body",
+   "pt-BR": "Corpo inteiro",
+   "fr": "Corps entier"
+  },
+  "Antes de una rutina de cuerpo completo o de fuerza.": {
+   "en": "Before a full-body or strength routine.",
+   "pt-BR": "Antes de um treino de corpo inteiro ou de força.",
+   "fr": "Avant une séance corps entier ou de force."
+  },
+  "Gusano (caminar con las manos)": {
+   "en": "Inchworm (walk out on your hands)",
+   "pt-BR": "Minhoca (caminhar com as mãos)",
+   "fr": "Chenille (marcher sur les mains)"
+  },
+  "Baja a tabla y regresa.": {
+   "en": "Walk out to a plank and come back.",
+   "pt-BR": "Desça até a prancha e volte.",
+   "fr": "Descendez en planche et revenez."
+  },
+  "Lagartijas": {
+   "en": "Push-ups",
+   "pt-BR": "Flexões",
+   "fr": "Pompes"
+  },
+  "Con rodillas apoyadas si hace falta.": {
+   "en": "On your knees if needed.",
+   "pt-BR": "Com os joelhos apoiados se precisar.",
+   "fr": "Sur les genoux si nécessaire."
+  },
+  "Cuidado de hombro": {
+   "en": "Shoulder care",
+   "pt-BR": "Cuidado do ombro",
+   "fr": "Soin des épaules"
+  },
+  "Si el hombro te molesta o vas a hacer press pesado.": {
+   "en": "If your shoulder bothers you or you're pressing heavy.",
+   "pt-BR": "Se o ombro incomoda ou você vai fazer press pesado.",
+   "fr": "Si l'épaule vous gêne ou avant des développés lourds."
+  },
+  "Deslizamientos en la pared": {
+   "en": "Wall slides",
+   "pt-BR": "Deslizamentos na parede",
+   "fr": "Glissements au mur"
+  },
+  "Espalda y brazos pegados a la pared.": {
+   "en": "Back and arms against the wall.",
+   "pt-BR": "Costas e braços encostados na parede.",
+   "fr": "Dos et bras collés au mur."
+  },
+  "Face pull con banda": {
+   "en": "Band face pull",
+   "pt-BR": "Face pull com elástico",
+   "fr": "Face pull avec élastique"
+  },
+  "Codos altos, jala hacia la cara.": {
+   "en": "Elbows high, pull toward your face.",
+   "pt-BR": "Cotovelos altos, puxe em direção ao rosto.",
+   "fr": "Coudes hauts, tirez vers le visage."
+  },
+  "Y-T-W boca abajo": {
+   "en": "Prone Y-T-W",
+   "pt-BR": "Y-T-W de bruços",
+   "fr": "Y-T-W à plat ventre"
+  },
+  "Sin peso, 8 de cada letra.": {
+   "en": "No weight, 8 of each letter.",
+   "pt-BR": "Sem peso, 8 de cada letra.",
+   "fr": "Sans charge, 8 de chaque lettre."
+  },
+  "Espalda baja y core": {
+   "en": "Lower back and core",
+   "pt-BR": "Lombar e core",
+   "fr": "Bas du dos et gainage"
+  },
+  "Para preparar la espalda baja antes de cargar peso.": {
+   "en": "To prepare your lower back before lifting.",
+   "pt-BR": "Para preparar a lombar antes de levantar peso.",
+   "fr": "Pour préparer le bas du dos avant de soulever."
+  },
+  "Perro de caza (bird dog)": {
+   "en": "Bird dog",
+   "pt-BR": "Bird dog (perdigueiro)",
+   "fr": "Bird dog"
+  },
+  "Bicho muerto (dead bug)": {
+   "en": "Dead bug",
+   "pt-BR": "Dead bug (inseto morto)",
+   "fr": "Dead bug"
+  },
+  "Plancha lateral": {
+   "en": "Side plank",
+   "pt-BR": "Prancha lateral",
+   "fr": "Planche latérale"
+  },
+  "20 segundos por lado.": {
+   "en": "20 seconds per side.",
+   "pt-BR": "20 segundos por lado.",
+   "fr": "20 secondes de chaque côté."
+  },
+  "Antes de correr o de cardio": {
+   "en": "Before running or cardio",
+   "pt-BR": "Antes de correr ou de cardio",
+   "fr": "Avant de courir ou le cardio"
+  },
+  "Para correr, hacer intervalos o un deporte de cancha.": {
+   "en": "For running, intervals or a court sport.",
+   "pt-BR": "Para correr, fazer intervalos ou um esporte de quadra.",
+   "fr": "Pour courir, faire du fractionné ou un sport de terrain."
+  },
+  "Trote muy suave.": {
+   "en": "Very easy jog.",
+   "pt-BR": "Trote bem leve.",
+   "fr": "Footing très léger."
+  },
+  "Zancadas caminando": {
+   "en": "Walking lunges",
+   "pt-BR": "Avanços caminhando",
+   "fr": "Fentes marchées"
+  },
+  "Rodillas arriba (skipping)": {
+   "en": "High knees",
+   "pt-BR": "Joelhos altos (skipping)",
+   "fr": "Montées de genoux"
+  },
+  "Tramos de 20 metros.": {
+   "en": "20-meter stretches.",
+   "pt-BR": "Trechos de 20 metros.",
+   "fr": "Sur 20 mètres."
+  },
+  "Talones al glúteo": {
+   "en": "Butt kicks",
+   "pt-BR": "Calcanhares no glúteo",
+   "fr": "Talons-fesses"
+  },
+  "Aceleraciones progresivas": {
+   "en": "Strides",
+   "pt-BR": "Acelerações progressivas",
+   "fr": "Accélérations progressives"
+  },
+  "De 60 a 80 metros, sin llegar al máximo.": {
+   "en": "60 to 80 meters, without going all out.",
+   "pt-BR": "De 60 a 80 metros, sem chegar ao máximo.",
+   "fr": "De 60 à 80 mètres, sans aller au maximum."
+  },
+  "En casa, sin equipo": {
+   "en": "At home, no equipment",
+   "pt-BR": "Em casa, sem equipamento",
+   "fr": "À la maison, sans matériel"
+  },
+  "No necesitas máquinas ni bandas.": {
+   "en": "No machines or bands needed.",
+   "pt-BR": "Não precisa de máquinas nem elásticos.",
+   "fr": "Ni machines ni élastiques nécessaires."
+  },
+  "Trote en tu lugar o saltos suaves": {
+   "en": "Jog in place or easy jumps",
+   "pt-BR": "Trote no lugar ou saltos leves",
+   "fr": "Course sur place ou petits sauts"
+  },
+  "Manos sobre una silla firme o la cama.": {
+   "en": "Hands on a sturdy chair or the bed.",
+   "pt-BR": "Mãos sobre uma cadeira firme ou a cama.",
+   "fr": "Mains sur une chaise stable ou le lit."
+  },
+  "Rápido": {
+   "en": "Quick",
+   "pt-BR": "Rápido",
+   "fr": "Rapide"
+  },
+  "Cuando traes poco tiempo: lo mínimo para no empezar en frío.": {
+   "en": "When you're short on time: the minimum so you don't start cold.",
+   "pt-BR": "Quando o tempo é curto: o mínimo para não começar a frio.",
+   "fr": "Quand le temps manque : le minimum pour ne pas démarrer à froid."
+  },
+  "Plantillas de calentamiento": {
+   "en": "Warm-up templates",
+   "pt-BR": "Modelos de aquecimento",
+   "fr": "Modèles d'échauffement"
+  },
+  "Calentamientos listos según lo que vas a entrenar. Después puedes cambiar, quitar o agregar lo que quieras.": {
+   "en": "Ready-made warm-ups for what you're about to train. You can change, remove or add anything afterwards.",
+   "pt-BR": "Aquecimentos prontos conforme o que você vai treinar. Depois pode mudar, tirar ou adicionar o que quiser.",
+   "fr": "Échauffements prêts selon ce que vous allez travailler. Vous pourrez ensuite modifier, retirer ou ajouter ce que vous voulez."
+  },
+  "Reemplazar mi calentamiento": {
+   "en": "Replace my warm-up",
+   "pt-BR": "Substituir meu aquecimento",
+   "fr": "Remplacer mon échauffement"
+  },
+  "Usar este calentamiento": {
+   "en": "Use this warm-up",
+   "pt-BR": "Usar este aquecimento",
+   "fr": "Utiliser cet échauffement"
+  },
+  "Agregar al que ya tengo": {
+   "en": "Add to the one I have",
+   "pt-BR": "Adicionar ao que já tenho",
+   "fr": "Ajouter à celui que j'ai"
+  },
+  "Torso, pierna, glúteo, hombro, rápido…": {
+   "en": "Upper body, legs, glutes, shoulders, quick…",
+   "pt-BR": "Tronco, perna, glúteo, ombro, rápido…",
+   "fr": "Haut du corps, jambes, fessiers, épaules, rapide…"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

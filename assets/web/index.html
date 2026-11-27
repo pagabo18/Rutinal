@@ -2940,6 +2940,13 @@
   .cv-pick-b { display: flex; flex-wrap: wrap; gap: 6px; }
   .cv-pick-x, .cv-x-btn { border: 0; background: none; color: var(--text-3); font: inherit; font-size: 12px; text-decoration: underline; padding: 8px 0 0; cursor: pointer; }
   .cv-x-row { display: flex; gap: 14px; justify-content: flex-end; }
+  .cv-ed-list .cv-add + .cv-add { margin-top: 0; }
+  .cv-pick-tpl { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; margin-top: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+  .cv-pick-tpl b { display: block; font-size: 14px; } .cv-pick-tpl small { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .cvw-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .cvw-it { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  .cvw-n { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--surface-2, var(--border)); color: var(--text-2); font-size: 12px; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+  .cvw-b { min-width: 0; } .cvw-t { font-size: 14px; font-weight: 600; } .cvw-b small { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; line-height: 1.35; }
   .cv-more { width: 100%; margin-top: 6px; padding: 10px; border: 1px dashed var(--border-strong); border-radius: 12px; background: transparent; color: var(--text-2); font: inherit; font-size: 14px; cursor: pointer; }
   .cv-x-name { margin-top: 8px; padding: 8px 10px; font-size: 15px; }
 
@@ -11004,7 +11011,7 @@ function spClientReport(D, l, asg) {
       if (!any && !lg.done) return;
       ses[WN - 1 - w]++; vol[WN - 1 - w] += gymVolU(v);
       { const vg = volByGroup(lg, routines), o = volG[WN - 1 - w]; Object.keys(vg).forEach(g => { o[g] = (o[g] || 0) + gymVolU(vg[g]); }); }
-      const fl = lg.feel || {};
+      const fl = feelNum(lg.feel);
       if (fl.pain != null || fl.rpe != null) feel.push({ a, pain: fl.pain, rpe: fl.rpe });
       if (w === 0) { if (fl.pain != null && (pmax0 == null || fl.pain > pmax0)) pmax0 = fl.pain; if (fl.rpe != null) rpe0.push(fl.rpe); }
     });
@@ -11100,15 +11107,15 @@ async function spOpenClient(l) {
       const lg = D.gym_logs[d] || {}, rt = routines.find(x => x.id === lg.routineId) || { name: '', exercises: [] }, lines = [];
       Object.keys(lg.ex || {}).forEach(exId => {
         const ex = (rt.exercises || []).find(x => x.id === exId) || {}, sw = lg.swap && lg.swap[exId];
-        (lg.ex[exId] || []).forEach(x => { if (x && x.done && x.pain != null && d >= d7 && (pmax == null || +x.pain > pmax)) pmax = +x.pain; });
-        const sets = (lg.ex[exId] || []).filter(x => x && x.done).map(x => `${x.pain > 0 ? `<span class="pain-n p${gymPainLvl(+x.pain)}" title="Dolor">${x.pain}</span> ` : ''}${gymDispW(x.kg) || 0}×${x.reps || 0}${x.rir !== undefined && x.rir !== '' ? ` <span class="rir-n">RIR ${escapeHtml(String(x.rir))}</span>` : ''}${(x.tags || []).length ? ` ${(x.tags || []).filter(id => GYM_TECH_BY[id]).map(id => `<span class="tech-mini" title="${escapeHtml(t(GYM_TECH_BY[id][1]))}">${gymTechIcon(id, 11)}</span>`).join('')}` : ''}`);
+        (lg.ex[exId] || []).forEach(x => { const pv = x && x.done && x.pain != null ? +x.pain : NaN; if (pv >= 0 && pv <= 10 && d >= d7 && (pmax == null || pv > pmax)) pmax = pv; });
+        const sets = (lg.ex[exId] || []).filter(x => x && x.done).map(x => `${x.pain > 0 ? `<span class="pain-n p${gymPainLvl(+x.pain)}" title="Dolor">${+x.pain}</span> ` : ''}${escapeHtml(String(gymDispW(x.kg) || 0))}×${escapeHtml(String(x.reps || 0))}${x.rir !== undefined && x.rir !== '' ? ` <span class="rir-n">RIR ${escapeHtml(String(x.rir))}</span>` : ''}${(x.tags || []).length ? ` ${(x.tags || []).filter(id => GYM_TECH_BY[id]).map(id => `<span class="tech-mini" title="${escapeHtml(t(GYM_TECH_BY[id][1]))}">${gymTechIcon(id, 11)}</span>`).join('')}` : ''}`);
         if (!sets.length) return;
-        const ef = (lg.exFeel && lg.exFeel[exId]) || {};
+        const ef = feelNum(lg.exFeel && lg.exFeel[exId]);
         lines.push(`<b>${escapeHtml((sw && sw.name) || ex.name || exId)}</b>: ${sets.join(', ')}${ef.pain != null ? ` · <span>Dolor</span> ${ef.pain}/10` : ''}${ef.rpe != null ? ` · RPE ${ef.rpe}` : ''}`);
       });
       cvAll(rt, lg).forEach(([kind, it]) => { const v = (lg.cv || {})[it.id]; if (v && v.done) lines.push(`<b>${CV_KIND[kind]}</b>: <span translate="no">${escapeHtml(cvName(it))} · ${cvText(it, v, true)}</span>`); });
       if (!lines.length && !lg.done) return;
-      const fl = lg.feel || {};
+      const fl = feelNum(lg.feel);
       if (d >= d7) { if (lg.done) n7++; if (fl.pain != null && (pmax == null || fl.pain > pmax)) pmax = fl.pain; }
       const feel = [fl.mood ? `<span>${GYM_MOODS[fl.mood - 1][1]}</span>` : '', fl.pain != null ? `<span>Dolor</span> ${fl.pain}/10` : '', fl.rpe != null ? `RPE ${fl.rpe}` : ''].filter(Boolean).join(' · ');
       logs.push(`<details class="cd-day"><summary><span class="cd-date">${escapeHtml(cdFmtDay(d))}</span><span class="cd-num ${fl.pain >= 6 ? 'over' : ''}">${escapeHtml(rt.name || '')}</span></summary>
@@ -14551,8 +14558,8 @@ function openGymWorkout(routineId, dateKey, focusId) {
       persist(); draw();
     }));
     const zoomOrInfo = m2 => {
-      const exId = m2.dataset.gymInfo, ex = r.exercises.find(e => e.id === exId) || {}, info = () => openGymExerciseInfo(r.id, exId, () => openGymWorkout(r.id, dateKey));
-      info(); // ficha con la animación y las instrucciones; ahí la foto se puede ver en grande
+      // ficha con la animación y las instrucciones; ahí la foto se puede ver en grande
+      openGymExerciseInfo(r.id, m2.dataset.gymInfo, () => openGymWorkout(r.id, dateKey));
     };
     sb.querySelectorAll('.gym-ex.simple [data-gym-info]').forEach(m2 => m2.addEventListener('click', () => zoomOrInfo(m2)));
     sb.querySelectorAll('[data-gym-toggle]').forEach(h => h.addEventListener('click', (ev) => {
@@ -14581,6 +14588,15 @@ function openGymWorkout(routineId, dateKey, focusId) {
       lg.cvx = lg.cvx || [];
       lg.cvx.push({ id: uid(), kind, m, t: {} });
       cvPick = null; persist(); draw();
+    }));
+    sb.querySelectorAll('[data-cv-tpl]').forEach(b => b.addEventListener('click', () => {
+      // Plantilla de calentamiento para hoy: se agrega al día (no cambia la rutina)
+      const mine = (lg.cvx || []).filter(x => x && x.kind === 'warmup');
+      openWarmupTemplates({ has: mine.length > 0, back: () => openGymWorkout(r.id, dateKey), onPick: (id, replace) => {
+        if (replace) { mine.forEach(x => { if (lg.cv) delete lg.cv[x.id]; }); lg.cvx = (lg.cvx || []).filter(x => !(x && x.kind === 'warmup')); }
+        lg.cvx = (lg.cvx || []).concat(cvWarmupItems(id, { kind: 'warmup' }));
+        cvPick = null; persist(); openGymWorkout(r.id, dateKey);
+      } });
     }));
     sb.querySelectorAll('[data-cv-x]').forEach(b => b.addEventListener('click', () => {
       lg.cvx = (lg.cvx || []).filter(x => x.id !== b.dataset.cvX);
@@ -15417,7 +15433,7 @@ function gymBarsSvg(vals, labels, color, h) {
   }).join('')}</svg>`;
 }
 
-function openGymProgress(selExId) {
+function openGymProgress() {
   loadGymDb().catch(() => {}).then(() => {
     const logs = gymLogs();
     const keys = Object.keys(logs).filter(k => Object.values(logs[k].ex || {}).some(a => a.some(s => s.done))).sort();
@@ -15485,21 +15501,6 @@ function openGymProgress(selExId) {
 
     // Progreso por ejercicio (registro con gráficas)
     const exIdx = typeof exLogIndex === 'function' ? exLogIndex(localDayD()) : [];
-    // 1RM estimado por ejercicio
-    const exOpts = [];
-    gymRoutines().forEach(r => r.exercises.forEach(ex => { if (gymExHistory(ex.id).length) exOpts.push({ id: ex.id, name: ex.name, r }); }));
-    const sel = exOpts.find(o => o.id === selExId) || exOpts[0];
-    let e1Chart = '<div class="empty">Registra cargas para ver tu 1RM estimado.</div>';
-    if (sel) {
-      const h = gymExHistory(sel.id).slice(-15);
-      const vals = h.map(x => gymVolU(x.e1rm));
-      const lo = Math.floor(Math.min(...vals) * 0.95), hi = Math.ceil(Math.max(...vals) * 1.05);
-      const nn = Math.max(1, h.length - 1);
-      e1Chart = gymLineSvg([{ color: GYM_GROUP_HEX[gymExGroup(sel)] || '#52525B', pts: h.map((x, i) => ({ x: h.length === 1 ? 0.5 : i / nn, y: vals[i] })) }],
-        { min: lo, max: Math.max(hi, lo + 1), ticks: [lo, Math.max(hi, lo + 1)], labels: [0, h.length - 1].filter((v, i, a) => a.indexOf(v) === i).map(i => ({ x: h.length === 1 ? 0.5 : i / nn, t: fmt.format(new Date(h[i].date + 'T00:00:00')) })), h: 120 })
-        + `<div class="gym-e1">${h.length ? `<span>1RM estimado</span> <b>${(Math.round(vals[vals.length - 1] * 10) / 10).toLocaleString(_loc())} ${gymUnit()}</b>` : ''}</div>`;
-    }
-    const exSelect = exOpts.length ? `<select class="field-select" id="gym-e1-sel">${exOpts.map(o => `<option value="${o.id}"${sel && o.id === sel.id ? ' selected' : ''}>${escapeHtml(o.name)}</option>`).join('')}</select>` : '';
 
     openSheet('Progreso', `<div class="gym-progress">
       <h2 style="margin-top:4px;">Esta semana</h2>
@@ -15816,6 +15817,14 @@ function gymDrawEditor(isNew) {
     const k = b.dataset.cvAdd, list = _gymEdit[k] || (_gymEdit[k] = []);
     list.push({ id: uid(), m: k === 'warmup' ? (list.length ? 'libre' : 'cinta') : 'eliptica', t: k === 'warmup' ? { time: list.length ? '' : '10' } : { time: '20' } });
     gymDrawEditor(isNew);
+  }));
+  sb.querySelectorAll('[data-cv-tpl]').forEach(b => b.addEventListener('click', () => {
+    gymEditorSync();
+    const cur = _gymEdit.warmup || [];
+    openWarmupTemplates({ has: cur.length > 0, back: () => gymDrawEditor(isNew), onPick: (id, replace) => {
+      _gymEdit.warmup = (replace ? [] : cur).concat(cvWarmupItems(id));
+      gymDrawEditor(isNew);
+    } });
   }));
   sb.querySelectorAll('[data-cv-del]').forEach(b => b.addEventListener('click', () => {
     gymEditorSync();
