@@ -2539,6 +2539,19 @@
   .macro-pill-kcal { background: var(--text); color: var(--bg); }
   .macro-pill-p { background: var(--c-prot); } .macro-pill-c { background: var(--c-carb); } .macro-pill-g { background: var(--c-fat); }
   #ring-kcal { stroke: var(--c-kcal); } #ring-p { stroke: var(--c-prot); } #ring-c { stroke: var(--c-carb); } #ring-g { stroke: var(--c-fat); }
+  /* ===== Personalizar Hoy ===== */
+  .hd-edit { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin: 6px 0 14px; padding: 12px; border: 1px dashed var(--border-strong, var(--border)); border-radius: 14px; background: transparent; color: var(--text-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .hl-hint { font-size: 13px; color: var(--text-3); line-height: 1.45; margin-bottom: 10px; }
+  .hl-row { display: flex; align-items: center; gap: 6px; height: 56px; padding: 0 2px; border-top: 1px solid var(--border); background: var(--surface); }
+  .hl-row:first-child { border-top: 0; }
+  .hl-row b { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hl-row.off b { color: var(--text-3); font-weight: 500; }
+  .hl-grip { flex: none; width: 36px; height: 44px; display: grid; place-items: center; color: var(--text-3); cursor: grab; touch-action: none; }
+  .hl-mv { flex: none; width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--surface-2); color: var(--text); display: grid; place-items: center; cursor: pointer; }
+  .hl-mv:disabled { opacity: .3; cursor: default; }
+  .hl-row .mod-sw { margin-left: 6px; }
+  .hl-row.drag { position: relative; z-index: 2; border-radius: 12px; border-top-color: transparent; box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+  .hl-row.drag .hl-grip { cursor: grabbing; }
   /* ===== Cardio y pasos ===== */
   .hd-cd { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
   .hd-cd-c { min-width: 0; }
@@ -11676,7 +11689,13 @@ function renderHoyDash() {
   } catch (e) {}
   try { if (typeof modApply === 'function') modApply(); } catch (e) {}
   const M = k => typeof modOn !== 'function' || modOn(k);
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('cardio') && typeof cardioHoyCard === 'function' ? cardioHoyCard() : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${typeof phaseHoyCard === 'function' ? phaseHoyCard() : ''}${typeof goalsHoyCard === 'function' ? goalsHoyCard() : ''}${week}<button class="hd-sum" id="hd-daysum"><span><b>Resumen del día</b><small>Compártelo o mándaselo a tu especialista</small></span><span class="sp-chev">›</span></button>`;
+  // Tarjetas de Hoy en el orden que eligió la persona (Personalizar Hoy); las apagadas no se pintan
+  const blocks = { gym: M('gym') ? gym : '', cardio: M('cardio') && typeof cardioHoyCard === 'function' ? cardioHoyCard() : '', checkin: M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : '', agenda: M('agenda') ? appt : '', chat,
+    comida: M('comida') ? food : '', cuerpo: M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : '', fase: typeof phaseHoyCard === 'function' ? phaseHoyCard() : '', objetivos: typeof goalsHoyCard === 'function' ? goalsHoyCard() : '', semana: week,
+    resumen: '<button class="hd-sum" id="hd-daysum"><span><b>Resumen del día</b><small>Compártelo o mándaselo a tu especialista</small></span><span class="sp-chev">›</span></button>' };
+  const lay = typeof hoyLayout === 'function' ? hoyLayout() : { order: Object.keys(blocks), off: [] };
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${lay.order.filter(id => !lay.off.includes(id)).map(id => blocks[id] || '').join('')}${typeof openHoyLayout === 'function' ? '<button class="hd-edit" id="hd-layout"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg><span>Personalizar esta pantalla</span></button>' : ''}`;
+  const hly = document.getElementById('hd-layout'); if (hly) hly.addEventListener('click', () => openHoyLayout());
   el.querySelectorAll('[data-hd-phase]').forEach(c => c.addEventListener('click', () => openPhases()));
   el.querySelectorAll('[data-hd-goals]').forEach(c => c.addEventListener('click', () => openGoals()));
   if (typeof ckWireHoy === 'function') ckWireHoy(el);

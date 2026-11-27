@@ -581,14 +581,85 @@ function modSet(k, on) {
   S.set('app_prefs', p); modApply();
   try { renderHoyDash(); } catch (e) {} try { if (typeof renderMas === 'function') renderMas(); } catch (e) {}
 }
+// ---- Hoy a tu gusto: orden de las tarjetas y cuáles se ven ----
+// [id, nombre, módulo del que depende (o null)]. Se guarda en app_prefs: hoyOrder (ids) y hoyOff (ocultas).
+const HOY_BLOCKS = [['gym', 'Entrenamiento de hoy', 'gym'], ['cardio', 'Cardio y pasos', 'cardio'], ['checkin', 'Check-in semanal', 'checkin'], ['agenda', 'Próxima cita', 'agenda'],
+  ['chat', 'Mensajes', null], ['comida', 'Comida de hoy', 'comida'], ['cuerpo', 'Tu cuerpo', 'cuerpo'], ['fase', 'Fase del plan', null], ['objetivos', 'Objetivos', null], ['semana', 'Tu semana', null], ['resumen', 'Resumen del día', null]];
+function hoyLayout(p) {
+  p = p || modPrefs();
+  const ids = HOY_BLOCKS.map(b => b[0]), order = Array.isArray(p.hoyOrder) ? p.hoyOrder.filter((x, i, a) => ids.includes(x) && a.indexOf(x) === i) : [];
+  // Tarjetas que no existían cuando se guardó el orden: entran donde irían por defecto
+  ids.forEach((id, i) => { if (order.includes(id)) return; const prev = ids.slice(0, i).reverse().find(x => order.includes(x)); order.splice(prev ? order.indexOf(prev) + 1 : 0, 0, id); });
+  return { order, off: Array.isArray(p.hoyOff) ? p.hoyOff.filter((x, i, a) => ids.includes(x) && a.indexOf(x) === i) : [] };
+}
+function hoyLayoutSave(order, off) {
+  const p = Object.assign({}, modPrefs()), def = HOY_BLOCKS.map(b => b[0]);
+  if (order.join() === def.join()) delete p.hoyOrder; else p.hoyOrder = order.slice();
+  if (off.length) p.hoyOff = off.slice(); else delete p.hoyOff;
+  S.set('app_prefs', p); try { renderHoyDash(); } catch (e) {}
+}
+function openHoyLayout() {
+  const L = hoyLayout(), avail = id => { const b = HOY_BLOCKS.find(x => x[0] === id); return b && (!b[2] || modOn(b[2])); };
+  let vis = L.order.filter(avail), off = L.off.slice();
+  const grip = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+  const arrow = d => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d < 0 ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'}"/></svg>`;
+  openSheet('Personalizar Hoy', `<div class="hl-hint">Arrastra una tarjeta o usa las flechas para cambiar el orden. Apaga las que no quieras ver en Hoy: no se borra nada y siguen en su sección.</div>
+    <div class="hl-list" id="hl-list"></div>
+    <button class="btn-secondary" id="hl-reset" style="width:100%;margin-top:14px;">Volver al orden original</button>`, () => {
+    // Las tarjetas de módulos apagados conservan su lugar
+    const it = vis.slice(), full = L.order.map(id => (avail(id) ? it.shift() : id));
+    hoyLayoutSave(full, off); closeSheet();
+  });
+  const list = document.getElementById('hl-list');
+  const paint = () => {
+    list.innerHTML = vis.map((id, i) => { const b = HOY_BLOCKS.find(x => x[0] === id); return `<div class="hl-row${off.includes(id) ? ' off' : ''}" data-id="${id}"><span class="hl-grip" data-hl-grip="1">${grip}</span><b>${b[1]}</b>
+      <button class="hl-mv" data-hl-mv="-1" aria-label="Subir"${i === 0 ? ' disabled' : ''}>${arrow(-1)}</button><button class="hl-mv" data-hl-mv="1" aria-label="Bajar"${i === vis.length - 1 ? ' disabled' : ''}>${arrow(1)}</button>
+      <input type="checkbox" class="mod-sw" data-hl-on="1" aria-label="Mostrar"${off.includes(id) ? '' : ' checked'}></div>`; }).join('');
+  };
+  paint();
+  list.addEventListener('click', e => {
+    const mv = e.target.closest('[data-hl-mv]'); if (!mv) return;
+    const id = mv.closest('.hl-row').dataset.id, i = vis.indexOf(id), j = i + +mv.dataset.hlMv;
+    if (j < 0 || j >= vis.length) return;
+    vis.splice(i, 1); vis.splice(j, 0, id); paint();
+  });
+  list.addEventListener('change', e => {
+    const sw = e.target.closest('[data-hl-on]'); if (!sw) return;
+    const row = sw.closest('.hl-row'), id = row.dataset.id;
+    off = off.filter(x => x !== id); if (!sw.checked) off.push(id);
+    row.classList.toggle('off', !sw.checked);
+  });
+  // Arrastrar desde el asa: la fila sigue al dedo y las demás le abren paso
+  let drag = null;
+  list.addEventListener('pointerdown', e => {
+    const g = e.target.closest('[data-hl-grip]'); if (!g) return;
+    const row = g.closest('.hl-row'); e.preventDefault();
+    drag = { row, id: row.dataset.id, pid: e.pointerId }; row.classList.add('drag');
+    try { g.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  const move = e => {
+    if (!drag || e.pointerId !== drag.pid) return;
+    const rows = [...list.querySelectorAll('.hl-row')], r0 = list.getBoundingClientRect(), h = rows[0].getBoundingClientRect().height || 1;
+    const to = Math.max(0, Math.min(rows.length - 1, Math.floor((e.clientY - r0.top) / h))), from = rows.indexOf(drag.row);
+    if (to === from) return;
+    list.insertBefore(drag.row, to > from ? rows[to].nextSibling : rows[to]);
+    vis.splice(from, 1); vis.splice(to, 0, drag.id);
+  };
+  const end = e => { if (!drag || (e && e.pointerId !== drag.pid)) return; drag = null; paint(); };
+  list.addEventListener('pointermove', move); list.addEventListener('pointerup', end); list.addEventListener('pointercancel', end);
+  document.getElementById('hl-reset').addEventListener('click', () => { vis = HOY_BLOCKS.map(b => b[0]).filter(avail); off = []; paint(); });
+}
 function modRenderSettings() {
   const el = document.getElementById('mods-box'); if (!el) return;
   const sw = (k, t1, t2, on) => `<label class="mod-row"><span><b>${t1}</b>${t2 ? `<small>${t2}</small>` : ''}</span><input type="checkbox" class="mod-sw" data-mod="${k}"${on ? ' checked' : ''}></label>`;
   el.innerHTML = `<div class="mod-hint">Apaga lo que no uses: desaparece del menú y de Hoy. Tus datos no se borran y puedes volver a encenderlo cuando quieras.</div>
     ${MOD_LIST.map(([k, n, d]) => sw(k, n, d, modOn(k))).join('')}
     <div class="setting-label" style="margin-top:16px;">Entrenamiento</div>
-    ${sw('gymSimple', 'Solo palomear ejercicios', 'Sin anotar peso ni repeticiones: una palomita por ejercicio', modOn('gymSimple'))}`;
+    ${sw('gymSimple', 'Solo palomear ejercicios', 'Sin anotar peso ni repeticiones: una palomita por ejercicio', modOn('gymSimple'))}
+    <div class="setting-label" style="margin-top:16px;">Pantalla de Hoy</div>
+    <button class="btn-secondary" id="mods-hoy" style="width:100%;">Ordenar y ocultar las tarjetas de Hoy</button>`;
   el.querySelectorAll('[data-mod]').forEach(i => i.addEventListener('change', () => modSet(i.dataset.mod, i.checked)));
+  const mh = document.getElementById('mods-hoy'); if (mh) mh.addEventListener('click', openHoyLayout);
 }
 try { modApply(); } catch (e) {}
 
@@ -3200,4 +3271,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { cardioWeek, cardioDay, cardioGoal, stepsNum, exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { hoyLayout, HOY_BLOCKS, cardioWeek, cardioDay, cardioGoal, stepsNum, exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

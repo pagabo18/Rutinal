@@ -7191,6 +7191,101 @@ window.__I18N_EXTRA = {
    "pt-BR": "meta cumprida",
    "fr": "objectif atteint"
   },
+  "Comida": {
+   "en": "Food",
+   "pt-BR": "Comida",
+   "fr": "Repas"
+  },
+  "Hábitos": {
+   "en": "Habits",
+   "pt-BR": "Hábitos",
+   "fr": "Habitudes"
+  },
+  "Registra lo que comes": {
+   "en": "Log what you eat",
+   "pt-BR": "Registre o que você come",
+   "fr": "Enregistre ce que tu manges"
+  },
+  "Toca para contarlos con el celular": {
+   "en": "Tap to count them with your phone",
+   "pt-BR": "Toque para contá-los com o celular",
+   "fr": "Touche pour les compter avec ton téléphone"
+  },
+  "Todos hechos": {
+   "en": "All done",
+   "pt-BR": "Todos feitos",
+   "fr": "Toutes faites"
+  },
+  "Falta": {
+   "en": "Left",
+   "pt-BR": "Falta",
+   "fr": "Reste"
+  },
+  "Pendientes": {
+   "en": "To do",
+   "pt-BR": "Pendentes",
+   "fr": "À faire"
+  },
+  "Hacer": {
+   "en": "Do it",
+   "pt-BR": "Fazer",
+   "fr": "Faire"
+  },
+  "Respondieron tu check-in": {
+   "en": "Your check-in was answered",
+   "pt-BR": "Responderam seu check-in",
+   "fr": "On a répondu à ton check-in"
+  },
+  "Cita con": {
+   "en": "Appointment with",
+   "pt-BR": "Consulta com",
+   "fr": "Rendez-vous avec"
+  },
+  "Peso, objetivos y tu semana": {
+   "en": "Weight, goals and your week",
+   "pt-BR": "Peso, objetivos e sua semana",
+   "fr": "Poids, objectifs et ta semaine"
+  },
+  "objetivo": {
+   "en": "goal",
+   "pt-BR": "objetivo",
+   "fr": "objectif"
+  },
+  "para tu meta": {
+   "en": "to go",
+   "pt-BR": "para a meta",
+   "fr": "avant l'objectif"
+  },
+  "Personalizar esta pantalla": {
+   "en": "Customize this screen",
+   "pt-BR": "Personalizar esta tela",
+   "fr": "Personnaliser cet écran"
+  },
+  "Personalizar Hoy": {
+   "en": "Customize Today",
+   "pt-BR": "Personalizar Hoje",
+   "fr": "Personnaliser Aujourd'hui"
+  },
+  "Arrastra una tarjeta o usa las flechas para cambiar el orden. Apaga las que no quieras ver en Hoy: no se borra nada y siguen en su sección.": {
+   "en": "Drag a card or use the arrows to change the order. Turn off the ones you don't want on Today: nothing is deleted and they stay in their section.",
+   "pt-BR": "Arraste um cartão ou use as setas para mudar a ordem. Desligue os que não quiser ver em Hoje: nada é apagado e continuam na sua seção.",
+   "fr": "Fais glisser une carte ou utilise les flèches pour changer l'ordre. Désactive celles que tu ne veux pas voir : rien n'est supprimé et elles restent dans leur section."
+  },
+  "Volver al orden original": {
+   "en": "Back to the original order",
+   "pt-BR": "Voltar à ordem original",
+   "fr": "Revenir à l'ordre d'origine"
+  },
+  "Pantalla de Hoy": {
+   "en": "Today screen",
+   "pt-BR": "Tela de Hoje",
+   "fr": "Écran Aujourd'hui"
+  },
+  "Ordenar y ocultar las tarjetas de Hoy": {
+   "en": "Reorder and hide Today's cards",
+   "pt-BR": "Ordenar e ocultar os cartões de Hoje",
+   "fr": "Réorganiser et masquer les cartes d'Aujourd'hui"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
