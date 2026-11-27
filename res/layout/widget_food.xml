@@ -6,39 +6,55 @@
     android:orientation="vertical"
     android:gravity="center_vertical"
     android:background="@drawable/widget_bg"
-    android:padding="14dp">
-
+    android:padding="16dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <TextView
+            android:id="@+id/widget_food_kicker"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="COMIDA DE HOY"
+            android:textColor="@color/widgetText2"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:letterSpacing="0.08"
+            android:layout_weight="1" />
+    </LinearLayout>
     <TextView
         android:id="@+id/widget_food_kcal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Abre Rutinal para ver tu día"
         android:textColor="@color/widgetText1"
-        android:textSize="17sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         android:maxLines="1"
-        android:ellipsize="end" />
-
+        android:ellipsize="end"
+        android:layout_marginTop="6dp" />
     <ProgressBar
         android:id="@+id/widget_food_progress"
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="match_parent"
-        android:layout_height="4dp"
-        android:layout_marginTop="6dp"
+        android:layout_height="6dp"
+        android:layout_marginTop="8dp"
+        android:progressDrawable="@drawable/widget_progress"
         android:max="100"
         android:progress="0"
-        android:progressTint="@color/widgetAccent"
         android:visibility="gone" />
-
     <TextView
         android:id="@+id/widget_food_macros"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:text=""
         android:textColor="@color/widgetText2"
-        android:textSize="11sp"
+        android:textSize="12sp"
         android:maxLines="1"
         android:ellipsize="end"
+        android:layout_marginTop="8dp"
         android:visibility="gone" />
 </LinearLayout>

@@ -197,8 +197,8 @@ public class PomoWidgetProvider extends AppWidgetProvider {
                 rv.setTextViewText(R.id.widget_pomo_phase,
                         phaseLabel(phase) + " · En pausa");
             } else {
-                rv.setTextViewText(R.id.widget_pomo_time, "Pomodoro");
-                rv.setTextViewText(R.id.widget_pomo_phase, "Toca para iniciar un Pomodoro");
+                rv.setTextViewText(R.id.widget_pomo_time, "Listo");
+                rv.setTextViewText(R.id.widget_pomo_phase, "Toca ▶ para empezar");
             }
         }
 

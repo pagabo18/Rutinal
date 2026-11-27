@@ -6,95 +6,103 @@
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:background="@drawable/widget_bg"
-    android:padding="14dp">
-
+    android:padding="16dp">
     <LinearLayout
         android:id="@+id/widget_pomo_body"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
-
+        <TextView
+            android:id="@+id/widget_pomo_kicker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="POMODORO"
+            android:textColor="@color/widgetText2"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:letterSpacing="0.08" />
         <Chronometer
             android:id="@+id/widget_pomo_chrono"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:countDown="true"
             android:textColor="@color/widgetText1"
-            android:textSize="20sp"
+            android:textSize="26sp"
             android:textStyle="bold"
             android:maxLines="1"
             android:visibility="gone" />
-
         <TextView
             android:id="@+id/widget_pomo_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Pomodoro"
             android:textColor="@color/widgetText1"
-            android:textSize="20sp"
+            android:textSize="26sp"
             android:textStyle="bold"
             android:maxLines="1"
-            android:ellipsize="end" />
-
+            android:ellipsize="end"
+            android:layout_marginTop="2dp" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:orientation="horizontal"
             android:gravity="center_vertical">
-
             <TextView
                 android:id="@+id/widget_pomo_phase"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Toca para iniciar un Pomodoro"
+                android:text="Toca ▶ para empezar"
                 android:textColor="@color/widgetText2"
-                android:textSize="12sp"
+                android:textSize="13sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
-
             <TextView
                 android:id="@+id/widget_pomo_cycle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="6dp"
                 android:text=""
                 android:textColor="@color/widgetText2"
-                android:textSize="11sp"
+                android:textSize="12sp"
                 android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginLeft="6dp"
                 android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/widget_pomo_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:text="▶"
-        android:textColor="@color/widgetAccent"
-        android:textSize="18sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/widget_pomo_pause"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:text="⏸"
-        android:textColor="@color/widgetAccent"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:visibility="gone" />
-
-    <TextView
+    <ImageView
         android:id="@+id/widget_pomo_reset"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:text="↺"
-        android:textColor="@color/widgetText2"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginLeft="8dp"
+        android:padding="10dp"
+        android:background="@drawable/widget_btn"
+        android:src="@drawable/ic_w_reset"
+        android:contentDescription="Pomodoro"
+        android:scaleType="fitCenter" />
+    <ImageView
+        android:id="@+id/widget_pomo_play"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginLeft="8dp"
+        android:padding="10dp"
+        android:background="@drawable/widget_btn_main"
+        android:src="@drawable/ic_w_play"
+        android:contentDescription="Pomodoro"
+        android:scaleType="fitCenter" />
+    <ImageView
+        android:id="@+id/widget_pomo_pause"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginLeft="8dp"
+        android:padding="10dp"
+        android:background="@drawable/widget_btn_main"
+        android:src="@drawable/ic_w_pause"
+        android:contentDescription="Pomodoro"
+        android:visibility="gone"
+        android:scaleType="fitCenter" />
 </LinearLayout>

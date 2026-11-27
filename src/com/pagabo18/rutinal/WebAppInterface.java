@@ -46,6 +46,12 @@ public class WebAppInterface {
         } catch (Exception ignored) {}
     }
 
+    /** Hábitos en la pantalla de bloqueo (notificación fija con botones). */
+    @JavascriptInterface
+    public void setHabitsLive(boolean on) {
+        try { HabitsLive.setOn(ctx, on); } catch (Exception ignored) {}
+    }
+
     /** Compartir una imagen PNG (base64) con otras apps. Devuelve false si no se pudo. */
     @JavascriptInterface
     public boolean shareImage(String b64, String name, String text) {

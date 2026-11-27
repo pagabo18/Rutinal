@@ -7001,6 +7001,31 @@ window.__I18N_EXTRA = {
    "pt-BR": "+ nota",
    "fr": "+ note"
   },
+  "Hábitos en la pantalla de bloqueo": {
+   "en": "Habits on the lock screen",
+   "pt-BR": "Hábitos na tela de bloqueio",
+   "fr": "Habitudes sur l'écran de verrouillage"
+  },
+  "Una notificación fija y silenciosa con tus hábitos de hoy y botones para marcarlos sin desbloquear el teléfono. Se quita sola cuando terminas todos.": {
+   "en": "A silent, persistent notification with today's habits and buttons to check them off without unlocking your phone. It goes away once you finish them all.",
+   "pt-BR": "Uma notificação fixa e silenciosa com seus hábitos de hoje e botões para marcá-los sem desbloquear o telefone. Ela some quando você conclui todos.",
+   "fr": "Une notification fixe et silencieuse avec vos habitudes du jour et des boutons pour les cocher sans déverrouiller le téléphone. Elle disparaît quand tout est fait."
+  },
+  "Mostrar mis hábitos en la pantalla de bloqueo": {
+   "en": "Show my habits on the lock screen",
+   "pt-BR": "Mostrar meus hábitos na tela de bloqueio",
+   "fr": "Afficher mes habitudes sur l'écran de verrouillage"
+  },
+  "Los widgets de Rutinal (Hábitos, Comida, Ahora, Pomodoro y Entrenamiento) también se pueden poner en la pantalla de bloqueo donde el teléfono lo permite. En Samsung: instala Good Lock desde Galaxy Store, abre LockStar y agrega el widget a la pantalla de bloqueo.": {
+   "en": "Rutinal's widgets (Habits, Food, Now, Pomodoro and Workout) can also go on the lock screen where the phone allows it. On Samsung: install Good Lock from the Galaxy Store, open LockStar and add the widget to the lock screen.",
+   "pt-BR": "Os widgets do Rutinal (Hábitos, Comida, Agora, Pomodoro e Treino) também podem ir para a tela de bloqueio onde o telefone permite. Na Samsung: instale o Good Lock na Galaxy Store, abra o LockStar e adicione o widget à tela de bloqueio.",
+   "fr": "Les widgets de Rutinal (Habitudes, Repas, Maintenant, Pomodoro et Entraînement) peuvent aussi aller sur l'écran de verrouillage lorsque le téléphone le permet. Sur Samsung : installez Good Lock depuis le Galaxy Store, ouvrez LockStar et ajoutez le widget à l'écran de verrouillage."
+  },
+  "Una notificación fija y silenciosa con tus hábitos de hoy y botones para marcarlos sin desbloquear el teléfono.": {
+   "en": "A silent, persistent notification with today's habits and buttons to check them off without unlocking your phone.",
+   "pt-BR": "Uma notificação fixa e silenciosa com seus hábitos de hoje e botões para marcá-los sem desbloquear o telefone.",
+   "fr": "Une notification fixe et silencieuse avec vos habitudes du jour et des boutons pour les cocher sans déverrouiller le téléphone."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

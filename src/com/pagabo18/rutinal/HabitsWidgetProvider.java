@@ -15,8 +15,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Widget "Hábitos de hoy" (4x2) interactivo: muestra hasta 6 hábitos del
- * día y cada fila se puede tocar para marcarlo/desmarcarlo. El toggle
+ * Widget "Hábitos de hoy" interactivo: muestra los hábitos que caben según su
+ * tamaño (hasta 6, primero los pendientes), con avance del día; cada fila se
+ * toca para marcarlo/desmarcarlo. El toggle
  * reescribe state_json y encola la acción en 'widget_actions' para que
  * el JS la sincronice al abrir la app.
  */
@@ -26,7 +27,6 @@ public class HabitsWidgetProvider extends AppWidgetProvider {
     public static final String EXTRA_HABIT_ID = "habit_id";
 
     private static final int MAX_ROWS = 6;
-    private static final int ACCENT = Color.parseColor("#3B82F6");
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -132,15 +132,9 @@ public class HabitsWidgetProvider extends AppWidgetProvider {
         };
     }
 
-    private static void updateOne(Context context, AppWidgetManager mgr, int widgetId) {
-        RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget_habits);
-        int[] rows = rowIds();
-        int[] checks = checkIds();
-        int[] names = nameIds();
-        int shown = 0;
-        int total = 0;
-        int done = 0;
-
+    /** Hábitos de hoy como {id, nombre, "1" si está hecho}; primero los pendientes. Nunca lanza. */
+    public static java.util.List<String[]> todayHabits(Context context) {
+        java.util.List<String[]> pend = new java.util.ArrayList<>(), done = new java.util.ArrayList<>();
         try {
             JSONObject state = DataHelper.loadState(context);
             JSONArray habits = state.optJSONArray("habits");
@@ -149,7 +143,6 @@ public class HabitsWidgetProvider extends AppWidgetProvider {
             JSONObject todayObj = (log != null) ? log.optJSONObject(today) : null;
             // Compatibilidad con el formato legacy (array de ids)
             JSONArray todayArr = (log != null && todayObj == null) ? log.optJSONArray(today) : null;
-
             if (habits != null) {
                 for (int i = 0; i < habits.length(); i++) {
                     JSONObject h = habits.optJSONObject(i);
@@ -157,7 +150,6 @@ public class HabitsWidgetProvider extends AppWidgetProvider {
                     String id = h.optString("id");
                     String name = h.optString("name", "");
                     if (name.isEmpty()) continue;
-
                     boolean isDone = false;
                     if (todayObj != null) {
                         isDone = todayObj.optBoolean(id, false);
@@ -166,46 +158,85 @@ public class HabitsWidgetProvider extends AppWidgetProvider {
                             if (id.equals(todayArr.optString(j))) { isDone = true; break; }
                         }
                     }
-                    total++;
-                    if (isDone) done++;
-
-                    if (shown < MAX_ROWS) {
-                        rv.setTextViewText(checks[shown], isDone ? "✓" : "○");
-                        if (isDone) rv.setTextColor(checks[shown], ACCENT);
-                        rv.setTextViewText(names[shown], name);
-                        rv.setViewVisibility(rows[shown], View.VISIBLE);
-
-                        // Toggle al tocar la fila
-                        Intent toggle = new Intent(context, HabitsWidgetProvider.class);
-                        toggle.setAction(ACTION_HABIT_TOGGLE);
-                        toggle.setData(Uri.parse("rutinal://habit_toggle/" + Uri.encode(id)));
-                        toggle.putExtra(EXTRA_HABIT_ID, id);
-                        PendingIntent tpi = PendingIntent.getBroadcast(context,
-                                id.hashCode(), toggle,
-                                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-                        rv.setOnClickPendingIntent(rows[shown], tpi);
-                        shown++;
-                    }
+                    (isDone ? done : pend).add(new String[]{id, name, isDone ? "1" : "0"});
                 }
             }
         } catch (Exception ignored) {
-            // Estado ausente o corrupto: se muestra el texto por defecto.
+            // Estado ausente o corrupto: lista vacía.
+        }
+        pend.addAll(done);
+        return pend;
+    }
+
+    /** Intent del toggle de un hábito (el mismo para el widget y la notificación). */
+    public static PendingIntent toggleIntent(Context context, String id) {
+        Intent toggle = new Intent(context, HabitsWidgetProvider.class);
+        toggle.setAction(ACTION_HABIT_TOGGLE);
+        toggle.setData(Uri.parse("rutinal://habit_toggle/" + Uri.encode(id)));
+        toggle.putExtra(EXTRA_HABIT_ID, id);
+        return PendingIntent.getBroadcast(context, id.hashCode(), toggle,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    /** Cuántas filas caben según el alto del widget (cada fila mide 32dp). */
+    private static int rowsThatFit(AppWidgetManager mgr, int widgetId) {
+        try {
+            android.os.Bundle o = mgr.getAppWidgetOptions(widgetId);
+            int h = o == null ? 0 : Math.max(o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0),
+                    o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0));
+            if (h <= 0) return 3;
+            // 32dp de margen del fondo + ~40dp del encabezado y la barra
+            return Math.max(1, Math.min(MAX_ROWS, (h - 72) / 32));
+        } catch (Exception e) {
+            return 3;
+        }
+    }
+
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager mgr, int widgetId, android.os.Bundle newOptions) {
+        try { updateOne(context, mgr, widgetId); } catch (Exception ignored) {}
+    }
+
+    private static void updateOne(Context context, AppWidgetManager mgr, int widgetId) {
+        RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget_habits);
+        int[] rows = rowIds();
+        int[] checks = checkIds();
+        int[] names = nameIds();
+        java.util.List<String[]> list = todayHabits(context);
+        int total = list.size(), done = 0;
+        for (String[] h : list) if ("1".equals(h[2])) done++;
+        int fit = rowsThatFit(mgr, widgetId), shown = Math.min(fit, total);
+
+        for (int i = 0; i < rows.length; i++) {
+            if (i >= shown) { rv.setViewVisibility(rows[i], View.GONE); continue; }
+            String[] h = list.get(i);
+            boolean isDone = "1".equals(h[2]);
+            rv.setImageViewResource(checks[i], isDone ? R.drawable.ic_check_on : R.drawable.ic_check_off);
+            rv.setTextViewText(names[i], h[1]);
+            // hecho: tachado y en gris
+            rv.setTextColor(names[i], context.getColor(isDone ? R.color.widgetText2 : R.color.widgetText1));
+            rv.setInt(names[i], "setPaintFlags", android.graphics.Paint.ANTI_ALIAS_FLAG | (isDone ? android.graphics.Paint.STRIKE_THRU_TEXT_FLAG : 0));
+            rv.setViewVisibility(rows[i], View.VISIBLE);
+            rv.setOnClickPendingIntent(rows[i], toggleIntent(context, h[0]));
         }
 
         if (total > 0) {
-            rv.setTextViewText(R.id.widget_habits_title, "Hábitos · " + done + "/" + total + " hoy");
+            rv.setTextViewText(R.id.widget_habits_count, (done == total ? "✓ " : "") + done + "/" + total);
+            rv.setViewVisibility(R.id.widget_habits_count, View.VISIBLE);
+            rv.setProgressBar(R.id.widget_habits_progress, total, done, false);
+            rv.setViewVisibility(R.id.widget_habits_progress, View.VISIBLE);
+            int more = total - shown;
+            if (more > 0) {
+                rv.setTextViewText(R.id.widget_habits_more, "+" + more + " más");
+                rv.setViewVisibility(R.id.widget_habits_more, View.VISIBLE);
+            } else {
+                rv.setViewVisibility(R.id.widget_habits_more, View.GONE);
+            }
         } else {
-            rv.setTextViewText(R.id.widget_habits_title, "Hábitos de hoy");
-        }
-
-        if (shown == 0) {
-            rv.setTextViewText(checks[0], "○");
-            rv.setTextViewText(names[0], "Sin hábitos configurados");
-            rv.setViewVisibility(rows[0], View.VISIBLE);
-            shown = 1;
-        }
-        for (int i = shown; i < rows.length; i++) {
-            rv.setViewVisibility(rows[i], View.GONE);
+            rv.setViewVisibility(R.id.widget_habits_count, View.GONE);
+            rv.setViewVisibility(R.id.widget_habits_progress, View.GONE);
+            rv.setTextViewText(R.id.widget_habits_more, "Agrega tus hábitos en Rutinal");
+            rv.setViewVisibility(R.id.widget_habits_more, View.VISIBLE);
         }
 
         // Tocar el título / fondo abre la app en la pestaña de hábitos
@@ -217,6 +248,7 @@ public class HabitsWidgetProvider extends AppWidgetProvider {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         rv.setOnClickPendingIntent(R.id.widget_habits_root, pi);
         rv.setOnClickPendingIntent(R.id.widget_habits_title, pi);
+        rv.setOnClickPendingIntent(R.id.widget_habits_more, pi);
 
         mgr.updateAppWidget(widgetId, rv);
     }

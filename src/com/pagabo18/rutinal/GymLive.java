@@ -296,6 +296,15 @@ public class GymLive {
             }
             b.addAction(new Notification.Action.Builder(R.drawable.ic_notif_check, label(s, "done", "Serie hecha"), actionIntent(ctx, "done")).build());
         }
+        // Android 16+: se pide que sea una "actualización en vivo" (Live Update). En Samsung con One UI 8
+        // sale en la Now Bar de la pantalla de bloqueo; en otros, como chip en la barra de estado.
+        // En versiones anteriores estos extras se ignoran.
+        try {
+            android.os.Bundle ex = new android.os.Bundle();
+            ex.putBoolean("android.requestPromotedOngoing", true);
+            if (end <= 0) ex.putString("android.shortCriticalText", done + "/" + total);
+            b.addExtras(ex);
+        } catch (Exception ignored) {}
         nm.notify(NOTIF_ID, b.build());
     }
 

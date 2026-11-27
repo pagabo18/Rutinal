@@ -6,4 +6,6 @@
     android:initialLayout="@layout/widget_ahora"
     android:previewImage="@drawable/widget_preview_ahora"
     android:resizeMode="horizontal|vertical"
-    android:widgetCategory="home_screen" />
+    android:description="@string/widget_ahora_desc"
+    android:previewLayout="@layout/widget_ahora"
+    android:widgetCategory="home_screen|keyguard" />
