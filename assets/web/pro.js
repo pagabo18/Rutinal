@@ -1453,29 +1453,58 @@ function dayData(D, dk, opts) {
   if (lg && lg.routineId) {
     const r = routines.find(x => x.id === lg.routineId) || { name: '', exercises: [] };
     const prevKeys = Object.keys(logs).filter(k => k < dk).sort().reverse();
-    const ex = [];
+    const ex = [], skipped = []; let planned = 0;
+    const sum = ss => ({ n: ss.length, top: Math.max(0, ...ss.map(x => N(x.kg) || 0)), reps: ss.reduce((a, x) => a + (N(x.reps) || 0), 0), vol: ss.reduce((a, x) => a + (N(x.kg) || 0) * (N(x.reps) || 0), 0),
+      e1: Math.max(0, ...ss.map(x => (N(x.kg) > 0 && N(x.reps) > 0 ? E1(x.kg, x.reps) : 0))) });
     (r.exercises || []).forEach(e => {
+      const plan = (e.sets || []).reduce((a, x) => a + (+x.count || 0), 0); planned += plan;
       const sets = exCleanSets((lg.ex || {})[e.id] || [], N);
-      if (!sets.length) return;
+      if (!sets.length) { if (plan) skipped.push(e.name); return; }
       const sw = lg.swap && lg.swap[e.id], name = (sw && sw.name) || e.name;
-      const vol = sets.reduce((a, x) => a + (N(x.kg) || 0) * (N(x.reps) || 0), 0);
-      const e1 = Math.max(0, ...sets.map(x => (N(x.kg) > 0 && N(x.reps) > 0 ? E1(x.kg, x.reps) : 0)));
-      let prev = 0; const hist = [];
+      const me = sum(sets), vol = me.vol, e1 = me.e1;
+      // Historial del mismo ejercicio: la vez anterior (para comparar), hasta 7 sesiones (gráfica) y el mejor de siempre (récords)
+      let prev = 0, last = null, bestE1 = 0, bestTop = 0; const hist = [];
       for (const k of prevKeys) {
         const pl = logs[k]; if (!pl || pl.routineId == null) continue;
         const psw = pl.swap && pl.swap[e.id]; if (((psw && psw.name) || null) !== ((sw && sw.name) || null)) continue;
-        const ps = ((pl.ex || {})[e.id] || []).filter(x => x && x.done && N(x.kg) > 0 && N(x.reps) > 0);
-        if (ps.length) { const v = Math.max(...ps.map(x => E1(x.kg, x.reps))); if (!prev) prev = v; hist.unshift({ d: k, v }); if (hist.length >= 7) break; }
+        const pa = exCleanSets((pl.ex || {})[e.id] || [], N); if (!pa.length) continue;
+        const ps = sum(pa);
+        if (!last) last = Object.assign({ d: k, sets: pa.map(x => ({ kg: x.kg, reps: x.reps, time: x.time })) }, ps);
+        if (ps.e1 > 0) { if (!prev) prev = ps.e1; if (hist.length < 7) hist.unshift({ d: k, v: ps.e1 }); }
+        if (ps.e1 > bestE1) bestE1 = ps.e1; if (ps.top > bestTop) bestTop = ps.top;
       }
       if (e1 > 0) hist.push({ d: dk, v: e1 });
+      // ¿Subió, igual o bajó contra la vez anterior? Primero el 1RM estimado; si casi no cambió, el volumen; sin peso, las repeticiones.
+      let trend = null, dTop = 0, dReps = 0;
+      if (last) {
+        dTop = Math.round((me.top - last.top) * 100) / 100; dReps = me.reps - last.reps;
+        const rel = (a2, b2) => (b2 > 0 ? (a2 - b2) / b2 : (a2 > 0 ? 1 : 0));
+        const d1 = me.e1 > 0 && last.e1 > 0 ? rel(me.e1, last.e1) : null, dv = me.vol > 0 || last.vol > 0 ? rel(me.vol, last.vol) : rel(me.reps, last.reps);
+        trend = d1 != null && Math.abs(d1) > 0.01 ? (d1 > 0 ? 'up' : 'dn') : Math.abs(dv) > 0.02 ? (dv > 0 ? 'up' : 'dn') : 'eq';
+      }
       const f = feelNum((lg.exFeel || {})[e.id]);
       ex.push({ id: e.id, name, grp: exGrp((sw && sw.dbId) || e.dbId, name), hist, sets: sets.map(x => ({ kg: x.kg, reps: x.reps, rir: x.rir, pain: x.pain, time: x.time, rpe: x.rpe })), vol, e1rm: e1, prev, pain: f.pain, rpe: f.rpe,
+        plan, top: me.top, reps: me.reps, last, trend, dTop, dReps, pr: e1 > 0 && bestE1 > 0 && e1 > bestE1 * 1.001, prTop: me.top > 0 && bestTop > 0 && me.top > bestTop,
         maxPain: Math.max(-1, ...sets.map(x => (x.pain == null ? -1 : +x.pain))) });
     });
     const cv = (typeof cvAll === 'function' ? cvAll(r, lg) : []).map(([kind, it]) => { const v = (lg.cv || {})[it.id]; return v && v.done ? { kind, name: cvName(it), text: cvText(it, v), min: parseFloat(v.time) || 0 } : null; }).filter(Boolean);
     const mins = lg.start && lg.end && lg.end > lg.start ? Math.round((lg.end - lg.start) / 60000) : 0;
-    if (ex.length || cv.length || lg.done) out.gym = { name: r.name || '', sport: !!(r.meta && r.meta.sport), done: !!lg.done, mins, ex, cv,
-      sets: ex.reduce((a, x) => a + x.sets.length, 0), vol: ex.reduce((a, x) => a + x.vol, 0), cvMin: cv.reduce((a, x) => a + x.min, 0), feel: feelNum(lg.feel) };
+    if (ex.length || cv.length || lg.done) {
+      out.gym = { name: r.name || '', sport: !!(r.meta && r.meta.sport), done: !!lg.done, mins, ex, cv, planned, skipped,
+        sets: ex.reduce((a, x) => a + x.sets.length, 0), vol: ex.reduce((a, x) => a + x.vol, 0), cvMin: cv.reduce((a, x) => a + x.min, 0), feel: feelNum(lg.feel) };
+      // Comparación con la vez anterior que se hizo esta misma rutina
+      const pk = prevKeys.find(k => { const pl = logs[k]; return pl && pl.routineId === lg.routineId && Object.keys(pl.ex || {}).some(id => exCleanSets(pl.ex[id] || [], N).length); });
+      const cmp = { d: pk || null, up: ex.filter(x => x.trend === 'up').length, eq: ex.filter(x => x.trend === 'eq').length, dn: ex.filter(x => x.trend === 'dn').length,
+        prs: ex.filter(x => x.pr || x.prTop).map(x => x.name), vol: null, sets: null, mins: null };
+      if (pk) {
+        const pl = logs[pk]; let pv = 0, pn = 0;
+        Object.keys(pl.ex || {}).forEach(id => exCleanSets(pl.ex[id] || [], N).forEach(x => { pn++; pv += (N(x.kg) || 0) * (N(x.reps) || 0); }));
+        const pm = pl.start && pl.end && pl.end > pl.start ? Math.round((pl.end - pl.start) / 60000) : 0;
+        cmp.vol = pv > 0 && out.gym.vol > 0 ? Math.round((out.gym.vol - pv) / pv * 100) : null; cmp.sets = out.gym.sets - pn; cmp.mins = pm && mins ? mins - pm : null;
+      }
+      out.gym.cmp = cmp;
+      out.gym.pains = ex.filter(x => x.maxPain >= 4 && x.maxPain <= 10).map(x => ({ name: x.name, v: x.maxPain }));
+    }
   }
   // --- Actividades (running, natación…) ---
   ((D.act_log || {})[dk] || []).forEach(a => {
@@ -1535,6 +1564,48 @@ function dayProgHtml(exs) {
     <div class="dr-leg">${P.series.map(s => `<div class="dr-leg-i"><svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="${s.col}" stroke-width="3" stroke-linecap="round"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''}/></svg><span translate="no">${escapeHtml(s.name)}</span><b class="${s.ch > 0 ? 'up' : s.ch < 0 ? 'dn' : ''}" translate="no">${s.ch > 0 ? '+' : ''}${s.ch}%</b></div>`).join('')}</div>
     <div class="dr-hint">Sesiones anteriores de cada ejercicio hasta hoy. Color = grupo muscular.</div>`;
 }
+// Titular del progreso contra la vez anterior: «Volumen +6% · 4 subieron · 1 igual · 1 bajó · 2 récords»
+function dayCmpLine(g, tr) {
+  const c = g && g.cmp; if (!c) return '';
+  // t() devuelve undefined con palabras sueltas en minúsculas que no encuentra: se conserva el original
+  const T = x => { const v = tr ? tr(x) : x; return v == null || v === '' ? x : v; }, b = [];
+  if (c.vol != null) b.push(`${T('Volumen')} ${c.vol > 0 ? '+' : ''}${c.vol}%`);
+  if (c.up) b.push(`${c.up} ${T(c.up === 1 ? 'subió' : 'subieron')}`);
+  if (c.eq) b.push(`${c.eq} ${T('igual')}`);
+  if (c.dn) b.push(`${c.dn} ${T(c.dn === 1 ? 'bajó' : 'bajaron')}`);
+  if (c.prs.length) b.push(`${c.prs.length} ${T(c.prs.length === 1 ? 'récord' : 'récords')}`);
+  return b.join(' · ');
+}
+// Cambio de un ejercicio contra su vez anterior: { txt: '+2.5 kg · +1 reps', cls: 'up' | 'eq' | 'dn', arrow }
+function dayExDelta(x, tr) {
+  if (!x || !x.last || !x.trend) return null;
+  const T = x => { const v = tr ? tr(x) : x; return v == null || v === '' ? x : v; }, U = typeof gymUnit === 'function' ? gymUnit() : 'kg', V = v => Math.round((typeof gymVolU === 'function' ? gymVolU(v) : v) * 10) / 10, sg = v => (v > 0 ? '+' : '−') + Math.abs(v), b = [];
+  if (x.dTop && V(x.dTop)) b.push(`${sg(V(x.dTop))} ${U}`);
+  if (x.dReps) b.push(`${sg(x.dReps)} reps`);
+  return { txt: b.join(' · ') || T('Igual'), cls: x.trend, arrow: x.trend === 'up' ? '▲' : x.trend === 'dn' ? '▼' : '=' };
+}
+function dayFmtD(d) { try { return new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' }).format(new Date(d + 'T00:00:00')); } catch (e) { return d; } }
+// Bloque «Comparado con la vez anterior» (app)
+function dayCmpHtml(g) {
+  const E = x => escapeHtml(String(x)), c = g.cmp; if (!c || g.sport) return '';
+  const U = typeof gymUnit === 'function' ? gymUnit() : 'kg', tot = c.up + c.eq + c.dn, sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v);
+  let h = '<div class="dr-cmp">';
+  if (!tot && !c.d) h += '<div class="dr-cmp-h"><span>Tu progreso</span></div><div class="dr-hint" style="margin:0;">Primera vez que registras estos ejercicios. La próxima vez verás aquí cuánto subiste.</div>';
+  else {
+    h += `<div class="dr-cmp-h"><span>Comparado con la vez anterior</span>${c.d ? `<b translate="no">${E(dayFmtD(c.d))}</b>` : ''}</div>`;
+    const cells = [];
+    if (c.vol != null) cells.push(`<div class="dr-cmp-c"><b class="${c.vol > 0 ? 'up' : c.vol < 0 ? 'dn' : ''}" translate="no">${sg(c.vol)}%</b><span>Volumen</span></div>`);
+    if (c.sets != null) cells.push(`<div class="dr-cmp-c"><b translate="no">${g.sets}${c.sets ? ` <small>${sg(c.sets)}</small>` : ''}</b><span>Series</span></div>`);
+    if (c.mins != null) cells.push(`<div class="dr-cmp-c"><b translate="no">${g.mins}${c.mins ? ` <small>${sg(c.mins)}</small>` : ''}</b><span>Minutos</span></div>`);
+    if (cells.length) h += `<div class="dr-cmp-s">${cells.join('')}</div>`;
+    if (tot) h += `<div class="dr-tbar" aria-hidden="true">${c.up ? `<i class="up" style="flex:${c.up}"></i>` : ''}${c.eq ? `<i class="eq" style="flex:${c.eq}"></i>` : ''}${c.dn ? `<i class="dn" style="flex:${c.dn}"></i>` : ''}</div>
+      <div class="dr-trend">${c.up ? `<span class="up"><b translate="no">▲ ${c.up}</b> <span>${c.up === 1 ? 'subió' : 'subieron'}</span></span>` : ''}${c.eq ? `<span class="eq"><b translate="no">= ${c.eq}</b> <span>igual</span></span>` : ''}${c.dn ? `<span class="dn"><b translate="no">▼ ${c.dn}</b> <span>${c.dn === 1 ? 'bajó' : 'bajaron'}</span></span>` : ''}</div>`;
+  }
+  if (c.prs.length) h += `<div class="dr-pr"><b class="dr-badge">${c.prs.length === 1 ? 'Récord' : 'Récords'}</b><span translate="no">${c.prs.map(E).join(', ')}</span></div>`;
+  if (g.planned) h += `<div class="dr-plan"><div class="dr-mac-h" style="flex-direction:row;justify-content:space-between;"><span>Series hechas de las planeadas</span><b translate="no">${g.sets} / ${g.planned}</b></div><div class="dr-track"><i style="width:${Math.min(100, Math.round(g.sets / g.planned * 100))}%;background:var(--text)"></i></div>${g.skipped.length ? `<div class="dr-skip"><span>Sin hacer:</span> <span translate="no">${g.skipped.map(E).join(', ')}</span></div>` : ''}</div>`;
+  if (g.pains && g.pains.length) h += `<div class="dr-alert"><b>Dolor</b> ${g.pains.map(p2 => `<span translate="no">${E(p2.name)} ${p2.v}/10</span>`).join(' · ')}</div>`;
+  return h + '</div>';
+}
 function dayIsEmpty(dd) { return !dd.gym && !dd.acts.length && !dd.food && !dd.water && dd.weight == null && !dd.habits; }
 function dayKpis(dd) {
   const k = [];
@@ -1558,11 +1629,13 @@ function dayReportHtml(dd) {
   const g = dd.gym;
   if (g) {
     h += `<div class="dr-sec"><div class="dr-h"><span>Entrenamiento</span><b translate="no">${E(g.name)}</b></div>`;
-    if (!g.sport) h += dayProgHtml(g.ex);
+    if (!g.sport) h += dayCmpHtml(g) + dayProgHtml(g.ex);
     h += g.ex.map(x => {
-      const ch = x.prev && x.e1rm ? Math.round((x.e1rm - x.prev) / x.prev * 100) : null;
-      return `<div class="dr-ex" style="--gc:${exGrpCol(x.grp)}"><div class="dr-ex-h"><b translate="no"><i class="dr-dot" title="${E(EX_GRP_ES[x.grp] || '')}"></i>${E(x.name)}</b>${x.e1rm ? `<span class="dr-e1"><span>1RM est.</span> <span translate="no">${typeof gymFmtKg === 'function' ? gymFmtKg(x.e1rm) : Math.round(x.e1rm)} ${U}</span>${ch ? ` <b class="${ch > 0 ? 'up' : 'dn'}" translate="no">${ch > 0 ? '+' : ''}${ch}%</b>` : ''}</span>` : ''}</div>
-        <div class="dr-sets" translate="no">${x.sets.map((s, i) => `<span class="dr-set">${i + 1}. ${s.time ? E(s.time) + (s.reps ? ' · ' + E(s.reps) : '') : (+s.kg ? `${E(W(s.kg))}×${E(s.reps || 0)}` : `${E(s.reps || 0)} reps`)}${s.rir !== undefined && s.rir !== '' && s.rir != null ? ` <small>RIR ${E(s.rir)}</small>` : ''}${s.pain > 0 ? ` <i style="background:${dayPainCol(+s.pain)}">${E(s.pain)}</i>` : ''}</span>`).join('')}</div></div>`;
+      const ch = x.prev && x.e1rm ? Math.round((x.e1rm - x.prev) / x.prev * 100) : null, dl = g.sport ? null : dayExDelta(x, t);
+      const lastTxt = dl && x.last ? x.last.sets.map(s => (s.time ? E(s.time) + (s.reps ? ' · ' + E(s.reps) : '') : +s.kg ? `${E(W(s.kg))}×${E(s.reps || 0)}` : `${E(s.reps || 0)} reps`)).join(' · ') : '';
+      return `<div class="dr-ex" data-dr-ex="${E(x.name)}" style="--gc:${exGrpCol(x.grp)}"><div class="dr-ex-h"><b translate="no"><i class="dr-dot" title="${E(EX_GRP_ES[x.grp] || '')}"></i>${E(x.name)}${x.pr || x.prTop ? ' <span class="dr-badge" translate="yes">Récord</span>' : ''}</b>${x.e1rm ? `<span class="dr-e1"><span>1RM est.</span> <span translate="no">${typeof gymFmtKg === 'function' ? gymFmtKg(x.e1rm) : Math.round(x.e1rm)} ${U}</span>${ch ? ` <b class="${ch > 0 ? 'up' : 'dn'}" translate="no">${ch > 0 ? '+' : ''}${ch}%</b>` : ''}</span>` : ''}</div>
+        <div class="dr-sets" translate="no">${x.sets.map((s, i) => `<span class="dr-set">${i + 1}. ${s.time ? E(s.time) + (s.reps ? ' · ' + E(s.reps) : '') : (+s.kg ? `${E(W(s.kg))}×${E(s.reps || 0)}` : `${E(s.reps || 0)} reps`)}${s.rir !== undefined && s.rir !== '' && s.rir != null ? ` <small>RIR ${E(s.rir)}</small>` : ''}${s.pain > 0 ? ` <i style="background:${dayPainCol(+s.pain)}">${E(s.pain)}</i>` : ''}</span>`).join('')}</div>
+        ${dl ? `<div class="dr-vs"><span class="dr-chg ${dl.cls}" translate="no">${dl.arrow} ${E(dl.txt)}</span><span class="dr-last"><span>Vez anterior</span> · <span translate="no">${E(dayFmtD(x.last.d))}: ${lastTxt}</span></span></div>` : ''}</div>`;
     }).join('');
     if (g.cv.length) h += `<div class="dr-sub">Calentamiento y cardio</div>${g.cv.map(c => `<div class="dr-li"><b>${E(CV_KIND[c.kind])}</b> · <span translate="no">${E(c.name)} · ${E(c.text)}</span></div>`).join('')}`;
     const fe = g.feel || {};
@@ -1588,18 +1661,22 @@ function dayReportHtml(dd) {
 }
 // Texto plano (para copiar o como respaldo)
 function dayReportText(dd) {
+  const tx = x => { const v = t(x); return v == null || v === '' ? x : v; };
   const U = typeof gymUnit === 'function' ? gymUnit() : 'kg', L = [];
   let d = dd.date; try { d = new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(dd.date + 'T00:00:00')); } catch (e) {}
   L.push(`Rutinal · ${d}`);
   if (dd.gym) {
-    L.push('', `${t('Entrenamiento')}: ${dd.gym.name}`);
-    dd.gym.ex.forEach(x => L.push(`${x.name}: ${x.sets.map(s => (s.time ? s.time + (s.reps ? ' · ' + s.reps : '') : +s.kg ? `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg} ${U} × ${s.reps || 0}` : `${s.reps || 0} reps`) + (s.pain > 0 ? ` (${t('dolor')} ${s.pain})` : '')).join(', ')}`));
-    dd.gym.cv.forEach(c => L.push(`${t(CV_KIND[c.kind])} · ${c.name}: ${c.text}`));
+    L.push('', `${tx('Entrenamiento')}: ${dd.gym.name}`);
+    const cl = dd.gym.sport ? '' : dayCmpLine(dd.gym, tx);
+    if (cl) L.push(`${tx('Comparado con la vez anterior')}${dd.gym.cmp.d ? ' (' + dayFmtD(dd.gym.cmp.d) + ')' : ''}: ${cl}`);
+    if (!dd.gym.sport && dd.gym.planned) L.push(`${tx('Series hechas de las planeadas')}: ${dd.gym.sets}/${dd.gym.planned}${dd.gym.skipped.length ? ` · ${tx('Sin hacer:')} ${dd.gym.skipped.join(', ')}` : ''}`);
+    dd.gym.ex.forEach(x => L.push(`${x.name}: ${x.sets.map(s => (s.time ? s.time + (s.reps ? ' · ' + s.reps : '') : +s.kg ? `${typeof gymDispW === 'function' ? gymDispW(s.kg) : s.kg} ${U} × ${s.reps || 0}` : `${s.reps || 0} reps`) + (s.pain > 0 ? ` (${tx('dolor')} ${s.pain})` : '')).join(', ')}${(d => (d ? ` [${d.arrow} ${d.txt}]` : ''))(dd.gym.sport ? null : dayExDelta(x, tx))}${x.pr || x.prTop ? ` · ${tx('Récord')}` : ''}`));
+    dd.gym.cv.forEach(c => L.push(`${tx(CV_KIND[c.kind])} · ${c.name}: ${c.text}`));
   }
   dd.acts.forEach(a => L.push(`${a.name}: ${a.text}`));
-  if (dd.food) L.push('', `${t('Comida')}: ${dd.food.kcal} kcal · P ${dd.food.p} g · C ${dd.food.c} g · G ${dd.food.f} g`);
-  if (dd.water) L.push(`${t('Agua')}: ${dd.water.n}/${dd.water.goal}`);
-  if (dd.weight != null) L.push(`${t('Peso')}: ${typeof bwDisp === 'function' ? bwDisp(dd.weight) + ' ' + bwUnit() : dd.weight + ' kg'}`);
+  if (dd.food) L.push('', `${tx('Comida')}: ${dd.food.kcal} kcal · P ${dd.food.p} g · C ${dd.food.c} g · G ${dd.food.f} g`);
+  if (dd.water) L.push(`${tx('Agua')}: ${dd.water.n}/${dd.water.goal}`);
+  if (dd.weight != null) L.push(`${tx('Peso')}: ${typeof bwDisp === 'function' ? bwDisp(dd.weight) + ' ' + bwUnit() : dd.weight + ' kg'}`);
   return L.join('\n');
 }
 // Imagen para compartir (canvas 1080 px de ancho). mode: 'gym' solo el entrenamiento, 'day' todo el día.
@@ -1633,6 +1710,28 @@ function dayImageCanvas(dd, mode, who) {
   const g = dd.gym;
   if (g) {
     H('Entrenamiento', mode === 'gym' ? '' : g.name);
+    const cl = g.sport ? '' : dayCmpLine(g, tt);
+    if (cl || (g.planned && !g.sport)) {
+      // Comparación con la vez anterior, barra de subió / igual / bajó y series hechas de las planeadas
+      const c = g.cmp, tot = c.up + c.eq + c.dn, h0 = y;
+      const lines = [];
+      if (cl) { lines.push(['k', tt('Comparado con la vez anterior') + (c.d ? ' · ' + dayFmtD(c.d) : '')]); wrap(cl, W - 2 * P - 56, 30, 700).forEach(l => lines.push(['b', l])); }
+      if (tot) lines.push(['bar']);
+      if (c.prs.length) wrap(`${tt(c.prs.length === 1 ? 'Récord' : 'Récords')}: ${c.prs.join(', ')}`, W - 2 * P - 56, 24, 600).slice(0, 2).forEach(l => lines.push(['p', l]));
+      if (g.planned) wrap(`${tt('Series hechas de las planeadas')}: ${g.sets}/${g.planned}${g.skipped.length ? ` · ${tt('Sin hacer:')} ${g.skipped.join(', ')}` : ''}`, W - 2 * P - 56, 24, 500).slice(0, 2).forEach(l => lines.push(['s', l]));
+      const hh = { k: 34, b: 42, bar: 34, p: 34, s: 34 }, boxH = 40 + lines.reduce((a, l) => a + hh[l[0]], 0);
+      R(P, h0, W - 2 * P, boxH, '#F4F4F5', 24);
+      let yy = h0 + 24;
+      lines.forEach(([k, txt]) => {
+        if (k === 'k') T(txt.toUpperCase(), P + 28, yy + 22, 20, 700, '#71717A');
+        else if (k === 'b') T(txt, P + 28, yy + 30, 30, 700, '#0A0A0A');
+        else if (k === 'bar') { let bx = P + 28; const bw = W - 2 * P - 56; [['up', DAY_COL.up], ['eq', '#A1A1AA'], ['dn', DAY_COL.dn]].forEach(([kk, col]) => { if (!c[kk]) return; const w2 = bw * c[kk] / tot; R(bx, yy + 8, Math.max(8, w2 - 6), 14, col, 7); bx += w2; }); }
+        else if (k === 'p') T(txt, P + 28, yy + 26, 24, 600, DAY_COL.up);
+        else T(txt, P + 28, yy + 26, 24, 500, '#52525B');
+        yy += hh[k];
+      });
+      y = h0 + boxH + 36;
+    }
     const PS = !g.sport && dayProgSeries(g.ex);
     if (PS) {
       // Gráfica de líneas: cambio % del 1RM estimado por ejercicio, color = grupo muscular
@@ -1655,7 +1754,8 @@ function dayImageCanvas(dd, mode, who) {
       });
       y = cy + ch + 64;
       PS.series.slice(0, 10).forEach(sr => {
-        cmds.push(c => { c.strokeStyle = sr.col; c.lineWidth = 6; c.lineCap = 'round'; c.setLineDash(sr.dash ? sr.dash.split(' ').map(z => +z * 1.6) : []); c.beginPath(); c.moveTo(P + 4, y + 18); c.lineTo(P + 52, y + 18); c.stroke(); c.setLineDash([]); });
+        const ly = y; // la posición se fija ahora: los trazos se dibujan al final
+        cmds.push(c => { c.strokeStyle = sr.col; c.lineWidth = 6; c.lineCap = 'round'; c.setLineDash(sr.dash ? sr.dash.split(' ').map(z => +z * 1.6) : []); c.beginPath(); c.moveTo(P + 4, ly + 18); c.lineTo(P + 52, ly + 18); c.stroke(); c.setLineDash([]); });
         T(wrap(sr.name, W - 2 * P - 200, 24, 500)[0], P + 72, y + 27, 24, 500, '#27272A');
         T(`${sr.ch > 0 ? '+' : ''}${sr.ch}%`, W - P, y + 27, 24, 800, sr.ch > 0 ? DAY_COL.up : sr.ch < 0 ? DAY_COL.dn : '#71717A', 'right');
         y += 42;
@@ -1682,6 +1782,13 @@ function dayImageCanvas(dd, mode, who) {
         if (s.pain > 0) { R(px + tw - 46, y + 8, 30, 30, dayPainCol(+s.pain), 15); T(String(s.pain), px + tw - 31, y + 31, 18, 800, '#FFFFFF', 'center'); }
         px += tw + 12;
       });
+      const dl = g.sport ? null : dayExDelta(x, tt);
+      if (dl) {
+        const lbl = `${dl.arrow} ${dl.txt}${x.pr || x.prTop ? ' · ' + tt('Récord') : ''}`, col = dl.cls === 'up' ? DAY_COL.up : dl.cls === 'dn' ? DAY_COL.dn : '#71717A';
+        x0.font = font(700, 22); const tw = x0.measureText(lbl).width + 32;
+        if (px + tw > W - P) { px = P; y += 58; }
+        R(px, y, tw, 46, dl.cls === 'up' ? '#DCFCE7' : dl.cls === 'dn' ? '#FEE2E2' : '#F4F4F5', 23); T(lbl, px + 16, y + 31, 22, 700, col);
+      }
       y += 70;
     });
     if (g.cv.length) { R(P, y, W - 2 * P, 2, '#E4E4E7', 0); y += 22; g.cv.forEach(c => { wrap(`${tt(CV_KIND[c.kind])} · ${c.name} · ${c.text}`, W - 2 * P, 26, 500).forEach(l => { T(l, P, y + 30, 26, 500, '#27272A'); y += 38; }); }); y += 10; }
@@ -2931,4 +3038,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { exLogIndex, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

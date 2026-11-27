@@ -6836,6 +6836,126 @@ window.__I18N_EXTRA = {
    "pt-BR": "Tronco, perna, glúteo, ombro, rápido…",
    "fr": "Haut du corps, jambes, fessiers, épaules, rapide…"
   },
+  "Comparado con la vez anterior": {
+   "en": "Compared with last time",
+   "pt-BR": "Comparado com a vez anterior",
+   "fr": "Par rapport à la dernière fois"
+  },
+  "Tu progreso": {
+   "en": "Your progress",
+   "pt-BR": "Seu progresso",
+   "fr": "Votre progression"
+  },
+  "Primera vez que registras estos ejercicios. La próxima vez verás aquí cuánto subiste.": {
+   "en": "First time you log these exercises. Next time you'll see here how much you improved.",
+   "pt-BR": "Primeira vez que você registra estes exercícios. Na próxima vez verá aqui o quanto evoluiu.",
+   "fr": "Première fois que vous enregistrez ces exercices. La prochaine fois, vous verrez ici votre progression."
+  },
+  "subió": {
+   "en": "went up",
+   "pt-BR": "subiu",
+   "fr": "en hausse"
+  },
+  "subieron": {
+   "en": "went up",
+   "pt-BR": "subiram",
+   "fr": "en hausse"
+  },
+  "igual": {
+   "en": "same",
+   "pt-BR": "igual",
+   "fr": "identique"
+  },
+  "bajó": {
+   "en": "went down",
+   "pt-BR": "caiu",
+   "fr": "en baisse"
+  },
+  "bajaron": {
+   "en": "went down",
+   "pt-BR": "caíram",
+   "fr": "en baisse"
+  },
+  "Récord": {
+   "en": "Record",
+   "pt-BR": "Recorde",
+   "fr": "Record"
+  },
+  "récord": {
+   "en": "record",
+   "pt-BR": "recorde",
+   "fr": "record"
+  },
+  "récords": {
+   "en": "records",
+   "pt-BR": "recordes",
+   "fr": "records"
+  },
+  "Series hechas de las planeadas": {
+   "en": "Sets done out of planned",
+   "pt-BR": "Séries feitas das planejadas",
+   "fr": "Séries faites sur les prévues"
+  },
+  "Sin hacer:": {
+   "en": "Not done:",
+   "pt-BR": "Sem fazer:",
+   "fr": "Non faits :"
+  },
+  "Vez anterior": {
+   "en": "Last time",
+   "pt-BR": "Vez anterior",
+   "fr": "Dernière fois"
+  },
+  "Igual": {
+   "en": "Same",
+   "pt-BR": "Igual",
+   "fr": "Identique"
+  },
+  "Te comparto mi entrenamiento del": {
+   "en": "Here's my workout from",
+   "pt-BR": "Compartilho meu treino de",
+   "fr": "Voici mon entraînement du"
+  },
+  "Contra la vez anterior:": {
+   "en": "Versus last time:",
+   "pt-BR": "Em relação à vez anterior:",
+   "fr": "Par rapport à la dernière fois :"
+  },
+  "Entrenamiento guardado. Así te fue; puedes mandárselo a tu especialista.": {
+   "en": "Workout saved. Here's how it went; you can send it to your specialist.",
+   "pt-BR": "Treino salvo. Veja como foi; você pode enviá-lo ao seu especialista.",
+   "fr": "Entraînement enregistré. Voici le bilan ; vous pouvez l'envoyer à votre spécialiste."
+  },
+  "Buscando a tus especialistas…": {
+   "en": "Looking up your specialists…",
+   "pt-BR": "Procurando seus especialistas…",
+   "fr": "Recherche de vos spécialistes…"
+  },
+  "Se enviará a": {
+   "en": "It will be sent to",
+   "pt-BR": "Será enviado a",
+   "fr": "Sera envoyé à"
+  },
+  "Mensaje (opcional): cómo te sentiste, dudas, qué te costó…": {
+   "en": "Message (optional): how you felt, questions, what was hard…",
+   "pt-BR": "Mensagem (opcional): como você se sentiu, dúvidas, o que foi difícil…",
+   "fr": "Message (facultatif) : vos sensations, vos questions, ce qui a été difficile…"
+  },
+  "Enviar resumen": {
+   "en": "Send summary",
+   "pt-BR": "Enviar resumo",
+   "fr": "Envoyer le résumé"
+  },
+  "Elige al menos a una persona.": {
+   "en": "Choose at least one person.",
+   "pt-BR": "Escolha pelo menos uma pessoa.",
+   "fr": "Choisissez au moins une personne."
+  },
+  "Responderle": {
+   "en": "Reply",
+   "pt-BR": "Responder",
+   "fr": "Répondre"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

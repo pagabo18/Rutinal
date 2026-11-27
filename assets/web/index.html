@@ -2980,6 +2980,26 @@
   .dr-leg-i span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dr-leg-i b { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-2); } .dr-leg-i b.up { color: #16A34A; } .dr-leg-i b.dn { color: #DC2626; }
   .dr-hint { font-size: 11px; color: var(--text-3); margin: 2px 0 10px; }
+  .dr-cmp { border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; margin: 4px 0 14px; background: var(--surface); }
+  .dr-cmp-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+  .dr-cmp-h b { font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--text-2); font-weight: 600; }
+  .dr-cmp-s { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+  .dr-cmp-c b { display: block; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; } .dr-cmp-c b small { font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .dr-cmp-c span { font-size: 12px; color: var(--text-3); }
+  .dr-cmp .up, .dr-chg.up { color: #16A34A; } .dr-cmp .dn, .dr-chg.dn { color: #DC2626; } .dr-chg.eq, .dr-trend .eq { color: var(--text-3); }
+  .dr-tbar { display: flex; gap: 3px; height: 8px; margin-bottom: 6px; } .dr-tbar i { display: block; border-radius: 4px; min-width: 8px; }
+  .dr-tbar i.up { background: #16A34A; } .dr-tbar i.eq { background: var(--border-strong, #A1A1AA); } .dr-tbar i.dn { background: #DC2626; }
+  .dr-trend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; } .dr-trend span span { color: var(--text-2); }
+  .dr-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: #16A34A; color: #fff; vertical-align: middle; }
+  .dr-pr { display: flex; gap: 8px; align-items: baseline; margin-top: 10px; font-size: 13px; } .dr-pr .dr-badge { flex: none; }
+  .dr-plan { margin-top: 12px; } .dr-plan .dr-mac-h { font-size: 12px; color: var(--text-2); margin-bottom: 4px; display: flex; } .dr-skip { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+  .dr-alert { margin-top: 10px; font-size: 13px; color: #B45309; } .dr-alert b { margin-right: 4px; }
+  .dr-vs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-top: 6px; font-size: 12px; }
+  .dr-chg { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; } .dr-last { color: var(--text-3); }
+  .dr-ex[data-dr-tap] { cursor: pointer; }
+  .ds-compose { border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-top: 4px; background: var(--surface); text-align: left; }
+  .ds-compose .ds-pick { margin-bottom: 8px; } .ds-compose textarea { width: 100%; margin: 6px 0 8px; } .ds-compose-k { font-size: 12px; color: var(--text-3); }
+  .ds-done { font-size: 13px; color: var(--text-2); margin: 0 0 10px; }
   .vgc { color: var(--text-3); } .dr-leg-i small { font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; } .dr-leg-i b { min-width: 42px; text-align: right; }
   .exl-sp { display: inline-flex; flex: none; }
   .exl-grp { display: flex; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; }
@@ -10489,12 +10509,12 @@ async function openNotes(linkId, name, back, opts) {
       const dk = keyDate(new Date(n.created_at)); let sep = '';
       if (dk !== prevDay) { prevDay = dk; sep = `<div class="chat-day"><span>${escapeHtml(dayLabel(n.created_at))}</span></div>`; }
       const mine = n.author_id === me;
-      const refc = n.ref && n.ref.t === 'day' ? `<div class="nt-refc" data-nt-ref="${i}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span><b>Resumen del día</b> · <span translate="no">${escapeHtml(new Intl.DateTimeFormat(_loc(), { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(n.ref.date + 'T00:00:00')))}</span></span><span class="sp-chev">›</span></div>` : n.ref && n.ref.t === 'asg' ? `<div class="nt-refc" data-nt-ref="${i}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span><b>${ASG_KINDS[n.ref.kind] || 'Plan'}</b> · <span translate="no">${escapeHtml(n.ref.name || '')}</span></span></div>` : '';
+      const refc = n.ref && n.ref.t === 'day' ? `<div class="nt-refc" data-nt-ref="${i}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span><b>${n.ref.mode === 'gym' ? 'Resumen del entrenamiento' : 'Resumen del día'}</b> · <span translate="no">${escapeHtml(new Intl.DateTimeFormat(_loc(), { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(n.ref.date + 'T00:00:00')))}</span></span><span class="sp-chev">›</span></div>` : n.ref && n.ref.t === 'asg' ? `<div class="nt-refc" data-nt-ref="${i}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span><b>${ASG_KINDS[n.ref.kind] || 'Plan'}</b> · <span translate="no">${escapeHtml(n.ref.name || '')}</span></span></div>` : '';
       return `${sep}<div class="nt-w ${mine ? 'me' : ''}"><div class="nt ${mine ? 'me' : ''}">${refc}<span translate="no">${escapeHtml(n.body)}</span></div><div class="nt-t" translate="no">${escapeHtml(hm(n.created_at))}</div></div>`;
     }).join('') || '<div class="chat-empty">Aún no hay mensajes. Escribe el primero.</div>';
     list.querySelectorAll('[data-nt-ref]').forEach(c => c.addEventListener('click', () => {
       const ref = rows[+c.dataset.ntRef].ref;
-      if (ref && ref.t === 'day') { if (opts.spec) spDaySummary(Object.assign({ name: name }, opts.link || {}), ref.date, ref.mode); else openDaySummary(ref.date, { mode: ref.mode || 'day' }); return; }
+      if (ref && ref.t === 'day') { const reopen = () => openNotes(linkId, name, back, opts); if (opts.spec) spDaySummary(Object.assign({ name: name }, opts.link || {}), ref.date, ref.mode, { back: reopen, reply: reopen }); else openDaySummary(ref.date, { mode: ref.mode || 'day', back: reopen }); return; }
       if (opts.spec) return;
       const a = asgList().find(x => x.kind === ref.kind && x.name === ref.name);
       if (a) openAssignmentView(a);
@@ -14791,7 +14811,7 @@ function openGymWorkout(routineId, dateKey, focusId) {
     const gpp = sb.querySelector('#gym-pip'); if (gpp) gpp.addEventListener('click', () => { if (!lg.start) { lg.start = Date.now(); persist(); } gymPipOpen(); });
     sb.querySelector('#gym-finish').addEventListener('click', () => {
       gymRestStop();
-      openGymFinish(r, dateKey, lg, persist, () => { closeSheet(); renderGym(); });
+      openGymFinish(r, dateKey, lg, persist, () => { try { renderGym(); } catch (e) {} if (gymIsSport(r)) { closeSheet(); return; } openDaySummary(dateKey, { mode: 'gym', done: true }); });
     });
   };
 
@@ -15083,28 +15103,38 @@ async function shareCanvas(cv, name, text) {
   alert(t2('La imagen se descargó. Compártela desde tus descargas.'));
 }
 let _dsMode = 'day';
+// Mensaje que acompaña al resumen en el chat: lleva el titular del progreso para verlo sin abrirlo
+function daySendText(dd, dk, mode) {
+  const lbl = new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' }).format(new Date(dk + 'T00:00:00'));
+  const g = dd.gym, cl = g && !g.sport ? dayCmpLine(g, t) : '';
+  return `${t(mode === 'gym' && g ? 'Te comparto mi entrenamiento del' : 'Te comparto mi resumen del')} ${lbl}${mode === 'gym' && g && g.name ? ` (${g.name})` : ''}.${cl ? ` ${t('Contra la vez anterior:')} ${cl}.` : ''}`;
+}
 function openDaySummary(dk, opts) {
   opts = opts || {};
   dk = dk || keyDate();
   if (opts.mode) _dsMode = opts.mode;
-  const dd = dayData(localDayD(), dk, { goal: localDayGoal() });
+  const D0 = localDayD(), dd = dayData(D0, dk, { goal: localDayGoal() });
   if (_dsMode === 'gym' && !dd.gym) _dsMode = 'day';
   // El grupo muscular (color) sale de la base de ejercicios: se carga y se vuelve a dibujar
   if (!window.GYM_DB && dd.gym) loadGymDb().then(() => { if (document.querySelector('#sheet-body .ds-nav')) openDaySummary(dk, opts); }).catch(() => {});
   const f = new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' });
   const prev = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() - 864e5)), next = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() + 864e5)), isToday = dk === keyDate();
   const body = `<div class="ds-nav"><button class="ds-arrow" data-ds-go="${prev}" aria-label="Día anterior">‹</button><div class="ds-date" translate="no">${escapeHtml(f.format(new Date(dk + 'T00:00:00')))}</div><button class="ds-arrow" data-ds-go="${next}" ${isToday ? 'disabled' : ''} aria-label="Día siguiente">›</button></div>
+    ${opts.done ? '<div class="ds-done">Entrenamiento guardado. Así te fue; puedes mandárselo a tu especialista.</div>' : ''}
     ${dd.gym ? `<div class="chips ds-mode"><div class="chip ${_dsMode === 'day' ? 'selected' : ''}" data-ds-mode="day">Todo el día</div><div class="chip ${_dsMode === 'gym' ? 'selected' : ''}" data-ds-mode="gym">Solo entrenamiento</div></div>` : ''}
     <div class="dr">${dayReportHtml(_dsMode === 'gym' ? Object.assign({}, dd, { acts: [], food: null, water: null, weight: null, habits: null }) : dd)}</div>
-    ${dayIsEmpty(dd) ? '' : `<button class="btn-primary ds-btn" id="ds-share">Compartir imagen</button>
-    <button class="btn-secondary ds-btn" id="ds-send">Enviar a mi especialista</button>
-    <button class="btn-secondary ds-btn" id="ds-copy">Copiar como texto</button>`}
+    ${dayIsEmpty(dd) ? '' : `<button class="btn-primary ds-btn" id="ds-send">Enviar a mi especialista</button>
     <div class="ds-msg" id="ds-msg"></div>
+    <button class="btn-secondary ds-btn" id="ds-share">Compartir imagen</button>
+    <button class="btn-secondary ds-btn" id="ds-copy">Copiar como texto</button>`}
     ${opts.back ? '<button class="btn-secondary ds-btn" id="ds-back">‹ Volver</button>' : ''}`;
   openSheet(_dsMode === 'gym' ? 'Resumen del entrenamiento' : 'Resumen del día', body);
   const sb = document.getElementById('sheet-body');
-  sb.querySelectorAll('[data-ds-go]').forEach(b => b.addEventListener('click', () => openDaySummary(b.dataset.dsGo, opts)));
-  sb.querySelectorAll('[data-ds-mode]').forEach(b => b.addEventListener('click', () => { _dsMode = b.dataset.dsMode; openDaySummary(dk, Object.assign({}, opts, { mode: _dsMode })); }));
+  const again = extra => openDaySummary(dk, Object.assign({}, opts, { done: false }, extra || {}));
+  sb.querySelectorAll('[data-ds-go]').forEach(b => b.addEventListener('click', () => openDaySummary(b.dataset.dsGo, Object.assign({}, opts, { done: false }))));
+  sb.querySelectorAll('[data-ds-mode]').forEach(b => b.addEventListener('click', () => { _dsMode = b.dataset.dsMode; again({ mode: _dsMode }); }));
+  // Tocar un ejercicio abre su registro con gráficas
+  sb.querySelectorAll('.dr-ex[data-dr-ex]').forEach(x => { x.dataset.drTap = '1'; x.addEventListener('click', () => openExLog(D0, x.dataset.drEx, { back: () => again() })); });
   const bk = document.getElementById('ds-back'); if (bk) bk.addEventListener('click', opts.back);
   const msg = m => { const e = document.getElementById('ds-msg'); if (e) e.textContent = t(m) || m; };
   const sh = document.getElementById('ds-share');
@@ -15121,36 +15151,68 @@ function openDaySummary(dk, opts) {
   });
   const sd = document.getElementById('ds-send');
   if (sd) sd.addEventListener('click', async () => {
-    msg('Enviando…');
+    msg('Buscando a tus especialistas…');
     let mine = [];
     try { const r = await linkRpc('rutinal_my_links'); if (r.ok) mine = mySpecialists(r); } catch (e) {}
+    const e = document.getElementById('ds-msg'); if (!e) return;
     if (!mine.length) { msg('Aún no tienes especialista. Agrégalo en Más > Especialistas.'); return; }
-    const send = async l => {
-      const lbl = new Intl.DateTimeFormat(_loc(), { day: 'numeric', month: 'short' }).format(new Date(dk + 'T00:00:00'));
-      try { await ntPost(l.id, `${t('Te comparto mi resumen del')} ${lbl}.`, { t: 'day', date: dk, mode: _dsMode }); msg(`${t('Enviado a')} ${l.name || ''}.`); } catch (e) { msg(authErr(e.code)); }
-    };
-    if (mine.length === 1) { await send(mine[0]); return; }
-    const e = document.getElementById('ds-msg');
-    e.innerHTML = `<div class="ds-pick"><span>¿A quién se lo mandas?</span>${mine.map((l, i) => `<button class="chip" data-ds-to="${i}" translate="no">${escapeHtml(l.name || l.username || '')}</button>`).join('')}</div>`;
-    e.querySelectorAll('[data-ds-to]').forEach(b => b.addEventListener('click', () => send(mine[+b.dataset.dsTo])));
+    // Para el entrenamiento, el coach o el fisio; para el día completo, todos
+    const fits = l => _dsMode !== 'gym' || linkRoles(l).some(r => r !== 'nutriologo');
+    const sel = new Set(mine.map((l, i) => i).filter(i => fits(mine[i]))); if (!sel.size) mine.forEach((l, i) => sel.add(i));
+    e.innerHTML = `<div class="ds-compose">${mine.length > 1 ? `<div class="ds-pick"><span class="ds-compose-k">¿A quién se lo mandas?</span><div class="chips small">${mine.map((l, i) => `<button class="chip${sel.has(i) ? ' selected' : ''}" data-ds-to="${i}" translate="no">${escapeHtml(l.name || l.username || '')}</button>`).join('')}</div></div>` : `<div class="ds-compose-k"><span>Se enviará a</span> <b translate="no">${escapeHtml(mine[0].name || mine[0].username || '')}</b></div>`}
+      <textarea class="field-input" id="ds-note" rows="3" maxlength="900" placeholder="Mensaje (opcional): cómo te sentiste, dudas, qué te costó…"></textarea>
+      <button class="btn-primary ds-btn" id="ds-send-go" style="margin:0;">Enviar resumen</button><div class="ds-compose-k" id="ds-send-st" style="margin-top:6px;"></div></div>`;
+    sd.style.display = 'none';
+    e.querySelectorAll('[data-ds-to]').forEach(b => b.addEventListener('click', () => { const i = +b.dataset.dsTo; if (sel.has(i)) sel.delete(i); else sel.add(i); b.classList.toggle('selected', sel.has(i)); }));
+    document.getElementById('ds-send-go').addEventListener('click', async () => {
+      const st = document.getElementById('ds-send-st'), go = document.getElementById('ds-send-go'), note = document.getElementById('ds-note').value.trim();
+      if (!sel.size) { st.textContent = t('Elige al menos a una persona.'); return; }
+      go.disabled = true; st.textContent = t('Enviando…');
+      const body = daySendText(dd, dk, _dsMode) + (note ? '\n' + note : ''), ok = [];
+      try { for (const i of sel) { await ntPost(mine[i].id, body, { t: 'day', date: dk, mode: _dsMode }); ok.push(mine[i].name || mine[i].username || ''); } }
+      catch (err) { go.disabled = false; st.textContent = authErr(err.code); return; }
+      e.innerHTML = ''; msg(`${t('Enviado a')} ${ok.join(', ')}.`);
+    });
   });
 }
-// El especialista abre el resumen que le mandó el atleta (lee los datos del atleta)
-async function spDaySummary(l, dk, mode) {
+// El especialista abre el resumen que le mandó el atleta (lee los datos del atleta).
+// o.back: volver a donde estaba (el chat); o.reply: abrir el chat con el atleta.
+let _spDay = null;
+async function spDaySummary(l, dk, mode, o) {
+  o = o || {};
   const clientId = l && (l.client_id || (l.link && l.link.client_id));
   if (!clientId) return;
   openSheet('Resumen del día', '<div class="skel" aria-busy="true"><i class="a"></i><i></i><i></i><i class="s"></i></div>');
-  const from = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() - 60 * 864e5));
-  let rows = [];
-  try { const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(clientId) + '&or=(sub.eq.,and(sub.gte.' + from + ',sub.lte.' + dk + '))&limit=2000'); rows = r.ok ? await r.json() : []; } catch (e) {}
-  const D = {}; rows.forEach(x => { if (x.value === null) return; if (x.sub) (D[x.key] = D[x.key] || {})[x.sub] = x.value; else D[x.key] = x.value; });
+  // Datos del atleta: se bajan una vez por atleta y sirven para moverse entre días
+  let D = _spDay && _spDay.id === clientId && _spDay.to >= dk && Date.now() - _spDay.at < 120000 ? _spDay.D : null;
+  if (!D) {
+    const day = n => keyDate(new Date(new Date(dk + 'T00:00:00').getTime() - n * 864e5)), from = day(60), old = day(365);
+    const get = async q => { try { const r = await sbFetch('/rest/v1/user_docs?select=key,sub,value&user_id=eq.' + encodeURIComponent(clientId) + q + '&limit=2000'); return r.ok ? await r.json() : []; } catch (e) { return []; } };
+    // Todo lo de los últimos 60 días y, para comparar y detectar récords, los entrenamientos de hasta un año
+    const [rows, older] = await Promise.all([get('&or=(sub.eq.,and(sub.gte.' + from + ',sub.lte.' + keyDate() + '))'), get('&key=eq.gym_logs&sub=gte.' + old + '&sub=lt.' + from)]);
+    D = {}; rows.concat(Array.isArray(older) ? older : []).forEach(x => { if (!x || x.value === null) return; if (x.sub) (D[x.key] = D[x.key] || {})[x.sub] = x.value; else D[x.key] = x.value; });
+    _spDay = { id: clientId, D, to: keyDate(), at: Date.now() };
+  }
+  if (!document.getElementById('sheet').classList.contains('show')) return;
   const dd = dayData(D, dk);
   const view = mode === 'gym' && dd.gym ? Object.assign({}, dd, { acts: [], food: null, water: null, weight: null, habits: null }) : dd;
   const f = new Intl.DateTimeFormat(_loc(), { weekday: 'long', day: 'numeric', month: 'long' });
-  openSheet('Resumen del día', `<div class="ds-nav"><div class="ds-date"><span translate="no">${escapeHtml(l.name || '')}</span> · <span translate="no">${escapeHtml(f.format(new Date(dk + 'T00:00:00')))}</span></div></div>
-    <div class="dr">${dayReportHtml(view)}</div>${dayIsEmpty(dd) ? '' : '<button class="btn-secondary ds-btn" id="ds-share">Guardar como imagen</button>'}`);
+  const prev = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() - 864e5)), next = keyDate(new Date(new Date(dk + 'T00:00:00').getTime() + 864e5));
+  openSheet(mode === 'gym' && dd.gym ? 'Resumen del entrenamiento' : 'Resumen del día', `<div class="exl-who" translate="no">${escapeHtml(l.name || '')}</div>
+    <div class="ds-nav"><button class="ds-arrow" data-ds-go="${prev}" aria-label="Día anterior">‹</button><div class="ds-date" translate="no">${escapeHtml(f.format(new Date(dk + 'T00:00:00')))}</div><button class="ds-arrow" data-ds-go="${next}" ${dk >= keyDate() ? 'disabled' : ''} aria-label="Día siguiente">›</button></div>
+    ${dd.gym ? `<div class="chips ds-mode"><div class="chip ${mode !== 'gym' ? 'selected' : ''}" data-ds-mode="day">Todo el día</div><div class="chip ${mode === 'gym' ? 'selected' : ''}" data-ds-mode="gym">Solo entrenamiento</div></div>` : ''}
+    <div class="dr">${dayReportHtml(view)}</div>
+    ${o.reply ? '<button class="btn-primary ds-btn" id="ds-reply">Responderle</button>' : ''}
+    ${dayIsEmpty(dd) ? '' : '<button class="btn-secondary ds-btn" id="ds-share">Guardar como imagen</button>'}
+    ${o.back ? '<button class="btn-secondary ds-btn" id="ds-back">‹ Volver</button>' : ''}`);
+  const sb = document.getElementById('sheet-body');
+  sb.querySelectorAll('[data-ds-go]').forEach(b => b.addEventListener('click', () => spDaySummary(l, b.dataset.dsGo, mode, o)));
+  sb.querySelectorAll('[data-ds-mode]').forEach(b => b.addEventListener('click', () => spDaySummary(l, dk, b.dataset.dsMode, o)));
+  sb.querySelectorAll('.dr-ex[data-dr-ex]').forEach(x => { x.dataset.drTap = '1'; x.addEventListener('click', () => openExLog(D, x.dataset.drEx, { who: l.name, back: () => spDaySummary(l, dk, mode, o) })); });
   const sh = document.getElementById('ds-share');
   if (sh) sh.addEventListener('click', () => shareCanvas(dayImageCanvas(dd, mode === 'gym' ? 'gym' : 'day', l.name || ''), `rutinal-${dk}.png`, ''));
+  const rp = document.getElementById('ds-reply'); if (rp) rp.addEventListener('click', o.reply);
+  const bk = document.getElementById('ds-back'); if (bk) bk.addEventListener('click', o.back);
 }
 
 function gymShareLoads(r, dateKey) {
@@ -15165,7 +15227,7 @@ function gymShareLoads(r, dateKey) {
     any = true;
     const sw = lg.swap && lg.swap[ex.id];
     const nm = sw ? `${sw.name} (${t('en lugar de')} ${ex.name})` : ex.name;
-    lines.push(`${nm}: ${sets.map(s => `${gymDispW(s.kg) || '?'} ${gymUnit()} × ${s.reps || '?'}${s.pain > 0 ? ` (${t('dolor')} ${s.pain}/10)` : ''}`).join(', ')}`);
+    lines.push(`${nm}: ${sets.map(s => `${gymDispW(s.kg) || '?'} ${gymUnit()} × ${s.reps || '?'}${s.pain > 0 ? ` (${t('dolor') || 'dolor'} ${s.pain}/10)` : ''}`).join(', ')}`);
   });
   cvAll(r, lg).forEach(([kind, it]) => { const v = lg && lg.cv && lg.cv[it.id]; if (v && v.done) { any = true; lines.push(`${t(CV_KIND[kind])} · ${cvName(it)}: ${cvText(it, v)}`); } });
   if (!any) { alert(t('Todavía no registras cargas en este entrenamiento.')); return; }
