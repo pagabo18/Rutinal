@@ -2557,6 +2557,8 @@
   .cd-wd.ok i { background: #16A34A; border-color: #16A34A; }
   .cd-wd b { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .cd-wd span { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .cd-chart { margin-top: 10px; color: var(--text); }
+  #sp-cardio .cd-week { margin: 10px 0 4px; }
   .hd-macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
   .hd-m { min-width: 0; }
   .hd-m-h { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; font-weight: 600; color: var(--text-3); }
@@ -11082,6 +11084,11 @@ function spClientReport(D, l, asg) {
     if (vol[WN - 1] || vol[WN - 2]) sum.push(line(`<span>Volumen</span>: <b>${fmt(vol[WN - 1])} ${U}</b>${dv != null ? ` (${sgn(dv)}%)` : ''}`));
     if (pmax0 != null) sum.push(line(`<span>Dolor máximo</span>: <b class="${pmax0 >= 6 ? 'warn' : ''}">${pmax0}/10</b>`));
     if (rpe0.length) sum.push(line(`<span>RPE promedio</span>: <b>${(rpe0.reduce((x, y) => x + y, 0) / rpe0.length).toFixed(1)}</b>`));
+    try {
+      const c0 = cardioWeek(D, 7), c1 = cardioWeek(D, 7, keyDate(new Date(today - 7 * 864e5 + 432e5)));
+      if (c0.stepsDays) sum.push(line(`<span>Pasos por día</span>: <b>${fmt(c0.stepsAvg)}</b>${c0.goal.steps ? ` · <span>meta cumplida</span> ${c0.stepsOk}/7` : ''}${c1.stepsDays ? ` · <span>semana anterior</span>: ${fmt(c1.stepsAvg)}` : ''}`));
+      if (c0.min || c1.min) sum.push(line(`<span>Minutos de cardio</span>: <b>${c0.min} min</b>${c0.goal.min ? ` · <span>meta cumplida</span> ${c0.minOk}/7` : ''} · <span>semana anterior</span>: ${c1.min} min`));
+    } catch (e) {}
     if (ses.some(x => x)) {
       charts.push(card('<span>Entrenamientos por semana</span>', spBars(ses, lab, { color: '#52525B', h: 100 })));
       if (vol.some(x => x)) charts.push(card(`<span>Volumen por semana</span> (${U})`, volGroupChartHtml(volG.map((groups, i) => ({ lab: lab[i], groups })), { h: 140 }) || spBars(vol, lab, { color: '#3B82F6' })));
@@ -11207,7 +11214,7 @@ async function spOpenClient(l) {
   const rep = spClientReport(D, l, asg);
   const tabs = { plans: plans + '<button class="sp-act primary" id="sp-assign" style="width:100%;">Asignar plantilla</button><div class="sp-actions" style="margin-top:8px;"><button class="sp-act" id="sp-goal-new">Poner objetivo</button>' + (linkRoles(l).some(r => r !== 'fisioterapeuta') ? '<button class="sp-act" id="sp-phase-edit">Fases del plan</button>' : '') + '</div>',
     progress: `<div class="sp-rep-btns"><button class="sp-act" id="sp-rep-copy">Copiar resumen</button><button class="sp-act" id="sp-rep-pdf">Guardar PDF</button></div>
-      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${typeof phaseClientHtml === 'function' ? phaseClientHtml(D) : ''}${typeof goalsClientHtml === 'function' ? goalsClientHtml(D) : ''}${rep}${typeof spRecordsHtml === 'function' ? spRecordsHtml(D) : ''}${gymR && typeof exLogIndex === 'function' && exLogIndex(D).length ? '<button class="sp-act exl-open" id="sp-exlog" style="width:100%;margin:2px 0 12px;">Progreso por ejercicio · gráficas de peso, reps y RIR</button>' : ''}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
+      <div id="sp-report"><div class="sp-kpis">${kpis.join('')}</div>${typeof phaseClientHtml === 'function' ? phaseClientHtml(D) : ''}${typeof goalsClientHtml === 'function' ? goalsClientHtml(D) : ''}${rep}${typeof spRecordsHtml === 'function' ? spRecordsHtml(D) : ''}${gymR && typeof exLogIndex === 'function' && exLogIndex(D).length ? '<button class="sp-act exl-open" id="sp-exlog" style="width:100%;margin:2px 0 12px;">Progreso por ejercicio · gráficas de peso, reps y RIR</button>' : ''}${weight || (linkRoles(l).every(r => r === 'fisioterapeuta') ? '' : '<div class="sp-empty">Sin registros de peso en este periodo.</div>')}${typeof cardioClientHtml === 'function' ? cardioClientHtml(D) : ''}${typeof actClientHtml === 'function' ? actClientHtml(D) : ''}</div><div id="sp-photos"></div>`,
     checkins: '<div id="sp-ck"></div>',
     assess: '<div id="sp-assess"></div>',
     logs: logs.join('') + (nutri ? '<div id="sp-mp"></div>' : '') };

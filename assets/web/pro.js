@@ -1449,6 +1449,39 @@ function cardioDay(D, dk) {
   return { steps, stepsGoal: g.steps, min, minGoal: g.min, items, stepsOk: g.steps > 0 && steps >= g.steps, minOk: g.min > 0 && min >= g.min,
     allOk: (g.steps > 0 || g.min > 0) && (!g.steps || steps >= g.steps) && (!g.min || min >= g.min) };
 }
+// Varios días seguidos (para el check-in y la ficha que ve el especialista). `endKey` = último día.
+function cardioWeek(D, n, endKey) {
+  const end = parseKey(endKey || keyDate()); end.setHours(12, 0, 0, 0);
+  const days = []; for (let i = (n || 7) - 1; i >= 0; i--) { const k = keyDate(new Date(end.getTime() - i * 864e5)); days.push(Object.assign({ k }, cardioDay(D, k))); }
+  const ws = days.filter(d => d.steps > 0), min = days.reduce((a, d) => a + d.min, 0);
+  return { days, goal: cardioGoal(D || {}), stepsDays: ws.length, stepsAvg: ws.length ? Math.round(ws.reduce((a, d) => a + d.steps, 0) / ws.length) : 0,
+    stepsOk: days.filter(d => d.stepsOk).length, min, minDays: days.filter(d => d.min > 0).length, minOk: days.filter(d => d.minOk).length, has: ws.length > 0 || min > 0 };
+}
+function cardioStripHtml(days, todayKey) {
+  const K = n => n >= 1000 ? (Math.round(n / 100) / 10).toLocaleString(_loc()) + 'k' : String(n);
+  return `<div class="cd-week">${days.map(x => `<div class="cd-wd${x.k === todayKey ? ' today' : ''}${x.allOk ? ' ok' : ''}"><small translate="no">${parseKey(x.k).toLocaleDateString(_loc(), { weekday: 'narrow' })}</small><i></i><b translate="no">${x.steps ? K(x.steps) : '–'}</b><span translate="no">${x.min ? x.min + '′' : '–'}</span></div>`).join('')}</div>`;
+}
+// Tarjeta en la ficha del atleta (vista del especialista): semana, promedios, metas y 4 semanas de pasos.
+function cardioClientHtml(D) {
+  D = D || {};
+  const w = cardioWeek(D, 7), m = cardioWeek(D, 28), F = n => Math.round(n).toLocaleString(_loc());
+  if (!m.has) return '';
+  const g = w.goal, row = (k, v, sub) => `<tr><td><span>${k}</span>${sub ? `<small>${sub}</small>` : ''}</td><td translate="no">${v}</td></tr>`;
+  const met = (ok) => `<span>Meta cumplida</span> <span translate="no">${ok}/7</span> <span>días</span>`;
+  const rows = [];
+  if (w.stepsDays) rows.push(row('Pasos por día (promedio)', F(w.stepsAvg), `${g.steps ? `<span>Meta</span> <span translate="no">${F(g.steps)}</span> · ${met(w.stepsOk)}` : ''}${w.stepsDays < 7 ? `${g.steps ? ' · ' : ''}<span translate="no">${w.stepsDays}</span> <span>días con registro</span>` : ''}`));
+  else rows.push(row('Pasos por día (promedio)', '—', '<span>Sin pasos registrados esta semana</span>'));
+  rows.push(row('Minutos de cardio', `${w.min} min`, g.min ? `<span>Meta</span> <span translate="no">${g.min} min</span> <span>al día</span> · ${met(w.minOk)}` : ''));
+  let chart = '';
+  if (m.stepsDays >= 3) {
+    const vals = m.days.map(d => d.steps || null), series = [{ vals, col: 'currentColor', w: 2 }];
+    if (g.steps) series.push({ vals: m.days.map(() => g.steps), col: '#16A34A', w: 1.4, dash: true, noPts: true });
+    chart = `<div class="cd-chart">${exLineSvg(m.days.map(d => d.k), series, { h: 130, min: 0, fmt: v => v >= 1000 ? (Math.round(v / 100) / 10) + 'k' : String(Math.round(v)) })}</div>
+      <div class="sp-card-d"><span>Pasos por día, últimas 4 semanas</span>${g.steps ? ' · <span>la línea verde es su meta</span>' : ''}</div>`;
+  }
+  return `<div class="sp-card" id="sp-cardio"><div class="sp-card-top"><div class="sp-card-n">Cardio y pasos</div><span class="cd-num"><span>Últimos 7 días</span></span></div>
+    ${cardioStripHtml(w.days, keyDate())}<table class="ant-t"><tbody>${rows.join('')}</tbody></table>${chart}</div>`;
+}
 // ---- contador de pasos del teléfono (app de Android) ----
 let _stepsNat = null, _stepsAsked = false;
 function stepsNativeOk() { return typeof window !== 'undefined' && !!(window.Android && typeof window.Android.stepsInfo === 'function'); }
@@ -1494,8 +1527,7 @@ function cardioWireHoy(el) {
 }
 function openCardio() {
   const D = cardioLocal(), dk = keyDate(), c = cardioDay(D, dk), g = cardioGoal(), F = n => n.toLocaleString(_loc()), nat = _stepsNat || {}, app = stepsNativeOk(), on = stepsNativeOn();
-  const K = n => n >= 1000 ? (Math.round(n / 100) / 10).toLocaleString(_loc()) + 'k' : String(n);
-  const week = []; for (let i = 6; i >= 0; i--) { const d = new Date(Date.now() - i * 864e5), k = keyDate(d); week.push([d, cardioDay(D, k), k === dk]); }
+  const week = cardioWeek(D, 7).days;
   const denied = app && _stepsAsked && nat.sensor && !on; _stepsAsked = false;
   const phone = !app ? '<div class="fit-note">En la app de Android los pasos se cuentan solos con el sensor del teléfono. Aquí puedes anotarlos a mano.</div>'
     : !nat.sensor ? '<div class="fit-note">Este teléfono no tiene contador de pasos; anótalos a mano.</div>'
@@ -1503,7 +1535,7 @@ function openCardio() {
     : `<button class="btn-primary" id="cd-nat-on" style="width:100%;">Usar el contador de pasos del celular</button><div class="fit-note" style="margin-top:8px;">${denied ? 'No se dio el permiso. Puedes darlo en los ajustes del teléfono: Apps › Rutinal › Permisos › Actividad física.' : 'Android te pedirá el permiso de actividad física. Solo se leen los pasos; no se usa tu ubicación.'}</div>`;
   openSheet('Cardio y pasos', `<div class="ant-ed act-ed" id="cd-sheet">
     <div class="ant-live" style="grid-template-columns:1fr 1fr;position:static;"><div><span>Pasos de hoy</span><b translate="no"><bdi id="cd-steps-now">${F(c.steps)}</bdi>${c.stepsGoal ? ` / ${F(c.stepsGoal)}` : ''}</b></div><div><span>Cardio de hoy</span><b translate="no">${c.min}${c.minGoal ? ` / ${c.minGoal}` : ''} min</b></div></div>
-    <div class="cd-week">${week.map(([d, x, td]) => `<div class="cd-wd${td ? ' today' : ''}${x.allOk ? ' ok' : ''}"><small translate="no">${d.toLocaleDateString(_loc(), { weekday: 'narrow' })}</small><i></i><b translate="no">${x.steps ? K(x.steps) : '–'}</b><span translate="no">${x.min ? x.min + '′' : '–'}</span></div>`).join('')}</div>
+    ${cardioStripHtml(week, dk)}
     <div class="act-cap" style="margin-bottom:14px;">Últimos 7 días: pasos y minutos de cardio. El punto se llena al cumplir tus metas.</div>
     <h3 class="ant-sub">Pasos</h3>
     ${on ? '' : `<label class="ant-f"><span>Pasos de hoy</span><span class="ant-in"><input id="cd-steps" inputmode="numeric" value="${c.steps || ''}" placeholder="0"></span></label>`}
@@ -2727,6 +2759,9 @@ function ckAuto() {
   try { const gl = gymLogs(); o.workouts = ks.filter(k => gl[k] && (gl[k].done || Object.values(gl[k].ex || {}).some(a => a.some(x => x && x.done)))).length; o.planned = Object.keys(gymSchedule()).length;
     const ps = ks.map(k => gl[k] && gl[k].feel && gl[k].feel.pain).filter(v => v != null && isFinite(+v)); if (ps.length) o.painMax = Math.max(...ps.map(Number)); } catch (e) {}
   try { const aw = actWeek(7); if (aw.n) { o.acts = aw.n; o.actMin = Math.round(aw.sec / 60); if (aw.km) o.actKm = Math.round(aw.km * 10) / 10; } } catch (e) {}
+  try { if (typeof modOn !== 'function' || modOn('cardio')) { const cw = cardioWeek(cardioLocal(), 7);
+    if (cw.stepsDays) { o.stepsAvg = cw.stepsAvg; o.stepsN = cw.stepsDays; if (cw.goal.steps) { o.stepsGoal = cw.goal.steps; o.stepsOk = cw.stepsOk; } }
+    if (cw.min) { o.cardioMin = cw.min; if (cw.goal.min) { o.cardioGoal = cw.goal.min; o.cardioOk = cw.minOk; } } } } catch (e) {}
   try { const mt = ks.map(k => dayMealTotals(k)).filter(Boolean), g = fitGoalInfo().t || {}; o.mealDays = mt.length;
     if (mt.length) { o.kcalAvg = Math.round(mt.reduce((a, b) => a + b.kcal, 0) / mt.length); o.protAvg = Math.round(mt.reduce((a, b) => a + (b.protein || 0), 0) / mt.length); }
     if (g.kcal) o.kcalGoal = Math.round(g.kcal); if (g.protein) o.protGoal = Math.round(g.protein); } catch (e) {}
@@ -2778,8 +2813,11 @@ function ckViewHtml(row, prev, reviews, names) {
   if (d.dietAdh != null) cells.push(antCard('Cumplimiento de dieta', d.dietAdh + ' %', '', dl(d.dietAdh, pd.dietAdh)));
   if (d.trainAdh != null) cells.push(antCard('Cumplimiento de entreno', d.trainAdh + ' %', '', dl(d.trainAdh, pd.trainAdh)));
   if (d.sleepH) cells.push(antCard('Horas de sueño', antN(d.sleepH, 1, 'h'), '', dl(d.sleepH, pd.sleepH)));
-  if (d.steps) cells.push(antCard('Pasos por día', (+d.steps).toLocaleString(_loc()), '', ''));
-  if (d.cardioMin) cells.push(antCard('Cardio en la semana', d.cardioMin + ' min', '', dl(d.cardioMin, pd.cardioMin)));
+  // Pasos y cardio: lo que escribió en el check-in o, si lo dejó en blanco, lo que registró la app
+  const stp = +d.steps || a.stepsAvg || 0, pstp = +pd.steps || pa.stepsAvg || null, cmin = +d.cardioMin || a.cardioMin || 0, pcmin = +pd.cardioMin || pa.cardioMin || null;
+  const metSub = (goal, ok, unit) => goal ? `<span>Meta</span> <span translate="no">${(+goal).toLocaleString(_loc())}${unit}</span> · <span>cumplida</span> <span translate="no">${ok || 0}/7</span>` : '';
+  if (stp) cells.push(antCard('Pasos por día', stp.toLocaleString(_loc()), d.steps ? '' : metSub(a.stepsGoal, a.stepsOk, ''), pstp ? dl(stp, pstp) : ''));
+  if (cmin) cells.push(antCard('Cardio en la semana', cmin + ' min', d.cardioMin ? '' : metSub(a.cardioGoal, a.cardioOk, ' min'), pcmin ? dl(cmin, pcmin) : ''));
   if (d.waist) cells.push(antCard('Cintura', antN(d.waist, 1, 'cm'), '', dl(d.waist, pd.waist)));
   const scales = CK_SCALES.filter(([k]) => d[k]).map(([k, n]) => `<div class="ck-sc"><span>${n}</span>${ckScaleBar(+d[k])}<b translate="no">${d[k]}/5</b>${pd[k] ? dl(+d[k], +pd[k]) : ''}</div>`).join('');
   const texts = CK_TEXTS.filter(([k]) => d[k]).map(([k, n]) => `<div class="ck-tx"><span>${n}</span><p translate="no">${escapeHtml(d[k])}</p></div>`).join('');
@@ -2797,6 +2835,8 @@ function openCheckinForm(row) {
   else autoRows.push(['Peso promedio de 7 días', '—']);
   autoRows.push(['Entrenamientos', auto.planned ? `${auto.workouts || 0}/${auto.planned}` : String(auto.workouts || 0)]);
   if (auto.acts) autoRows.push(['Cardio y otros deportes', `${auto.acts} · ${auto.actKm ? auto.actKm + ' km · ' : ''}${auto.actMin} min`]);
+  if (auto.stepsAvg) autoRows.push(['Pasos por día (promedio)', `${auto.stepsAvg.toLocaleString(_loc())}${auto.stepsGoal ? ` · ${auto.stepsOk}/7` : ''}`]);
+  if (auto.cardioMin) autoRows.push(['Minutos de cardio', `${auto.cardioMin} min${auto.cardioGoal ? ` · ${auto.cardioOk}/7` : ''}`]);
   autoRows.push(['Días con comidas', `${auto.mealDays || 0}/7${auto.kcalAvg ? ` · ${auto.kcalAvg} kcal` : ''}`]);
   openSheet('Check-in semanal', `<div class="ant-ed ck-ed">
     <div class="sp-sub" style="margin-bottom:10px;"><span>Semana del</span> <b translate="no">${escapeHtml(ckWeekLabel(wk))}</b></div>
@@ -2808,7 +2848,7 @@ function openCheckinForm(row) {
     <details open><summary>Cumplimiento</summary>
       <div class="ant-f col"><span>Dieta</span>${chips('dietAdh', [50, 60, 70, 80, 90, 100], d.dietAdh, '%')}</div>
       <div class="ant-f col"><span>Entrenamiento</span>${chips('trainAdh', [50, 60, 70, 80, 90, 100], d.trainAdh, '%')}</div>
-      ${num('sleepH', 'Horas de sueño por noche', 'h', '7.5')}${num('steps', 'Pasos por día (promedio)', '', '8000')}${num('cardioMin', 'Cardio en la semana', 'min', '90')}${num('waist', 'Cintura', 'cm')}</details>
+      ${num('sleepH', 'Horas de sueño por noche', 'h', '7.5')}${num('steps', 'Pasos por día (promedio)', '', auto.stepsAvg || '8000')}${num('cardioMin', 'Cardio en la semana', 'min', auto.cardioMin || '90')}${num('waist', 'Cintura', 'cm')}</details>
     <details open><summary>En tus palabras</summary>
       ${CK_TEXTS.map(([k, n]) => `<label class="ant-f col"><span>${n}</span><textarea data-ckt="${k}" rows="2" maxlength="700">${escapeHtml(d[k] || '')}</textarea></label>`).join('')}
 </details>
@@ -3160,4 +3200,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { cardioDay, cardioGoal, stepsNum, exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { cardioWeek, cardioDay, cardioGoal, stepsNum, exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

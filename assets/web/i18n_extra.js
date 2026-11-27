@@ -7151,6 +7151,46 @@ window.__I18N_EXTRA = {
    "pt-BR": "Sua meta diária de passos e de minutos de cardio",
    "fr": "Ton objectif quotidien de pas et de minutes de cardio"
   },
+  "Minutos de cardio": {
+   "en": "Cardio minutes",
+   "pt-BR": "Minutos de cardio",
+   "fr": "Minutes de cardio"
+  },
+  "días con registro": {
+   "en": "days logged",
+   "pt-BR": "dias com registro",
+   "fr": "jours enregistrés"
+  },
+  "Sin pasos registrados esta semana": {
+   "en": "No steps logged this week",
+   "pt-BR": "Sem passos registrados esta semana",
+   "fr": "Aucun pas enregistré cette semaine"
+  },
+  "al día": {
+   "en": "per day",
+   "pt-BR": "por dia",
+   "fr": "par jour"
+  },
+  "Pasos por día, últimas 4 semanas": {
+   "en": "Steps per day, last 4 weeks",
+   "pt-BR": "Passos por dia, últimas 4 semanas",
+   "fr": "Pas par jour, 4 dernières semaines"
+  },
+  "la línea verde es su meta": {
+   "en": "the green line is their goal",
+   "pt-BR": "a linha verde é a meta",
+   "fr": "la ligne verte est son objectif"
+  },
+  "cumplida": {
+   "en": "met",
+   "pt-BR": "cumprida",
+   "fr": "atteint"
+  },
+  "meta cumplida": {
+   "en": "goal met",
+   "pt-BR": "meta cumprida",
+   "fr": "objectif atteint"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",
