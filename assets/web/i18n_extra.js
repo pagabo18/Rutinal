@@ -7026,6 +7026,131 @@ window.__I18N_EXTRA = {
    "pt-BR": "Uma notificação fixa e silenciosa com seus hábitos de hoje e botões para marcá-los sem desbloquear o telefone.",
    "fr": "Une notification fixe et silencieuse avec vos habitudes du jour et des boutons pour les cocher sans déverrouiller le téléphone."
   },
+  "Cardio y pasos": {
+   "en": "Cardio & steps",
+   "pt-BR": "Cardio e passos",
+   "fr": "Cardio et pas"
+  },
+  "Celular": {
+   "en": "Phone",
+   "pt-BR": "Celular",
+   "fr": "Téléphone"
+  },
+  "Meta cumplida": {
+   "en": "Goal met",
+   "pt-BR": "Meta cumprida",
+   "fr": "Objectif atteint"
+  },
+  "Te faltan": {
+   "en": "You have",
+   "pt-BR": "Faltam",
+   "fr": "Il te reste"
+  },
+  "pasos": {
+   "en": "steps",
+   "pt-BR": "passos",
+   "fr": "pas"
+  },
+  "de cardio": {
+   "en": "of cardio",
+   "pt-BR": "de cardio",
+   "fr": "de cardio"
+  },
+  "Metas de hoy cumplidas.": {
+   "en": "Today's goals met.",
+   "pt-BR": "Metas de hoje cumpridas.",
+   "fr": "Objectifs du jour atteints."
+  },
+  "Toca para poner tus metas.": {
+   "en": "Tap to set your goals.",
+   "pt-BR": "Toque para definir suas metas.",
+   "fr": "Touche pour fixer tes objectifs."
+  },
+  "Toca para contar tus pasos con el celular.": {
+   "en": "Tap to count your steps with your phone.",
+   "pt-BR": "Toque para contar seus passos com o celular.",
+   "fr": "Touche pour compter tes pas avec ton téléphone."
+  },
+  "Registrar cardio": {
+   "en": "Log cardio",
+   "pt-BR": "Registrar cardio",
+   "fr": "Enregistrer du cardio"
+  },
+  "Pasos de hoy": {
+   "en": "Today's steps",
+   "pt-BR": "Passos de hoje",
+   "fr": "Pas du jour"
+  },
+  "Cardio de hoy": {
+   "en": "Today's cardio",
+   "pt-BR": "Cardio de hoje",
+   "fr": "Cardio du jour"
+  },
+  "Últimos 7 días: pasos y minutos de cardio. El punto se llena al cumplir tus metas.": {
+   "en": "Last 7 days: steps and cardio minutes. The dot fills in when you meet your goals.",
+   "pt-BR": "Últimos 7 dias: passos e minutos de cardio. O ponto se preenche ao cumprir suas metas.",
+   "fr": "7 derniers jours : pas et minutes de cardio. Le point se remplit quand tu atteins tes objectifs."
+  },
+  "En la app de Android los pasos se cuentan solos con el sensor del teléfono. Aquí puedes anotarlos a mano.": {
+   "en": "In the Android app, steps are counted automatically with the phone's sensor. Here you can enter them by hand.",
+   "pt-BR": "No app Android os passos são contados sozinhos com o sensor do telefone. Aqui você pode anotá-los à mão.",
+   "fr": "Dans l'app Android, les pas sont comptés automatiquement par le capteur du téléphone. Ici tu peux les saisir à la main."
+  },
+  "Este teléfono no tiene contador de pasos; anótalos a mano.": {
+   "en": "This phone has no step counter; enter them by hand.",
+   "pt-BR": "Este telefone não tem contador de passos; anote-os à mão.",
+   "fr": "Ce téléphone n'a pas de compteur de pas ; saisis-les à la main."
+  },
+  "Los pasos se cuentan solos con el sensor de tu celular.": {
+   "en": "Steps are counted automatically with your phone's sensor.",
+   "pt-BR": "Os passos são contados sozinhos com o sensor do seu celular.",
+   "fr": "Les pas sont comptés automatiquement par le capteur de ton téléphone."
+  },
+  "Última lectura:": {
+   "en": "Last reading:",
+   "pt-BR": "Última leitura:",
+   "fr": "Dernière lecture :"
+  },
+  "Dejar de usar el contador del celular": {
+   "en": "Stop using the phone's counter",
+   "pt-BR": "Parar de usar o contador do celular",
+   "fr": "Ne plus utiliser le compteur du téléphone"
+  },
+  "Usar el contador de pasos del celular": {
+   "en": "Use the phone's step counter",
+   "pt-BR": "Usar o contador de passos do celular",
+   "fr": "Utiliser le compteur de pas du téléphone"
+  },
+  "No se dio el permiso. Puedes darlo en los ajustes del teléfono: Apps › Rutinal › Permisos › Actividad física.": {
+   "en": "Permission wasn't granted. You can grant it in the phone's settings: Apps › Rutinal › Permissions › Physical activity.",
+   "pt-BR": "A permissão não foi concedida. Você pode concedê-la nos ajustes do telefone: Apps › Rutinal › Permissões › Atividade física.",
+   "fr": "L'autorisation n'a pas été accordée. Tu peux l'accorder dans les réglages du téléphone : Applis › Rutinal › Autorisations › Activité physique."
+  },
+  "Android te pedirá el permiso de actividad física. Solo se leen los pasos; no se usa tu ubicación.": {
+   "en": "Android will ask for the physical activity permission. Only steps are read; your location isn't used.",
+   "pt-BR": "O Android pedirá a permissão de atividade física. Só os passos são lidos; sua localização não é usada.",
+   "fr": "Android demandera l'autorisation d'activité physique. Seuls les pas sont lus ; ta position n'est pas utilisée."
+  },
+  "Metas de cada día": {
+   "en": "Daily goals",
+   "pt-BR": "Metas de cada dia",
+   "fr": "Objectifs quotidiens"
+  },
+  "Pon 0 en la meta que no quieras llevar.": {
+   "en": "Set 0 for a goal you don't want to track.",
+   "pt-BR": "Coloque 0 na meta que não quiser acompanhar.",
+   "fr": "Mets 0 pour l'objectif que tu ne veux pas suivre."
+  },
+  "Todavía no registras cardio hoy. Cuenta el que haces en tu rutina y las actividades que anotes.": {
+   "en": "No cardio logged today yet. Cardio done in your routine and the activities you log both count.",
+   "pt-BR": "Você ainda não registrou cardio hoje. Conta o que você faz na rotina e as atividades que anotar.",
+   "fr": "Pas encore de cardio aujourd'hui. Le cardio de ta routine et les activités que tu notes comptent."
+  },
+  "Tu meta diaria de pasos y de minutos de cardio": {
+   "en": "Your daily goal for steps and cardio minutes",
+   "pt-BR": "Sua meta diária de passos e de minutos de cardio",
+   "fr": "Ton objectif quotidien de pas et de minutes de cardio"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

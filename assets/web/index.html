@@ -2539,6 +2539,24 @@
   .macro-pill-kcal { background: var(--text); color: var(--bg); }
   .macro-pill-p { background: var(--c-prot); } .macro-pill-c { background: var(--c-carb); } .macro-pill-g { background: var(--c-fat); }
   #ring-kcal { stroke: var(--c-kcal); } #ring-p { stroke: var(--c-prot); } #ring-c { stroke: var(--c-carb); } #ring-g { stroke: var(--c-fat); }
+  /* ===== Cardio y pasos ===== */
+  .hd-cd { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+  .hd-cd-c { min-width: 0; }
+  .hd-cd-h { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .hd-cd-h small { font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); }
+  .hd-cd-v { margin-top: 4px; font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hd-cd-v b { font-size: 22px; font-weight: 700; letter-spacing: -.02em; color: var(--text); }
+  .hd-cd-c .hd-bar { height: 6px; margin-top: 8px; }
+  .hd-cd-c.ok .hd-bar i { background: #16A34A; }
+  .hd-cd-tip { margin-top: 10px; font-size: 12px; color: var(--text-3); }
+  .cd-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 14px 0 6px; text-align: center; }
+  .cd-wd { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 0; border-radius: 10px; min-width: 0; }
+  .cd-wd.today { background: var(--surface-2); }
+  .cd-wd small { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; }
+  .cd-wd i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--border-strong, var(--text-3)); }
+  .cd-wd.ok i { background: #16A34A; border-color: #16A34A; }
+  .cd-wd b { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cd-wd span { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
   .hd-macros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
   .hd-m { min-width: 0; }
   .hd-m-h { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; font-weight: 600; color: var(--text-3); }
@@ -2928,9 +2946,9 @@
 
   /* ===== Foto grande del ejercicio abierto ===== */
   .gym-ex-hero { position: relative; display: block; width: 100%; padding: 0; margin: 2px 0 12px; border: 0; border-radius: 14px; overflow: hidden; background: var(--surface-2); cursor: pointer; }
-  .gym-hero-info { width: auto; height: auto; border-radius: 999px; padding: 5px 10px; font-size: 12px; font-weight: 600; }
   .gym-ex-hero img { display: block; width: 100%; height: 210px; object-fit: contain; background: var(--surface-2); }
   .gym-hero-zoom { position: absolute; right: 8px; bottom: 8px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: rgba(9, 9, 11, .72); color: #fff; }
+  .gym-hero-zoom.gym-hero-info { width: auto; height: auto; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
   @media (min-width: 700px) { .gym-ex-hero img { height: 260px; } }
 
   .cv-addrow { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 12px; padding: 12px 14px; border: 1px dashed var(--border-strong); border-radius: 16px; background: transparent; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
@@ -9835,8 +9853,8 @@ function openAuthUserEditor(u) {
 // escribiendo en el dispositivo; aquí solo se suben los cambios y se bajan los de otros
 // dispositivos. En conflicto gana lo último que llega al servidor, por documento.
 // ============================================================
-const SYNC_DATED = ['meal_log', 'gym_logs', 'habitLog', 'weight_log', 'hydration_log', 'act_log'];
-const SYNC_WHOLE = ['goals', 'phases', 'athlete_profile', 'app_prefs', 'nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'gym_sched_since', 'gym_missed_skip', 'habits', 'habitTimes', 'cats', 'catGoals',
+const SYNC_DATED = ['meal_log', 'gym_logs', 'habitLog', 'weight_log', 'hydration_log', 'act_log', 'steps_log'];
+const SYNC_WHOLE = ['goals', 'phases', 'cardio_goal', 'athlete_profile', 'app_prefs', 'nutri_profile', 'food_goal_kcal', 'gym_routines', 'gym_schedule', 'gym_sched_since', 'gym_missed_skip', 'habits', 'habitTimes', 'cats', 'catGoals',
   'sch_weekday', 'sch_saturday', 'sch_sunday', 'imprevistos', 'plan', 'planTasks', 'plan_start', 'hydration_settings',
   'custom_foods', 'dishes', 'diary', 'gym_unit', 'body_unit', 'achievements', 'bestStreak', 'streak_pauses', 'pomo_settings', 'pomo_sessions'];
 const SYNC_MAX_DOC = 300000; // caracteres; documentos más grandes (p. ej. con fotos) no se suben
@@ -10086,7 +10104,7 @@ function onAuthReady() {
 // El especialista genera un código de invitación; el atleta lo acepta viendo qué comparte.
 // El servidor decide qué documentos puede leer cada rol (política de user_docs).
 // ============================================================
-const LINK_KEY_LABELS = { meal_photos: 'fotos de comidas', goals: 'objetivos', phases: 'fases del plan', act_log: 'cardio y otros deportes', athlete_profile: 'perfil de atleta', gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
+const LINK_KEY_LABELS = { meal_photos: 'fotos de comidas', goals: 'objetivos', phases: 'fases del plan', act_log: 'cardio y otros deportes', steps_log: 'pasos', athlete_profile: 'perfil de atleta', gym_logs: 'entrenamientos', gym_routines: 'rutinas', weight_log: 'peso', meal_log: 'comidas', nutri_profile: 'metas de nutrición', hydration_log: 'agua' };
 const LINK_ERRORS = { bad_code: 'Ese código no existe o ya venció.', own_code: 'Ese código es tuyo; compártelo con tu atleta.', too_many: 'Tienes demasiadas invitaciones pendientes. Cancela alguna.', forbidden: 'Tu cuenta no tiene esa especialidad.', athlete_limit: 'Llegaste a tu límite de atletas. Para sumar más, pide un plan mayor a quien administra Rutinal, o termina el vínculo con un atleta que ya no acompañes.', athlete_limit_client: 'Tu especialista ya llegó a su límite de atletas. Avísale para que libere un lugar o amplíe su plan.', taken: 'Ese usuario ya existe. Si es la misma persona, vuelve atrás, elige «Ya tiene cuenta» y dale un código. Si es otra persona, prueba con otro usuario.' };
 function linkErr(code) { return LINK_ERRORS[code] || authErr(code); }
 async function linkRpc(fn, args) {
@@ -10826,7 +10844,7 @@ function openEndServices(l, mine, onDone) {
   }));
   document.getElementById('end-all').addEventListener('click', async () => { if (!confirm(msgAll)) return; closeSheet(); await endAll(); });
 }
-const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log', 'act_log', 'athlete_profile', 'goals', 'phases'], nutriologo: ['meal_log', 'meal_photos', 'nutri_profile', 'weight_log', 'hydration_log', 'goals', 'phases'], fisioterapeuta: ['gym_logs', 'gym_routines', 'act_log', 'athlete_profile', 'goals'] };
+const ASG_ROLE_SEES = { coach: ['gym_logs', 'gym_routines', 'weight_log', 'act_log', 'steps_log', 'athlete_profile', 'goals', 'phases'], nutriologo: ['meal_log', 'meal_photos', 'nutri_profile', 'weight_log', 'hydration_log', 'goals', 'phases'], fisioterapeuta: ['gym_logs', 'gym_routines', 'act_log', 'steps_log', 'athlete_profile', 'goals'] };
 // El servicio (rol) con el que se puede dejar un tipo de plantilla a esta persona
 function asgRoleFor(l, kind) { return linkRoles(l).find(r => (ASG_ROLE_KINDS[r] || []).includes(kind)) || null; }
 function asgKindsFor(l) { const out = []; linkRoles(l).forEach(r => (ASG_ROLE_KINDS[r] || []).forEach(k => { if (!out.includes(k)) out.push(k); })); return out; }
@@ -11651,10 +11669,11 @@ function renderHoyDash() {
   } catch (e) {}
   try { if (typeof modApply === 'function') modApply(); } catch (e) {}
   const M = k => typeof modOn !== 'function' || modOn(k);
-  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${typeof phaseHoyCard === 'function' ? phaseHoyCard() : ''}${typeof goalsHoyCard === 'function' ? goalsHoyCard() : ''}${week}<button class="hd-sum" id="hd-daysum"><span><b>Resumen del día</b><small>Compártelo o mándaselo a tu especialista</small></span><span class="sp-chev">›</span></button>`;
+  el.innerHTML = `<div class="hd-hello"><span>${hoyDashGreeting()}</span>${s.name || s.user ? `, <span translate="no">${escapeHtml(String(s.name || s.user).trim().split(/\s+/)[0])}</span>` : ''}</div>${M('gym') ? gym : ''}${M('cardio') && typeof cardioHoyCard === 'function' ? cardioHoyCard() : ''}${M('checkin') && typeof ckHoyCard === 'function' ? ckHoyCard() : ''}${M('agenda') ? appt : ''}${chat}${M('comida') ? food : ''}${M('cuerpo') ? (typeof bodyHoyCard === 'function' ? bodyHoyCard() : weight) : ''}${typeof phaseHoyCard === 'function' ? phaseHoyCard() : ''}${typeof goalsHoyCard === 'function' ? goalsHoyCard() : ''}${week}<button class="hd-sum" id="hd-daysum"><span><b>Resumen del día</b><small>Compártelo o mándaselo a tu especialista</small></span><span class="sp-chev">›</span></button>`;
   el.querySelectorAll('[data-hd-phase]').forEach(c => c.addEventListener('click', () => openPhases()));
   el.querySelectorAll('[data-hd-goals]').forEach(c => c.addEventListener('click', () => openGoals()));
   if (typeof ckWireHoy === 'function') ckWireHoy(el);
+  if (typeof cardioWireHoy === 'function') cardioWireHoy(el);
   el.querySelectorAll('[data-hd-ant]').forEach(c => c.addEventListener('click', e => { if (e.target.closest('button')) return; openMyAssessments(); }));
   el.querySelectorAll('[data-hd-agenda]').forEach(c => c.addEventListener('click', () => openAgenda()));
   el.querySelectorAll('[data-hd-chat]').forEach(b => b.addEventListener('click', () => { const l = msgCache().links[+b.dataset.hdChat]; if (l) openNotes(l.id, l.name, null, { spec: false, role: l.role, roles: linkRoles(l), ids: linkIds(l) }); }));
@@ -14992,6 +15011,17 @@ function gymLiveFill(r, lg, ex, i, dk) {
   const last = gymLastLog(ex.id, dk, sw ? sw.name : null, sw ? sw.dbId : null), prev = last && last.sets[i];
   return { kg: s.kg || (!sw && gymRecLoad(ex, i)) || (prev && prev.kg) || '', reps: s.reps || (prev && prev.reps) || (trN ? String(trN) : '') };
 }
+// Serie marcada en el widget con valores a la vista (a.vals): manda lo que se ajustó ahí.
+// El peso llega en la unidad que se ve; si no cambió, se deja el guardado (sin redondeos de ida y vuelta).
+function gymLiveVals(a, fill) {
+  if (!a || !a.vals) return fill;
+  const out = Object.assign({}, fill), num = v => { const n = gymNum(v); return v == null || String(v).trim() === '' || isNaN(n) ? null : n; };
+  const kg = num(a.kg), reps = num(a.reps), rir = num(a.rir);
+  if (kg != null && kg >= 0 && kg < 2000 && gymDispW(fill.kg) !== String(a.kg)) out.kg = gymStoreW(String(kg));
+  if (reps != null) out.reps = String(Math.max(0, Math.min(999, Math.round(reps))));
+  if (rir != null) out.rir = String(Math.max(0, Math.min(10, rir)));
+  return out;
+}
 // Series pendientes en el orden en que se hacen (circuitos: por vueltas).
 function gymLiveQueue(r, lg, dk) {
   const groups = [];
@@ -15006,7 +15036,16 @@ function gymLiveQueue(r, lg, dk) {
       if (k >= tot(ex) || (((lg.ex || {})[ex.id] || [])[k] || {}).done) return;
       const sw = lg.swap && lg.swap[ex.id], f = gymLiveFill(r, lg, ex, k, dk), tr = k < gymTotalSets(ex) ? gymSetRepsForIndex(ex, k) : '';
       const tgt = sport ? [tr] : [f.kg ? `${gymDispW(f.kg)} ${U} × ${f.reps || tr || '?'}` : (tr ? `${tr} reps` : ''), ex.rir ? 'RIR ' + ex.rir : ''];
-      q.push({ ex: ex.id, i: k, n: sw ? sw.name : ex.name, s: `${_tt('Serie')} ${k + 1}/${tot(ex)}`, t: tgt.filter(Boolean).join(' · '), r: gymRestSeconds(ex.rest) || restDef });
+      const it = { ex: ex.id, i: k, n: sw ? sw.name : ex.name, s: `${_tt('Serie')} ${k + 1}/${tot(ex)}`, t: tgt.filter(Boolean).join(' · '), r: gymRestSeconds(ex.rest) || restDef };
+      if (sport) it.sp = true;
+      else {
+        // Para el widget: peso, reps y RIR de la serie (en la unidad que se ve) y lo planeado
+        const cur = ((lg.ex || {})[ex.id] || [])[k] || {}, rirPlan = (String(ex.rir == null ? '' : ex.rir).match(/\d+(?:[.,]\d+)?/) || [''])[0].replace(',', '.');
+        it.kg = gymDispW(f.kg) || ''; it.reps = String(f.reps || ''); it.rir = String(cur.rir != null && cur.rir !== '' ? cur.rir : rirPlan);
+        it.u = U; it.st = U === 'lb' ? 5 : 2.5;
+        it.p = [tr ? `${tr} reps` : '', ex.rir ? 'RIR ' + ex.rir : ''].filter(Boolean).join(' · ');
+      }
+      q.push(it);
     });
   });
   cvq('cardio');
@@ -15065,7 +15104,7 @@ function gymLiveApply(acts) {
         lg.ex = lg.ex || {};
         const arr = lg.ex[ex.id] || (lg.ex[ex.id] = []);
         while (arr.length <= a.i) arr.push({});
-        Object.assign(arr[a.i], gymLiveFill(r, lg, ex, a.i, a.date), { done: true });
+        Object.assign(arr[a.i], gymLiveVals(a, gymLiveFill(r, lg, ex, a.i, a.date)), { done: true });
         if (!lg.start) lg.start = Date.now();
         lg.ts = Date.now();
         reopen = { rid: r.id, date: a.date };
@@ -15177,7 +15216,7 @@ setTimeout(gymLiveSoon, 1500);
 // ---------- Resumen del día: ver, compartir como imagen y enviar al especialista ----------
 function localDayD() {
   const D = {};
-  ['gym_logs', 'gym_routines', 'meal_log', 'act_log', 'hydration_log', 'hydration_settings', 'weight_log', 'habits', 'habitLog', 'nutri_profile', 'food_goal_kcal'].forEach(k => { const v = S.get(k, null); if (v != null) D[k] = v; });
+  ['gym_logs', 'gym_routines', 'meal_log', 'act_log', 'steps_log', 'cardio_goal', 'hydration_log', 'hydration_settings', 'weight_log', 'habits', 'habitLog', 'nutri_profile', 'food_goal_kcal'].forEach(k => { const v = S.get(k, null); if (v != null) D[k] = v; });
   return D;
 }
 function localDayGoal() {

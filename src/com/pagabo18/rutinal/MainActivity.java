@@ -271,9 +271,42 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Entrega a la app los pasos guardados (window.onNativeSteps). */
+    public void pushSteps() {
+        runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    if (webView != null) webView.evaluateJavascript("window.onNativeSteps && window.onNativeSteps(" + StepCounter.info(getApplicationContext()) + ")", null);
+                } catch (Exception ignored) {}
+            }
+        });
+    }
+
+    public void askStepsPermission() {
+        runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    if (Build.VERSION.SDK_INT >= 29) requestPermissions(new String[]{StepCounter.PERM}, StepCounter.REQ_PERM);
+                } catch (Exception ignored) {}
+            }
+        });
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == StepCounter.REQ_PERM) {
+            boolean ok = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            if (ok) {
+                StepCounter.setOn(getApplicationContext(), true);
+                StepCounter.sample(getApplicationContext(), new Runnable() {
+                    @Override public void run() { pushSteps(); }
+                });
+            } else {
+                pushSteps();
+            }
+            return;
+        }
         if (requestCode == REQ_CAMERA_WEB && pendingWebPermissionRequest != null) {
             final PermissionRequest request = pendingWebPermissionRequest;
             pendingWebPermissionRequest = null;
@@ -382,5 +415,14 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         FOREGROUND = true;
+        // Pasos al día al volver a la app
+        try {
+            if (StepCounter.isOn(getApplicationContext())) {
+                StepCounter.schedule(getApplicationContext());
+                StepCounter.sample(getApplicationContext(), new Runnable() {
+                    @Override public void run() { pushSteps(); }
+                });
+            }
+        } catch (Exception ignored) {}
     }
 }

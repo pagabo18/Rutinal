@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Rutinal</string>
-    <string name="widget_gym_desc">Ejercicio que sigue, descanso y botón de serie hecha</string>
+    <string name="widget_gym_desc">Serie que sigue con peso, reps y RIR ajustables, descanso y botón de hecho</string>
     <string name="widget_habits_desc">Tus hábitos de hoy: toca uno para marcarlo</string>
     <string name="widget_food_desc">Calorías y macros de hoy contra tu meta</string>
     <string name="widget_ahora_desc">El bloque de tu día que toca ahora y el que sigue</string>

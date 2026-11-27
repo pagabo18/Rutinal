@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.pagabo18.rutinal"
-    android:versionCode="24"
-    android:versionName="2.1.0">
+    android:versionCode="25"
+    android:versionName="2.2.0">
 
     <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="34" />
 
@@ -18,6 +18,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Pasos del día con el contador del teléfono (se pide solo si el usuario lo activa) -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-feature android:name="android.hardware.sensor.stepcounter" android:required="false" />
     <!-- Guardar exportaciones en Descargas (solo API 24-28; desde 29 se usa MediaStore) -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -208,6 +211,15 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_pomo_info" />
+        </receiver>
+
+        <!-- Lectura periódica del contador de pasos -->
+        <receiver
+            android:name=".StepsReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.pagabo18.rutinal.STEPS_SAMPLE" />
+            </intent-filter>
         </receiver>
 
         <receiver

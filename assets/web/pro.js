@@ -558,6 +558,7 @@ function bodyHoyCard() {
 // ============================================================
 const MOD_LIST = [
   ['gym', 'Gym', 'Rutinas, registro de entrenamiento y progreso'],
+  ['cardio', 'Cardio y pasos', 'Tu meta diaria de pasos y de minutos de cardio'],
   ['comida', 'Comida', 'Registro de alimentos, metas y plan de alimentación'],
   ['habitos', 'Hábitos', 'Hábitos del día, rachas e hidratación'],
   ['pomo', 'Reloj', 'Pomodoro y temporizador'],
@@ -1417,6 +1418,117 @@ function openWarmupTemplates(o) {
 }
 
 // ============================================================
+// CARDIO Y PASOS DEL DÍA
+// Meta diaria de pasos y de minutos de cardio. Los pasos salen del contador del
+// teléfono (app de Android) o se anotan a mano; los minutos, de las actividades
+// registradas y del cardio hecho en la rutina del día.
+//   steps_log   = { '2026-11-27': 8123 }
+//   cardio_goal = { steps: 8000, min: 30 }   (0 = sin esa meta)
+// ============================================================
+const CARDIO_DEF = { steps: 8000, min: 30 };
+const CARDIO_SPORTS = ['running', 'ciclismo', 'natacion', 'box', 'funcional', 'hyrox', 'caminata', 'equipo', 'otro'];
+function stepsNum(v) { const n = Math.round(+v); return isFinite(n) && n > 0 ? Math.min(200000, n) : 0; }
+function cardioGoal(D) {
+  const raw = D ? D.cardio_goal : S.get('cardio_goal', null), o = raw && typeof raw === 'object' ? raw : {};
+  const n = (v, d, max) => { const x = Math.round(+v); return v == null || v === '' || !isFinite(x) ? d : Math.max(0, Math.min(max, x)); };
+  return { steps: n(o.steps, CARDIO_DEF.steps, 100000), min: n(o.min, CARDIO_DEF.min, 600) };
+}
+function stepsLog() { const l = S.get('steps_log', null); return l && typeof l === 'object' ? l : {}; }
+function cardioLocal() { return { act_log: actLog(), gym_logs: typeof gymLogs === 'function' ? gymLogs() : {}, gym_routines: typeof gymRoutines === 'function' ? gymRoutines() : [], steps_log: stepsLog(), cardio_goal: S.get('cardio_goal', null) }; }
+// Pasos y minutos de cardio de un día, con sus metas. D = datos del atleta (propios o los que ve el especialista).
+function cardioDay(D, dk) {
+  D = D || {};
+  const acts = ((D.act_log || {})[dk] || []).filter(a => a && typeof a === 'object'), lg = (D.gym_logs || {})[dk], items = [], g = cardioGoal(D);
+  acts.forEach(a => { const m = (+a.time || 0) / 60; if (CARDIO_SPORTS.includes(a.sport) && m > 0 && m <= 1440) items.push({ n: (SPORT_BY[a.sport] || { name: a.sport }).name, min: m }); });
+  // Cardio hecho dentro de la rutina (si esa rutina ya quedó como actividad, no se cuenta dos veces)
+  if (lg && lg.cv && typeof lg.cv === 'object' && !acts.some(a => a.rid && a.rid === lg.routineId)) {
+    const r = (Array.isArray(D.gym_routines) ? D.gym_routines : []).find(x => x && x.id === lg.routineId) || {};
+    cvItems(r, 'cardio', lg).forEach(it => { const v = lg.cv[it.id], m = v && v.done ? parseFloat(String(v.time || '').replace(',', '.')) || 0 : 0; if (m > 0 && m <= 1440) items.push({ n: cvName(it), min: m }); });
+  }
+  const steps = stepsNum((D.steps_log || {})[dk]), min = Math.round(items.reduce((a, x) => a + x.min, 0));
+  return { steps, stepsGoal: g.steps, min, minGoal: g.min, items, stepsOk: g.steps > 0 && steps >= g.steps, minOk: g.min > 0 && min >= g.min,
+    allOk: (g.steps > 0 || g.min > 0) && (!g.steps || steps >= g.steps) && (!g.min || min >= g.min) };
+}
+// ---- contador de pasos del teléfono (app de Android) ----
+let _stepsNat = null, _stepsAsked = false;
+function stepsNativeOk() { return typeof window !== 'undefined' && !!(window.Android && typeof window.Android.stepsInfo === 'function'); }
+function stepsNativeOn() { return !!(_stepsNat && _stepsNat.sensor && _stepsNat.on && _stepsNat.perm); }
+// Lo que cuenta el teléfono entra al registro; nunca baja un número ya guardado.
+function stepsNativeApply(info) {
+  if (!info || typeof info !== 'object') return;
+  const was = stepsNativeOn(), first = !_stepsNat; _stepsNat = info;
+  let ch = false;
+  if (stepsNativeOn() && info.days && typeof info.days === 'object') {
+    const l = stepsLog();
+    Object.keys(info.days).forEach(k => { if (!/^\d{4}-\d\d-\d\d$/.test(k)) return; const n = stepsNum(info.days[k]); if (n > stepsNum(l[k])) { l[k] = n; ch = true; } });
+    if (ch) S.set('steps_log', l);
+  }
+  if (ch || first || was !== stepsNativeOn()) { try { renderHoyDash(); } catch (e) {} }
+  if (typeof document !== 'undefined' && document.getElementById('cd-sheet')) { if (was !== stepsNativeOn() || _stepsAsked) openCardio(); else { const e = document.getElementById('cd-steps-now'); if (e) e.textContent = cardioDay(cardioLocal(), keyDate()).steps.toLocaleString(_loc()); } }
+}
+function stepsNativePull() { if (!stepsNativeOk()) return; try { stepsNativeApply(JSON.parse(window.Android.stepsInfo() || '{}')); } catch (e) {} }
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  window.onNativeSteps = stepsNativeApply;
+  setTimeout(stepsNativePull, 1500);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) stepsNativePull(); });
+  setInterval(() => { if (!document.hidden && stepsNativeOn()) stepsNativePull(); }, 60000);
+}
+// ---- tarjeta en Hoy ----
+function cardioHoyCard() {
+  const c = cardioDay(cardioLocal(), keyDate()), F = n => n.toLocaleString(_loc());
+  const col = (label, cur, goal, unit, ok, tag) => `<div class="hd-cd-c${ok ? ' ok' : ''}"><div class="hd-cd-h"><span>${label}</span>${tag ? `<small>${tag}</small>` : ''}</div>
+      <div class="hd-cd-v" translate="no"><b>${F(cur)}</b>${goal ? ` / ${F(goal)}` : ''}${unit ? ` ${unit}` : ''}</div>${goal ? `<div class="hd-bar"><i style="width:${Math.min(100, Math.round(cur / goal * 100))}%"></i></div>` : ''}</div>`;
+  const left = [];
+  if (c.stepsGoal && !c.stepsOk) left.push(`<span translate="no">${F(c.stepsGoal - c.steps)}</span> <span>pasos</span>`);
+  if (c.minGoal && !c.minOk) left.push(`<span translate="no">${c.minGoal - c.min} min</span> <span>de cardio</span>`);
+  const hint = c.allOk ? '<span>Metas de hoy cumplidas.</span>' : left.length ? `<span>Te faltan</span> ${left.join(' <span>y</span> ')}`
+    : '<span>Toca para poner tus metas.</span>';
+  const tip = stepsNativeOk() && _stepsNat && _stepsNat.sensor && !stepsNativeOn() ? '<div class="hd-cd-tip">Toca para contar tus pasos con el celular.</div>' : '';
+  return `<div class="hd-card hd-cardio" data-hd-cardio="1" style="cursor:pointer;"><div class="hd-k"><span>Cardio y pasos</span>${c.allOk ? '<span class="hd-badge ok">Meta cumplida</span>' : ''}</div>
+    <div class="hd-cd">${col('Pasos', c.steps, c.stepsGoal, '', c.stepsOk, stepsNativeOn() ? 'Celular' : '')}${col('Cardio', c.min, c.minGoal, 'min', c.minOk, '')}</div>${tip}
+    <div class="hd-row"><div class="hd-d">${hint}</div><button class="hd-btn ghost" data-hd-cardio-add="1">Registrar cardio</button></div></div>`;
+}
+function cardioWireHoy(el) {
+  el.querySelectorAll('[data-hd-cardio]').forEach(c => c.addEventListener('click', e => { if (e.target.closest('button')) return; openCardio(); }));
+  el.querySelectorAll('[data-hd-cardio-add]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openActivityForm(null, keyDate()); }));
+}
+function openCardio() {
+  const D = cardioLocal(), dk = keyDate(), c = cardioDay(D, dk), g = cardioGoal(), F = n => n.toLocaleString(_loc()), nat = _stepsNat || {}, app = stepsNativeOk(), on = stepsNativeOn();
+  const K = n => n >= 1000 ? (Math.round(n / 100) / 10).toLocaleString(_loc()) + 'k' : String(n);
+  const week = []; for (let i = 6; i >= 0; i--) { const d = new Date(Date.now() - i * 864e5), k = keyDate(d); week.push([d, cardioDay(D, k), k === dk]); }
+  const denied = app && _stepsAsked && nat.sensor && !on; _stepsAsked = false;
+  const phone = !app ? '<div class="fit-note">En la app de Android los pasos se cuentan solos con el sensor del teléfono. Aquí puedes anotarlos a mano.</div>'
+    : !nat.sensor ? '<div class="fit-note">Este teléfono no tiene contador de pasos; anótalos a mano.</div>'
+    : on ? `<div class="fit-note"><span>Los pasos se cuentan solos con el sensor de tu celular.</span>${nat.ts ? ` <span>Última lectura:</span> <span translate="no">${new Date(nat.ts).toLocaleTimeString(_loc(), { hour: '2-digit', minute: '2-digit' })}</span>` : ''}</div><button class="btn-secondary" id="cd-nat-off" style="width:100%;margin-top:8px;">Dejar de usar el contador del celular</button>`
+    : `<button class="btn-primary" id="cd-nat-on" style="width:100%;">Usar el contador de pasos del celular</button><div class="fit-note" style="margin-top:8px;">${denied ? 'No se dio el permiso. Puedes darlo en los ajustes del teléfono: Apps › Rutinal › Permisos › Actividad física.' : 'Android te pedirá el permiso de actividad física. Solo se leen los pasos; no se usa tu ubicación.'}</div>`;
+  openSheet('Cardio y pasos', `<div class="ant-ed act-ed" id="cd-sheet">
+    <div class="ant-live" style="grid-template-columns:1fr 1fr;position:static;"><div><span>Pasos de hoy</span><b translate="no"><bdi id="cd-steps-now">${F(c.steps)}</bdi>${c.stepsGoal ? ` / ${F(c.stepsGoal)}` : ''}</b></div><div><span>Cardio de hoy</span><b translate="no">${c.min}${c.minGoal ? ` / ${c.minGoal}` : ''} min</b></div></div>
+    <div class="cd-week">${week.map(([d, x, td]) => `<div class="cd-wd${td ? ' today' : ''}${x.allOk ? ' ok' : ''}"><small translate="no">${d.toLocaleDateString(_loc(), { weekday: 'narrow' })}</small><i></i><b translate="no">${x.steps ? K(x.steps) : '–'}</b><span translate="no">${x.min ? x.min + '′' : '–'}</span></div>`).join('')}</div>
+    <div class="act-cap" style="margin-bottom:14px;">Últimos 7 días: pasos y minutos de cardio. El punto se llena al cumplir tus metas.</div>
+    <h3 class="ant-sub">Pasos</h3>
+    ${on ? '' : `<label class="ant-f"><span>Pasos de hoy</span><span class="ant-in"><input id="cd-steps" inputmode="numeric" value="${c.steps || ''}" placeholder="0"></span></label>`}
+    ${phone}
+    <h3 class="ant-sub">Metas de cada día</h3>
+    <label class="ant-f"><span>Pasos</span><span class="ant-in"><input id="cd-g-steps" inputmode="numeric" value="${g.steps}" placeholder="8000"></span></label>
+    <label class="ant-f"><span>Cardio</span><span class="ant-in"><input id="cd-g-min" inputmode="numeric" value="${g.min}" placeholder="30"><i>min</i></span></label>
+    <div class="fit-note">Pon 0 en la meta que no quieras llevar.</div>
+    <h3 class="ant-sub">Cardio de hoy</h3>
+    ${c.items.length ? c.items.map(x => `<div class="act-row" style="cursor:default;"><div><b>${escapeHtml(x.n)}</b></div><em translate="no">${Math.round(x.min)} min</em></div>`).join('') : '<div class="sp-empty" style="margin-bottom:8px;">Todavía no registras cardio hoy. Cuenta el que haces en tu rutina y las actividades que anotes.</div>'}
+    <button class="btn-secondary" id="cd-add" style="width:100%;margin-top:8px;">Registrar cardio</button><p class="auth-msg" id="cd-msg"></p></div>`, () => {
+    const num = id => { const e = document.getElementById(id); if (!e) return null; const v = String(e.value).trim().replace(/[\s.,](?=\d{3}\b)/g, ''); if (v === '') return 0; const n = Math.round(parseFloat(v.replace(',', '.'))); return isFinite(n) && n >= 0 ? n : NaN; };
+    const gs = num('cd-g-steps'), gm = num('cd-g-min'), st = num('cd-steps'), msg = document.getElementById('cd-msg');
+    if (isNaN(gs) || isNaN(gm) || gs > 100000 || gm > 600 || (st != null && (isNaN(st) || st > 200000))) { msg.textContent = t('Revisa los números: alguno está fuera de rango.'); return; }
+    S.set('cardio_goal', { steps: gs, min: gm });
+    if (st != null && st !== c.steps) { const l = stepsLog(); if (st > 0) l[dk] = st; else delete l[dk]; S.set('steps_log', l); }
+    closeSheet(); try { renderHoyDash(); } catch (e) {}
+  });
+  const b = id => document.getElementById(id);
+  if (b('cd-add')) b('cd-add').addEventListener('click', () => openActivityForm(null, dk));
+  if (b('cd-nat-on')) b('cd-nat-on').addEventListener('click', () => { _stepsAsked = true; try { window.Android.stepsEnable(); } catch (e) {} });
+  if (b('cd-nat-off')) b('cd-nat-off').addEventListener('click', () => { try { window.Android.stepsDisable(); } catch (e) {} });
+}
+
+// ============================================================
 // RESUMEN DEL DÍA (compartir como imagen o enviarlo al especialista)
 // ============================================================
 // D = datos del atleta con la misma forma que en la nube: gym_logs, gym_routines,
@@ -1445,7 +1557,8 @@ function feelNum(f) {
 const DAY_MEALS = [['breakfast', 'Desayuno'], ['lunch', 'Comida'], ['dinner', 'Cena'], ['snack', 'Snack']];
 function dayData(D, dk, opts) {
   opts = opts || {}; D = D || {};
-  const out = { date: dk, gym: null, acts: [], food: null, water: null, weight: null, habits: null };
+  const out = { date: dk, gym: null, acts: [], food: null, water: null, weight: null, habits: null, steps: null };
+  try { const cd = cardioDay(D, dk); if (cd.steps) out.steps = { n: cd.steps, goal: cd.stepsGoal }; } catch (e) {}
   const N = x => (typeof gymNum === 'function' ? gymNum(x) : parseFloat(x));
   const E1 = (kg, reps) => (typeof gymE1RM === 'function' ? gymE1RM(kg, reps) : 0);
   // --- Entrenamiento ---
@@ -1607,7 +1720,7 @@ function dayCmpHtml(g) {
   if (g.pains && g.pains.length) h += `<div class="dr-alert"><b>Dolor</b> ${g.pains.map(p2 => `<span translate="no">${E(p2.name)} ${p2.v}/10</span>`).join(' · ')}</div>`;
   return h + '</div>';
 }
-function dayIsEmpty(dd) { return !dd.gym && !dd.acts.length && !dd.food && !dd.water && dd.weight == null && !dd.habits; }
+function dayIsEmpty(dd) { return !dd.gym && !dd.acts.length && !dd.food && !dd.water && dd.weight == null && !dd.habits && !dd.steps; }
 function dayKpis(dd) {
   const k = [];
   if (dd.gym && !dd.gym.sport && dd.gym.sets) k.push([String(dd.gym.sets), 'series']);
@@ -1615,6 +1728,7 @@ function dayKpis(dd) {
   if (dd.gym && dd.gym.mins) k.push([String(dd.gym.mins), 'min de entrenamiento']);
   const cvMin = (dd.gym ? dd.gym.cvMin : 0) + dd.acts.reduce((a, x) => a + x.min, 0);
   if (cvMin) k.push([String(Math.round(cvMin)), 'min de cardio']);
+  if (dd.steps) k.push([dd.steps.n.toLocaleString(_loc()), dd.steps.goal ? `de ${dd.steps.goal.toLocaleString(_loc())} pasos` : 'pasos']);
   if (dd.food) k.push([dd.food.kcal.toLocaleString(_loc()), dd.food.goal && dd.food.goal.kcal ? `de ${Math.round(dd.food.goal.kcal).toLocaleString(_loc())} kcal` : 'kcal']);
   if (dd.water) k.push([`${dd.water.n}/${dd.water.goal}`, 'vasos de agua']);
   return k;
@@ -1676,6 +1790,7 @@ function dayReportText(dd) {
     dd.gym.cv.forEach(c => L.push(`${tx(CV_KIND[c.kind])} · ${c.name}: ${c.text}`));
   }
   dd.acts.forEach(a => L.push(`${a.name}: ${a.text}`));
+  if (dd.steps) L.push(`${tx('Pasos')}: ${dd.steps.n.toLocaleString(_loc())}${dd.steps.goal ? ' / ' + dd.steps.goal.toLocaleString(_loc()) : ''}`);
   if (dd.food) L.push('', `${tx('Comida')}: ${dd.food.kcal} kcal · P ${dd.food.p} g · C ${dd.food.c} g · G ${dd.food.f} g`);
   if (dd.water) L.push(`${tx('Agua')}: ${dd.water.n}/${dd.water.goal}`);
   if (dd.weight != null) L.push(`${tx('Peso')}: ${typeof bwDisp === 'function' ? bwDisp(dd.weight) + ' ' + bwUnit() : dd.weight + ' kg'}`);
@@ -3045,4 +3160,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { cardioDay, cardioGoal, stepsNum, exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

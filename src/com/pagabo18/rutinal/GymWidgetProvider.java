@@ -11,9 +11,11 @@ import android.widget.RemoteViews;
 import org.json.JSONObject;
 
 /**
- * Widget "Entrenamiento" (4x2): durante el entrenamiento muestra el ejercicio
- * y la serie que siguen, con la carga objetivo, la cuenta del descanso y los
- * botones Serie hecha / +30 s / Saltar. Sin entrenamiento en curso muestra
+ * Widget "Entrenamiento": durante el entrenamiento muestra el ejercicio y la
+ * serie que siguen, la cuenta del descanso y los botones Serie hecha / +30 s /
+ * Saltar. Si el widget tiene 3 filas o más de alto, muestra también el peso,
+ * las repeticiones y el RIR de esa serie con botones − y + (como la fila de
+ * series de la app): al marcarla se registra con esos valores y pasa a la siguiente. Sin entrenamiento en curso muestra
  * la rutina que toca hoy y un botón para empezarla. Lee la foto 'gym_live'
  * que manda el JS (ver GymLive).
  */
@@ -24,6 +26,28 @@ public class GymWidgetProvider extends AppWidgetProvider {
         for (int id : ids) {
             try { updateOne(context, mgr, id); } catch (Exception ignored) {}
         }
+    }
+
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager mgr, int id, android.os.Bundle newOptions) {
+        try { updateOne(context, mgr, id); } catch (Exception ignored) {}
+    }
+
+    /** ¿Cabe la fila de valores? (alto del widget en dp) */
+    private static boolean tall(AppWidgetManager mgr, int id) {
+        try {
+            android.os.Bundle o = mgr.getAppWidgetOptions(id);
+            int h = o == null ? 0 : Math.max(o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0), o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0));
+            return h >= 220;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static void bindStepper(Context ctx, RemoteViews rv, String f, int minusId, int valueId, int plusId, String value) {
+        rv.setTextViewText(valueId, value == null || value.isEmpty() ? "–" : value);
+        rv.setOnClickPendingIntent(minusId, GymLive.actionIntent(ctx, f + "-"));
+        rv.setOnClickPendingIntent(plusId, GymLive.actionIntent(ctx, f + "+"));
     }
 
     public static void refreshAll(Context context) {
@@ -43,6 +67,8 @@ public class GymWidgetProvider extends AppWidgetProvider {
         JSONObject s = GymLive.load(ctx);
         rv.setOnClickPendingIntent(R.id.gw_root, GymLive.openIntent(ctx));
         rv.setOnClickPendingIntent(R.id.gw_body, GymLive.openIntent(ctx));
+        rv.setViewVisibility(R.id.gw_edit, View.GONE);
+        rv.setInt(R.id.gw_set, "setMaxLines", 2);
 
         if (GymLive.isActive(s)) {
             int done = s.optInt("done", 0), total = Math.max(1, s.optInt("total", 1));
@@ -59,10 +85,23 @@ public class GymWidgetProvider extends AppWidgetProvider {
             } else {
                 String tgt = it.optString("t");
                 rv.setTextViewText(R.id.gw_ex, (end > 0 ? GymLive.label(s, "next", "Sigue") + ": " : "") + it.optString("n"));
-                rv.setTextViewText(R.id.gw_set, it.optString("s") + (tgt.isEmpty() ? "" : " · " + tgt));
                 rv.setViewVisibility(R.id.gw_done, View.VISIBLE);
                 rv.setTextViewText(R.id.gw_done, "✓ " + GymLive.label(s, "done", "Serie hecha"));
-                rv.setOnClickPendingIntent(R.id.gw_done, GymLive.actionIntent(ctx, "done"));
+                if (GymLive.editable(it) && tall(mgr, id)) {
+                    // Fila de valores: lo planeado arriba y el peso, reps y RIR ajustables
+                    String plan = it.optString("p");
+                    rv.setTextViewText(R.id.gw_set, it.optString("s") + (plan.isEmpty() ? "" : " · " + plan));
+                    rv.setInt(R.id.gw_set, "setMaxLines", 1);
+                    rv.setViewVisibility(R.id.gw_edit, View.VISIBLE);
+                    rv.setTextViewText(R.id.gw_kg_k, it.optString("u", "kg").toUpperCase());
+                    bindStepper(ctx, rv, "kg", R.id.gw_kg_m, R.id.gw_kg_v, R.id.gw_kg_p, it.optString("kg", ""));
+                    bindStepper(ctx, rv, "reps", R.id.gw_reps_m, R.id.gw_reps_v, R.id.gw_reps_p, it.optString("reps", ""));
+                    bindStepper(ctx, rv, "rir", R.id.gw_rir_m, R.id.gw_rir_v, R.id.gw_rir_p, it.optString("rir", ""));
+                    rv.setOnClickPendingIntent(R.id.gw_done, GymLive.actionIntent(ctx, "done_w"));
+                } else {
+                    rv.setTextViewText(R.id.gw_set, it.optString("s") + (tgt.isEmpty() ? "" : " · " + tgt));
+                    rv.setOnClickPendingIntent(R.id.gw_done, GymLive.actionIntent(ctx, "done"));
+                }
             }
             if (end > 0) {
                 long left = end - System.currentTimeMillis();

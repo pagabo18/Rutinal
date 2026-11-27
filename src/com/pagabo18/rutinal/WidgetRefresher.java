@@ -15,5 +15,6 @@ public class WidgetRefresher {
         try { PomoWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
         try { GymWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
         try { HabitsLive.update(ctx); } catch (Exception ignored) {}
+        try { StepCounter.sample(ctx, null); } catch (Exception ignored) {}
     }
 }

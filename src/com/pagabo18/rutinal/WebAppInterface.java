@@ -378,6 +378,39 @@ public class WebAppInterface {
         try { ChatPollReceiver.markSeen(ctx, iso); } catch (Exception ignored) {}
     }
 
+    // ----- Pasos del día con el contador del teléfono -----
+
+    /** { sensor, perm, on, today, days, ts }. De paso lee el sensor y avisa a la app (window.onNativeSteps). */
+    @JavascriptInterface
+    public String stepsInfo() {
+        try {
+            if (StepCounter.isOn(ctx)) StepCounter.sample(ctx, new Runnable() {
+                @Override public void run() { if (activity != null) activity.pushSteps(); }
+            });
+            return StepCounter.info(ctx);
+        } catch (Exception e) { return "{}"; }
+    }
+
+    /** Enciende el conteo; si falta el permiso de actividad física, lo pide (la respuesta llega por onNativeSteps). */
+    @JavascriptInterface
+    public void stepsEnable() {
+        try {
+            if (StepCounter.hasPermission(ctx)) {
+                StepCounter.setOn(ctx, true);
+                StepCounter.sample(ctx, new Runnable() {
+                    @Override public void run() { if (activity != null) activity.pushSteps(); }
+                });
+            } else if (activity != null) {
+                activity.askStepsPermission();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    @JavascriptInterface
+    public void stepsDisable() {
+        try { StepCounter.setOn(ctx, false); if (activity != null) activity.pushSteps(); } catch (Exception ignored) {}
+    }
+
     @JavascriptInterface
     public String getState() {
         SharedPreferences sp = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);

@@ -107,9 +107,67 @@ public class GymLive {
     public static void setFromJs(Context ctx, String json) {
         try {
             JSONObject s = new JSONObject(json);
+            // Si en el widget se ajustaron los valores de la serie que sigue, se conservan
+            try {
+                JSONObject oldIt = nextItem(load(ctx)), newIt = nextItem(s);
+                if (oldIt != null && newIt != null && oldIt.optBoolean("ed", false)
+                        && oldIt.optString("ex").equals(newIt.optString("ex")) && oldIt.optInt("i", -1) == newIt.optInt("i", -2)
+                        && oldIt.optString("b").equals(newIt.optString("kg", "") + "|" + newIt.optString("reps", "") + "|" + newIt.optString("rir", ""))) {
+                    for (String f : new String[]{"kg", "reps", "rir"}) newIt.put(f, oldIt.optString(f, ""));
+                    newIt.put("b", oldIt.optString("b"));
+                    newIt.put("ed", true);
+                }
+            } catch (Exception ignored) {}
             save(ctx, s);
             update(ctx);
         } catch (Exception ignored) {}
+    }
+
+    // ---------- valores de la serie (widget) ----------
+
+    static double num(String v) {
+        try { return v == null || v.trim().isEmpty() ? Double.NaN : Double.parseDouble(v.trim().replace(',', '.')); }
+        catch (Exception e) { return Double.NaN; }
+    }
+
+    /** 45 -> "45", 47.5 -> "47.5" */
+    static String fmtNum(double v) {
+        double r = Math.round(v * 100.0) / 100.0;
+        return r == Math.floor(r) ? String.valueOf((long) r) : String.valueOf(r);
+    }
+
+    /** La serie que sigue admite ajustar peso, reps y RIR (no es cardio ni rutina de otro deporte). */
+    public static boolean editable(JSONObject it) {
+        return it != null && !it.optBoolean("sp", false) && !it.optString("ex").startsWith("cv:") && it.has("kg");
+    }
+
+    /** Botones − / + del widget: a = "kg+", "kg-", "reps+", "reps-", "rir+", "rir-". */
+    private static boolean adjust(JSONObject s, String a) throws Exception {
+        JSONObject it = nextItem(s);
+        if (!editable(it) || a.length() < 3) return false;
+        boolean up = a.endsWith("+");
+        String f = a.substring(0, a.length() - 1);
+        double v = num(it.optString(f, ""));
+        if ("kg".equals(f)) {
+            double st = it.optDouble("st", 2.5); if (!(st > 0)) st = 2.5;
+            v = Double.isNaN(v) ? (up ? st : 0) : v + (up ? st : -st);
+            v = Math.max(0, Math.min(2000, v));
+        } else if ("reps".equals(f)) {
+            v = Double.isNaN(v) ? (up ? 1 : 0) : v + (up ? 1 : -1);
+            v = Math.max(0, Math.min(999, v));
+        } else if ("rir".equals(f)) {
+            v = Double.isNaN(v) ? (up ? 1 : 0) : v + (up ? 1 : -1);
+            v = Math.max(0, Math.min(10, v));
+        } else {
+            return false;
+        }
+        if (!it.optBoolean("ed", false)) {
+            // Valores de la app al empezar a ajustar: si luego la app manda otros, mandan los de la app
+            it.put("b", it.optString("kg", "") + "|" + it.optString("reps", "") + "|" + it.optString("rir", ""));
+        }
+        it.put(f, fmtNum(v));
+        it.put("ed", true);
+        return true;
     }
 
     // ---------- acciones de botones ----------
@@ -120,7 +178,12 @@ public class GymLive {
             if (!isActive(s)) { update(ctx); return; }
             long now = System.currentTimeMillis();
             JSONObject action = new JSONObject();
-            if ("done".equals(a)) {
+            if (a.endsWith("+") || a.endsWith("-")) {
+                // Ajuste de valores desde el widget: solo cambia la foto; se registra al marcar la serie
+                if (adjust(s, a)) { save(ctx, s); GymWidgetProvider.refreshAll(ctx); }
+                return;
+            }
+            if ("done".equals(a) || "done_w".equals(a)) {
                 JSONArray q = s.optJSONArray("queue");
                 if (q == null || q.length() == 0) return;
                 JSONObject it = q.optJSONObject(0);
@@ -145,6 +208,24 @@ public class GymLive {
                 action.put("ex", it.optString("ex"));
                 action.put("i", it.optInt("i"));
                 action.put("rest", end);
+                // Desde el widget con valores a la vista: se registra lo que se ve
+                if ("done_w".equals(a) && editable(it)) {
+                    action.put("vals", true);
+                    action.put("kg", it.optString("kg", ""));
+                    action.put("reps", it.optString("reps", ""));
+                    action.put("rir", it.optString("rir", ""));
+                    // Si cambió el peso y la serie que sigue es del mismo ejercicio con el mismo peso previsto,
+                    // arranca con el peso que se acaba de usar
+                    JSONObject nx = rest.optJSONObject(0);
+                    String[] b0 = it.optString("b", "").split("\\|", -1);
+                    if (it.optBoolean("ed", false) && editable(nx) && !nx.optBoolean("ed", false)
+                            && nx.optString("ex").equals(it.optString("ex")) && b0.length == 3
+                            && nx.optString("kg", "").equals(b0[0]) && !it.optString("kg", "").equals(b0[0])) {
+                        nx.put("b", nx.optString("kg", "") + "|" + nx.optString("reps", "") + "|" + nx.optString("rir", ""));
+                        nx.put("kg", it.optString("kg", ""));
+                        nx.put("ed", true);
+                    }
+                }
             } else if ("plus".equals(a)) {
                 long end = restEnd(s);
                 JSONObject r = s.optJSONObject("rest");
@@ -226,7 +307,9 @@ public class GymLive {
         i.setAction(ACTION);
         i.setData(Uri.parse("rutinal://gym_live/" + a));
         i.putExtra(EXTRA_A, a);
-        int rc = "done".equals(a) ? RC_DONE : "plus".equals(a) ? RC_PLUS : "skip".equals(a) ? RC_SKIP : RC_ALARM;
+        int rc = "done".equals(a) ? RC_DONE : "plus".equals(a) ? RC_PLUS : "skip".equals(a) ? RC_SKIP : "rest_end".equals(a) ? RC_ALARM
+                : "done_w".equals(a) ? 7711 : "kg+".equals(a) ? 7712 : "kg-".equals(a) ? 7713 : "reps+".equals(a) ? 7714
+                : "reps-".equals(a) ? 7715 : "rir+".equals(a) ? 7716 : "rir-".equals(a) ? 7717 : RC_ALARM;
         return PendingIntent.getBroadcast(ctx, rc, i, piFlags());
     }
 
