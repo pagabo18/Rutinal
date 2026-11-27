@@ -13951,7 +13951,7 @@ function loadGymDb() {
     _gymDbPromise = new Promise((resolve, reject) => {
       const s = document.createElement('script');
       s.src = 'gym_db.js';
-      s.onload = () => { resolve(window.GYM_DB || []); if (!window.GYM_STEPS_ES) { const s2 = document.createElement('script'); s2.src = 'gym_steps.js'; document.head.appendChild(s2); } };
+      s.onload = () => { try { if (gymRelinkImported()) { try { renderGym(); } catch (e) {} } } catch (e) {} resolve(window.GYM_DB || []); if (!window.GYM_STEPS_ES) { const s2 = document.createElement('script'); s2.src = 'gym_steps.js'; document.head.appendChild(s2); } };
       s.onerror = () => { _gymDbPromise = null; reject(new Error('gym_db')); };
       document.head.appendChild(s);
     });
@@ -14112,6 +14112,14 @@ const GYM_ES_EN = [
   ['gluteo', 'glute'], ['gluteos', 'glute'], ['pierna', 'leg'], ['piernas', 'leg'], ['cuadriceps', 'quadriceps'], ['femoral', 'hamstring'],
   ['curl', 'curl'], ['press', 'press'], ['extension', 'extension'], ['elevacion', 'raise'], ['pulldown', 'pulldown'], ['doble d', 'v-bar'],
 ];
+// Agregadas después (aductor/abductor, desplante en singular, variantes en smith…). Van aparte para poder
+// reconocer los vínculos que hizo la búsqueda anterior (ver gymRelinkImported).
+const GYM_ES_EN_2 = [
+  ['desplante', 'lunge'],
+  ['desplantes en smith', 'smith single-leg split squat'], ['desplante en smith', 'smith single-leg split squat'], ['zancadas en smith', 'smith single-leg split squat'], ['zancada en smith', 'smith single-leg split squat'],
+  ['aductores', 'thigh adductor'], ['aductor', 'thigh adductor'], ['adductor', 'thigh adductor'], ['abductores', 'thigh abductor'], ['abductor', 'thigh abductor'],
+  ['prensa de pantorrilla', 'calf press'], ['una pierna', 'leg'], ['elevacion de talones', 'calf raise'], ['costurera', 'calf raise'], ['sentadilla hack', 'hack squat'], ['hack', 'hack squat']
+];
 const GYM_MUSCLE_ES = { abdominals: 'Abdomen', abductors: 'Abductores', adductors: 'Aductores', biceps: 'Bíceps', calves: 'Pantorrillas',
   chest: 'Pecho', forearms: 'Antebrazos', glutes: 'Glúteos', hamstrings: 'Isquiotibiales', lats: 'Dorsales', 'lower back': 'Espalda baja',
   'middle back': 'Espalda media', neck: 'Cuello', quadriceps: 'Cuádriceps', shoulders: 'Hombros', traps: 'Trapecios', triceps: 'Tríceps' };
@@ -14119,29 +14127,34 @@ const GYM_EQUIP_ES = { barbell: 'Barra', dumbbell: 'Mancuernas', cable: 'Polea',
   kettlebells: 'Kettlebell', bands: 'Bandas', 'medicine ball': 'Balón medicinal', 'exercise ball': 'Fitball', 'foam roll': 'Foam roller',
   'e-z curl bar': 'Barra Z', other: 'Otro' };
 function gymFold(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 -]/g, ' ').replace(/\s+/g, ' ').trim(); }
-function gymQueryTokens(q) {
+function gymQueryTokens(q, oldDict) {
   let s = ' ' + gymFold(q) + ' ';
   const en = [];
   // primero frases largas
-  GYM_ES_EN.slice().sort((a, b) => b[0].length - a[0].length).forEach(([es, eng]) => {
+  (oldDict ? GYM_ES_EN.slice() : GYM_ES_EN.concat(GYM_ES_EN_2)).sort((a, b) => b[0].length - a[0].length).forEach(([es, eng]) => {
     const k = ' ' + es + ' ';
     if (s.includes(k)) { en.push(...eng.split(' ')); s = s.split(k).join(' '); }
   });
   s.split(' ').filter(w => w.length > 2 && !['con', 'para', 'del', 'las', 'los', 'una', 'the', 'and', 'with'].includes(w)).forEach(w => en.push(w));
   return [...new Set(en)];
 }
-function gymSearch(q, limit) {
+// Palabras que dicen con qué o en qué postura se hace, o la zona del cuerpo, pero no qué movimiento es.
+// Solas no bastan para vincular un ejercicio (p. ej. «máquina» o «smith» coinciden con cientos).
+const GYM_NOT_MOVE = /^(smith|cable|dumbbell|dumbbells|barbell|kettlebell|kettlebells|band|bands|machine|leverage|seated|standing|lying|incline|decline|one|arm|single|close|wide|neutral|grip|ez|bar|v-bar|leg|legs|chest|back|shoulder|shoulders|glute|glutes|biceps|triceps|quadriceps|hamstring|hamstrings|thigh)$/;
+// opt.group: grupo muscular esperado (el de la rutina), para desempatar; opt.scored: devuelve [puntos, ejercicio, aciertos de movimiento]
+function gymSearch(q, limit, opt) {
+  opt = opt || {};
   const db = window.GYM_DB || [];
-  const toks = gymQueryTokens(q);
+  const toks = gymQueryTokens(q, opt.oldDict);
   if (!toks.length) return [];
   const scored = [];
   db.forEach(e => {
     const name = ' ' + gymFold(e.n).replace(/-/g, ' ') + ' ';
     const extra = ' ' + gymFold([e.e, ...(e.p || [])].join(' ')) + ' ';
-    let sc = 0, hits = 0;
+    let sc = 0, hits = 0, moves = 0;
     toks.forEach(t => {
       const tt = t.replace(/-/g, ' ');
-      if (name.includes(' ' + tt + ' ') || name.includes(' ' + tt + 's ')) { sc += /^(smith|cable|dumbbell|barbell|kettlebell|band|leverage)$/.test(tt) ? 4 : 3; hits++; }
+      if (name.includes(' ' + tt + ' ') || name.includes(' ' + tt + 's ')) { sc += /^(smith|cable|dumbbell|barbell|kettlebell|band|leverage)$/.test(tt) ? 4 : 3; hits++; if (!GYM_NOT_MOVE.test(t)) moves++; }
       else if (name.includes(tt)) { sc += 1.5; hits++; }
       else if (extra.includes(tt)) { sc += 1; }
     });
@@ -14153,12 +14166,58 @@ function gymSearch(q, limit) {
     extraWords.forEach(w => { sc -= VARIANT.test(w) ? 0.9 : 0.35; });
     sc += hits / toks.length * 2;
     if (e.c === 'strength') sc += 0.3;
-    scored.push([sc, e]);
+    if (opt.group) { const g = GYM_GROUP_OF[(e.p || [])[0]] || 'otro'; sc += g === opt.group ? 1.5 : -1; }
+    scored.push([sc, e, moves]);
   });
   scored.sort((a, b) => b[0] - a[0]);
+  if (opt.scored) return scored;
   return scored.slice(0, limit || 30).map(x => x[1]);
 }
-function gymBestMatch(name) { const r = gymSearch(name, 1); return r[0] ? r[0].i : null; }
+// Grupo muscular del día según el nombre de la rutina o sus músculos («Día 2 · Pierna» → pierna). Si menciona varios, ninguno.
+function gymGroupHint(text) {
+  const f = ' ' + gymFold(text) + ' ';
+  const gs = [['pierna', /pierna|gluteo|femoral|cuadriceps|pantorrilla|leg/], ['pecho', /pecho|chest/], ['espalda', /espalda|dorsal|back/], ['hombro', /hombro|shoulder/], ['brazo', /brazo|biceps|triceps|arm/]].filter(x => x[1].test(f));
+  return gs.length === 1 ? gs[0][0] : null;
+}
+// En día de pierna, «press», «curl» y «extensión» a secas son de pierna (prensa, curl femoral, extensión de pierna)
+function gymLegName(name) {
+  let f = ' ' + gymFold(name) + ' ';
+  if (/ (banca|pecho|hombro|militar|frances|triceps|biceps|martillo|predicador) /.test(f)) return name;
+  f = f.replace(' unilateral ', ' una pierna ').replace(' press ', ' prensa ');
+  if (/ curl /.test(f) && !/ (femoral|pierna) /.test(f)) f = f.replace(' curl ', ' curl femoral ');
+  if (/ extension(es)? /.test(f) && !/ (pierna|piernas|cuadriceps|rodilla|cadera) /.test(f)) f = f.replace(/ extension(es)? /, ' extension de pierna ');
+  return f.trim();
+}
+// Mejor coincidencia para vincular solo (al importar un PDF). ctx: nombre de la rutina o sus músculos.
+// Solo vincula si coincide el movimiento, no nada más el equipo: es mejor quedar sin animación que con una equivocada.
+function gymBestMatch(name, ctx) {
+  const group = ctx ? gymGroupHint(ctx) : null;
+  const r = gymSearch(group === 'pierna' ? gymLegName(name) : name, 1, { group, scored: true }).find(x => x[2] > 0);
+  return r ? r[1].i : null;
+}
+// Rutinas importadas de PDF antes de corregir la búsqueda: algunas quedaron con una animación que no
+// corresponde (coincidía solo el equipo, p. ej. «máquina» o «smith»). Una sola vez se vuelven a vincular
+// los ejercicios que siguen con el vínculo automático de entonces; los que cambiaste a mano no se tocan.
+function gymRelinkImported() {
+  try {
+    if (!window.GYM_DB || !window.GYM_DB.length || S.get('gym_relink_v', 0) >= 2) return 0;
+    const all = gymRoutines(); let n = 0;
+    all.forEach(r => {
+      if (!r || r.source !== 'pdf' || r.assigned) return;
+      const ctx = ((r.meta && r.meta.musculos) || '') + ' ' + (r.name || '');
+      (r.exercises || []).forEach(ex => {
+        if (!ex || !ex.dbId || !ex.name) return;
+        const old = gymSearch(ex.name, 1, { oldDict: true })[0];
+        if (!old || old.i !== ex.dbId) return; // lo eligió la persona
+        const nb = gymBestMatch(ex.name, ctx);
+        if (nb !== ex.dbId) { ex.dbId = nb; n++; }
+      });
+    });
+    if (n) saveGymRoutines(all);
+    S.set('gym_relink_v', 2);
+    return n;
+  } catch (e) { return 0; }
+}
 
 // ---------- Utilidades de formato ----------
 // Técnicas de intensidad: se marcan en la rutina (planeado) y en cada serie (lo que se hizo).
@@ -15924,7 +15983,7 @@ async function gymImportPdf(file) {
       meta: { objetivo: m.objetivo || '', periodo: m.periodo || '', musculos: m.musculos || '', calentamiento: m.calentamiento || '',
         descanso: m.descanso || '', notas: m.notas || '', extra: m.extra || '' },
       exercises: parsed.exercises.map(ex => ({
-        id: uid(), name: ex.name, dbId: window.GYM_DB ? gymBestMatch(ex.name) : null, photo: ex.photo || null,
+        id: uid(), name: ex.name, dbId: window.GYM_DB ? gymBestMatch(ex.name, (m.musculos || '') + ' ' + baseName) : null, photo: ex.photo || null,
         circuit: ex.circuit, sets: ex.sets, rir: ex.rir, rpe: ex.rpe, tempo: '', rest: '', notes: ex.notes || '',
       })),
       _days: [],
