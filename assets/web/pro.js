@@ -1489,6 +1489,38 @@ function openWarmupTemplates(o) {
 }
 
 // ============================================================
+// CONTRASEÑAS FÁCILES DE ADIVINAR
+// Al crear una cuenta o cambiar la contraseña, la app rechaza las cortas y las más comunes.
+// No sustituye a la revisión contra filtraciones de Supabase (plan Pro); cierra lo más obvio.
+// passWeak(pass, usuario) → '' si pasa, 'short' si mide menos de 8, 'common' si es adivinable.
+// ============================================================
+const PASS_COMMON = new Set(('password passw0rd p@ssw0rd p@ssword contraseña contrasena contrasenia clave secreto secreta qwerty qwertyui qwertyuiop asdfghjk asdfghjkl zxcvbnm ' +
+  '1q2w3e4r 1q2w3e4r5t q1w2e3r4 1qaz2wsx qazwsxedc abc12345 abcd1234 a1b2c3d4 iloveyou teamo tequiero teamomucho letmein welcome bienvenido bienvenida admin administrador ' +
+  'usuario user login acceso entrar hola holamundo holahola buenosdias dragon monkey princesa princess sunshine superman batman pokemon football futbol beisbol baseball ' +
+  'mexico america chivas pumas cruzazul tigres rayados barcelona realmadrid guadalajara monterrey jalisco estrella corazon amor amormio miamor familia angel jesus ' +
+  'cristo diosesamor mariposa chocolate naruto michelle jessica alejandro alejandra fernando daniel carlos gabriel sebastian valentina guadalupe ' +
+  'rutinal gym gimnasio fitness entrenar entrenamiento coach nutricion nutriologo atleta rutina master trustno1 whatever freedom starwars changeme cambiame temporal prueba test testing demo').split(/\s+/));
+function passWeak(pass, user) {
+  const p = String(pass == null ? '' : pass);
+  if (p.length < 8) return 'short';
+  const l = p.toLowerCase(), u = String(user || '').toLowerCase().trim();
+  if (/^(.)\1+$/.test(l)) return 'common';                 // un solo carácter repetido
+  if (/^\d+$/.test(l) && l.length < 10) return 'common';   // solo números (fechas, teléfonos cortos)
+  // escalera completa: 12345678, abcdefgh, 87654321
+  let up = true, down = true;
+  for (let i = 1; i < l.length; i++) { const d = l.charCodeAt(i) - l.charCodeAt(i - 1); if (d !== 1) up = false; if (d !== -1) down = false; }
+  if (up || down) return 'common';
+  // un bloque corto repetido: abcabcabc, 12ab12ab
+  for (let n = 1; n <= 4; n++) if (l.length % n === 0 && l.length / n >= 2 && l === l.slice(0, n).repeat(l.length / n)) return 'common';
+  // palabra común, sola o con números/símbolos alrededor: password1, Rutinal2026!, 123mexico
+  const core = l.replace(/^[\d\W_]+|[\d\W_]+$/g, '');
+  if (PASS_COMMON.has(l) || PASS_COMMON.has(core) || PASS_COMMON.has(core.replace(/(.+)\1$/, '$1'))) return 'common';
+  // el propio usuario, solo o con números/símbolos: gabo1234
+  if (u.length >= 3) { const uc = u.replace(/[\W_]+/g, ''); if (l === u || core === u || (uc.length >= 3 && core.replace(/[\W_]+/g, '') === uc)) return 'common'; }
+  return '';
+}
+
+// ============================================================
 // HISTORIAL QUE NO SE PIERDE AL BORRAR
 // Los registros (gym_logs) guardan ids, no nombres. Para que el historial siga legible cuando
 // se borra una rutina, se quita un ejercicio o el especialista manda una rutina nueva, lo
@@ -3315,4 +3347,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { gymActiveOf, gymArchiveMerge, hoyLayout, HOY_BLOCKS, cardioWeek, cardioDay, cardioGoal, stepsNum, exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { passWeak, gymActiveOf, gymArchiveMerge, hoyLayout, HOY_BLOCKS, cardioWeek, cardioDay, cardioGoal, stepsNum, exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

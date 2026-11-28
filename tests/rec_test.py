@@ -20,5 +20,5 @@ with sync_playwright() as p:
     B=ctx2(b,SEED); B.click('#auth-forgot'); B.fill('#rec-user','carlos-coach'); B.click('#rec-nocode'); B.wait_for_timeout(800); print('aviso:',B.inner_text('#rec-msg'),sb.asked); shot(B,'aviso')
     G=ctx2(b,SEED); G.fill('#auth-user','gabo'); G.fill('#auth-pass','secreta9'); G.click('#auth-submit'); G.wait_for_timeout(1500); G.evaluate("closeSheet()"); G.evaluate("localStorage.setItem('__rc_ask','gabo')")
     G.evaluate("openAuthUsers()"); G.wait_for_timeout(1200); shot(G,'admin'); print('insignia',G.locator('.usr-badge.off',has_text='Pidió').count())
-    G.locator('[data-usr]').first.click(); G.wait_for_timeout(400); G.fill('#ue-pass','temporal123'); G.click('#sheet-save'); G.wait_for_timeout(1200); print('atendido',sb.asked, sb.users['carlos-coach']['pass'])
+    G.locator('[data-usr]').first.click(); G.wait_for_timeout(400); G.fill('#ue-pass','verde-tigre-88'); G.click('#sheet-save'); G.wait_for_timeout(1200); print('atendido',sb.asked, sb.users['carlos-coach']['pass'])
     print('errs',A.errs,B.errs,G.errs)

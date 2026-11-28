@@ -10,6 +10,8 @@ with sync_playwright() as p:
     b=p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
     U=ctx2(b,SEED); shot(U,'acceso'); U.click('#auth-new'); U.wait_for_timeout(300)
     U.fill('#reg-name','Carla Ruiz'); U.fill('#reg-user','carla.ruiz'); U.fill('#reg-pass','corta'); U.click('#reg-submit'); U.wait_for_timeout(300); print('corta:',U.inner_text('#reg-msg'))
+    for pw in ['qwerty123','carla.ruiz99','19901231','Rutinal2026!']:
+        U.fill('#reg-pass',pw); U.click('#reg-submit'); U.wait_for_timeout(250); print('adivinable %s:'%pw,U.inner_text('#reg-msg'))
     U.fill('#reg-pass','unaclave123'); U.fill('#reg-email','carla@example.com'); U.click('#reg-submit'); U.wait_for_timeout(300); print('sin aviso:',U.inner_text('#reg-msg'))
     U.check('#reg-priv'); shot(U,'registro'); U.click('#reg-submit'); U.wait_for_timeout(2500)
     print('entro:',U.evaluate("document.documentElement.classList.contains('auth-ok')"),'perfil',U.evaluate("(authGet()||{}).user"))

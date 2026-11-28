@@ -1485,6 +1485,7 @@ MAP = [
 ("Llevas {n} de {g} pasos hoy.", "You're at {n} of {g} steps today.", "Você tem {n} de {g} passos hoje.", "Tu en es à {n} pas sur {g} aujourd'hui."),
 ("Avisarme al cumplir la meta de pasos", "Notify me when I hit my step goal", "Avisar-me ao cumprir a meta de passos", "Me prévenir quand j'atteins mon objectif de pas"),
 ("Una notificación al día, cuando llegas a tu meta", "One notification a day, when you reach your goal", "Uma notificação por dia, quando você atinge a meta", "Une notification par jour, quand tu atteins ton objectif"),
+("Esa contraseña es muy fácil de adivinar. Usa una más larga, que no sea una palabra, una secuencia o tu usuario.", "That password is too easy to guess. Use a longer one that is not a word, a sequence or your username.", "Essa senha é fácil demais de adivinhar. Use uma mais longa, que não seja uma palavra, uma sequência ou seu usuário.", "Ce mot de passe est trop facile à deviner. Choisis-en un plus long, qui ne soit ni un mot, ni une suite, ni ton identifiant."),
 # --- Acceso / inicio de sesión ---
 ("Perfil de atleta", "Athlete profile", "Perfil de atleta", "Profil d'athlète"),
 ("Tus deportes, nivel y marcas", "Your sports, level and personal bests", "Seus esportes, nível e marcas", "Vos sports, niveau et records"),

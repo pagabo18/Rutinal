@@ -7336,6 +7336,11 @@ window.__I18N_EXTRA = {
    "pt-BR": "Uma notificação por dia, quando você atinge a meta",
    "fr": "Une notification par jour, quand tu atteins ton objectif"
   },
+  "Esa contraseña es muy fácil de adivinar. Usa una más larga, que no sea una palabra, una secuencia o tu usuario.": {
+   "en": "That password is too easy to guess. Use a longer one that is not a word, a sequence or your username.",
+   "pt-BR": "Essa senha é fácil demais de adivinhar. Use uma mais longa, que não seja uma palavra, uma sequência ou seu usuário.",
+   "fr": "Ce mot de passe est trop facile à deviner. Choisis-en un plus long, qui ne soit ni un mot, ni une suite, ni ton identifiant."
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

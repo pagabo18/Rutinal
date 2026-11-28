@@ -30,6 +30,7 @@ Dan por hecho Linux con Google Chrome en `/usr/bin/google-chrome` y dejan captur
   - `hoy_test`, `hl2_test` pantalla de Hoy y su orden · `mod_test` módulos
   - `ck_test` check-in semanal · `rep_test` ficha del atleta · `xss_test` textos del atleta escapados en la vista del especialista
   - `es_test`, `match_test` búsqueda de ejercicios en español y emparejado con la base
+  - `pw_test`, `reg_test`, `rec_test` contraseñas débiles rechazadas, registro y recuperación
 - `desactualizadas/`: pruebas que ya no pasan porque la pantalla que recorren cambió (no por un error de la app). Están ahí como referencia para actualizarlas; `run_all.sh` no las corre.
 
 Al cambiar una pantalla, corre las pruebas que la tocan y, si el flujo cambió a propósito, actualiza la prueba en el mismo commit.
