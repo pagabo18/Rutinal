@@ -8,7 +8,13 @@ def ctx2(b,seed):
     pg.on('dialog',lambda d:d.accept()); pg.route('**/*',sb.handle); pg.add_init_script(seed); pg.goto('http://localhost:8765/index.html'); pg.wait_for_timeout(600); return pg
 with sync_playwright() as p:
     b=p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
-    G=ctx2(b,SEED); G.fill('#auth-user','gabo'); G.fill('#auth-pass','secreta9'); G.click('#auth-submit'); G.wait_for_timeout(1500); G.evaluate("closeSheet()"); G.evaluate("localStorage.setItem('__rc_ask','gabo')")
+    G=ctx2(b,SEED)
+    # 0) acceso: contraseña equivocada, entrar, y la sesión sigue tras recargar
+    gate=lambda: G.evaluate("getComputedStyle(document.getElementById('auth-gate')).display")
+    G.fill('#auth-user','gabo'); G.fill('#auth-pass','equivocada'); G.click('#auth-submit'); G.wait_for_timeout(700); print('0 contraseña mala →', G.inner_text('#auth-msg'), '| acceso visible:', gate()!='none')
+    G.fill('#auth-pass','secreta9'); G.click('#auth-submit'); G.wait_for_timeout(1500); G.evaluate("closeSheet()"); G.evaluate("localStorage.setItem('__rc_ask','gabo')")
+    print('  entra:', gate()=='none', '| sesión:', G.evaluate("(authGet()||{}).user"))
+    G.reload(); G.wait_for_timeout(1500); G.evaluate("closeSheet()"); print('  tras recargar sigue dentro:', gate()=='none')
     # 1) administrador: usuario nuevo
     G.evaluate("openAuthUsers()"); G.wait_for_timeout(1000); G.click('#usr-new'); G.wait_for_timeout(400)
     gen=G.input_value('#ue-pass'); print('1 generada pasa:', G.evaluate("passWeak(%r,'lucia')"%gen)=='' , len(gen))

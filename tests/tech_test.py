@@ -19,7 +19,7 @@ with sync_playwright() as p:
     pg.fill('.gym-set[data-ex="x1"][data-i="0"] .gym-in[data-f=kg]','62.5'); pg.fill('.gym-set[data-ex="x1"][data-i="0"] .gym-in[data-f=reps]','8'); pg.fill('.gym-set[data-ex="x1"][data-i="0"] .gym-in[data-f=rir]','2'); pg.click('.gym-set[data-ex="x1"][data-i="0"] .gym-check'); pg.wait_for_timeout(300)
     pg.evaluate("document.getElementById('gym-rest-x') && document.getElementById('gym-rest-x').click()")
     print('abierto', pg.evaluate("[...document.querySelectorAll('.gym-ex.open')].map(e=>e.dataset.exCard)"), pg.evaluate("[...document.querySelectorAll('[data-set-tags]')].map(e=>e.dataset.setTags).join(',')"))
-    pg.click('[data-gym-toggle="x1"]'); pg.wait_for_timeout(400)
+    if not pg.locator('.gym-ex.open[data-ex-card="x1"]').count(): pg.click('[data-gym-toggle="x1"]'); pg.wait_for_timeout(400)
     pg.click('[data-set-tags="x1:1"]'); pg.wait_for_timeout(300); shot(pg,'picker')
     pg.click('.set-tags-pick [data-tech="neg"]'); pg.wait_for_timeout(200); pg.click('.set-tags-pick [data-tech="rp"]'); pg.wait_for_timeout(200); pg.click('[data-set-tags="x1:1"]'); pg.wait_for_timeout(300)
     pg.fill('.gym-set[data-ex="x1"][data-i="1"] .gym-in[data-f=rir]','0'); pg.wait_for_timeout(200)

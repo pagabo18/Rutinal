@@ -63,7 +63,7 @@ Deno.serve(async (req: Request) => {
       const username = String(body.username ?? "").trim().toLowerCase();
       if (!/^[a-z0-9._-]{3,32}$/.test(username)) return json({ ok: false, error: "bad_user" });
       const password = body.password ? String(body.password) : "";
-      if (password && (password.length < 6 || password.length > 72)) return json({ ok: false, error: "weak" });
+      if (password && (password.length < 8 || password.length > 72)) return json({ ok: false, error: "weak" });
       const specialties = Array.isArray(body.specialties)
         ? [...new Set(body.specialties.map((s: unknown) => String(s)))].filter((s) => SPECS.includes(s as string))
         : [];

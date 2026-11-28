@@ -23,7 +23,7 @@ with sync_playwright() as p:
     A.evaluate("openLinks()"); A.wait_for_timeout(500); A.fill('#lk-code',code); A.click('#lk-go'); A.wait_for_timeout(500); A.click('#lk-accept'); A.wait_for_timeout(700); A.evaluate("closeSheet()")
     # plantilla + asignar
     I.click('nav button[data-tab="sp-templates"]'); I.wait_for_timeout(600); I.click('#tab-sp-templates [data-tp-new="routine"]'); I.wait_for_timeout(300); I.click('#sheet-save'); I.wait_for_timeout(800)
-    I.click('#tab-sp-templates [data-tp-assign]'); I.wait_for_timeout(600); I.check('[data-as-c="0"]'); I.click('#sheet-save'); I.wait_for_timeout(800)
+    I.click('#tab-sp-templates [data-tp-assign]'); I.wait_for_timeout(600); I.locator('[data-as-c]').last.check(); I.click('#sheet-save'); I.wait_for_timeout(800)
     A.evaluate("asgRefresh(true)"); A.wait_for_timeout(900)
     print('2 ana recibe cargas:',A.evaluate("JSON.stringify(gymRoutines().map(r=>[r.id.slice(0,4),r.exercises.map(e=>e.loads||null)]))"))
     rid=A.evaluate("gymRoutines()[0].id"); A.evaluate("openGymWorkout('%s')"%rid); A.wait_for_timeout(600)

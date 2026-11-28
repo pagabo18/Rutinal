@@ -17,7 +17,7 @@ with sync_playwright() as p:
     N.click('#sp-invite'); N.wait_for_timeout(600); (N.click('[data-add="code"]') if N.locator('[data-add="code"]').count() else None); N.wait_for_timeout(400); (N.click('#sheet-save') if (N.locator('#sheet-save').is_visible() and not N.locator('.lk-code').count()) else None); N.wait_for_timeout(600); code=N.inner_text('.lk-code'); N.evaluate("closeSheet()")
     A=new_ctx(b,lang,False); login(A,'ana','secreta1',True)
     A.evaluate("openLinks()"); A.wait_for_timeout(500); A.fill('#lk-code',code); A.click('#lk-go'); A.wait_for_timeout(500); A.click('#lk-accept'); A.wait_for_timeout(700); A.evaluate("closeSheet()")
-    N.click('nav button[data-tab="sp-templates"]'); N.wait_for_timeout(600); N.click('#tab-sp-templates [data-tp-new="diet"]'); N.wait_for_timeout(400)
+    N.click('nav button[data-tab="sp-templates"]'); N.wait_for_timeout(600); N.click('#tab-sp-templates [data-tp-new="diet"]'); N.wait_for_timeout(400); N.click('#dk-menu'); N.wait_for_timeout(400)
     print('1 editor vacío:',N.inner_text('#sheet-title'),'|',body(N)[:200])
     N.click('#sheet-save'); N.wait_for_timeout(200); print('2 sin nombre:',N.inner_text('#de-msg'))
     N.fill('#de-name','Plan definición'); print('3 añadir:',add(N,'breakfast','avena',80), add(N,'breakfast','huevo',150), add(N,'lunch','pollo',200))
@@ -26,7 +26,7 @@ with sync_playwright() as p:
     N.click('#sheet-save'); N.wait_for_timeout(900); print('6 guardada:',N.evaluate("document.getElementById('tab-sp-templates').innerText.replace(/\\n+/g,' | ')")[:160])
     N.click('#tab-sp-templates [data-tp-edit]'); N.wait_for_timeout(400); print('7 editar:',N.inner_text('#sheet-title'),'| nombre',N.input_value('#de-name'),'| filas',N.locator('[data-de-g]').count())
     add(N,'dinner','arroz',150); N.click('#sheet-save'); N.wait_for_timeout(900); print('8 tras editar:',N.evaluate("document.querySelector('#tab-sp-templates .sp-card-d').innerText"))
-    N.click('#tab-sp-templates [data-tp-assign]'); N.wait_for_timeout(600); N.check('[data-as-c="0"]'); N.click('#sheet-save'); N.wait_for_timeout(900)
+    N.click('#tab-sp-templates [data-tp-assign]'); N.wait_for_timeout(600); N.locator('[data-as-c]').last.check(); N.click('#sheet-save'); N.wait_for_timeout(900)
     A.evaluate("asgRefresh(true)"); A.wait_for_timeout(900); A.click('nav button[data-tab="comida"]'); A.wait_for_timeout(500); print('9 ana ve plan:',A.evaluate("[...document.querySelectorAll('.mc-plan')].map(x=>x.innerText.replace(/\\n+/g,' | ')).join(' || ')")[:260])
     # editar la copia de ana
     N.evaluate("_sp.at=0"); N.click('nav button[data-tab="sp-clients"]'); N.wait_for_timeout(900); N.click('#tab-sp-clients .sp-row:not(.sp-self)[data-sp-open]'); N.wait_for_timeout(900)

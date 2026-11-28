@@ -1,6 +1,6 @@
 import sys,json
 from playwright.sync_api import sync_playwright
-LANG=sys.argv[1]
+LANG=sys.argv[1] if len(sys.argv)>1 else 'es'
 with sync_playwright() as p:
     b=p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
     ctx=b.new_context(viewport={'width':390,'height':844},device_scale_factor=2)

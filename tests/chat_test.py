@@ -20,7 +20,7 @@ with sync_playwright() as p:
     print('1 ana Hoy:',A.inner_text('.hd-chat').replace('\n',' | '))
     # coach asigna rutina → aviso en chat
     I.click('nav button[data-tab="sp-templates"]'); I.wait_for_timeout(600); I.click('#tab-sp-templates [data-tp-new="routine"]'); I.wait_for_timeout(300); I.click('#sheet-save'); I.wait_for_timeout(800)
-    I.click('#tab-sp-templates [data-tp-assign]'); I.wait_for_timeout(600); I.check('[data-as-c="0"]'); I.fill('#as-note','Empieza ligero esta semana'); I.click('#sheet-save'); I.wait_for_timeout(900)
+    I.click('#tab-sp-templates [data-tp-assign]'); I.wait_for_timeout(600); I.locator('[data-as-c]').last.check(); I.fill('#as-note','Empieza ligero esta semana'); I.click('#sheet-save'); I.wait_for_timeout(900)
     A.evaluate("asgRefresh(true); msgRefresh(true)"); A.wait_for_timeout(900)
     print('2 ana ve no leído:',A.inner_text('.hd-chat').replace('\n',' | '),'| punto en',dots(A))
     A.click('[data-hd-chat="0"]'); A.wait_for_timeout(800); print('3 chat de ana:',chat(A)); A.screenshot(path='/tmp/t/chat_ana1_%s.png'%lang)

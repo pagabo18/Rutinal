@@ -24,7 +24,7 @@ with sync_playwright() as p:
     N.click('#dk-pre'); N.wait_for_timeout(400); N.click('[data-dp-style="prot"]'); N.click('[data-dp-k="1800"]'); N.wait_for_timeout(300); N.screenshot(path='/tmp/t/eq_pre.png')
     N.click('#dp-use'); N.wait_for_timeout(500); N.screenshot(path='/tmp/t/eq_ed.png'); N.evaluate("document.getElementById('sheet-body').scrollTop=420"); N.wait_for_timeout(200); N.screenshot(path='/tmp/t/eq_ed2.png')
     N.click('#sheet-save'); N.wait_for_timeout(1000)
-    N.locator('#tab-sp-templates [data-tp-assign]').first.click(); N.wait_for_timeout(600); N.check('[data-as-c="0"]'); N.click('#sheet-save'); N.wait_for_timeout(1000); N.screenshot(path='/tmp/t/eq_tpl.png')
+    N.locator('#tab-sp-templates [data-tp-assign]').first.click(); N.wait_for_timeout(600); N.locator('[data-as-c]').last.check(); N.click('#sheet-save'); N.wait_for_timeout(1000); N.screenshot(path='/tmp/t/eq_tpl.png')
     A.evaluate("asgRefresh(true); msgRefresh(true)"); A.wait_for_timeout(1300)
     A.click('nav button[data-tab="comida"]'); A.wait_for_timeout(600); A.evaluate("window.scrollTo(0,560)"); A.wait_for_timeout(300); A.screenshot(path='/tmp/t/eq_food.png')
     A.locator('[data-eq-open^="breakfast:"]').first.click(); A.wait_for_timeout(500); A.screenshot(path='/tmp/t/eq_ex.png')

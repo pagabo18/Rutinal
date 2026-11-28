@@ -67,7 +67,7 @@ with sync_playwright() as p:
     A.click('#act-new'); A.wait_for_timeout(400); A.click('#act-sport .chip[data-v="natacion"]'); A.fill('[data-act="dist_m"]','2000'); A.fill('[data-act="time"]','42:00'); A.click('#sheet-save'); A.wait_for_timeout(600)
     A.click('#act-new'); A.wait_for_timeout(400); A.click('#act-sport .chip[data-v="hyrox"]'); A.wait_for_timeout(300); A.fill('[data-act="time"]','1:28:40'); A.evaluate("document.querySelector('#act-body details').open=true"); A.fill('[data-act-st="0"]','4:35'); A.screenshot(path='/tmp/t/sp4.png'); A.click('#sheet-save'); A.wait_for_timeout(600)
     A.evaluate("document.getElementById('gym-acts').scrollIntoView()"); A.wait_for_timeout(300); A.screenshot(path='/tmp/t/sp5.png')
-    A.evaluate("window.scrollTo(0,0)"); A.click('#gym-sport'); A.wait_for_timeout(500); A.screenshot(path='/tmp/t/sp6.png')
+    A.evaluate("window.scrollTo(0,0)"); A.click('#gym-sport'); A.wait_for_timeout(500); (A.click('[data-hub="sport"]') if A.locator('[data-hub="sport"]').count() else None); A.wait_for_timeout(500); A.screenshot(path='/tmp/t/sp6.png')
     A.locator('[data-sr-add]').first.click(); A.wait_for_timeout(700)
     rt=A.evaluate("JSON.stringify(gymRoutines().slice(-1)[0]).slice(0,200)"); log=A.evaluate("JSON.stringify(actLog())")
     A.click('nav button[data-tab="mas"]'); A.wait_for_timeout(400); A.screenshot(path='/tmp/t/sp7.png')

@@ -31,6 +31,7 @@ Dan por hecho Linux con Google Chrome en `/usr/bin/google-chrome` y dejan captur
   - `ck_test` check-in semanal · `rep_test` ficha del atleta · `xss_test` textos del atleta escapados en la vista del especialista
   - `es_test`, `match_test` búsqueda de ejercicios en español y emparejado con la base
   - `pw_test`, `reg_test`, `rec_test` contraseñas débiles rechazadas, registro y recuperación
-- `desactualizadas/`: pruebas que ya no pasan porque la pantalla que recorren cambió (no por un error de la app). Están ahí como referencia para actualizarlas; `run_all.sh` no las corre.
+- `fixtures/`: archivos que suben algunas pruebas (dos fotos de ejemplo). `seed.js` y `off_mx_mock.json` son datos de muestra.
+- `desactualizadas/`: cinco pruebas que recorren pantallas que ya no existen y habría que reescribir, no parchar; `run_all.sh` no las corre. `links_test` y `asg_test` usan la hoja de vínculos anterior al modo especialista (hoy lo cubren `multi_test`, `self_test`, `chat_test`, `diet_test`, `eq_test`, `loads_test` y `new4_test`); `auth_test` y `auth2_test` traen su propio simulador viejo del acceso (hoy lo cubren `pw_test`, `rec_test` y `reg_test`); `gym_test` importa una rutina desde un PDF que no está en el repo.
 
 Al cambiar una pantalla, corre las pruebas que la tocan y, si el flujo cambió a propósito, actualiza la prueba en el mismo commit.

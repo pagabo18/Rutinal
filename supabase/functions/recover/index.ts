@@ -45,7 +45,7 @@ Deno.serve(async (req: Request) => {
     if (action === "reset") {
       const code = String(body.code ?? "").slice(0, 40);
       const password = String(body.password ?? "");
-      if (password.length < 6 || password.length > 72) return json({ ok: false, error: "weak" });
+      if (password.length < 8 || password.length > 72) return json({ ok: false, error: "weak" });
       const { data: uid, error } = await db.rpc("rutinal_recovery_check", { p_username: username, p_code: code });
       if (error) return json({ ok: false, error: "server" }, 500);
       if (!uid) { await wait(800); return json({ ok: false, error: "invalid" }); }

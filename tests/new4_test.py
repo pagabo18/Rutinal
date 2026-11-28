@@ -17,7 +17,7 @@ with sync_playwright() as p:
     print('R1 editor:',I.inner_text('#sheet-title'),'| días ocultos',I.locator('#ge-days').count()==0)
     I.fill('#ge-name','Torso A'); I.evaluate("gymEditorSync(); _gymEdit.exercises.push({id:'n1',name:'Press militar',sets:[{count:3,reps:'10',note:''}],circuit:null}); _gymEdit._open='n1'; gymDrawEditor(true)"); I.wait_for_timeout(300); I.fill('.ge-ex [data-f="sets"]','3x8-10'); I.fill('.ge-ex [data-f="loads"]','30, 30, 32.5'); I.click('#sheet-save'); I.wait_for_timeout(900)
     print('R2 plantilla:',I.evaluate("document.getElementById('tab-sp-templates').innerText.replace(/\\n+/g,' | ')")[:150],'| en mi Gym',I.evaluate("gymRoutines().length"))
-    I.click('#tab-sp-templates [data-tp-assign]'); I.wait_for_timeout(600); I.check('[data-as-c="0"]'); I.click('#sheet-save'); I.wait_for_timeout(900)
+    I.click('#tab-sp-templates [data-tp-assign]'); I.wait_for_timeout(600); I.locator('[data-as-c]').last.check(); I.click('#sheet-save'); I.wait_for_timeout(900)
     A.evaluate("asgRefresh(true)"); A.wait_for_timeout(900); print('R3 ana:',A.evaluate("JSON.stringify(gymRoutines().filter(r=>r.assigned).map(r=>[r.name,r.exercises.map(e=>[e.name,e.sets,e.loads])]))"))
     A.evaluate("(()=>{const r=gymRoutines().find(r=>r.assigned);const l=gymLogs();l[keyDate()]={routineId:r.id,ex:{[r.exercises[0].id]:[{kg:'30',reps:'9',done:true}]}};S.set('gym_logs',l);})()")
     I.evaluate("_sp.at=0"); I.click('nav button[data-tab="sp-clients"]'); I.wait_for_timeout(900); I.click('#tab-sp-clients .sp-row:not(.sp-self)[data-sp-open]'); I.wait_for_timeout(900)
@@ -32,7 +32,7 @@ with sync_playwright() as p:
     A.click('[data-hd-agenda]'); A.wait_for_timeout(900); A.click('[data-ag-open]'); A.wait_for_timeout(400); A.click('#ap-cancel'); A.wait_for_timeout(1000); print('A4 ana cancela:',body(A)[-110:]); A.evaluate("closeSheet()")
     # --- fotos ---
     A.click('nav button[data-tab="mas"]'); A.click('[data-mas="photos"]'); A.wait_for_timeout(700); print('F1 vacío:',body(A)[-80:])
-    A.set_input_files('#ph-file','/tmp/t/foto1.jpg'); A.wait_for_timeout(1500); A.check('#ph-share'); A.set_input_files('#ph-file','/tmp/t/foto2.jpg'); A.wait_for_timeout(1800)
+    A.set_input_files('#ph-file','fixtures/foto1.jpg'); A.wait_for_timeout(1500); A.check('#ph-share'); A.set_input_files('#ph-file','fixtures/foto2.jpg'); A.wait_for_timeout(1800)
     print('F2 dos fotos:',A.locator('.ph-t').count(),'| compartidas',A.locator('.ph-t i').count(),'| cargadas',A.evaluate("[...document.querySelectorAll('.ph-grid img')].filter(i=>i.naturalWidth>0).length"),'| tamaño subido',A.evaluate("(async()=>{const i=document.querySelector('.ph-grid img');return i.naturalWidth+'x'+i.naturalHeight})()")); A.screenshot(path='/tmp/t/fotos_%s.png'%lang)
     I.evaluate("_sp.at=0"); I.click('nav button[data-tab="sp-clients"]'); I.wait_for_timeout(900)
     if I.locator('#tab-sp-clients .sp-row:not(.sp-self)[data-sp-open]').count(): I.click('#tab-sp-clients .sp-row:not(.sp-self)[data-sp-open]'); I.wait_for_timeout(900)

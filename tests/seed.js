@@ -1,0 +1,21 @@
+(function(){
+ if (localStorage.getItem('__seeded')) return;
+ const d=new Date(); const k=x=>{const z=new Date(d);z.setDate(d.getDate()+x);return z.toISOString().slice(0,10)};
+ const today=k(0), y=k(-1);
+ const set=(a,b)=>localStorage.setItem(a,JSON.stringify(b));
+ const blocks=[{id:'b1',start:'07:00',end:'08:00',label:'Gym',cat:'gym'},{id:'b2',start:'09:00',end:'13:00',label:'Trabajo profundo',cat:'trabajo'},{id:'b3',start:'14:00',end:'15:00',label:'Comida',cat:'personal'},{id:'b4',start:'19:00',end:'21:00',label:'Cena con pareja',cat:'pareja'},{id:'b5',start:'00:00',end:'23:59',label:'Todo el día',cat:'hobby'}];
+ set('sch_weekday',blocks); set('sch_saturday',blocks.slice(0,2)); set('sch_sunday',blocks.slice(2));
+ set('habits',[{id:'h1',name:'Cardio 30 min',meta:'Lun – Vie · 07:00',notes:'',cat:'gym'},{id:'h2',name:'Leer 20 min',meta:'Todos los días',notes:'nota',cat:'personal'},{id:'h3',name:'Meditar',meta:'',notes:'',cat:'personal'}]);
+ const hl={}; for(let i=-20;i<=0;i++){hl[k(i)]={h1:i%2==0,h2:true,h3:i%3==0}} set('habitLog',hl);
+ set('imprevistos',[{id:'i1',date:today,what:'Llamada urgente',start:'10:00',end:'10:30',cat:'trabajo'},{id:'i2',date:y,what:'Tráfico',start:'08:00',end:'08:40',cat:'personal'}]);
+ const f=(n,g,kc)=>({food_id:'f'+n,name:n,brand:'',grams:g,per100g:{kcal:kc,protein:10,carbs:20,fat:5,fiber:2,sugars:3,sodium:100},source:'custom',ts:Date.now()});
+ const ml={}; for(let i=-60;i<=0;i++){ if(i%7==-3) continue; const v=1+((i*37)%5)/10; ml[k(i)]={breakfast:[f('Avena',80*v,380),f('Huevo revuelto',120,150)],lunch:[f('Pollo',200*v,165),f('Arroz',150,130),f('Tortilla de maíz',90,218)],dinner:[f(i%2?'Ensalada':'Tacos de bistec',i%2?200:250*v,i%2?40:200)],snack:i%3?[f('Manzana',150,52)]:[f('Yogur griego',170,97),f('Almendras',30,579)]}} set('meal_log',ml);
+ const ps=[]; for(let i=-6;i<=0;i++){for(let j=0;j<3;j++)ps.push({ts:new Date(k(i)+'T1'+j+':00:00').getTime(),phase:'focus',minutes:25,cat:'trabajo'})} set('pomo_sessions',ps);
+ set('diary',{[today]:{text:'Buen día',mood:4},[y]:{text:'Cansado',mood:2}});
+ set('weight_log',{[today]:72.5,[k(-7)]:73.1,[k(-14)]:73.8});
+ set('custom_foods',[{id:'c1',name:'Licuado',per100g:{kcal:90,protein:5,carbs:12,fat:2},category:'bebida'}]);
+ set('dishes',[{id:'d1',name:'Bowl de pollo',servings:2,items:[f('Pollo',200,165),f('Arroz',150,130)]}]);
+ set('planTasks',[{id:'t1',title:'Ir al banco',date:today,done:false},{id:'t2',title:'Pagar luz',date:k(2),done:true}]);
+ set('nutri_profile',{sex:'M',age:30,heightCm:175,weightKg:72,bodyFatPct:null,activity:'moderate',goal:'maintain',macroSplit:'balanced',tolerance:'flex',manualKcal:null});
+ localStorage.setItem('__seeded','1');
+})();
