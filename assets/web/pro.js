@@ -1489,6 +1489,44 @@ function openWarmupTemplates(o) {
 }
 
 // ============================================================
+// HISTORIAL QUE NO SE PIERDE AL BORRAR
+// Los registros (gym_logs) guardan ids, no nombres. Para que el historial siga legible cuando
+// se borra una rutina, se quita un ejercicio o el especialista manda una rutina nueva, lo
+// borrado que tiene series hechas no se elimina de gym_routines: se marca.
+//   rutina.archived = ts   → ya no aparece en listas, horario ni entrenamientos
+//   ejercicio.gone  = ts   → ya no aparece en la rutina
+// Lo vigente se lee con gymActiveOf(); el historial lee la lista completa.
+// ============================================================
+function gymActiveOf(list) {
+  return (Array.isArray(list) ? list : []).filter(r => r && !r.archived)
+    .map(r => (Array.isArray(r.exercises) && r.exercises.some(e => e && e.gone)) ? Object.assign({}, r, { exercises: r.exercises.filter(e => !(e && e.gone)) }) : r);
+}
+// Al guardar la lista vigente: lo que desaparece y tiene registro se conserva marcado; lo demás sí se borra.
+function gymArchiveMerge(old, active, logs, now) {
+  old = Array.isArray(old) ? old : []; active = Array.isArray(active) ? active : []; now = now || Date.now();
+  const used = {}; // rutina → ejercicios con series hechas ('*' = sesión hecha aunque sin series, p. ej. deportes o solo cardio)
+  Object.keys(logs || {}).forEach(d => {
+    const lg = logs[d]; if (!lg || typeof lg !== 'object' || lg.routineId == null) return;
+    const u = used[lg.routineId] || (used[lg.routineId] = {});
+    if (lg.done || (lg.cv && typeof lg.cv === 'object' && Object.keys(lg.cv).some(k => lg.cv[k] && lg.cv[k].done))) u['*'] = 1;
+    if (lg.ex && typeof lg.ex === 'object') Object.keys(lg.ex).forEach(id => { if (Array.isArray(lg.ex[id]) && lg.ex[id].some(x => x && x.done)) u[id] = 1; });
+  });
+  const slim = e => { if (!e || !e.photo) return e; const c = Object.assign({}, e); delete c.photo; return c; };
+  const out = active.map(r => {
+    const o = old.find(x => x && x.id === r.id); if (!o || !Array.isArray(o.exercises)) return r;
+    const have = {}; (r.exercises || []).forEach(e => { if (e) have[e.id] = 1; });
+    const u = used[r.id] || {}, keep = o.exercises.filter(e => e && !have[e.id] && u[e.id]).map(e => (e.gone ? e : Object.assign(slim(e), { gone: now })));
+    return keep.length ? Object.assign({}, r, { exercises: (r.exercises || []).concat(keep) }) : r;
+  });
+  old.forEach(o => {
+    if (!o || active.some(r => r && r.id === o.id)) return;
+    const u = used[o.id]; if (!u || !Object.keys(u).length) return;
+    out.push(o.archived ? o : Object.assign({}, o, { exercises: (o.exercises || []).map(slim), archived: now }));
+  });
+  return out;
+}
+
+// ============================================================
 // CARDIO Y PASOS DEL DÍA
 // Meta diaria de pasos y de minutos de cardio. Los pasos salen del contador del
 // teléfono (app de Android) o se anotan a mano; los minutos, de las actividades
@@ -1507,7 +1545,7 @@ function cardioGoal(D) {
 // Aviso del teléfono al cumplir la meta de pasos (encendido salvo que se apague en la hoja de Cardio y pasos)
 function cardioNotifyOn() { const g = S.get('cardio_goal', null); return !(g && typeof g === 'object' && g.notify === false); }
 function stepsLog() { const l = S.get('steps_log', null); return l && typeof l === 'object' ? l : {}; }
-function cardioLocal() { return { act_log: actLog(), gym_logs: typeof gymLogs === 'function' ? gymLogs() : {}, gym_routines: typeof gymRoutines === 'function' ? gymRoutines() : [], steps_log: stepsLog(), cardio_goal: S.get('cardio_goal', null) }; }
+function cardioLocal() { return { act_log: actLog(), gym_logs: typeof gymLogs === 'function' ? gymLogs() : {}, gym_routines: typeof gymRoutinesRaw === 'function' ? gymRoutinesRaw() : [], steps_log: stepsLog(), cardio_goal: S.get('cardio_goal', null) }; }
 // Pasos y minutos de cardio de un día, con sus metas. D = datos del atleta (propios o los que ve el especialista).
 function cardioDay(D, dk) {
   D = D || {};
@@ -1678,8 +1716,9 @@ function dayData(D, dk, opts) {
     const sum = ss => ({ n: ss.length, top: Math.max(0, ...ss.map(x => N(x.kg) || 0)), reps: ss.reduce((a, x) => a + (N(x.reps) || 0), 0), vol: ss.reduce((a, x) => a + (N(x.kg) || 0) * (N(x.reps) || 0), 0),
       e1: Math.max(0, ...ss.map(x => (N(x.kg) > 0 && N(x.reps) > 0 ? E1(x.kg, x.reps) : 0))) });
     (r.exercises || []).forEach(e => {
-      const plan = (e.sets || []).reduce((a, x) => a + (+x.count || 0), 0); planned += plan;
       const sets = exCleanSets((lg.ex || {})[e.id] || [], N);
+      if (e.gone && !sets.length) return; // ya no está en la rutina: ni planeado ni saltado
+      const plan = (e.sets || []).reduce((a, x) => a + (+x.count || 0), 0); planned += plan;
       if (!sets.length) { if (plan) skipped.push(e.name); return; }
       const swK = x => (typeof gymSwKey === 'function' ? gymSwKey(x) : (x && x.name) || null), swN = x => (typeof gymSwName === 'function' ? gymSwName(x) : (x && x.name) || '');
       const sw = lg.swap && lg.swap[e.id], name = (sw && swN(sw)) || e.name;
@@ -2226,7 +2265,7 @@ function goalNorm(x) { return String(x || '').toLowerCase().normalize('NFD').rep
 // Mayor peso registrado (kg) en un ejercicio, buscándolo por nombre en todas las rutinas.
 function goalBestLift(name) {
   const want = goalNorm(name), ids = {}; let best = null;
-  gymRoutines().forEach(r => (r.exercises || []).forEach(ex => { if (goalNorm(ex.name) === want) ids[ex.id] = 1; }));
+  (typeof gymRoutinesRaw === 'function' ? gymRoutinesRaw() : gymRoutines()).forEach(r => (r.exercises || []).forEach(ex => { if (goalNorm(ex.name) === want) ids[ex.id] = 1; }));
   const logs = gymLogs();
   Object.keys(logs).forEach(k => { const lg = logs[k] || {}; Object.keys(lg.ex || {}).forEach(id => { const sw = lg.swap && lg.swap[id]; if (sw ? goalNorm(sw.name) !== want : !ids[id]) return; (lg.ex[id] || []).forEach(st => { const kg = +st.kg; if (st.done && kg > 0 && (best == null || kg > best)) best = kg; }); }); });
   return best;
@@ -3276,4 +3315,4 @@ function openDietKindPicker(forClient) {
   document.getElementById('dk-menu').addEventListener('click', () => openDietEditor({}, forClient));
 }
 
-if (typeof module !== 'undefined') module.exports = { hoyLayout, HOY_BLOCKS, cardioWeek, cardioDay, cardioGoal, stepsNum, exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };
+if (typeof module !== 'undefined') module.exports = { gymActiveOf, gymArchiveMerge, hoyLayout, HOY_BLOCKS, cardioWeek, cardioDay, cardioGoal, stepsNum, exLogIndex, dayData, dayCmpLine, dayExDelta, exCleanSets, feelNum, volByGroup, CV_WARMUPS, CV_BY, CV_F, cvWarmupMin, cvWarmupItems, rxWarmupFor, RX_DAYS_KEYS: Object.keys(RX_DAYS), gymMissedFrom, cvText, cvFill, cvMinutes, CV_MACHINES, rxBuildPlan, rxSplitFor, rxToRoutines, RX_SPLITS, RX_DAYS, RX_EX, handTotals, wtTrend, ckWeekOf, antCalc, antVal, antParseTakes, antAvg, eqGenerate, eqTotals, EQ_STYLES, EQ_GROUPS, EQ_FOODS };

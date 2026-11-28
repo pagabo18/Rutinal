@@ -10703,7 +10703,7 @@ function asgApplyRoutines() {
     rs.push(Object.assign({}, JSON.parse(JSON.stringify(a.payload || {})), { id, name: a.name || (a.payload || {}).name, assigned: { by: a.author_name || '', role: a.role, sig, until: a.expires_at || null } }));
     changed = true;
   });
-  if (changed) S.set('gym_routines', rs);
+  if (changed) saveGymRoutines(rs); // lo que se retira y tiene registros queda archivado
   return changed;
 }
 let _asgLast = 0;
@@ -11215,7 +11215,7 @@ async function spOpenClient(l) {
     kpis.push(`<div class="sp-kpi"><span>Entrenamientos (7 días)</span><b>${n7}</b></div>`);
     try {
       const lk = Object.keys(D.gym_logs || {}).sort()[0] || '';
-      const miss = gymMissedFrom(D.gym_schedule || {}, D.gym_logs || {}, D.gym_routines || [], keyDate(), { days: 7, since: D.gym_sched_since || lk, skip: D.gym_missed_skip || {} });
+      const miss = gymMissedFrom(D.gym_schedule || {}, D.gym_logs || {}, gymActiveOf(D.gym_routines || []), keyDate(), { days: 7, since: D.gym_sched_since || lk, skip: D.gym_missed_skip || {} });
       const nm = miss.reduce((a, x) => a + x.times, 0);
       kpis.push(`<div class="sp-kpi"><span>Sin hacer (7 días)</span><b class="${nm ? 'warn' : ''}">${nm}</b>${nm ? `<small translate="no">${miss.map(x => escapeHtml(x.name)).join(', ')}</small>` : ''}</div>`);
     } catch (e) {}
@@ -13998,8 +13998,11 @@ function renderFoodWater() {
 //  gym_logs:     { 'YYYY-MM-DD': { routineId, ex: { exId: [{ kg, reps, done }] }, done, ts } }
 // Base de ejercicios: gym_db.js (free-exercise-db, dominio público), se carga al abrir la pestaña.
 const GYM_IMG_CDN = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
-function gymRoutines() { return S.get('gym_routines', []); }
-function saveGymRoutines(r) { S.set('gym_routines', r); }
+// gym_routines guarda también lo borrado que tiene historial (rutina.archived / ejercicio.gone; ver pro.js).
+function gymRoutinesRaw() { const r = S.get('gym_routines', []); return Array.isArray(r) ? r : []; } // todo, para el historial
+function gymRoutines() { return gymActiveOf(gymRoutinesRaw()); }                                     // lo vigente
+function saveGymRoutines(r) { S.set('gym_routines', gymArchiveMerge(gymRoutinesRaw(), r, gymLogs())); }
+function gymRoutineHist(id) { return gymRoutinesRaw().find(r => r && r.id === id) || null; }          // para leer registros viejos
 function gymSchedule() { return S.get('gym_schedule', {}); }
 function saveGymSchedule(s) { if (!S.get('gym_sched_since', '')) S.set('gym_sched_since', keyDate()); S.set('gym_schedule', s); }
 // Las faltas se cuentan desde que existe el programa (así no aparecen avisos viejos al actualizar)
@@ -14538,7 +14541,7 @@ function renderGym() {
   el.querySelectorAll('[data-gym-edit]').forEach(b => b.addEventListener('click', () => openGymEditor(b.dataset.gymEdit)));
   el.querySelectorAll('[data-gym-hist]').forEach(h => h.addEventListener('click', () => {
     const lg = gymLogs()[h.dataset.gymHist];
-    if (lg && gymRoutineById(lg.routineId)) openGymWorkout(lg.routineId, h.dataset.gymHist);
+    if (lg && gymRoutineHist(lg.routineId)) openGymWorkout(lg.routineId, h.dataset.gymHist);
   }));
   if (!window.GYM_DB) loadGymDb().then(() => { if (document.getElementById('tab-gym').classList.contains('active')) renderGym(); }).catch(() => {});
 }
@@ -14566,7 +14569,7 @@ function gymHistoryHtml() {
   const f = new Intl.DateTimeFormat(_loc(), { weekday: 'short', day: 'numeric', month: 'short' });
   return keys.map(k => {
     const lg = logs[k];
-    const r = gymRoutineById(lg.routineId);
+    const r = gymRoutineHist(lg.routineId);
     const sets = Object.values(lg.ex).reduce((a, arr) => a + arr.filter(s => s.done).length, 0);
     const vol = Object.values(lg.ex).reduce((a, arr) => a + arr.filter(s => s.done).reduce((b, s) => b + (parseFloat(s.kg) || 0) * (parseInt(s.reps, 10) || 0), 0), 0);
     return `<div class="gym-hist" data-gym-hist="${k}">
@@ -14591,13 +14594,14 @@ function gymPickRoutine(title, cb, allowRest) {
 // ---------- Entrenamiento ----------
 let _gymRest = null; // { end, total, timer }
 function openGymWorkout(routineId, dateKey, focusId) {
-  const r = gymRoutineById(routineId);
+  // Un día pasado de una rutina ya borrada se puede seguir abriendo para consultar
+  const r = gymRoutineById(routineId) || (dateKey && dateKey < keyDate() ? gymRoutineHist(routineId) : null);
   if (!r) return;
-  if (r.assigned && r.assigned.until && Date.parse(r.assigned.until) <= Date.now()) { alert(t('Esta rutina ya venció. Pídele a tu especialista una nueva.')); asgApplyRoutines(); try { renderGym(); } catch (e) {} return; }
+  if (!r.archived && r.assigned && r.assigned.until && Date.parse(r.assigned.until) <= Date.now()) { alert(t('Esta rutina ya venció. Pídele a tu especialista una nueva.')); asgApplyRoutines(); try { renderGym(); } catch (e) {} return; }
   dateKey = dateKey || keyDate();
   const prevLg = gymLogs()[dateKey];
   if (prevLg && prevLg.routineId && prevLg.routineId !== r.id && Object.keys(prevLg.ex || {}).some(k => (prevLg.ex[k] || []).some(x => x && x.done))) {
-    const pr = gymRoutineById(prevLg.routineId);
+    const pr = gymRoutineHist(prevLg.routineId);
     if (!confirm(`${t('Este día ya tiene registrado')} «${pr ? pr.name : t('otro entrenamiento')}». ${t('Solo se guarda un entrenamiento por día: si empiezas esta rutina, reemplaza ese registro.')}`)) return;
   }
   _gymWoOpen = { rid: r.id, date: dateKey };
@@ -15436,7 +15440,7 @@ async function gymStepsTranslate(db) {
   } catch (e) { return null; }
 }
 function openGymExerciseInfo(routineId, exId, back) {
-  const r = gymRoutineById(routineId);
+  const r = gymRoutineById(routineId) || gymRoutineHist(routineId);
   const ex = r && r.exercises.find(e => e.id === exId);
   if (!ex) return;
   loadGymDb().catch(() => {}).then(() => {
@@ -15769,12 +15773,12 @@ function openGymProgress() {
     const weeks = Array.from({ length: 8 }, (_, i) => { const d = new Date(ws); d.setDate(d.getDate() - (7 - i) * 7); return d; });
     const wVals = weeks.map(w => keys.filter(k => wkKey(k) === keyDate(w)).reduce((a, k) => a + gymVolU(gymSessionStats(logs[k]).vol), 0));
     const wLbl = weeks.map(w => fmt.format(w));
-    const wGrp = weeks.map((w, i) => { const groups = {}; keys.filter(k => wkKey(k) === keyDate(w)).forEach(k => { const vg = volByGroup(logs[k], gymRoutines()); Object.keys(vg).forEach(g => { groups[g] = (groups[g] || 0) + gymVolU(vg[g]); }); }); return { lab: wLbl[i], groups }; });
+    const wGrp = weeks.map((w, i) => { const groups = {}; keys.filter(k => wkKey(k) === keyDate(w)).forEach(k => { const vg = volByGroup(logs[k], gymRoutinesRaw()); Object.keys(vg).forEach(g => { groups[g] = (groups[g] || 0) + gymVolU(vg[g]); }); }); return { lab: wLbl[i], groups }; });
 
     // Series por músculo esta semana
     const mus = {};
     thisWeek.forEach(k => {
-      const lg = logs[k]; const r = gymRoutineById(lg.routineId);
+      const lg = logs[k]; const r = gymRoutineHist(lg.routineId);
       Object.keys(lg.ex || {}).forEach(exId => {
         const ex = r && r.exercises.find(e => e.id === exId);
         const sw = lg.swap && lg.swap[exId];
