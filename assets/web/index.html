@@ -3955,7 +3955,7 @@ const __hasLS = (() => {
 // Claves que persistimos en SharedPreferences para backup fiable
 const __WIDGET_KEYS = new Set(['cats','habits','habitLog','imprevistos','sch_weekday','sch_saturday','sch_sunday']);
 // Claves que además disparan un re-sync (alimentan widget_food / widget_pomo)
-const __WIDGET_TRIGGERS = new Set([...__WIDGET_KEYS, 'pomo_state', 'pomo_settings', 'timer_state', 'meal_log', 'nutri_profile', 'food_goal_kcal']);
+const __WIDGET_TRIGGERS = new Set([...__WIDGET_KEYS, 'pomo_state', 'pomo_settings', 'timer_state', 'meal_log', 'nutri_profile', 'food_goal_kcal', 'steps_log', 'cardio_goal', 'act_log', 'gym_logs', 'app_prefs']);
 let __syncTimer = null;
 function __syncWidgets() {
   if (typeof window.Android === 'undefined' || !window.Android.saveState) return;
@@ -3985,6 +3985,14 @@ function __syncWidgets() {
           c: t ? t.carbs : 0, gc: tg ? tg.carbs : 225,
           f: t ? t.fat : 0, gf: tg ? tg.fat : 56,
         };
+      } catch (e3) {}
+      // Cardio y pasos de hoy para su widget y para el aviso de meta de pasos cumplida
+      try {
+        if (typeof cardioDay === 'function' && (typeof modOn !== 'function' || modOn('cardio'))) {
+          const c = cardioDay(cardioLocal(), keyDate()), tt = x => { const v = typeof t === 'function' ? t(x) : x; return v == null || v === '' ? x : v; };
+          state.widget_cardio = { date: keyDate(), steps: c.steps, stepsGoal: c.stepsGoal, min: c.min, minGoal: c.minGoal, notify: cardioNotifyOn(),
+            L: { title: tt('Cardio y pasos'), steps: tt('Pasos'), cardio: tt('Cardio'), goalT: tt('Meta de pasos cumplida'), goalD: tt('Llevas {n} de {g} pasos hoy.') } };
+        }
       } catch (e3) {}
       // Estado del Pomodoro/temporizador para su widget
       try {

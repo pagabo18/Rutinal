@@ -7286,6 +7286,56 @@ window.__I18N_EXTRA = {
    "pt-BR": "Ordenar e ocultar os cartões de Hoje",
    "fr": "Réorganiser et masquer les cartes d'Aujourd'hui"
   },
+  "Arma tu pantalla de Hoy": {
+   "en": "Set up your Today screen",
+   "pt-BR": "Monte sua tela de Hoje",
+   "fr": "Configure ton écran Aujourd'hui"
+  },
+  "¿Cuánto quieres ver aquí?": {
+   "en": "How much do you want to see here?",
+   "pt-BR": "Quanto você quer ver aqui?",
+   "fr": "Que veux-tu voir ici ?"
+  },
+  "Lo esencial deja lo de hoy: entrenamiento, pasos, comida y mensajes. Lo demás sigue en su sección y lo puedes cambiar cuando quieras.": {
+   "en": "The essentials keep today's things: workout, steps, food and messages. Everything else stays in its section, and you can change this anytime.",
+   "pt-BR": "O essencial deixa o de hoje: treino, passos, comida e mensagens. O resto continua na sua seção e você pode mudar quando quiser.",
+   "fr": "L'essentiel garde ce qui compte aujourd'hui : entraînement, pas, repas et messages. Le reste demeure dans sa section et tu peux changer quand tu veux."
+  },
+  "Lo esencial": {
+   "en": "The essentials",
+   "pt-BR": "O essencial",
+   "fr": "L'essentiel"
+  },
+  "Ver todo": {
+   "en": "Show everything",
+   "pt-BR": "Ver tudo",
+   "fr": "Tout voir"
+  },
+  "Elegir yo": {
+   "en": "Let me choose",
+   "pt-BR": "Eu escolho",
+   "fr": "Je choisis"
+  },
+  "Meta de pasos cumplida": {
+   "en": "Step goal met",
+   "pt-BR": "Meta de passos cumprida",
+   "fr": "Objectif de pas atteint"
+  },
+  "Llevas {n} de {g} pasos hoy.": {
+   "en": "You're at {n} of {g} steps today.",
+   "pt-BR": "Você tem {n} de {g} passos hoje.",
+   "fr": "Tu en es à {n} pas sur {g} aujourd'hui."
+  },
+  "Avisarme al cumplir la meta de pasos": {
+   "en": "Notify me when I hit my step goal",
+   "pt-BR": "Avisar-me ao cumprir a meta de passos",
+   "fr": "Me prévenir quand j'atteins mon objectif de pas"
+  },
+  "Una notificación al día, cuando llegas a tu meta": {
+   "en": "One notification a day, when you reach your goal",
+   "pt-BR": "Uma notificação por dia, quando você atinge a meta",
+   "fr": "Une notification par jour, quand tu atteins ton objectif"
+  },
   "Perfil de atleta": {
    "en": "Athlete profile",
    "pt-BR": "Perfil de atleta",

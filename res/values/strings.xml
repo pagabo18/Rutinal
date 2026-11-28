@@ -3,6 +3,7 @@
     <string name="app_name">Rutinal</string>
     <string name="widget_gym_desc">Serie que sigue con peso, reps y RIR ajustables, descanso y botón de hecho</string>
     <string name="widget_habits_desc">Tus hábitos de hoy: toca uno para marcarlo</string>
+    <string name="widget_cardio_desc">Pasos y minutos de cardio de hoy contra tu meta</string>
     <string name="widget_food_desc">Calorías y macros de hoy contra tu meta</string>
     <string name="widget_ahora_desc">El bloque de tu día que toca ahora y el que sigue</string>
     <string name="widget_pomo_desc">Temporizador Pomodoro con iniciar, pausar y reiniciar</string>

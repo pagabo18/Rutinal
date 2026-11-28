@@ -1504,6 +1504,8 @@ function cardioGoal(D) {
   const n = (v, d, max) => { const x = Math.round(+v); return v == null || v === '' || !isFinite(x) ? d : Math.max(0, Math.min(max, x)); };
   return { steps: n(o.steps, CARDIO_DEF.steps, 100000), min: n(o.min, CARDIO_DEF.min, 600) };
 }
+// Aviso del teléfono al cumplir la meta de pasos (encendido salvo que se apague en la hoja de Cardio y pasos)
+function cardioNotifyOn() { const g = S.get('cardio_goal', null); return !(g && typeof g === 'object' && g.notify === false); }
 function stepsLog() { const l = S.get('steps_log', null); return l && typeof l === 'object' ? l : {}; }
 function cardioLocal() { return { act_log: actLog(), gym_logs: typeof gymLogs === 'function' ? gymLogs() : {}, gym_routines: typeof gymRoutines === 'function' ? gymRoutines() : [], steps_log: stepsLog(), cardio_goal: S.get('cardio_goal', null) }; }
 // Pasos y minutos de cardio de un día, con sus metas. D = datos del atleta (propios o los que ve el especialista).
@@ -1615,13 +1617,16 @@ function openCardio() {
     <label class="ant-f"><span>Pasos</span><span class="ant-in"><input id="cd-g-steps" inputmode="numeric" value="${g.steps}" placeholder="8000"></span></label>
     <label class="ant-f"><span>Cardio</span><span class="ant-in"><input id="cd-g-min" inputmode="numeric" value="${g.min}" placeholder="30"><i>min</i></span></label>
     <div class="fit-note">Pon 0 en la meta que no quieras llevar.</div>
+    ${on ? `<label class="mod-row" style="margin-top:8px;"><span><b>Avisarme al cumplir la meta de pasos</b><small>Una notificación al día, cuando llegas a tu meta</small></span><input type="checkbox" class="mod-sw" id="cd-notify"${cardioNotifyOn() ? ' checked' : ''}></label>` : ''}
     <h3 class="ant-sub">Cardio de hoy</h3>
     ${c.items.length ? c.items.map(x => `<div class="act-row" style="cursor:default;"><div><b>${escapeHtml(x.n)}</b></div><em translate="no">${Math.round(x.min)} min</em></div>`).join('') : '<div class="sp-empty" style="margin-bottom:8px;">Todavía no registras cardio hoy. Cuenta el que haces en tu rutina y las actividades que anotes.</div>'}
     <button class="btn-secondary" id="cd-add" style="width:100%;margin-top:8px;">Registrar cardio</button><p class="auth-msg" id="cd-msg"></p></div>`, () => {
     const num = id => { const e = document.getElementById(id); if (!e) return null; const v = String(e.value).trim().replace(/[\s.,](?=\d{3}\b)/g, ''); if (v === '') return 0; const n = Math.round(parseFloat(v.replace(',', '.'))); return isFinite(n) && n >= 0 ? n : NaN; };
     const gs = num('cd-g-steps'), gm = num('cd-g-min'), st = num('cd-steps'), msg = document.getElementById('cd-msg');
     if (isNaN(gs) || isNaN(gm) || gs > 100000 || gm > 600 || (st != null && (isNaN(st) || st > 200000))) { msg.textContent = t('Revisa los números: alguno está fuera de rango.'); return; }
-    S.set('cardio_goal', { steps: gs, min: gm });
+    const ntf = document.getElementById('cd-notify'), goal = { steps: gs, min: gm };
+    if (ntf ? !ntf.checked : !cardioNotifyOn()) goal.notify = false;
+    S.set('cardio_goal', goal);
     if (st != null && st !== c.steps) { const l = stepsLog(); if (st > 0) l[dk] = st; else delete l[dk]; S.set('steps_log', l); }
     closeSheet(); try { renderHoyDash(); } catch (e) {}
   });

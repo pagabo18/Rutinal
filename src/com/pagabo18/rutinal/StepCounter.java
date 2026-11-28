@@ -132,6 +132,9 @@ public class StepCounter {
             prune(days, now);
             p.edit().putString("days", days.toString()).putLong("last", cum).putLong("lastTs", now).apply();
         } catch (Exception ignored) {}
+        // Con los pasos al día: widget de cardio y aviso de meta cumplida
+        try { CardioWidgetProvider.refreshAll(ctx); } catch (Exception ignored) {}
+        try { CardioWidgetProvider.checkStepGoal(ctx); } catch (Exception ignored) {}
     }
 
     /** Lee el sensor una vez y guarda. `after` corre siempre al terminar (hilo principal). */

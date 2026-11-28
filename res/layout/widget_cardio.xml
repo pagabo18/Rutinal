@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget "Cardio y pasos": pasos y minutos de cardio de hoy contra la meta -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cw_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="16dp">
+    <TextView
+        android:id="@+id/cw_kicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CARDIO Y PASOS"
+        android:textColor="@color/widgetText2"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:letterSpacing="0.08" />
+    <TextView
+        android:id="@+id/cw_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Abre Rutinal para ver tu día"
+        android:textColor="@color/widgetText1"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:maxLines="2"
+        android:visibility="gone" />
+    <LinearLayout
+        android:id="@+id/cw_cols"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginRight="14dp"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/cw_steps_k"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pasos"
+                android:textColor="@color/widgetText2"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            <TextView
+                android:id="@+id/cw_steps_v"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="–"
+                android:textColor="@color/widgetText1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            <ProgressBar
+                android:id="@+id/cw_steps_bar"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="8dp"
+                android:progressDrawable="@drawable/widget_progress"
+                android:max="100"
+                android:progress="0"
+                android:visibility="visible" />
+            <ProgressBar
+                android:id="@+id/cw_steps_bar_ok"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="8dp"
+                android:progressDrawable="@drawable/widget_progress_ok"
+                android:max="100"
+                android:progress="0"
+                android:visibility="gone" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginRight="0dp"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/cw_min_k"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cardio"
+                android:textColor="@color/widgetText2"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            <TextView
+                android:id="@+id/cw_min_v"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="–"
+                android:textColor="@color/widgetText1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            <ProgressBar
+                android:id="@+id/cw_min_bar"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="8dp"
+                android:progressDrawable="@drawable/widget_progress"
+                android:max="100"
+                android:progress="0"
+                android:visibility="visible" />
+            <ProgressBar
+                android:id="@+id/cw_min_bar_ok"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="8dp"
+                android:progressDrawable="@drawable/widget_progress_ok"
+                android:max="100"
+                android:progress="0"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>
