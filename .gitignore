@@ -40,3 +40,12 @@ android-gradle/app/src/main/assets/web/
 
 # Screenshots efímeros
 screenshot_*.png
+
+# Python
+__pycache__/
+*.pyc
+
+# Capturas que dejan las pruebas
+tests/*.png
+tests/*.pdf
+tests/*.html

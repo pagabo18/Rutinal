@@ -1,0 +1,20 @@
+from playwright.sync_api import sync_playwright
+exec(open('fake_links.py').read())
+src=open('wo_test.py').read(); lang='es'
+exec(src[src.index('SEED3='):src.index('body=lambda')])
+with sync_playwright() as p:
+    b=p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
+    c=b.new_context(viewport={'width':400,'height':860},locale=lang,device_scale_factor=2); pg=c.new_page(); pg.errs=[]; pg.on('pageerror',lambda e:pg.errs.append(str(e)))
+    pg.route('**/*',sb.handle); pg.add_init_script(SEED3); pg.goto('http://localhost:8765/index.html'); pg.wait_for_timeout(600)
+    login(pg,'ana','secreta1',False)
+    pg.evaluate("()=>{const all=gymRoutines(); all[0].exercises[0].dbId='Barbell_Bench_Press_-_Medium_Grip'; saveGymRoutines(all)}")
+    pg.evaluate("loadGymDb()"); pg.wait_for_timeout(1200)
+    pg.evaluate("openGymWorkout('rc1', keyDate())"); pg.wait_for_timeout(700)
+    pg.click('.gym-ex-hero'); pg.wait_for_timeout(900)
+    print('ficha:', pg.inner_text('#sheet-title'), '| animación:', pg.locator('.gym-big-media img.gym-anim').count(), '| pasos:', pg.inner_text('#gym-steps-box')[:60].replace('\n',' | '), '| visor:', pg.locator('.imgv').count())
+    pg.screenshot(path='/tmp/g/info_1.png')
+    pg.click('.gym-big-media img.gym-anim'); pg.wait_for_timeout(500); print('zoom en la ficha:', pg.locator('.imgv.show').count())
+    pg.screenshot(path='/tmp/g/info_2.png')
+    pg.go_back(); pg.wait_for_timeout(400); print('atrás →', pg.inner_text('#sheet-title'), pg.locator('.imgv').count())
+    pg.go_back(); pg.wait_for_timeout(600); print('atrás →', pg.inner_text('#sheet-title'))
+    print('errs', pg.errs)

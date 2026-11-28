@@ -1,0 +1,23 @@
+from playwright.sync_api import sync_playwright
+exec(open('fake_links.py').read())
+src=open('wo_test.py').read(); lang='es'
+exec(src[src.index('SEED3='):src.index('body=lambda')])
+def shot(pg,name,wait=500): pg.wait_for_timeout(wait); pg.screenshot(path='/tmp/g/r2_%s.png'%name)
+with sync_playwright() as p:
+    b=p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
+    c=b.new_context(viewport={'width':400,'height':860},locale=lang,device_scale_factor=2); pg=c.new_page(); pg.errs=[]; pg.on('pageerror',lambda e:pg.errs.append(str(e)))
+    pg.on('dialog',lambda d:d.accept()); pg.route('**/*',sb.handle); pg.add_init_script(SEED3); pg.goto('http://localhost:8765/index.html'); pg.wait_for_timeout(600)
+    login(pg,'ana','secreta1',False)
+    pg.click('nav button[data-tab="gym"]'); pg.wait_for_timeout(700); pg.click('#gym-sport'); shot(pg,'hub')
+    pg.click('[data-hub="tpl"]'); pg.wait_for_timeout(400); shot(pg,'catalogo')
+    pg.click('[data-rp="2"]'); pg.wait_for_timeout(900); shot(pg,'ppl')
+    before=pg.evaluate("document.querySelector('.rx-ex-n').innerText"); pg.click('[data-rx-swap="0:0"]'); pg.wait_for_timeout(300); print('cambio', before,'->',pg.evaluate("document.querySelector('.rx-ex-n').innerText"))
+    pg.click('#sheet-save'); pg.wait_for_timeout(700)
+    print('rutinas', pg.evaluate("gymRoutines().map(r=>r.name+'('+r.exercises.length+')')"), 'semana', pg.evaluate("JSON.stringify(gymSchedule())"))
+    print('imagenes', pg.evaluate("gymRoutines().slice(-3).flatMap(r=>r.exercises).filter(e=>e.dbId&&gymDbById(e.dbId)).length+'/'+gymRoutines().slice(-3).flatMap(r=>r.exercises).length"))
+    shot(pg,'gym')
+    pg.click('#gym-sport'); pg.wait_for_timeout(300); pg.click('[data-hub="ai"]'); pg.wait_for_timeout(300)
+    pg.click('.rx-chips[data-rxk="goal"] [data-v="grasa"]'); pg.click('.rx-chips[data-rxk="ndays"] [data-v="3"]'); pg.click('.rx-chips[data-rxk="level"] [data-v="beg"]'); pg.click('.rx-chips[data-rxk="equip"] [data-v="db"]'); pg.click('.rx-chips[data-rxk="mins"] [data-v="45"]'); pg.click('.rx-chips[data-rxk="focus"] [data-v="glute"]'); pg.click('.rx-chips[data-rxk="care"] [data-v="rodilla"]')
+    shot(pg,'asistente'); pg.click('#sheet-save'); pg.wait_for_timeout(700); shot(pg,'resultado')
+    print('asistente:', pg.evaluate("[...document.querySelectorAll('.rx-day')].map(d=>d.querySelector('b').innerText+': '+[...d.querySelectorAll('.rx-ex-n')].map(x=>x.innerText).join(', ')).join(' || ')"))
+    print('errs',pg.errs)

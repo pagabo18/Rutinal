@@ -1,0 +1,15 @@
+from playwright.sync_api import sync_playwright
+exec(open('fake_links.py').read())
+with sync_playwright() as p:
+    b=p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
+    pg=new_ctx(b,'es',True); pg.add_init_script("window.__ap=[];window.Android={setAppointments:j=>window.__ap.push(JSON.parse(j))};"); pg.reload(); pg.wait_for_timeout(600); login(pg,'ana','secreta1',False)
+    card=lambda: pg.evaluate("document.querySelector('[data-hd-weight]').innerText.replace(/\\n+/g,' | ')")
+    print('1 kg:',card())
+    pg.click('nav button[data-tab="mas"]'); pg.click('[data-mas="ajustes"]'); pg.wait_for_timeout(300); pg.click('[data-unit-k="body_unit"][data-unit-v="lb"]'); pg.wait_for_timeout(200)
+    print('2 ajustes:',pg.evaluate("[...document.querySelectorAll('[data-unit-k].on')].map(b=>b.dataset.unitK+'='+b.dataset.unitV).join(',')"))
+    pg.click('nav button[data-tab="hoy"]'); pg.wait_for_timeout(300); print('3 lb:',card())
+    pg.click('[data-hd-weight]'); pg.wait_for_timeout(300); print('4 hoja:',pg.inner_text('#sheet-body').replace('\n',' | ')[:40],'| valor',pg.input_value('#wq-v')); pg.fill('#wq-v','170'); pg.click('#sheet-save'); pg.wait_for_timeout(300)
+    print('5 guardado en kg:',pg.evaluate("S.get('weight_log',{})[keyDate()]"),'| tarjeta',card())
+    pg.evaluate("localStorage.setItem('__appts',JSON.stringify([{id:'a1',link_id:'x',starts_at:new Date(Date.now()+3600e3).toISOString(),minutes:60,title:'Revisión',status:'scheduled'},{id:'a2',link_id:'x',starts_at:new Date(Date.now()-3600e3*5).toISOString(),minutes:60,title:'Vieja',status:'scheduled'}])); apptNativeSync()")
+    print('6 citas al APK:',pg.evaluate("JSON.stringify(window.__ap.slice(-1)[0].map(a=>[a.title,a.text.slice(0,12)]))"))
+    print('errors',pg.errs); b.close()
